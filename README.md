@@ -10,7 +10,7 @@ Before running this script, ensure you have the following installed:
 
  
 
- - Python
+ - Python (Tested with version 3.12)
  - Pillow library
    
        pip install pillow
