@@ -1988,6 +1988,11 @@ show_hidden_files_var.trace("w", on_change)
 vertical_var.trace("w", on_change)
 override_bubble_cut_var.trace("w", on_change)
 page_by_page_var.trace("w", on_change)
+version_var.trace("w", on_change)
+am_theme_directory_path.trace("w",on_change)
+theme_directory_path.trace("w",on_change)
+catalogue_directory_path.trace("w",on_change)
+
 
 on_change()
 
