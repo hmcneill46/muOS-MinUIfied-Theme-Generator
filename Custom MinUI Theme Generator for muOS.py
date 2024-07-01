@@ -11,6 +11,8 @@ import platform
 import threading
 import queue
 import time
+import json
+
 #HI
 # Default values for parameters
 scrollBarWidth = 10
@@ -355,15 +357,15 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
             if muOSSystemName != "ThemePreview":
                 image = image.resize((width, height), Image.LANCZOS)
                 if workingItem[1] == "File":
-                    directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[0]}.png")
+                    directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
                     if not os.path.exists(directory):
                         os.makedirs(directory)
-                    image.save(f"{outputDir}/{muOSSystemName}/box/{workingItem[0]}.png")
+                    image.save(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
                 elif workingItem[1] == "Directory":
-                    directory = os.path.dirname(f"{outputDir}/Folder/box/{workingItem[0]}.png")
+                    directory = os.path.dirname(f"{outputDir}/Folder/box/{workingItem[2]}.png")
                     if not os.path.exists(directory):
                         os.makedirs(directory)
-                    image.save(f"{outputDir}/Folder/box/{workingItem[0]}.png")
+                    image.save(f"{outputDir}/Folder/box/{workingItem[2]}.png")
                 elif workingItem[1] == "Menu":
                     directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
                     if not os.path.exists(directory):
@@ -660,6 +662,11 @@ def changeLocationOfThe(name):
 def replace_hyphen_with_colon(text):
     return text.replace(' - ', ': ')
 
+def getNameConvertionList(file_path):
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    return data
+
 def list_directory_contents(directory_path):
     fileItemList = []
     directoryItemList = []
@@ -674,14 +681,26 @@ def list_directory_contents(directory_path):
                     directoryItemList.append([item_name, item_type])
             else:
                 if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
-                    fileItemList.append([item_name, item_name+item_extension, item_type])
+                    if name_json_path.get() != "":
+                        try:
+                            names_data = getNameConvertionList(name_json_path.get())
+                            sort_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name+item_extension
+                            display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
+                            print(sort_name)
+                        except:
+                            sort_name = item_name+item_extension
+                            display_name = item_name
+                    else:
+                        sort_name = item_name+item_extension
+                        display_name = item_name
+                    fileItemList.append([item_name, item_type, display_name, sort_name])
         directoryItemList.sort(key=lambda x: x[0].lower())
-        fileItemList.sort(key=lambda x: (x[1].lower()))
+        fileItemList.sort(key=lambda x: (x[3].lower()))
 
         for n in directoryItemList:
-            itemList.append(n)
+            itemList.append([n[0],n[1],n[0]]) # Display Name, File Type, File Name
         for n in fileItemList:
-            itemList.append([n[0], n[2]])  # Remove the extension before adding to itemList
+            itemList.append([n[2], n[1],n[0]])  # Display Name, File Type, File Name
         return itemList
     except Exception as e:
         if advanced_error_var.get():
@@ -808,7 +827,8 @@ def traverse_and_generate_images(progress_bar, directory_path, additions, scroll
                 ContinuousFolderImageGen(progress_bar, consoleName, items, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, mergeBoxArt=boxArtFound)
 
     for item in items:
-        item_name, item_type = item
+        item_name = item[0]
+        item_type = item[1]
         if item_type == "Directory":
             new_path = os.path.join(directory_path, item_name)
             traverse_and_generate_images(progress_bar, new_path, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, input_queue, output_queue)
@@ -888,6 +908,19 @@ def select_theme_directory():
     theme_directory_path.set(filedialog.askdirectory())
 def select_am_theme_directory():
     am_theme_directory_path.set(filedialog.askdirectory())
+def select_name_json_path():
+    # File dialog to select a file, with specific types of files allowed
+    file_path = filedialog.askopenfilename(
+        filetypes=[("JSON files", "*.json")],  # Only show .ini files
+        title="Select name.json file"
+    )
+    
+    # Check if the selected file is name.ini
+    if file_path.endswith("name.json"):
+        name_json_path.set(file_path)
+    else:
+        # Optionally show a warning or take other action if the wrong file is selected
+        tk.messagebox.showerror("Invalid file", "Please select a file named 'name.json'")
 
 
 
@@ -1428,6 +1461,7 @@ title_font = font.Font(family="Helvetica", size=14, weight="bold")
 
 # Variables for user input
 roms_directory_path = tk.StringVar()
+name_json_path = tk.StringVar()
 box_art_directory_path = tk.StringVar()
 catalogue_directory_path = tk.StringVar()
 theme_directory_path = tk.StringVar()
@@ -1458,9 +1492,13 @@ def setPreviousValues():
         for line in file:
             try:
                 exec(f"{line.split(':=')[0].strip()}.set('{line.split(':=')[1].strip()}')")
-                print(f"change {line.split(':=')[0].strip()} to {line.split(':=')[1].strip()}")
-            except:
-                print("Variable not found")
+                #print(f"change {line.split(':=')[0].strip()} to {line.split(':=')[1].strip()}")
+            except Exception as e:
+                if advanced_error_var.get():
+                    tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+                    return f"ERROR: Something went wrong with restoring the previous state:\n{e}\n{tb_str}"
+                else:
+                    return f"ERROR: Something went wrong with restoring the previous state:\n{e}"
 
 setPreviousValues()
 
@@ -1622,6 +1660,12 @@ grid_helper.add(tk.Entry(scrollable_frame, textvariable=roms_directory_path, wid
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_input_directory), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\ROMS' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="name.json file Directory:"), sticky="w")
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=name_json_path, width=50))
+grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_name_json_path), next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\MUOS\\info\\name.json' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Merge with Box Art", variable=overlay_box_art_var), sticky="w")
 
@@ -1992,16 +2036,10 @@ version_var.trace("w", on_change)
 am_theme_directory_path.trace("w",on_change)
 theme_directory_path.trace("w",on_change)
 catalogue_directory_path.trace("w",on_change)
+name_json_path.trace("w",on_change)
 
 
 on_change()
-
-
-
-
-
-
-
 
 # Run the main loop
 root.mainloop()
