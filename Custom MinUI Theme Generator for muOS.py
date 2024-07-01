@@ -11,7 +11,7 @@ import platform
 import threading
 import queue
 import time
-
+#HI
 # Default values for parameters
 scrollBarWidth = 10
 textLeftPadding = 30
