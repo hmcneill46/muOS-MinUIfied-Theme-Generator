@@ -31,6 +31,8 @@ previewConsoleName = "Nintendo Game Boy"
 themeName = "MinUIfied - Default Theme"
 amThemeName = "MinUIfied - Default AM Theme"
 
+background_image = None
+
 # Define constants
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -42,6 +44,7 @@ additions_Blank = "Blank"
 additions_PowerHelpBackOkay = "PowerHelpBackOkay"
 additions_powerHelpOkay = "PowerHelpOkay"
 additions_Preview = "Preview"
+
 
 def change_logo_color(input_path, hex_color):
     # Load the image
@@ -67,6 +70,9 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
     bg_rgb = hex_to_rgb(bg_hex)
 
     image = Image.new("RGBA", (width * render_factor, height * render_factor), bg_rgb)
+
+    if background_image != None:
+        image.paste(background_image.resize((width * render_factor, height * render_factor)), (0,0))
 
     draw = ImageDraw.Draw(image)
 
@@ -429,6 +435,10 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
 
     # Create image
     image = Image.new("RGBA", (width * render_factor, height * render_factor), bg_rgb)
+    if background_image != None:
+        image.paste(background_image.resize((width * render_factor, height * render_factor)), (0,0))
+    
+    
 
     exploreLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "explore.png"),icon_hex)
     exploreLogoColoured = exploreLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
@@ -932,6 +942,14 @@ def select_name_json_path():
     else:
         # Optionally show a warning or take other action if the wrong file is selected
         tk.messagebox.showerror("Invalid file", "Please select a file named 'name.json'")
+def select_background_image_path():
+    # File dialog to select a file, with specific types of files allowed
+    file_path = filedialog.askopenfilename(
+        filetypes=[("PNG Files", "*.png")],  # Only show .ini files
+        title="Select background image file"
+    )
+    background_image_path.set(file_path)
+
 
 
 
@@ -1242,6 +1260,8 @@ def FillTempThemeFolder(progress_bar):
         workingMenus = menus2405_1
     if version_var.get() == "Select an option":
         raise ValueError("You Haven't Selected a muOS Version")
+    if version_var.get() == "":
+        raise ValueError("You Haven't Selected a muOS Version")
     for index, menu in enumerate(workingMenus):
         itemsList.append([])
         for item in menu[1]:
@@ -1473,6 +1493,7 @@ title_font = font.Font(family="Helvetica", size=14, weight="bold")
 # Variables for user input
 roms_directory_path = tk.StringVar()
 name_json_path = tk.StringVar()
+background_image_path = tk.StringVar()
 box_art_directory_path = tk.StringVar()
 catalogue_directory_path = tk.StringVar()
 theme_directory_path = tk.StringVar()
@@ -1620,6 +1641,10 @@ iconHexVar.set(str(icon_hex))
 grid_helper.add(icon_hex_entry, next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Page by Page Scrolling", variable=page_by_page_var), colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="[Optional] Override background colour with image"), sticky="w")
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=background_image_path, width=50))
+grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_background_image_path), next_row=True)
 
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
@@ -1840,6 +1865,13 @@ valid_params = True
 crt_overlay_image = Image.open(os.path.join(script_dir,"Overlays", "CRT Overlay.png")).convert("RGBA")
 
 def on_change(*args):
+    global background_image
+    old_background_image_path = ""
+
+    if (old_background_image_path != background_image_path.get()) and os.path.exists(background_image_path.get()):
+        background_image = Image.open(background_image_path.get())
+        old_background_image_path = background_image_path.get()
+
     previousDirectories = os.path.join(script_dir,"PreviousDirectories.txt")
     with open(previousDirectories, 'w') as file: # clear file
         pass
@@ -1901,7 +1933,7 @@ def on_change(*args):
                                                 selectedFontHexVar.get(),
                                                 deselectedFontHexVar.get(),
                                                 bubbleHexVar.get()
-                                                ,2).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                                ,1).resize((int(width/2), int(height/2)), Image.LANCZOS)
             else:
                 image1 = generatePilImageVertical(fakeprogressbar,0,
                                 "muxlaunch",
@@ -1914,7 +1946,7 @@ def on_change(*args):
                                 selectedFontHexVar.get(),
                                 deselectedFontHexVar.get(),
                                 bubbleHexVar.get()
-                                ,2,
+                                ,1,
                                 scrollBarWidth=int(scrollBarWidthVar.get()),
                                 showScrollBar=(len(previewItemList)/int(items_per_screen_entry.get()))>1,
                                 numScreens=math.ceil(len(previewItemList)/int(items_per_screen_entry.get())),
@@ -1931,7 +1963,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,2,mergeBoxArt=consoleBoxArtFound).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            ,1,mergeBoxArt=consoleBoxArtFound).resize((int(width/2), int(height/2)), Image.LANCZOS)
             image3 = generatePilImageVertical(fakeprogressbar,0,
                                             consoleName,
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
@@ -1943,7 +1975,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,2,mergeBoxArt=gameBoxArtFound).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            ,1,mergeBoxArt=gameBoxArtFound).resize((int(width/2), int(height/2)), Image.LANCZOS)
         else:
             image2 = generatePilImageVertical(fakeprogressbar,0,
                                             "Folder",
@@ -1956,7 +1988,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,2,mergeBoxArt=consoleBoxArtFound,
+                                            ,1,mergeBoxArt=consoleBoxArtFound,
                                             scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewConsolesItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewConsolesItemList)/int(items_per_screen_entry.get())),
@@ -1972,7 +2004,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,2,mergeBoxArt=gameBoxArtFound,
+                                            ,1,mergeBoxArt=gameBoxArtFound,
                                             scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewGameItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewGameItemList)/int(items_per_screen_entry.get())),
@@ -2048,6 +2080,7 @@ am_theme_directory_path.trace("w",on_change)
 theme_directory_path.trace("w",on_change)
 catalogue_directory_path.trace("w",on_change)
 name_json_path.trace("w",on_change)
+background_image_path.trace("w",on_change)
 
 
 on_change()
