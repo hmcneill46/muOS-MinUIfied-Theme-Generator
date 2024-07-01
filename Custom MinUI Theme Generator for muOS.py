@@ -75,8 +75,8 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
 
     if overlay_box_art_var.get():
         if listItems[workingIndex][1] == "File":
-            if os.path.exists(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][0]+".png")):
-                originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][0]+".png")).convert("RGBA")
+            if os.path.exists(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")):
+                originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")).convert("RGBA")
                 boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
                 
                 pasteLocation = (int((width*render_factor)-boxArtImage.width),int(((height*render_factor)-boxArtImage.height)/2))
@@ -85,8 +85,8 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
 
                 image.paste(boxArtImage,pasteLocation,boxArtImage)
                 boxArtDrawn = True
-            elif (box_art_directory_path.get()=="" and (os.path.exists(os.path.join(catalogue_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][0]+".png")))):
-                originalBoxArtImage = Image.open(os.path.join(catalogue_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][0]+".png")).convert("RGBA")
+            elif (box_art_directory_path.get()=="" and (os.path.exists(os.path.join(catalogue_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")))):
+                originalBoxArtImage = Image.open(os.path.join(catalogue_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")).convert("RGBA")
                 boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
                 
                 pasteLocation = (int((width*render_factor)-boxArtImage.width),int(((height*render_factor)-boxArtImage.height)/2))
@@ -96,8 +96,8 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
                 image.paste(boxArtImage,pasteLocation,boxArtImage)
                 boxArtDrawn = True
         else:
-            if os.path.exists(os.path.join(box_art_directory_path.get(),"Folder","box",listItems[workingIndex][0]+".png")):
-                originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),"Folder","box",listItems[workingIndex][0]+".png")).convert("RGBA")
+            if os.path.exists(os.path.join(box_art_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")):
+                originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")).convert("RGBA")
                 boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
                 
                 pasteLocation = (int((width*render_factor)-boxArtImage.width),int(((height*render_factor)-boxArtImage.height)/2))
@@ -107,8 +107,8 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
 
                 image.paste(boxArtImage,pasteLocation,boxArtImage)
                 boxArtDrawn = True
-            elif (box_art_directory_path.get()=="" and (os.path.exists(os.path.join(catalogue_directory_path.get(),"Folder","box",listItems[workingIndex][0]+".png")))):
-                originalBoxArtImage = Image.open(os.path.join(catalogue_directory_path.get(),"Folder","box",listItems[workingIndex][0]+".png")).convert("RGBA")
+            elif (box_art_directory_path.get()=="" and (os.path.exists(os.path.join(catalogue_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")))):
+                originalBoxArtImage = Image.open(os.path.join(catalogue_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")).convert("RGBA")
                 boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
                 
                 pasteLocation = (int((width*render_factor)-boxArtImage.width),int(((height*render_factor)-boxArtImage.height)/2))
@@ -400,15 +400,15 @@ def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scroll
                 if muOSSystemName != "ThemePreview":
                     image = image.resize((width, height), Image.LANCZOS)
                     if workingItem[1] == "File":
-                        directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[0]}.png")
+                        directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
                         if not os.path.exists(directory):
                             os.makedirs(directory)
-                        image.save(f"{outputDir}/{muOSSystemName}/box/{workingItem[0]}.png")
+                        image.save(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
                     elif workingItem[1] == "Directory":
-                        directory = os.path.dirname(f"{outputDir}/Folder/box/{workingItem[0]}.png")
+                        directory = os.path.dirname(f"{outputDir}/Folder/box/{workingItem[2]}.png")
                         if not os.path.exists(directory):
                             os.makedirs(directory)
-                        image.save(f"{outputDir}/Folder/box/{workingItem[0]}.png")
+                        image.save(f"{outputDir}/Folder/box/{workingItem[2]}.png")
                     elif workingItem[1] == "Menu":
                         directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
                         if not os.path.exists(directory):
@@ -668,6 +668,7 @@ def getNameConvertionList(file_path):
     return data
 
 def list_directory_contents(directory_path):
+    print("in list directory and contents")
     fileItemList = []
     directoryItemList = []
     itemList = []
@@ -678,10 +679,20 @@ def list_directory_contents(directory_path):
             item_type = "Directory" if os.path.isdir(item_path) else "File"
             if item_type == "Directory":
                 if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
-                    directoryItemList.append([item_name, item_type])
+                    print("in directory item list append")
+                    display_name = item_name
+                    if os.path.exists(name_json_path.get()):
+                        try:
+                            names_data = getNameConvertionList(name_json_path.get())
+                            display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
+                            print(display_name)
+                        except:
+                            display_name = item_name
+                    directoryItemList.append([display_name, item_type,item_name])
+                    print(f"Pass: {item} {directory_path}")
             else:
                 if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
-                    if name_json_path.get() != "":
+                    if os.path.exists(name_json_path.get()):
                         try:
                             names_data = getNameConvertionList(name_json_path.get())
                             sort_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name+item_extension
@@ -698,7 +709,7 @@ def list_directory_contents(directory_path):
         fileItemList.sort(key=lambda x: (x[3].lower()))
 
         for n in directoryItemList:
-            itemList.append([n[0],n[1],n[0]]) # Display Name, File Type, File Name
+            itemList.append(n) # Display Name, File Type, File Name
         for n in fileItemList:
             itemList.append([n[2], n[1],n[0]])  # Display Name, File Type, File Name
         return itemList
@@ -1685,7 +1696,7 @@ grid_helper.add(tk.Label(scrollable_frame, text="*[IMPORTANT] THIS WILL OVERRIDE
 
 grid_helper.add(tk.Label(scrollable_frame, text="*[IMPORTANT] Note selecting this option will make favourite and history messed up.\nOnly use this if you don't use Favourites and History, or you just want to experiment.", fg='#f00'), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="*Game's may also appear in the wrong order ", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="*Games may also appear in the wrong order if you do not use name.json", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
 
 
 # Spacer row
@@ -1846,10 +1857,10 @@ def on_change(*args):
         consoleBoxArtFound = True
         consoleName = previewConsoleNameVar.get()
         previewItemList = [['Content Explorer', 'Menu', 'explore'], ['Favourites', 'Menu', 'favourite'], ['History', 'Menu', 'history'], ['Applications', 'Menu', 'apps'], ['Information', 'Menu', 'info'], ['Configuration', 'Menu', 'config'], ['Reboot Device', 'Menu', 'reboot'], ['Shutdown Device', 'Menu', 'shutdown']]
-        previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File'], ['A-mazing Tater (USA)', 'File'], ['Addams Family, The (USA)', 'File'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File'], ['Adventure Island (USA, Europe)', 'File'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File'], ['Adventures of Star Saver, The (USA, Europe)', 'File'], ['Aerostar (USA, Europe)', 'File'], ['Aladdin (USA) (SGB Enhanced)', 'File'], ['Alfred Chicken (USA)', 'File'], ['Alien 3 (USA, Europe)', 'File'], ['Alien vs Predator - The Last of His Clan (USA)', 'File'], ['All-Star Baseball 99 (USA)', 'File'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File'], ['Amazing Penguin (USA, Europe)', 'File'], ['Amazing Spider-Man, The (USA, Europe)', 'File'], ['Animaniacs (USA) (SGB Enhanced)', 'File'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File'], ['Asteroids (USA, Europe)', 'File'], ['Atomic Punk (USA)', 'File'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File'], ['Avenging Spirit (USA, Europe)', 'File'], ['Balloon Kid (USA, Europe)', 'File'], ['Barbie - Game Girl (USA, Europe)', 'File'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File'], ['Bases Loaded for Game Boy (USA)', 'File'], ['Batman - Return of the Joker (USA, Europe)', 'File'], ['Batman - The Animated Series (USA, Europe)', 'File'], ['Batman Forever (USA, Europe)', 'File'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File'], ['Battle Bull (USA)', 'File'], ['Battle Unit Zeoth (USA, Europe)', 'File'], ['Battleship (USA, Europe)', 'File'], ['Battletoads (USA, Europe)', 'File'], ["Battletoads in Ragnarok's World (USA)", 'File'], ['Battletoads-Double Dragon (USA)', 'File'], ['Beavis and Butt-Head (USA, Europe)', 'File'], ['Beetlejuice (USA)', 'File'], ['Best of the Best - Championship Karate (USA)', 'File'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File'], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File'], ['Bionic Battler (USA)', 'File'], ['Bionic Commando (USA)', 'File'], ['Black Bass - Lure Fishing (USA)', 'File'], ['Blades of Steel (USA)', 'File'], ['Blaster Master Boy (USA)', 'File'], ['Blues Brothers, The (USA, Europe)', 'File'], ['Bo Jackson - Two Games in One (USA)', 'File'], ['Boggle Plus (USA)', 'File'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File'], ["Bonk's Adventure (USA)", 'File'], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File']]
+        previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File', '4-in-1 Fun Pak [Version 1] (USA, Europe)'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File', '4-in-1 Funpak - Volume II (USA, Europe)'], ['A-mazing Tater (USA)', 'File', 'A-mazing Tater (USA)'], ['Addams Family, The (USA)', 'File', 'Addams Family, The (USA)'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File', "Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]"], ['Adventure Island (USA, Europe)', 'File', 'Adventure Island (USA, Europe)'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File', 'Adventure Island II - Aliens in Paradise (USA, Europe)'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File', 'Adventures of Rocky and Bullwinkle and Friends, The (USA)'], ['Adventures of Star Saver, The (USA, Europe)', 'File', 'Adventures of Star Saver, The (USA, Europe)'], ['Aerostar (USA, Europe)', 'File', 'Aerostar (USA, Europe)'], ['Aladdin (USA) (SGB Enhanced)', 'File', 'Aladdin (USA) (SGB Enhanced)'], ['Alfred Chicken (USA)', 'File', 'Alfred Chicken (USA)'], ['Alien 3 (USA, Europe)', 'File', 'Alien 3 (USA, Europe)'], ['Alien vs Predator - The Last of His Clan (USA)', 'File', 'Alien vs Predator - The Last of His Clan (USA)'], ['All-Star Baseball 99 (USA)', 'File', 'All-Star Baseball 99 (USA)'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File', 'Altered Space - A 3-D Alien Adventure (USA)'], ['Amazing Penguin (USA, Europe)', 'File', 'Amazing Penguin (USA, Europe)'], ['Amazing Spider-Man, The (USA, Europe)', 'File', 'Amazing Spider-Man, The (USA, Europe)'], ['Animaniacs (USA) (SGB Enhanced)', 'File', 'Animaniacs (USA) (SGB Enhanced)'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File', 'Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)'], ['Asteroids (USA, Europe)', 'File', 'Asteroids (USA, Europe)'], ['Atomic Punk (USA)', 'File', 'Atomic Punk (USA)'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File', 'Attack of the Killer Tomatoes (USA, Europe)'], ['Avenging Spirit (USA, Europe)', 'File', 'Avenging Spirit (USA, Europe)'], ['Balloon Kid (USA, Europe)', 'File', 'Balloon Kid (USA, Europe)'], ['Barbie - Game Girl (USA, Europe)', 'File', 'Barbie - Game Girl (USA, Europe)'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File', "Bart Simpson's Escape from Camp Deadly (USA, Europe)"], ['Bases Loaded for Game Boy (USA)', 'File', 'Bases Loaded for Game Boy (USA)'], ['Batman - Return of the Joker (USA, Europe)', 'File', 'Batman - Return of the Joker (USA, Europe)'], ['Batman - The Animated Series (USA, Europe)', 'File', 'Batman - The Animated Series (USA, Europe)'], ['Batman Forever (USA, Europe)', 'File', 'Batman Forever (USA, Europe)'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File', 'Battle Arena Toshinden (USA) (SGB Enhanced)'], ['Battle Bull (USA)', 'File', 'Battle Bull (USA)'], ['Battle Unit Zeoth (USA, Europe)', 'File', 'Battle Unit Zeoth (USA, Europe)'], ['Battleship (USA, Europe)', 'File', 'Battleship (USA, Europe)'], ['Battletoads (USA, Europe)', 'File', 'Battletoads (USA, Europe)'], ["Battletoads in Ragnarok's World (USA)", 'File', "Battletoads in Ragnarok's World (USA)"], ['Battletoads-Double Dragon (USA)', 'File', 'Battletoads-Double Dragon (USA)'], ['Beavis and Butt-Head (USA, Europe)', 'File', 'Beavis and Butt-Head (USA, Europe)'], ['Beetlejuice (USA)', 'File', 'Beetlejuice (USA)'], ['Best of the Best - Championship Karate (USA)', 'File', 'Best of the Best - Championship Karate (USA)'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File', "Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)"], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File', "Bill Elliott's NASCAR Fast Tracks (USA)"], ['Bionic Battler (USA)', 'File', 'Bionic Battler (USA)'], ['Bionic Commando (USA)', 'File', 'Bionic Commando (USA)'], ['Black Bass - Lure Fishing (USA)', 'File', 'Black Bass - Lure Fishing (USA)'], ['Blades of Steel (USA)', 'File', 'Blades of Steel (USA)'], ['Blaster Master Boy (USA)', 'File', 'Blaster Master Boy (USA)'], ['Blues Brothers, The (USA, Europe)', 'File', 'Blues Brothers, The (USA, Europe)'], ['Bo Jackson - Two Games in One (USA)', 'File', 'Bo Jackson - Two Games in One (USA)'], ['Boggle Plus (USA)', 'File', 'Boggle Plus (USA)'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File', 'Bomberman GB (USA, Europe) (SGB Enhanced)'], ["Bonk's Adventure (USA)", 'File', "Bonk's Adventure (USA)"], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File', "Bonk's Revenge (USA) (SGB Enhanced)"]]
 
-        if roms_directory_path.get()=="":
-            previewConsolesItemList = [['Game Boy', 'Directory'], ['Game Boy Advance', 'Directory'], ['Game Boy Color', 'Directory'], ['game-boy-romset-ultra-us', 'Directory'], ['Nintendo 64', 'Directory'], ['Nintendo DS', 'Directory'], ['Nintendo Entertainment System', 'Directory'], ['PICO-8', 'Directory'], ['Ports', 'Directory'], ['SEGA Mega Drive', 'Directory'], ['Super Nintendo Entertainment System', 'Directory']]
+        if not os.path.exists(roms_directory_path.get()):
+            previewConsolesItemList = [['Game Boy', 'Directory', 'Game Boy'], ['Game Boy Advance', 'Directory', 'Game Boy Advance'], ['Game Boy Color', 'Directory', 'Game Boy Color'], ['game-boy-romset-ultra-us', 'Directory', 'game-boy-romset-ultra-us'], ['Nintendo 64', 'Directory', 'Nintendo 64'], ['Nintendo DS', 'Directory', 'Nintendo DS'], ['Nintendo Entertainment System', 'Directory', 'Nintendo Entertainment System'], ['PICO-8', 'Directory', 'PICO-8'], ['Ports', 'Directory', 'Ports'], ['SEGA Mega Drive', 'Directory', 'SEGA Mega Drive'], ['Super Nintendo Entertainment System', 'Directory', 'Super Nintendo Entertainment System']]
         else:
             previewConsolesItemList = list_directory_contents(roms_directory_path.get())
 
@@ -1857,7 +1868,7 @@ def on_change(*args):
             consoleBoxArtFound = False
 
             for item in previewConsolesItemList:
-                if os.path.exists(os.path.join(box_art_directory_path.get(),"Folder","box",item[0]+".png")):
+                if os.path.exists(os.path.join(box_art_directory_path.get(),"Folder","box",item[2]+".png")):
                     consoleBoxArtFound = True
             if os.path.exists(os.path.join(roms_directory_path.get(),previewConsolesItemList[0][0])):
                 previewGameItemList = list_directory_contents(os.path.join(roms_directory_path.get(),previewConsolesItemList[0][0]))
@@ -1867,13 +1878,13 @@ def on_change(*args):
                 consoleName = previewConsoleNameVar.get()
 
                 for item in previewGameItemList:
-                    if os.path.exists(os.path.join(box_art_directory_path.get(),consoleName,"box",item[0]+".png")):
+                    if os.path.exists(os.path.join(box_art_directory_path.get(),consoleName,"box",item[2]+".png")):
                         gameBoxArtFound = True
-                    elif os.path.exists(os.path.join(box_art_directory_path.get(),"Folder","box",item[0]+".png")):
+                    elif os.path.exists(os.path.join(box_art_directory_path.get(),"Folder","box",item[2]+".png")):
                         gameBoxArtFound = True
             else:
-                previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File'], ['A-mazing Tater (USA)', 'File'], ['Addams Family, The (USA)', 'File'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File'], ['Adventure Island (USA, Europe)', 'File'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File'], ['Adventures of Star Saver, The (USA, Europe)', 'File'], ['Aerostar (USA, Europe)', 'File'], ['Aladdin (USA) (SGB Enhanced)', 'File'], ['Alfred Chicken (USA)', 'File'], ['Alien 3 (USA, Europe)', 'File'], ['Alien vs Predator - The Last of His Clan (USA)', 'File'], ['All-Star Baseball 99 (USA)', 'File'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File'], ['Amazing Penguin (USA, Europe)', 'File'], ['Amazing Spider-Man, The (USA, Europe)', 'File'], ['Animaniacs (USA) (SGB Enhanced)', 'File'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File'], ['Asteroids (USA, Europe)', 'File'], ['Atomic Punk (USA)', 'File'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File'], ['Avenging Spirit (USA, Europe)', 'File'], ['Balloon Kid (USA, Europe)', 'File'], ['Barbie - Game Girl (USA, Europe)', 'File'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File'], ['Bases Loaded for Game Boy (USA)', 'File'], ['Batman - Return of the Joker (USA, Europe)', 'File'], ['Batman - The Animated Series (USA, Europe)', 'File'], ['Batman Forever (USA, Europe)', 'File'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File'], ['Battle Bull (USA)', 'File'], ['Battle Unit Zeoth (USA, Europe)', 'File'], ['Battleship (USA, Europe)', 'File'], ['Battletoads (USA, Europe)', 'File'], ["Battletoads in Ragnarok's World (USA)", 'File'], ['Battletoads-Double Dragon (USA)', 'File'], ['Beavis and Butt-Head (USA, Europe)', 'File'], ['Beetlejuice (USA)', 'File'], ['Best of the Best - Championship Karate (USA)', 'File'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File'], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File'], ['Bionic Battler (USA)', 'File'], ['Bionic Commando (USA)', 'File'], ['Black Bass - Lure Fishing (USA)', 'File'], ['Blades of Steel (USA)', 'File'], ['Blaster Master Boy (USA)', 'File'], ['Blues Brothers, The (USA, Europe)', 'File'], ['Bo Jackson - Two Games in One (USA)', 'File'], ['Boggle Plus (USA)', 'File'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File'], ["Bonk's Adventure (USA)", 'File'], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File']]
-        
+                previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File', '4-in-1 Fun Pak [Version 1] (USA, Europe)'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File', '4-in-1 Funpak - Volume II (USA, Europe)'], ['A-mazing Tater (USA)', 'File', 'A-mazing Tater (USA)'], ['Addams Family, The (USA)', 'File', 'Addams Family, The (USA)'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File', "Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]"], ['Adventure Island (USA, Europe)', 'File', 'Adventure Island (USA, Europe)'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File', 'Adventure Island II - Aliens in Paradise (USA, Europe)'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File', 'Adventures of Rocky and Bullwinkle and Friends, The (USA)'], ['Adventures of Star Saver, The (USA, Europe)', 'File', 'Adventures of Star Saver, The (USA, Europe)'], ['Aerostar (USA, Europe)', 'File', 'Aerostar (USA, Europe)'], ['Aladdin (USA) (SGB Enhanced)', 'File', 'Aladdin (USA) (SGB Enhanced)'], ['Alfred Chicken (USA)', 'File', 'Alfred Chicken (USA)'], ['Alien 3 (USA, Europe)', 'File', 'Alien 3 (USA, Europe)'], ['Alien vs Predator - The Last of His Clan (USA)', 'File', 'Alien vs Predator - The Last of His Clan (USA)'], ['All-Star Baseball 99 (USA)', 'File', 'All-Star Baseball 99 (USA)'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File', 'Altered Space - A 3-D Alien Adventure (USA)'], ['Amazing Penguin (USA, Europe)', 'File', 'Amazing Penguin (USA, Europe)'], ['Amazing Spider-Man, The (USA, Europe)', 'File', 'Amazing Spider-Man, The (USA, Europe)'], ['Animaniacs (USA) (SGB Enhanced)', 'File', 'Animaniacs (USA) (SGB Enhanced)'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File', 'Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)'], ['Asteroids (USA, Europe)', 'File', 'Asteroids (USA, Europe)'], ['Atomic Punk (USA)', 'File', 'Atomic Punk (USA)'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File', 'Attack of the Killer Tomatoes (USA, Europe)'], ['Avenging Spirit (USA, Europe)', 'File', 'Avenging Spirit (USA, Europe)'], ['Balloon Kid (USA, Europe)', 'File', 'Balloon Kid (USA, Europe)'], ['Barbie - Game Girl (USA, Europe)', 'File', 'Barbie - Game Girl (USA, Europe)'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File', "Bart Simpson's Escape from Camp Deadly (USA, Europe)"], ['Bases Loaded for Game Boy (USA)', 'File', 'Bases Loaded for Game Boy (USA)'], ['Batman - Return of the Joker (USA, Europe)', 'File', 'Batman - Return of the Joker (USA, Europe)'], ['Batman - The Animated Series (USA, Europe)', 'File', 'Batman - The Animated Series (USA, Europe)'], ['Batman Forever (USA, Europe)', 'File', 'Batman Forever (USA, Europe)'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File', 'Battle Arena Toshinden (USA) (SGB Enhanced)'], ['Battle Bull (USA)', 'File', 'Battle Bull (USA)'], ['Battle Unit Zeoth (USA, Europe)', 'File', 'Battle Unit Zeoth (USA, Europe)'], ['Battleship (USA, Europe)', 'File', 'Battleship (USA, Europe)'], ['Battletoads (USA, Europe)', 'File', 'Battletoads (USA, Europe)'], ["Battletoads in Ragnarok's World (USA)", 'File', "Battletoads in Ragnarok's World (USA)"], ['Battletoads-Double Dragon (USA)', 'File', 'Battletoads-Double Dragon (USA)'], ['Beavis and Butt-Head (USA, Europe)', 'File', 'Beavis and Butt-Head (USA, Europe)'], ['Beetlejuice (USA)', 'File', 'Beetlejuice (USA)'], ['Best of the Best - Championship Karate (USA)', 'File', 'Best of the Best - Championship Karate (USA)'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File', "Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)"], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File', "Bill Elliott's NASCAR Fast Tracks (USA)"], ['Bionic Battler (USA)', 'File', 'Bionic Battler (USA)'], ['Bionic Commando (USA)', 'File', 'Bionic Commando (USA)'], ['Black Bass - Lure Fishing (USA)', 'File', 'Black Bass - Lure Fishing (USA)'], ['Blades of Steel (USA)', 'File', 'Blades of Steel (USA)'], ['Blaster Master Boy (USA)', 'File', 'Blaster Master Boy (USA)'], ['Blues Brothers, The (USA, Europe)', 'File', 'Blues Brothers, The (USA, Europe)'], ['Bo Jackson - Two Games in One (USA)', 'File', 'Bo Jackson - Two Games in One (USA)'], ['Boggle Plus (USA)', 'File', 'Boggle Plus (USA)'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File', 'Bomberman GB (USA, Europe) (SGB Enhanced)'], ["Bonk's Adventure (USA)", 'File', "Bonk's Adventure (USA)"], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File', "Bonk's Revenge (USA) (SGB Enhanced)"]]
+
             
         if not(vertical_var.get()):
             image1 = generatePilImageHorizontal(fakeprogressbar,0,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize((int(width/2), int(height/2)), Image.LANCZOS)
