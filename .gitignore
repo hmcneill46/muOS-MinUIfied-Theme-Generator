@@ -1,0 +1,8 @@
+# Ignore generated directories
+Generated Archive Manager Files/
+Generated Theme Files/
+Generated Theme/
+
+# Ignore specific files
+PreviousDirectories.txt
+ConsoleAssociations.txt
