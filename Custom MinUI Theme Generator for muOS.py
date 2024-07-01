@@ -72,6 +72,8 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
 
     boxArtDrawn = False
     boxArtWidth = 0
+    if len(listItems) == 0:
+        return(image)
 
     if overlay_box_art_var.get():
         if listItems[workingIndex][1] == "File":
@@ -668,18 +670,19 @@ def getNameConvertionList(file_path):
     return data
 
 def list_directory_contents(directory_path):
-    print("in list directory and contents")
+    print(f"in list directory and contents {directory_path}")
     fileItemList = []
     directoryItemList = []
     itemList = []
     try:
+        print(f"listdir: {os.listdir(directory_path)}")
         for item in os.listdir(directory_path):
             item_path = os.path.join(directory_path, item)
             item_name, item_extension = os.path.splitext(item)
             item_type = "Directory" if os.path.isdir(item_path) else "File"
             if item_type == "Directory":
                 if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
-                    print("in directory item list append")
+                    print(f"Trying: {item} {directory_path}")
                     display_name = item_name
                     if os.path.exists(name_json_path.get()):
                         try:
@@ -705,14 +708,17 @@ def list_directory_contents(directory_path):
                         sort_name = item_name+item_extension
                         display_name = item_name
                     fileItemList.append([item_name, item_type, display_name, sort_name])
-        directoryItemList.sort(key=lambda x: x[0].lower())
-        fileItemList.sort(key=lambda x: (x[3].lower()))
+        if len(directoryItemList)+len(fileItemList):
+            directoryItemList.sort(key=lambda x: x[0].lower())
+            fileItemList.sort(key=lambda x: (x[3].lower()))
 
-        for n in directoryItemList:
-            itemList.append(n) # Display Name, File Type, File Name
-        for n in fileItemList:
-            itemList.append([n[2], n[1],n[0]])  # Display Name, File Type, File Name
-        return itemList
+            for n in directoryItemList:
+                itemList.append(n) # Display Name, File Type, File Name
+            for n in fileItemList:
+                itemList.append([n[2], n[1],n[0]])  # Display Name, File Type, File Name
+            return itemList
+        else:
+            return []
     except Exception as e:
         if advanced_error_var.get():
             tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
