@@ -1,0 +1,11 @@
+/Volumes/StarLight/Retro Handheld stuff/muos-ROMS/Game Boy:=Nintendo Game Boy
+/Volumes/StarLight/Retro Handheld stuff/muos-ROMS/Game Boy Advance:=Nintendo Game Boy Advance
+/Volumes/StarLight/Retro Handheld stuff/muos-ROMS/Game Boy Color:=Nintendo Game Boy Color
+/Volumes/StarLight/Retro Handheld stuff/muos-ROMS/Nintendo 64:=Nintendo N64
+/Volumes/StarLight/Retro Handheld stuff/muos-ROMS/Nintendo DS:=Nintendo DS
+/Volumes/StarLight/Retro Handheld stuff/muos-ROMS/Nintendo Entertainment System:=Nintendo NES-Famicom
+/Volumes/StarLight/Retro Handheld stuff/muos-ROMS/Nintendo Entertainment System/Tetris Versions:=Nintendo NES-Famicom
+/Volumes/StarLight/Retro Handheld stuff/muos-ROMS/PICO-8:=PICO-8
+/Volumes/StarLight/Retro Handheld stuff/muos-ROMS/Ports:=External - Ports
+/Volumes/StarLight/Retro Handheld stuff/muos-ROMS/SEGA Mega Drive:=Sega Mega Drive - Genesis
+/Volumes/StarLight/Retro Handheld stuff/muos-ROMS/Super Nintendo Entertainment System:=Nintendo SNES-SFC
