@@ -26,7 +26,7 @@ Before running this script, ensure you have the following installed:
  - If you want to keep the **box art**, copy the **MUOS/info/catalogue** folder from the SD card to your computers local storage
    
  - To use the tool without the SD card, copy your **ROMS** folder from the card to your computers local storage for future use.
- - Make sure your box art on your device is set to middle+front, otherwise the content explorer UI can behave strangely
+ - **Make sure** your box art on your device is set to **middle+front**, otherwise the content explorer UI can behave strangely
 
 # Configuration
 
