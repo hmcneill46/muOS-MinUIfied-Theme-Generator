@@ -87,9 +87,6 @@ To remove all MinUI theming from your system:
   
 
 ## Experimental Settings
-
-  
-
- - Generating images for the game list is experimental. It may not work with arcade names and can sometimes cause sorting issues.
  - Show hidden files is experimental as I'm not sure how it should work if you don't select to generate game list as well
+ - Also Generate Images for Game List is experimental as it will mess up your favourites and history menus
 
