@@ -11,10 +11,10 @@ Before running this script, ensure you have the following installed:
 
 Getting Started
 
-    Insert your SD card into your computer.
-    Copy the Folder:
-        If you want to keep the box art, copy the MUOS/info/catalogue folder from the SD card.
-        To use the tool without the SD card, copy your ROMS folder from the card for future use.
+Insert your SD card into your computer.
+Copy the Folder:
+    If you want to keep the box art, copy the MUOS/info/catalogue folder from the SD card.
+    To use the tool without the SD card, copy your ROMS folder from the card for future use.
 
 Configuration
 Global Configurations
