@@ -670,29 +670,24 @@ def getNameConvertionList(file_path):
     return data
 
 def list_directory_contents(directory_path):
-    print(f"in list directory and contents {directory_path}")
     fileItemList = []
     directoryItemList = []
     itemList = []
     try:
-        print(f"listdir: {os.listdir(directory_path)}")
         for item in os.listdir(directory_path):
             item_path = os.path.join(directory_path, item)
             item_name, item_extension = os.path.splitext(item)
             item_type = "Directory" if os.path.isdir(item_path) else "File"
             if item_type == "Directory":
                 if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
-                    print(f"Trying: {item} {directory_path}")
                     display_name = item_name
                     if os.path.exists(name_json_path.get()):
                         try:
                             names_data = getNameConvertionList(name_json_path.get())
                             display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
-                            print(display_name)
                         except:
                             display_name = item_name
                     directoryItemList.append([display_name, item_type,item_name])
-                    print(f"Pass: {item} {directory_path}")
             else:
                 if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
                     if os.path.exists(name_json_path.get()):
@@ -700,7 +695,6 @@ def list_directory_contents(directory_path):
                             names_data = getNameConvertionList(name_json_path.get())
                             sort_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name+item_extension
                             display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
-                            #print(sort_name)
                         except:
                             sort_name = item_name+item_extension
                             display_name = item_name
