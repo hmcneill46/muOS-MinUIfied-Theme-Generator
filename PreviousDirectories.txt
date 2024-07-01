@@ -1,6 +1,0 @@
-roms_directory_path:=C:/Users/Harry/Documents/muOS File Duplicate/ROMS
-box_art_directory_path:=I:/Retro Handheld stuff/muOS Box Art
-version_var:=muOS 2405.1 REFRIED BEANS
-am_theme_directory_path:=G:/ARCHIVE
-theme_directory_path:=G:/MUOS/theme
-catalogue_directory_path:=G:/MUOS/info/catalogue
