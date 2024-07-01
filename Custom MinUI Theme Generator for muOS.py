@@ -686,7 +686,7 @@ def list_directory_contents(directory_path):
                             names_data = getNameConvertionList(name_json_path.get())
                             sort_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name+item_extension
                             display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
-                            print(sort_name)
+                            #print(sort_name)
                         except:
                             sort_name = item_name+item_extension
                             display_name = item_name
