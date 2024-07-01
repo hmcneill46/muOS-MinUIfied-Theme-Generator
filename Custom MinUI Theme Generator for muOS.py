@@ -1151,15 +1151,16 @@ def FillTempThemeFolder(progress_bar):
     icon_hex = icon_hex_entry.get()
     
     copy_contents(os.path.join(script_dir, "Theme Shell"), os.path.join(script_dir, ".TempBuildTheme"))
-
-    shutil.copy2(os.path.join(script_dir,"Template Scheme","default.txt"),os.path.join(script_dir,".TempBuildTheme","scheme","default.txt"))
+    
+    dst_dir = os.path.join(script_dir,".TempBuildTheme","scheme")
+    os.makedirs(dst_dir, exist_ok=True)
+    shutil.copy2(os.path.join(script_dir,"Template Scheme","default.txt"),dst_dir)
     replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","default.txt"), "{bg_hex}", str(bg_hex))
     replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","default.txt"), "{selected_font_hex}", str(bubble_hex))
     replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","default.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,selected_font_hex,0.5)))
     replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","default.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
     replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","default.txt"), "{ImageOverlay}", str(crt_overlay_var.get()))
     
-
     shutil.copy2(os.path.join(script_dir,"Template Scheme","mux.txt"),os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"))
     replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{bg_hex}", str(bg_hex))
     replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{selected_font_hex}", str(bubble_hex))
