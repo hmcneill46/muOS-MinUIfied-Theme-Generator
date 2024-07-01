@@ -1,6 +1,6 @@
 MinUI Theme Generator
 
-This script helps you create and customize themes for your MUOS system, ensuring a consistent look and feel across your gaming library.
+This script helps you create and customize themes for your MUOS system, creating a consistent look and feel across your gaming library.
 Prerequisites
 
 Before running this script, ensure you have the following installed:
