@@ -819,7 +819,7 @@ def traverse_and_generate_images(progress_bar, directory_path, additions, scroll
                 ContinuousFolderImageGen(progress_bar, consoleName, items, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, mergeBoxArt=boxArtFound)
 
     for item in items:
-        item_name = item[0]
+        item_name = item[2]
         item_type = item[1]
         if item_type == "Directory":
             new_path = os.path.join(directory_path, item_name)
