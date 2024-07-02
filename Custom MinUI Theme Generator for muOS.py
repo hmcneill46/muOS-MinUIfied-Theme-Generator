@@ -655,11 +655,17 @@ def replace_hyphen_with_colon(text):
     return text.replace(' - ', ': ')
 
 def getNameConvertionList(file_path):
-    with open(file_path, 'r') as file:
-        data = json.load(file)
-    return data
+    if os.path.exists(name_json_path.get()):
+        try:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+            return data
+        except:
+            return []
+    return []
 
 def list_directory_contents(directory_path):
+    names_data = getNameConvertionList(name_json_path.get())
     fileItemList = []
     directoryItemList = []
     itemList = []
@@ -670,27 +676,11 @@ def list_directory_contents(directory_path):
             item_type = "Directory" if os.path.isdir(item_path) else "File"
             if item_type == "Directory":
                 if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
-                    display_name = item_name
-                    if os.path.exists(name_json_path.get()):
-                        try:
-                            names_data = getNameConvertionList(name_json_path.get())
-                            display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
-                        except:
-                            display_name = item_name
-                    directoryItemList.append([display_name, item_type,item_name])
+                    directoryItemList.append([item_name, item_type,item_name])
             else:
-                if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
-                    if os.path.exists(name_json_path.get()):
-                        try:
-                            names_data = getNameConvertionList(name_json_path.get())
-                            sort_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name+item_extension
-                            display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
-                        except:
-                            sort_name = item_name+item_extension
-                            display_name = item_name
-                    else:
-                        sort_name = item_name+item_extension
-                        display_name = item_name
+                if not(item_extension.lower() == ".pcm" or item_extension.lower() == ".msu") and (not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get()):
+                    sort_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name+item_extension
+                    display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
                     fileItemList.append([item_name, item_type, display_name, sort_name])
         if len(directoryItemList)+len(fileItemList):
             directoryItemList.sort(key=lambda x: x[0].lower())
@@ -1273,9 +1263,9 @@ def FillTempThemeFolder(progress_bar):
     itemsList = []
     if version_var.get() == "muOS 2405 BEANS":
         workingMenus = menus2405
-    if version_var.get() == "muOS 2405.1 REFRIED BEANS":
+    elif version_var.get() == "muOS 2405.1 REFRIED BEANS":
         workingMenus = menus2405_1
-    if version_var.get() == "muOS 2405.2 BAKED BEANS [TESTING]":
+    elif version_var.get() == "muOS 2405.2 BAKED BEANS [TESTING]":
         workingMenus = menus2405_2
     else:
         raise ValueError("You Haven't Selected a muOS Version")
