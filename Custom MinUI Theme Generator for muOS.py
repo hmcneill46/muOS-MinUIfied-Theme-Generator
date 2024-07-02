@@ -676,8 +676,7 @@ def list_directory_contents(directory_path):
             item_type = "Directory" if os.path.isdir(item_path) else "File"
             if item_type == "Directory":
                 if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
-                    display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
-                    directoryItemList.append([display_name, item_type,item_name])
+                    directoryItemList.append([item_name, item_type,item_name])
             else:
                 if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
                     sort_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name+item_extension
@@ -819,7 +818,7 @@ def traverse_and_generate_images(progress_bar, directory_path, additions, scroll
                 ContinuousFolderImageGen(progress_bar, consoleName, items, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, mergeBoxArt=boxArtFound)
 
     for item in items:
-        item_name = item[2]
+        item_name = item[0]
         item_type = item[1]
         if item_type == "Directory":
             new_path = os.path.join(directory_path, item_name)
