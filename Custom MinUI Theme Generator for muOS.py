@@ -1485,7 +1485,12 @@ def start_theme_task():
 root = tk.Tk()
 root.title("MinUI Theme Generator")
 root.minsize(1020, 500)  # Set a minimum size for the window
-root.geometry("1280x1280")  # Set a default size for the window
+
+# Get the screen height
+screen_height = root.winfo_screenheight()
+window_height = int(min(screen_height*0.9, 1510))
+
+root.geometry(f"1280x{window_height}")  # Set a default size for the window
 
 subtitle_font = font.Font(family="Helvetica", size=10, weight="bold")
 title_font = font.Font(family="Helvetica", size=14, weight="bold")
