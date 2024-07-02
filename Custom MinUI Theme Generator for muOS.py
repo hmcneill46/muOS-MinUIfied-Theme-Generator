@@ -93,16 +93,6 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
 
                 image.paste(boxArtImage,pasteLocation,boxArtImage)
                 boxArtDrawn = True
-            elif (box_art_directory_path.get()=="" and (os.path.exists(os.path.join(catalogue_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")))):
-                originalBoxArtImage = Image.open(os.path.join(catalogue_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")).convert("RGBA")
-                boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
-                
-                pasteLocation = (int((width*render_factor)-boxArtImage.width),int(((height*render_factor)-boxArtImage.height)/2))
-
-                boxArtWidth = originalBoxArtImage.width
-
-                image.paste(boxArtImage,pasteLocation,boxArtImage)
-                boxArtDrawn = True
         else:
             if os.path.exists(os.path.join(box_art_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")):
                 originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")).convert("RGBA")
@@ -113,16 +103,6 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
                 boxArtWidth = originalBoxArtImage.width
 
 
-                image.paste(boxArtImage,pasteLocation,boxArtImage)
-                boxArtDrawn = True
-            elif (box_art_directory_path.get()=="" and (os.path.exists(os.path.join(catalogue_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")))):
-                originalBoxArtImage = Image.open(os.path.join(catalogue_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")).convert("RGBA")
-                boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
-                
-                pasteLocation = (int((width*render_factor)-boxArtImage.width),int(((height*render_factor)-boxArtImage.height)/2))
-
-                boxArtWidth = originalBoxArtImage.width
-                
                 image.paste(boxArtImage,pasteLocation,boxArtImage)
                 boxArtDrawn = True
 
