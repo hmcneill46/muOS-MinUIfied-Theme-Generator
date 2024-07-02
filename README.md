@@ -27,6 +27,7 @@ Before running this script, ensure you have the following installed:
    
  - To use the tool without the SD card, copy your **ROMS** folder from the card to your computers local storage for future use.
  - **Make sure** your box art on your device is set to **middle+front**, otherwise the content explorer UI can behave strangely
+ - To run the program you must download this repo as a zip, unzip it, and then run the .py file with python
 
 # Configuration
 
