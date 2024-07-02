@@ -662,6 +662,7 @@ def getNameConvertionList(file_path):
             return data
         except:
             return []
+    return []
 
 def list_directory_contents(directory_path):
     names_data = getNameConvertionList(name_json_path.get())
