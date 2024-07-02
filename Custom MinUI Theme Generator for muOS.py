@@ -678,7 +678,7 @@ def list_directory_contents(directory_path):
                 if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
                     directoryItemList.append([item_name, item_type,item_name])
             else:
-                if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
+                if not(item_extension.lower() == ".pcm" or item_extension.lower() == ".msu") and (not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get()):
                     sort_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name+item_extension
                     display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
                     fileItemList.append([item_name, item_type, display_name, sort_name])
