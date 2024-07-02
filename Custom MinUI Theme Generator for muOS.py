@@ -1073,6 +1073,43 @@ menus2405_1 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["Configuration","config"],
                      ["Reboot Device","reboot"],
                      ["Shutdown Device","shutdown"]]]]
+menus2405_2 = [["muxapp",[["Archive Manager","Archive Manager"],
+                     ["Dingux Commander","Dingux Commander"],
+                     ["Flip Clock","Flip Clock"],
+                     ["GMU Music Player","GMU Music Player"],
+                     ["PortMaster","PortMaster"],
+                     ["RetroArch","RetroArch"],
+                     ["Simple Terminal","Simple Terminal"],
+                     ["Task Toolkit","Task Toolkit"]]],
+         ["muxconfig",[["General Settings","general"],
+                     ["Theme Picker","theme"],
+                     ["WiFi Settings","network"],
+                     ["Web Services","service"],
+                     ["Date and Time","clock"],
+                     ["Device Type","device"]]],
+         ["muxdevice",[["RG35XX - H","rg35xx-h"],
+                     ["RG35XX - Plus","rg35xx-plus"],
+                     ["RG35XX - SP","rg35xx-sp"],
+                     ["RG35XX - 2024","rg35xx-2024"]]],
+         ["muxinfo",[["Input Tester","tester"],
+                     ["System Details","system"],
+                     ["Supporters","credit"]]],
+         ["muxlaunch",[["Content Explorer","explore"],
+                     ["Favourites","favourite"],
+                     ["History","history"],
+                     ["Applications","apps"],
+                     ["Information","info"],
+                     ["Configuration","config"],
+                     ["Reboot Device","reboot"],
+                     ["Shutdown Device","shutdown"]]],
+         ["ThemePreview",[["Content Explorer","explore"],
+                     ["Favourites","favourite"],
+                     ["History","history"],
+                     ["Applications","apps"],
+                     ["Information","info"],
+                     ["Configuration","config"],
+                     ["Reboot Device","reboot"],
+                     ["Shutdown Device","shutdown"]]]]
 
 def replace_in_file(file_path, search_string, replace_string):
     try:
@@ -1238,9 +1275,9 @@ def FillTempThemeFolder(progress_bar):
         workingMenus = menus2405
     if version_var.get() == "muOS 2405.1 REFRIED BEANS":
         workingMenus = menus2405_1
-    if version_var.get() == "Select an option":
-        raise ValueError("You Haven't Selected a muOS Version")
-    if version_var.get() == "":
+    if version_var.get() == "muOS 2405.2 BAKED BEANS [TESTING]":
+        workingMenus = menus2405_2
+    else:
         raise ValueError("You Haven't Selected a muOS Version")
     for index, menu in enumerate(workingMenus):
         itemsList.append([])
@@ -1637,7 +1674,7 @@ grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Theme Specific Configurations", font=subtitle_font), sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
-options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS"]
+options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS [TESTING]"]
 option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
