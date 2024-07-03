@@ -12,6 +12,7 @@ import threading
 import queue
 import time
 import json
+import subprocess
 
 #HI
 # Default values for parameters
@@ -1258,7 +1259,28 @@ def FillTempThemeFolder(progress_bar):
 
     else:
         replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+    if False: ## Testing converting font in generator
+        try:
+            # Define the command
+            command = [
+                'lv_font_conv',
+                '--bpp', '4',
+                '--size', str(40),
+                '--font', os.path.join(script_dir, "Font", "BPreplayBold-unhinted.otf"),
+                '-r', '0x20-0x7F',
+                '--format', 'bin',
+                '--no-compress',
+                '--no-prefilter',
+                '-o', os.path.join(script_dir, ".TempBuildTheme", "font","default.bin")
+            ]
 
+            # Execute the command
+            result = subprocess.run(command,shell=True )
+
+        except FileNotFoundError as e:
+            print(f"FileNotFoundError: {e}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
     
     itemsList = []
     if version_var.get() == "muOS 2405 BEANS":
@@ -1481,11 +1503,14 @@ def start_theme_task():
     progress_bar = ttk.Progressbar(loading_window, orient="horizontal", length=280, mode="determinate")
     progress_bar.pack(pady=20)
 
+    input_queue = queue.Queue()
+    output_queue = queue.Queue()
+
     # Start the long-running task in a separate thread
     threading.Thread(target=generate_theme, args=(progress_bar, loading_window)).start()
 
     # Check the queue periodically
-    root.after(100, check_queue, root)
+    root.after(100, check_queue, root, input_queue, output_queue)
 
 
 
@@ -1733,7 +1758,7 @@ grid_helper.add(tk.Label(scrollable_frame, text="*[IMPORTANT] THIS WILL OVERRIDE
 
 grid_helper.add(tk.Label(scrollable_frame, text="*[IMPORTANT] Note selecting this option will make favourite and history messed up.\nOnly use this if you don't use Favourites and History, or you just want to experiment.", fg='#f00'), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="*Games may also appear in the wrong order if you do not use name.json", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="*Games may also appear in the wrong order", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
 
 
 # Spacer row
@@ -1887,7 +1912,7 @@ def on_change(*args):
     previousDirectories = os.path.join(script_dir,"PreviousDirectories.txt")
     with open(previousDirectories, 'w') as file: # clear file
         pass
-    variablesToSave = ["roms_directory_path","box_art_directory_path","version_var","am_theme_directory_path","theme_directory_path","catalogue_directory_path"]
+    variablesToSave = ["roms_directory_path","name_json_path","box_art_directory_path","version_var","am_theme_directory_path","theme_directory_path","catalogue_directory_path"]
     for variableName in variablesToSave:
         with open(previousDirectories, 'a') as file:
             file.write(f'{variableName}:={eval(f"{variableName}.get()")}\n')
