@@ -67,6 +67,7 @@ class Config:
         with open(self.config_file, 'w') as file:
             json.dump(self.__dict__, file, indent=4)
 
+background_image = None
 
 # Define constants
 render_factor = 5
