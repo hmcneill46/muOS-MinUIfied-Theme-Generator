@@ -50,9 +50,12 @@ class Config:
         self.theme_directory_path = ""
         self.catalogue_directory_path = ""
         self.name_json_path = ""
-        self.background_image_path = None
+        self.background_image_path = ""
         self.themeName = "MinUIfied - Default Theme"
         self.amThemeName = "MinUIfied - Default AM Theme"
+        self.am_ignore_theme_var = False
+        self.am_ignore_cd_var = False
+        self.advanced_error_var = False
         self.load_config()
 
     def load_config(self):
@@ -1909,11 +1912,11 @@ def on_change(*args):
     save_settings()
     config.save_config()
     global background_image
-    old_background_image_path = ""
 
-    if (old_background_image_path != background_image_path.get()) and os.path.exists(background_image_path.get()):
+    if ("" != background_image_path.get()) and os.path.exists(background_image_path.get()):
         background_image = Image.open(background_image_path.get())
-        old_background_image_path = background_image_path.get()
+    else:
+        background_image = None
 
     global valid_params
     
@@ -2118,6 +2121,9 @@ def save_settings():
     config.background_image_path = background_image_path.get()
     config.themeName = theme_name_entry.get()
     config.amThemeName = am_theme_name_entry.get()
+    config.am_ignore_theme_var = am_ignore_theme_var.get()
+    config.am_ignore_cd_var = am_ignore_cd_var.get()
+    config.advanced_error_var = advanced_error_var.get()
 
 def load_settings():
     scrollBarWidthVar.set(config.scrollBarWidthVar)
@@ -2156,6 +2162,10 @@ def load_settings():
     theme_name_entry.insert(0, config.themeName)
     am_theme_name_entry.delete(0, tk.END)
     am_theme_name_entry.insert(0, config.amThemeName)
+    am_ignore_theme_var.set(config.am_ignore_theme_var)
+    am_ignore_cd_var.set(config.am_ignore_cd_var)
+    advanced_error_var.set(config.advanced_error_var)
+
 
 config = Config()
 load_settings()
@@ -2193,6 +2203,9 @@ theme_directory_path.trace("w",on_change)
 catalogue_directory_path.trace("w",on_change)
 name_json_path.trace("w",on_change)
 background_image_path.trace("w",on_change)
+am_ignore_theme_var.trace("w",on_change)
+am_ignore_cd_var.trace("w",on_change)
+advanced_error_var.trace("w",on_change)
 
 
 on_change()
