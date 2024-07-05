@@ -6,6 +6,7 @@ Generated Theme/
 # Ignore specific files
 PreviousDirectories.txt
 ConsoleAssociations.txt
+MinUIThemeGeneratorConfig.json
 
 # macOS specific files
 .DS_Store
