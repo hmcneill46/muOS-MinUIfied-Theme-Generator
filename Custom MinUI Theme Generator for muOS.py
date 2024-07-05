@@ -16,25 +16,61 @@ import subprocess
 
 #HI
 # Default values for parameters
-scrollBarWidth = 10
-textLeftPadding = 30
-bubblePadding = 25
-itemsPerScreen = 8
-bg_hex = "000000"
-selected_font_hex = "000000"
-deselected_font_hex = "ffffff"
-bubble_hex = "ffffff"
-icon_hex = "ffffff"
-render_factor = 5
-maxBubbleLength = 640
-previewConsoleName = "Nintendo Game Boy"
+class Config:
+    def __init__(self, config_file='MinUIThemeGeneratorConfig.json'):
+        self.config_file = config_file
+        self.scrollBarWidthVar = 10
+        self.textLeftPaddingVar = 30
+        self.bubblePaddingVar = 25
+        self.itemsPerScreenVar = 8
+        self.bgHexVar = "000000"
+        self.selectedFontHexVar = "000000"
+        self.deselectedFontHexVar = "ffffff"
+        self.bubbleHexVar = "ffffff"
+        self.iconHexVar = "ffffff"
+        self.remove_brackets_var = False
+        self.remove_square_brackets_var = False
+        self.replace_hyphen_var = False
+        self.also_games_var = False
+        self.move_the_var = False
+        self.crt_overlay_var = False
+        self.remove_right_menu_guides_var = False
+        self.remove_left_menu_guides_var = False
+        self.overlay_box_art_var = False
+        self.box_art_directory_path = ""
+        self.maxBubbleLengthVar = 640
+        self.roms_directory_path = ""
+        self.previewConsoleNameVar = "Nintendo Game Boy"
+        self.show_hidden_files_var = False
+        self.vertical_var = False
+        self.override_bubble_cut_var = False
+        self.page_by_page_var = False
+        self.version_var = ""
+        self.am_theme_directory_path = ""
+        self.theme_directory_path = ""
+        self.catalogue_directory_path = ""
+        self.name_json_path = ""
+        self.background_image_path = None
+        self.themeName = "MinUIfied - Default Theme"
+        self.amThemeName = "MinUIfied - Default AM Theme"
+        self.load_config()
 
-themeName = "MinUIfied - Default Theme"
-amThemeName = "MinUIfied - Default AM Theme"
+    def load_config(self):
+        if os.path.exists(self.config_file):
+            with open(self.config_file, 'r') as file:
+                config_data = json.load(file)
+                self.__dict__.update(config_data)
+        else:
+            self.save_config()
+
+    def save_config(self):
+        with open(self.config_file, 'w') as file:
+            json.dump(self.__dict__, file, indent=4)
 
 background_image = None
 
 # Define constants
+render_factor = 5
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 width, height = 640, 480
@@ -1415,7 +1451,6 @@ def check_queue(root, input_queue, output_queue):
         pass
     root.after(100, check_queue, root, input_queue, output_queue)
 
-
 class GridHelper:
     def __init__(self, root):
         self.root = root
@@ -1553,24 +1588,6 @@ am_ignore_theme_var = tk.IntVar()
 am_ignore_cd_var = tk.IntVar()
 advanced_error_var = tk.IntVar()
 
-def setPreviousValues():
-    previousDirectories = os.path.join(script_dir,"PreviousDirectories.txt")
-    if not os.path.exists(previousDirectories):
-        open(previousDirectories, 'a').close()
-    with open(previousDirectories, 'r') as file:
-        for line in file:
-            try:
-                exec(f"{line.split(':=')[0].strip()}.set('{line.split(':=')[1].strip()}')")
-                #print(f"change {line.split(':=')[0].strip()} to {line.split(':=')[1].strip()}")
-            except Exception as e:
-                if advanced_error_var.get():
-                    tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
-                    return f"ERROR: Something went wrong with restoring the previous state:\n{e}\n{tb_str}"
-                else:
-                    return f"ERROR: Something went wrong with restoring the previous state:\n{e}"
-
-setPreviousValues()
-
 # Create a canvas and a vertical scrollbar
 canvas = tk.Canvas(root)
 
@@ -1626,55 +1643,46 @@ previewConsoleNameVar = tk.StringVar()
 # Option for scrollBarWidth
 grid_helper.add(tk.Label(scrollable_frame, text="Scroll Bar Width:"), sticky="w")
 scroll_bar_width_entry = tk.Entry(scrollable_frame, width=50, textvariable=scrollBarWidthVar)
-scrollBarWidthVar.set(str(scrollBarWidth))
 grid_helper.add(scroll_bar_width_entry, next_row=True)
 
 # Option for textLeftPadding
 grid_helper.add(tk.Label(scrollable_frame, text="Text Left Padding:"), sticky="w")
 text_left_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=textLeftPaddingVar)
-textLeftPaddingVar.set(str(textLeftPadding))
 grid_helper.add(text_left_padding_entry, next_row=True)
 
 # Option for rectanglePadding
 grid_helper.add(tk.Label(scrollable_frame, text="Bubble Padding:"), sticky="w")
 rectangle_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubblePaddingVar)
-bubblePaddingVar.set(str(bubblePadding))
 grid_helper.add(rectangle_padding_entry, next_row=True)
 
 # Option for ItemsPerScreen
 grid_helper.add(tk.Label(scrollable_frame, text="Items Per Screen:"), sticky="w")
 items_per_screen_entry = tk.Entry(scrollable_frame, width=50, textvariable=itemsPerScreenVar)
-itemsPerScreenVar.set(str(itemsPerScreen))
 grid_helper.add(items_per_screen_entry, next_row=True)
 
 # Option for Background Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Background Hex Colour: #"), sticky="w")
 background_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=bgHexVar)
-bgHexVar.set(str(bg_hex))
 grid_helper.add(background_hex_entry, next_row=True)
 
 # Option for Selected Font Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Selected Font Hex Colour: #"), sticky="w")
 selected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=selectedFontHexVar)
-selectedFontHexVar.set(str(selected_font_hex))
 grid_helper.add(selected_font_hex_entry, next_row=True)
 
 # Option for Deselected Font Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Deselected Font Hex Colour: #"), sticky="w")
 deselected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=deselectedFontHexVar)
-deselectedFontHexVar.set(str(deselected_font_hex))
 grid_helper.add(deselected_font_hex_entry, next_row=True)
 
 # Option for Bubble Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Bubble Hex Colour: #"), sticky="w")
 bubble_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubbleHexVar)
-bubbleHexVar.set(str(bubble_hex))
 grid_helper.add(bubble_hex_entry, next_row=True)
 
 # Option for Icon Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Icon Hex Colour: #"), sticky="w")
 icon_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=iconHexVar)
-iconHexVar.set(str(icon_hex))
 grid_helper.add(icon_hex_entry, next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Page by Page Scrolling", variable=page_by_page_var), colspan=3, sticky="w", next_row=True)
@@ -1714,14 +1722,12 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="Override Auto Cut Bubble 
 grid_helper.add(tk.Label(scrollable_frame, text=" - Cut bubble off at (px):"), sticky="w")
 
 max_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxBubbleLengthVar)
-maxBubbleLengthVar.set(str(maxBubbleLength))
 grid_helper.add(max_bubble_length_entry, next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text=" - This would usually be 640-width of your boxart",fg="#00f"), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Preview muOS Console name [Just for preview on the right]:"), sticky="w")
 preview_console_name_entry = tk.Entry(scrollable_frame, width=50, textvariable=previewConsoleNameVar)
-previewConsoleNameVar.set(str(previewConsoleName))
 grid_helper.add(preview_console_name_entry, next_row=True)
 
 # Spacer row
@@ -1772,7 +1778,6 @@ grid_helper.add(tk.Label(scrollable_frame, text="Make sure your box art setting 
 
 grid_helper.add(tk.Label(scrollable_frame, text="Archive Manager Theme Name:"), sticky="w")
 am_theme_name_entry = tk.Entry(scrollable_frame, width=50)
-am_theme_name_entry.insert(0, str(amThemeName))
 grid_helper.add(am_theme_name_entry, next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Archive Manager Output Directory:"), sticky="w")
@@ -1793,7 +1798,6 @@ grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Theme only generation", font=subtitle_font), colspan=2, sticky="w", next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Theme Name:"), sticky="w")
 theme_name_entry = tk.Entry(scrollable_frame, width=50)
-theme_name_entry.insert(0, str(themeName))
 grid_helper.add(theme_name_entry, next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Themes Output Directory:"), sticky="w")
@@ -1902,6 +1906,8 @@ valid_params = True
 crt_overlay_image = Image.open(os.path.join(script_dir,"Overlays", "CRT Overlay.png")).convert("RGBA")
 
 def on_change(*args):
+    save_settings()
+    config.save_config()
     global background_image
     old_background_image_path = ""
 
@@ -1909,13 +1915,6 @@ def on_change(*args):
         background_image = Image.open(background_image_path.get())
         old_background_image_path = background_image_path.get()
 
-    previousDirectories = os.path.join(script_dir,"PreviousDirectories.txt")
-    with open(previousDirectories, 'w') as file: # clear file
-        pass
-    variablesToSave = ["roms_directory_path","name_json_path","box_art_directory_path","version_var","am_theme_directory_path","theme_directory_path","catalogue_directory_path"]
-    for variableName in variablesToSave:
-        with open(previousDirectories, 'a') as file:
-            file.write(f'{variableName}:={eval(f"{variableName}.get()")}\n')
     global valid_params
     
     fakeprogressbar={'value':0}
@@ -2084,6 +2083,82 @@ def on_change(*args):
     # Add your code here to handle the changes
 
 
+def save_settings():
+    config.scrollBarWidthVar = scrollBarWidthVar.get()
+    config.textLeftPaddingVar = textLeftPaddingVar.get()
+    config.bubblePaddingVar = bubblePaddingVar.get()
+    config.itemsPerScreenVar = itemsPerScreenVar.get()
+    config.bgHexVar = bgHexVar.get()
+    config.selectedFontHexVar = selectedFontHexVar.get()
+    config.deselectedFontHexVar = deselectedFontHexVar.get()
+    config.bubbleHexVar = bubbleHexVar.get()
+    config.iconHexVar = iconHexVar.get()
+    config.remove_brackets_var = remove_brackets_var.get()
+    config.remove_square_brackets_var = remove_square_brackets_var.get()
+    config.replace_hyphen_var = replace_hyphen_var.get()
+    config.also_games_var = also_games_var.get()
+    config.move_the_var = move_the_var.get()
+    config.crt_overlay_var = crt_overlay_var.get()
+    config.remove_right_menu_guides_var = remove_right_menu_guides_var.get()
+    config.remove_left_menu_guides_var = remove_left_menu_guides_var.get()
+    config.overlay_box_art_var = overlay_box_art_var.get()
+    config.box_art_directory_path = box_art_directory_path.get()
+    config.maxBubbleLengthVar = maxBubbleLengthVar.get()
+    config.roms_directory_path = roms_directory_path.get()
+    config.previewConsoleNameVar = previewConsoleNameVar.get()
+    config.show_hidden_files_var = show_hidden_files_var.get()
+    config.vertical_var = vertical_var.get()
+    config.override_bubble_cut_var = override_bubble_cut_var.get()
+    config.page_by_page_var = page_by_page_var.get()
+    config.version_var = version_var.get()
+    config.am_theme_directory_path = am_theme_directory_path.get()
+    config.theme_directory_path = theme_directory_path.get()
+    config.catalogue_directory_path = catalogue_directory_path.get()
+    config.name_json_path = name_json_path.get()
+    config.background_image_path = background_image_path.get()
+    config.themeName = theme_name_entry.get()
+    config.amThemeName = am_theme_name_entry.get()
+
+def load_settings():
+    scrollBarWidthVar.set(config.scrollBarWidthVar)
+    textLeftPaddingVar.set(config.textLeftPaddingVar)
+    bubblePaddingVar.set(config.bubblePaddingVar)
+    itemsPerScreenVar.set(config.itemsPerScreenVar)
+    bgHexVar.set(config.bgHexVar)
+    selectedFontHexVar.set(config.selectedFontHexVar)
+    deselectedFontHexVar.set(config.deselectedFontHexVar)
+    bubbleHexVar.set(config.bubbleHexVar)
+    iconHexVar.set(config.iconHexVar)
+    remove_brackets_var.set(config.remove_brackets_var)
+    remove_square_brackets_var.set(config.remove_square_brackets_var)
+    replace_hyphen_var.set(config.replace_hyphen_var)
+    also_games_var.set(config.also_games_var)
+    move_the_var.set(config.move_the_var)
+    crt_overlay_var.set(config.crt_overlay_var)
+    remove_right_menu_guides_var.set(config.remove_right_menu_guides_var)
+    remove_left_menu_guides_var.set(config.remove_left_menu_guides_var)
+    overlay_box_art_var.set(config.overlay_box_art_var)
+    box_art_directory_path.set(config.box_art_directory_path)
+    maxBubbleLengthVar.set(config.maxBubbleLengthVar)
+    roms_directory_path.set(config.roms_directory_path)
+    previewConsoleNameVar.set(config.previewConsoleNameVar)
+    show_hidden_files_var.set(config.show_hidden_files_var)
+    vertical_var.set(config.vertical_var)
+    override_bubble_cut_var.set(config.override_bubble_cut_var)
+    page_by_page_var.set(config.page_by_page_var)
+    version_var.set(config.version_var)
+    am_theme_directory_path.set(config.am_theme_directory_path)
+    theme_directory_path.set(config.theme_directory_path)
+    catalogue_directory_path.set(config.catalogue_directory_path)
+    name_json_path.set(config.name_json_path)
+    background_image_path.set(config.background_image_path)
+    theme_name_entry.delete(0, tk.END)
+    theme_name_entry.insert(0, config.themeName)
+    am_theme_name_entry.delete(0, tk.END)
+    am_theme_name_entry.insert(0, config.amThemeName)
+
+config = Config()
+load_settings()
 
 # Attach trace callbacks to the variables
 scrollBarWidthVar.trace("w", on_change)
