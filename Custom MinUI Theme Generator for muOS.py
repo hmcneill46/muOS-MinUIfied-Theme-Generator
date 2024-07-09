@@ -289,9 +289,9 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
         text_width = 2000*render_factor
         text = item[0][:]
         text_color = f"#{selected_font_hex}" if index == workingIndex else f"#{deselected_font_hex}"
-        if mergeBoxArt and boxArtDrawn and override_bubble_cut_var.get():
+        if boxArtDrawn and override_bubble_cut_var.get():
             maxBubbleLength = maxBubbleLengthVar.get()
-        elif mergeBoxArt and boxArtDrawn:
+        elif boxArtDrawn:
             maxBubbleLength = 635 - boxArtWidth
         else:
             maxBubbleLength = 640
