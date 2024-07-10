@@ -56,6 +56,7 @@ class Config:
         self.am_ignore_theme_var = False
         self.am_ignore_cd_var = False
         self.advanced_error_var = False
+        self.show_file_counter_var = False
         self.load_config()
 
     def load_config(self):
@@ -104,7 +105,7 @@ def change_logo_color(input_path, hex_color):
     
     return result_image
 
-def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,additions,textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,mergeBoxArt=True):
+def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,additions,textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,mergeBoxArt=True,fileCounter=""):
     progress_bar['value'] +=1
     #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
@@ -145,6 +146,7 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
 
                 image.paste(boxArtImage,pasteLocation,boxArtImage)
                 boxArtDrawn = True
+
 
     font_path = os.path.join(script_dir, "Font", "BPreplayBold-unhinted.otf")
     if additions != "Blank" and version_var.get() == "muOS 2405 BEANS" and not remove_right_menu_guides_var.get(): ## muOS Beans shit
@@ -268,6 +270,16 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
 
                 draw.text(( 417.6*render_factor,436.2*render_factor), "B", font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
                 draw.text(( 449.4*render_factor,439*render_factor), "BACK", font=inBubbleFont, fill=f"#{bubble_hex}")
+    elif show_file_counter_var.get() == 1:
+        in_bubble_font_size = 19*render_factor
+        inBubbleFont = ImageFont.truetype(font_path, in_bubble_font_size)
+        bbox = draw.textbbox((0, 0), fileCounter, font=inBubbleFont)
+        text_width = bbox[2] - bbox[0]
+        right_aligned_position = 620 * render_factor
+        x = right_aligned_position - text_width
+        y = 447 * render_factor
+        draw.text(( x, y ), fileCounter, font=inBubbleFont, fill=f"#{bubble_hex}")    
+    
     font_size = (((height - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
     font = ImageFont.truetype(font_path, font_size)
 
@@ -277,9 +289,9 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
         text_width = 2000*render_factor
         text = item[0][:]
         text_color = f"#{selected_font_hex}" if index == workingIndex else f"#{deselected_font_hex}"
-        if mergeBoxArt and boxArtDrawn and override_bubble_cut_var.get():
+        if boxArtDrawn and override_bubble_cut_var.get():
             maxBubbleLength = maxBubbleLengthVar.get()
-        elif mergeBoxArt and boxArtDrawn:
+        elif boxArtDrawn:
             maxBubbleLength = 635 - boxArtWidth
         else:
             maxBubbleLength = 640
@@ -350,6 +362,7 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
             radius=corner_radius,
             fill=f"white"
         )
+           
     return(image)
 
 
@@ -360,6 +373,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
     
 
     for workingIndex, workingItem in enumerate(listItems):
+        
         if workingItem[1] == "Directory" or also_games_var.get() or workingItem[1] == "Menu" or workingItem[1] == "ThemePreview":
 
             # Load the base image
@@ -379,7 +393,8 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
                 startIndex = 0
                 endIndex = totalItems
                 focusIndex= workingIndex
-            image = generatePilImageVertical(progress_bar,focusIndex,muOSSystemName,listItems[startIndex:endIndex],additions,textLeftPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,mergeBoxArt=mergeBoxArt)
+            fileCounter = str(workingIndex + 1) + " / " + str(totalItems)
+            image = generatePilImageVertical(progress_bar,focusIndex,muOSSystemName,listItems[startIndex:endIndex],additions,textLeftPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,mergeBoxArt=mergeBoxArt,fileCounter=fileCounter)
                 
 
             if muOSSystemName != "ThemePreview":
@@ -424,7 +439,8 @@ def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scroll
                 showScrollBar = False
                 if numScreens > 1:  # Display Scroll Bar
                     showScrollBar = True
-                image = generatePilImageVertical(progress_bar,workingIndex%ItemsPerScreen,muOSSystemName,listItems[startIndex:endIndex],additions,textLeftPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,scrollBarWidth=scrollBarWidth,showScrollBar=showScrollBar,numScreens=numScreens,screenIndex=screenIndex,mergeBoxArt=mergeBoxArt)
+                fileCounter = str(workingIndex + 1) + " / " + str(totalItems)
+                image = generatePilImageVertical(progress_bar,workingIndex%ItemsPerScreen,muOSSystemName,listItems[startIndex:endIndex],additions,textLeftPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,scrollBarWidth=scrollBarWidth,showScrollBar=showScrollBar,numScreens=numScreens,screenIndex=screenIndex,mergeBoxArt=mergeBoxArt,fileCounter=fileCounter)
                 if muOSSystemName != "ThemePreview":
                     image = image.resize((width, height), Image.LANCZOS)
                     if workingItem[1] == "File":
@@ -718,7 +734,7 @@ def list_directory_contents(directory_path):
                 if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
                     directoryItemList.append([item_name, item_type,item_name])
             else:
-                if not(item_extension.lower() == ".pcm" or item_extension.lower() == ".msu") and (not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get()):
+                if not(item_extension.lower() == ".pcm" or item_extension.lower() == ".msu" or item_extension.lower() == ".ips") and (not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get()):
                     sort_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name+item_extension
                     display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
                     fileItemList.append([item_name, item_type, display_name, sort_name])
@@ -1577,6 +1593,7 @@ theme_directory_path = tk.StringVar()
 am_theme_directory_path = tk.StringVar()
 version_var = tk.StringVar()
 also_games_var = tk.IntVar()
+show_file_counter_var = tk.IntVar()
 show_hidden_files_var = tk.IntVar()
 vertical_var = tk.IntVar()
 crt_overlay_var = tk.IntVar()
@@ -1763,13 +1780,17 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="Put 'The' At the start, i
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Show hidden Content", variable=show_hidden_files_var), sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Also Generate Images for Game List**", variable=also_games_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Also Generate Images for Game List**", variable=also_games_var), sticky="w")
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show File Counter***", variable=show_file_counter_var), sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="*[IMPORTANT] THIS WILL OVERRIDE YOUR GAME BOX ART... MAKE A BACKUP OF THE WHOLE CATALOGUE FOLDER.", fg='#f00'), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="*[IMPORTANT] Note selecting this option will make favourite and history messed up.\nOnly use this if you don't use Favourites and History, or you just want to experiment.", fg='#f00'), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="*Games may also appear in the wrong order", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="***In order for File Counter to be visible box art must be set to 'Fullscreen + Front'", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
 
 
 # Spacer row
@@ -2004,7 +2025,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,mergeBoxArt=consoleBoxArtFound).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            ,1,mergeBoxArt=consoleBoxArtFound,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
             image3 = generatePilImageVertical(fakeprogressbar,0,
                                             consoleName,
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
@@ -2016,7 +2037,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,mergeBoxArt=gameBoxArtFound).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            ,1,mergeBoxArt=gameBoxArtFound,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
         else:
             image2 = generatePilImageVertical(fakeprogressbar,0,
                                             "Folder",
@@ -2033,7 +2054,7 @@ def on_change(*args):
                                             scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewConsolesItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewConsolesItemList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
             image3 = generatePilImageVertical(fakeprogressbar,0,
                                             consoleName,
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
@@ -2049,7 +2070,7 @@ def on_change(*args):
                                             scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewGameItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewGameItemList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
         if not(vertical_var.get()):
             image4 = generatePilImageHorizontal(fakeprogressbar,4,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize((int(width/2), int(height/2)), Image.LANCZOS)
 
@@ -2126,6 +2147,7 @@ def save_settings():
     config.am_ignore_theme_var = am_ignore_theme_var.get()
     config.am_ignore_cd_var = am_ignore_cd_var.get()
     config.advanced_error_var = advanced_error_var.get()
+    config.show_file_counter_var = show_file_counter_var.get()
 
 def load_settings():
     scrollBarWidthVar.set(config.scrollBarWidthVar)
@@ -2167,6 +2189,7 @@ def load_settings():
     am_ignore_theme_var.set(config.am_ignore_theme_var)
     am_ignore_cd_var.set(config.am_ignore_cd_var)
     advanced_error_var.set(config.advanced_error_var)
+    show_file_counter_var.set(config.show_file_counter_var)
 
 
 config = Config()
@@ -2186,6 +2209,7 @@ remove_brackets_var.trace("w", on_change)
 remove_square_brackets_var.trace("w", on_change)
 replace_hyphen_var.trace("w", on_change)
 also_games_var.trace("w", on_change)
+show_file_counter_var.trace("w", on_change)
 move_the_var.trace("w", on_change)
 crt_overlay_var.trace("w", on_change)
 remove_right_menu_guides_var.trace("w", on_change)
