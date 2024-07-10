@@ -45,7 +45,7 @@ class Config:
         self.vertical_var = False
         self.override_bubble_cut_var = False
         self.page_by_page_var = False
-        self.version_var = ""
+        self.version_var = "Select a version"
         self.am_theme_directory_path = ""
         self.theme_directory_path = ""
         self.catalogue_directory_path = ""
@@ -1780,17 +1780,17 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="Put 'The' At the start, i
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Show hidden Content", variable=show_hidden_files_var), sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Also Generate Images for Game List**", variable=also_games_var), sticky="w")
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Also Generate Images for Game List *", variable=also_games_var), sticky="w")
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show File Counter***", variable=show_file_counter_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show File Counter **", variable=show_file_counter_var), sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="*[IMPORTANT] THIS WILL OVERRIDE YOUR GAME BOX ART... MAKE A BACKUP OF THE WHOLE CATALOGUE FOLDER.", fg='#f00'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="* [IMPORTANT] THIS WILL OVERRIDE YOUR GAME BOX ART... MAKE A BACKUP OF THE WHOLE CATALOGUE FOLDER.", fg='#f00'), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="*[IMPORTANT] Note selecting this option will make favourite and history messed up.\nOnly use this if you don't use Favourites and History, or you just want to experiment.", fg='#f00'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="* [IMPORTANT] Note selecting this option will make favourite and history messed up.\nOnly use this if you don't use Favourites and History, or you just want to experiment.", fg='#f00'), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="*Games may also appear in the wrong order", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="* Games may also appear in the wrong order", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="***In order for File Counter to be visible box art must be set to 'Fullscreen + Front'", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="** In order for File Counter to be visible box art must be set to 'Fullscreen + Front'", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
 
 
 # Spacer row
