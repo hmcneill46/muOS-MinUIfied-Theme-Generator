@@ -108,7 +108,7 @@ def change_logo_color(input_path, hex_color):
     
     return result_image
 
-def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,additions,textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,mergeBoxArt=True,fileCounter=""):
+def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,additions,textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,fileCounter=""):
     progress_bar['value'] +=1
     #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
@@ -369,7 +369,7 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
     return(image)
 
 
-def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir,mergeBoxArt = True):
+def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir):
     totalItems = len(listItems)
     scrollBarHeight = (height - footerHeight - headerHeight)
 
@@ -397,7 +397,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
                 endIndex = totalItems
                 focusIndex= workingIndex
             fileCounter = str(workingIndex + 1) + " / " + str(totalItems)
-            image = generatePilImageVertical(progress_bar,focusIndex,muOSSystemName,listItems[startIndex:endIndex],additions,textLeftPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,mergeBoxArt=mergeBoxArt,fileCounter=fileCounter)
+            image = generatePilImageVertical(progress_bar,focusIndex,muOSSystemName,listItems[startIndex:endIndex],additions,textLeftPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,fileCounter=fileCounter)
                 
 
             if muOSSystemName != "ThemePreview":
@@ -424,7 +424,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
                         image.save(os.path.join(script_dir, "TempPreview.png"))
 
 
-def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir, mergeBoxArt=True):
+def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir):
     
     totalItems = len(listItems)
     numScreens = math.ceil(totalItems / ItemsPerScreen)
@@ -443,7 +443,7 @@ def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scroll
                 if numScreens > 1:  # Display Scroll Bar
                     showScrollBar = True
                 fileCounter = str(workingIndex + 1) + " / " + str(totalItems)
-                image = generatePilImageVertical(progress_bar,workingIndex%ItemsPerScreen,muOSSystemName,listItems[startIndex:endIndex],additions,textLeftPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,scrollBarWidth=scrollBarWidth,showScrollBar=showScrollBar,numScreens=numScreens,screenIndex=screenIndex,mergeBoxArt=mergeBoxArt,fileCounter=fileCounter)
+                image = generatePilImageVertical(progress_bar,workingIndex%ItemsPerScreen,muOSSystemName,listItems[startIndex:endIndex],additions,textLeftPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,scrollBarWidth=scrollBarWidth,showScrollBar=showScrollBar,numScreens=numScreens,screenIndex=screenIndex,fileCounter=fileCounter)
                 if muOSSystemName != "ThemePreview":
                     image = image.resize((width, height), Image.LANCZOS)
                     if workingItem[1] == "File":
@@ -861,7 +861,6 @@ def count_folders(directory):
 def traverse_and_generate_images(progress_bar, directory_path, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, input_queue, output_queue):
     items = list_directory_contents(directory_path)
     fileFound = False
-    boxArtFound = False
     
     for item in items:
         if item[1] == "File":
@@ -876,18 +875,12 @@ def traverse_and_generate_images(progress_bar, directory_path, additions, scroll
             consoleMap[folderName] = consoleName
             saveConsoleAssociationList()
 
-    for item in items:
-        if os.path.exists(os.path.join(box_art_directory_path.get(),consoleName,"box",item[0]+".png")):
-            boxArtFound = True
-        elif os.path.exists(os.path.join(box_art_directory_path.get(),"Folder","box",item[0]+".png")):
-            boxArtFound = True
-
     if len(items) > 0 and consoleName != "SKIP":
         if not (fileFound and also_games_var.get() == 0):
             if page_by_page_var.get():
-                PageFolderImageGen(progress_bar,consoleName, items, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, mergeBoxArt=boxArtFound)
+                PageFolderImageGen(progress_bar,consoleName, items, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory)
             else:
-                ContinuousFolderImageGen(progress_bar, consoleName, items, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, mergeBoxArt=boxArtFound)
+                ContinuousFolderImageGen(progress_bar, consoleName, items, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory)
 
     for item in items:
         item_name = item[0]
