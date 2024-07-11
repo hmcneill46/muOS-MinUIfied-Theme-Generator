@@ -13,6 +13,7 @@ import queue
 import time
 import json
 import subprocess
+import shutil
 
 #HI
 # Default values for parameters
@@ -76,6 +77,8 @@ background_image = None
 # Define constants
 render_factor = 5
 script_dir = os.path.dirname(os.path.abspath(__file__))
+ConsoleAssociationsPath = os.path.join(script_dir,"ConsoleAssociations.json")
+defaultConsoleAssociationsPath = os.path.join(script_dir,"_ConsoleAssociations.json")
 
 width, height = 640, 480
 headerHeight = 40
@@ -720,6 +723,23 @@ def getNameConvertionList(file_path):
             return []
     return []
 
+def getConsoleAssociationList():
+    if os.path.exists(defaultConsoleAssociationsPath) and not os.path.exists(ConsoleAssociationsPath):
+        shutil.copy(defaultConsoleAssociationsPath, ConsoleAssociationsPath)
+    if os.path.exists(ConsoleAssociationsPath):
+        try:
+            with open(ConsoleAssociationsPath, 'r') as file:
+                data = json.load(file)
+            data = {key.lower(): value for key, value in data.items()}
+            return data
+        except:
+            return []
+    return []
+
+def saveConsoleAssociationList():
+    with open(ConsoleAssociationsPath, 'w', newline='\n') as json_file:
+        json.dump(consoleMap, json_file, indent=2)         
+
 def list_directory_contents(directory_path):
     names_data = getNameConvertionList(name_json_path.get())
     fileItemList = []
@@ -848,17 +868,13 @@ def traverse_and_generate_images(progress_bar, directory_path, additions, scroll
             fileFound = True
     consoleName = "Folder"
     if fileFound and also_games_var.get() == 1: 
-        consoleName = "Folder"
-        
-        ConsoleAssociationsPath = os.path.join(script_dir,"ConsoleAssociations.txt")
-        if not os.path.exists(ConsoleAssociationsPath):
-            open(ConsoleAssociationsPath, 'a').close()
-        consoleName = get_console_name(ConsoleAssociationsPath, directory_path)
+        folderName = os.path.basename(directory_path).lower()
+        consoleName = consoleMap.get(folderName, None)
         if consoleName is None:
             input_queue.put(directory_path)
             consoleName = output_queue.get()
-            with open(ConsoleAssociationsPath, 'a') as file:
-                file.write(f'{directory_path}:={consoleName}\n')
+            consoleMap[folderName] = consoleName
+            saveConsoleAssociationList()
 
     for item in items:
         if os.path.exists(os.path.join(box_art_directory_path.get(),consoleName,"box",item[0]+".png")):
@@ -908,7 +924,7 @@ def select_console(directory_path):
             'SNK Neo Geo Pocket - Color', 'Sony PlayStation', 'Sony Playstation Portable', 'Texas Instruments TI-83', 'TIC-80', 
             'Uzebox', 'VeMUlator', 'Video Player', 'WASM-4', 'Watara Supervision', 'Wolfenstein 3D']
 
-    label = tk.Label(root, text=f"What console on muOS is this folder associated with: [{directory_path}]?")
+    label = tk.Label(root, text=f"What console on muOS is this folder associated with: [{os.path.basename(directory_path)}]?")
     label.pack(pady=10)
 
     frame = tk.Frame(root)
@@ -1947,9 +1963,7 @@ def on_change(*args):
     fakeprogressbar['maximum']=1
     # This function will run whenever any traced variable changes
     try:
-        gameBoxArtFound = True
-        consoleBoxArtFound = True
-        consoleName = previewConsoleNameVar.get()
+        consoleName = consoleMap.get(previewConsoleNameVar.get().lower(), previewConsoleNameVar.get())
         previewItemList = [['Content Explorer', 'Menu', 'explore'], ['Favourites', 'Menu', 'favourite'], ['History', 'Menu', 'history'], ['Applications', 'Menu', 'apps'], ['Information', 'Menu', 'info'], ['Configuration', 'Menu', 'config'], ['Reboot Device', 'Menu', 'reboot'], ['Shutdown Device', 'Menu', 'shutdown']]
         previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File', '4-in-1 Fun Pak [Version 1] (USA, Europe)'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File', '4-in-1 Funpak - Volume II (USA, Europe)'], ['A-mazing Tater (USA)', 'File', 'A-mazing Tater (USA)'], ['Addams Family, The (USA)', 'File', 'Addams Family, The (USA)'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File', "Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]"], ['Adventure Island (USA, Europe)', 'File', 'Adventure Island (USA, Europe)'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File', 'Adventure Island II - Aliens in Paradise (USA, Europe)'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File', 'Adventures of Rocky and Bullwinkle and Friends, The (USA)'], ['Adventures of Star Saver, The (USA, Europe)', 'File', 'Adventures of Star Saver, The (USA, Europe)'], ['Aerostar (USA, Europe)', 'File', 'Aerostar (USA, Europe)'], ['Aladdin (USA) (SGB Enhanced)', 'File', 'Aladdin (USA) (SGB Enhanced)'], ['Alfred Chicken (USA)', 'File', 'Alfred Chicken (USA)'], ['Alien 3 (USA, Europe)', 'File', 'Alien 3 (USA, Europe)'], ['Alien vs Predator - The Last of His Clan (USA)', 'File', 'Alien vs Predator - The Last of His Clan (USA)'], ['All-Star Baseball 99 (USA)', 'File', 'All-Star Baseball 99 (USA)'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File', 'Altered Space - A 3-D Alien Adventure (USA)'], ['Amazing Penguin (USA, Europe)', 'File', 'Amazing Penguin (USA, Europe)'], ['Amazing Spider-Man, The (USA, Europe)', 'File', 'Amazing Spider-Man, The (USA, Europe)'], ['Animaniacs (USA) (SGB Enhanced)', 'File', 'Animaniacs (USA) (SGB Enhanced)'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File', 'Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)'], ['Asteroids (USA, Europe)', 'File', 'Asteroids (USA, Europe)'], ['Atomic Punk (USA)', 'File', 'Atomic Punk (USA)'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File', 'Attack of the Killer Tomatoes (USA, Europe)'], ['Avenging Spirit (USA, Europe)', 'File', 'Avenging Spirit (USA, Europe)'], ['Balloon Kid (USA, Europe)', 'File', 'Balloon Kid (USA, Europe)'], ['Barbie - Game Girl (USA, Europe)', 'File', 'Barbie - Game Girl (USA, Europe)'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File', "Bart Simpson's Escape from Camp Deadly (USA, Europe)"], ['Bases Loaded for Game Boy (USA)', 'File', 'Bases Loaded for Game Boy (USA)'], ['Batman - Return of the Joker (USA, Europe)', 'File', 'Batman - Return of the Joker (USA, Europe)'], ['Batman - The Animated Series (USA, Europe)', 'File', 'Batman - The Animated Series (USA, Europe)'], ['Batman Forever (USA, Europe)', 'File', 'Batman Forever (USA, Europe)'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File', 'Battle Arena Toshinden (USA) (SGB Enhanced)'], ['Battle Bull (USA)', 'File', 'Battle Bull (USA)'], ['Battle Unit Zeoth (USA, Europe)', 'File', 'Battle Unit Zeoth (USA, Europe)'], ['Battleship (USA, Europe)', 'File', 'Battleship (USA, Europe)'], ['Battletoads (USA, Europe)', 'File', 'Battletoads (USA, Europe)'], ["Battletoads in Ragnarok's World (USA)", 'File', "Battletoads in Ragnarok's World (USA)"], ['Battletoads-Double Dragon (USA)', 'File', 'Battletoads-Double Dragon (USA)'], ['Beavis and Butt-Head (USA, Europe)', 'File', 'Beavis and Butt-Head (USA, Europe)'], ['Beetlejuice (USA)', 'File', 'Beetlejuice (USA)'], ['Best of the Best - Championship Karate (USA)', 'File', 'Best of the Best - Championship Karate (USA)'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File', "Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)"], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File', "Bill Elliott's NASCAR Fast Tracks (USA)"], ['Bionic Battler (USA)', 'File', 'Bionic Battler (USA)'], ['Bionic Commando (USA)', 'File', 'Bionic Commando (USA)'], ['Black Bass - Lure Fishing (USA)', 'File', 'Black Bass - Lure Fishing (USA)'], ['Blades of Steel (USA)', 'File', 'Blades of Steel (USA)'], ['Blaster Master Boy (USA)', 'File', 'Blaster Master Boy (USA)'], ['Blues Brothers, The (USA, Europe)', 'File', 'Blues Brothers, The (USA, Europe)'], ['Bo Jackson - Two Games in One (USA)', 'File', 'Bo Jackson - Two Games in One (USA)'], ['Boggle Plus (USA)', 'File', 'Boggle Plus (USA)'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File', 'Bomberman GB (USA, Europe) (SGB Enhanced)'], ["Bonk's Adventure (USA)", 'File', "Bonk's Adventure (USA)"], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File', "Bonk's Revenge (USA) (SGB Enhanced)"]]
 
@@ -1958,24 +1972,8 @@ def on_change(*args):
         else:
             previewConsolesItemList = list_directory_contents(roms_directory_path.get())
 
-            consoleName = "Folder"
-            consoleBoxArtFound = False
-
-            for item in previewConsolesItemList:
-                if os.path.exists(os.path.join(box_art_directory_path.get(),"Folder","box",item[2]+".png")):
-                    consoleBoxArtFound = True
             if os.path.exists(os.path.join(roms_directory_path.get(),previewConsolesItemList[0][0])):
                 previewGameItemList = list_directory_contents(os.path.join(roms_directory_path.get(),previewConsolesItemList[0][0]))
-
-                consoleName = "Folder"
-                gameBoxArtFound = False
-                consoleName = previewConsoleNameVar.get()
-
-                for item in previewGameItemList:
-                    if os.path.exists(os.path.join(box_art_directory_path.get(),consoleName,"box",item[2]+".png")):
-                        gameBoxArtFound = True
-                    elif os.path.exists(os.path.join(box_art_directory_path.get(),"Folder","box",item[2]+".png")):
-                        gameBoxArtFound = True
             else:
                 previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File', '4-in-1 Fun Pak [Version 1] (USA, Europe)'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File', '4-in-1 Funpak - Volume II (USA, Europe)'], ['A-mazing Tater (USA)', 'File', 'A-mazing Tater (USA)'], ['Addams Family, The (USA)', 'File', 'Addams Family, The (USA)'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File', "Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]"], ['Adventure Island (USA, Europe)', 'File', 'Adventure Island (USA, Europe)'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File', 'Adventure Island II - Aliens in Paradise (USA, Europe)'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File', 'Adventures of Rocky and Bullwinkle and Friends, The (USA)'], ['Adventures of Star Saver, The (USA, Europe)', 'File', 'Adventures of Star Saver, The (USA, Europe)'], ['Aerostar (USA, Europe)', 'File', 'Aerostar (USA, Europe)'], ['Aladdin (USA) (SGB Enhanced)', 'File', 'Aladdin (USA) (SGB Enhanced)'], ['Alfred Chicken (USA)', 'File', 'Alfred Chicken (USA)'], ['Alien 3 (USA, Europe)', 'File', 'Alien 3 (USA, Europe)'], ['Alien vs Predator - The Last of His Clan (USA)', 'File', 'Alien vs Predator - The Last of His Clan (USA)'], ['All-Star Baseball 99 (USA)', 'File', 'All-Star Baseball 99 (USA)'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File', 'Altered Space - A 3-D Alien Adventure (USA)'], ['Amazing Penguin (USA, Europe)', 'File', 'Amazing Penguin (USA, Europe)'], ['Amazing Spider-Man, The (USA, Europe)', 'File', 'Amazing Spider-Man, The (USA, Europe)'], ['Animaniacs (USA) (SGB Enhanced)', 'File', 'Animaniacs (USA) (SGB Enhanced)'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File', 'Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)'], ['Asteroids (USA, Europe)', 'File', 'Asteroids (USA, Europe)'], ['Atomic Punk (USA)', 'File', 'Atomic Punk (USA)'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File', 'Attack of the Killer Tomatoes (USA, Europe)'], ['Avenging Spirit (USA, Europe)', 'File', 'Avenging Spirit (USA, Europe)'], ['Balloon Kid (USA, Europe)', 'File', 'Balloon Kid (USA, Europe)'], ['Barbie - Game Girl (USA, Europe)', 'File', 'Barbie - Game Girl (USA, Europe)'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File', "Bart Simpson's Escape from Camp Deadly (USA, Europe)"], ['Bases Loaded for Game Boy (USA)', 'File', 'Bases Loaded for Game Boy (USA)'], ['Batman - Return of the Joker (USA, Europe)', 'File', 'Batman - Return of the Joker (USA, Europe)'], ['Batman - The Animated Series (USA, Europe)', 'File', 'Batman - The Animated Series (USA, Europe)'], ['Batman Forever (USA, Europe)', 'File', 'Batman Forever (USA, Europe)'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File', 'Battle Arena Toshinden (USA) (SGB Enhanced)'], ['Battle Bull (USA)', 'File', 'Battle Bull (USA)'], ['Battle Unit Zeoth (USA, Europe)', 'File', 'Battle Unit Zeoth (USA, Europe)'], ['Battleship (USA, Europe)', 'File', 'Battleship (USA, Europe)'], ['Battletoads (USA, Europe)', 'File', 'Battletoads (USA, Europe)'], ["Battletoads in Ragnarok's World (USA)", 'File', "Battletoads in Ragnarok's World (USA)"], ['Battletoads-Double Dragon (USA)', 'File', 'Battletoads-Double Dragon (USA)'], ['Beavis and Butt-Head (USA, Europe)', 'File', 'Beavis and Butt-Head (USA, Europe)'], ['Beetlejuice (USA)', 'File', 'Beetlejuice (USA)'], ['Best of the Best - Championship Karate (USA)', 'File', 'Best of the Best - Championship Karate (USA)'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File', "Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)"], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File', "Bill Elliott's NASCAR Fast Tracks (USA)"], ['Bionic Battler (USA)', 'File', 'Bionic Battler (USA)'], ['Bionic Commando (USA)', 'File', 'Bionic Commando (USA)'], ['Black Bass - Lure Fishing (USA)', 'File', 'Black Bass - Lure Fishing (USA)'], ['Blades of Steel (USA)', 'File', 'Blades of Steel (USA)'], ['Blaster Master Boy (USA)', 'File', 'Blaster Master Boy (USA)'], ['Blues Brothers, The (USA, Europe)', 'File', 'Blues Brothers, The (USA, Europe)'], ['Bo Jackson - Two Games in One (USA)', 'File', 'Bo Jackson - Two Games in One (USA)'], ['Boggle Plus (USA)', 'File', 'Boggle Plus (USA)'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File', 'Bomberman GB (USA, Europe) (SGB Enhanced)'], ["Bonk's Adventure (USA)", 'File', "Bonk's Adventure (USA)"], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File', "Bonk's Revenge (USA) (SGB Enhanced)"]]
 
@@ -2025,7 +2023,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,mergeBoxArt=consoleBoxArtFound,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
             image3 = generatePilImageVertical(fakeprogressbar,0,
                                             consoleName,
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
@@ -2037,7 +2035,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,mergeBoxArt=gameBoxArtFound,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
         else:
             image2 = generatePilImageVertical(fakeprogressbar,0,
                                             "Folder",
@@ -2050,8 +2048,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,mergeBoxArt=consoleBoxArtFound,
-                                            scrollBarWidth=int(scrollBarWidthVar.get()),
+                                            ,1,scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewConsolesItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewConsolesItemList)/int(items_per_screen_entry.get())),
                                             screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
@@ -2066,8 +2063,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,mergeBoxArt=gameBoxArtFound,
-                                            scrollBarWidth=int(scrollBarWidthVar.get()),
+                                            ,1,scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewGameItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewGameItemList)/int(items_per_screen_entry.get())),
                                             screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
@@ -2194,6 +2190,7 @@ def load_settings():
 
 config = Config()
 load_settings()
+consoleMap = getConsoleAssociationList()
 
 # Attach trace callbacks to the variables
 scrollBarWidthVar.trace("w", on_change)
