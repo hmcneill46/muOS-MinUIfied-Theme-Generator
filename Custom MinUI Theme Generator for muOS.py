@@ -23,7 +23,7 @@ class Config:
         self.scrollBarWidthVar = 10
         self.textLeftPaddingVar = 30
         self.bubblePaddingVar = 25
-        self.itemsPerScreenVar = 8
+        self.itemsPerScreenVar = 9
         self.bgHexVar = "000000"
         self.selectedFontHexVar = "000000"
         self.deselectedFontHexVar = "ffffff"
