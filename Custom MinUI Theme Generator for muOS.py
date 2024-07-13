@@ -21,8 +21,8 @@ class Config:
     def __init__(self, config_file='MinUIThemeGeneratorConfig.json'):
         self.config_file = config_file
         self.scrollBarWidthVar = 10
-        self.textLeftPaddingVar = 30
-        self.bubblePaddingVar = 25
+        self.textLeftPaddingVar = 25
+        self.bubblePaddingVar = 20
         self.itemsPerScreenVar = 9
         self.bgHexVar = "000000"
         self.selectedFontHexVar = "000000"
@@ -1752,7 +1752,7 @@ grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Theme Specific Configurations", font=subtitle_font), sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
-options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS [TESTING]"]
+options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS"]
 option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
@@ -1801,10 +1801,13 @@ grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_nam
 
 grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\MUOS\\info\\name.json' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Also Generate Images for Game List *", variable=also_games_var), sticky="w")
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Show hidden Content", variable=show_hidden_files_var), sticky="w", next_row=True)
+
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Merge with Box Art", variable=overlay_box_art_var), sticky="w")
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Replace ' - ' with ': '", variable=replace_hyphen_var), sticky="w", next_row=True)
-
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove ()", variable=remove_brackets_var), sticky="w")
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove []", variable=remove_square_brackets_var), sticky="w", next_row=True)
@@ -1815,10 +1818,6 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show File Counter **", va
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Console Name at top", variable=show_console_name_var), sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Show hidden Content", variable=show_hidden_files_var), sticky="w")
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Also Generate Images for Game List *", variable=also_games_var), sticky="w", next_row=True)
-
 grid_helper.add(tk.Label(scrollable_frame, text="* [IMPORTANT] THIS WILL OVERRIDE YOUR GAME BOX ART... MAKE A BACKUP OF THE WHOLE CATALOGUE FOLDER.", fg='#f00'), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="* [IMPORTANT] Note selecting this option will make favourite and history messed up.\nOnly use this if you don't use Favourites and History, or you just want to experiment.", fg='#f00'), colspan=3, sticky="w", next_row=True)
@@ -1826,7 +1825,6 @@ grid_helper.add(tk.Label(scrollable_frame, text="* [IMPORTANT] Note selecting th
 grid_helper.add(tk.Label(scrollable_frame, text="* Games may also appear in the wrong order", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="** In order for File Counter to be visible box art must be set to 'Fullscreen + Front'", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
-
 
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
