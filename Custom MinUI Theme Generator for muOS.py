@@ -1039,7 +1039,7 @@ def generate_images(progress_bar, loading_window, input_queue, output_queue):
         ItemsPerScreen = int(items_per_screen_entry.get())
         
         traverse_and_generate_images(progress_bar,input_directory, additions_Blank, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,  output_directory,input_queue,output_queue)
-        messagebox.showinfo("Success", "Images generated successfully.\nMake sure your box art setting is set to middle+front!")
+        messagebox.showinfo("Success", "Images generated successfully.\nMake sure your box art setting is set to Fullscreen+Front!")
         loading_window.destroy()
     except ValueError as ve:
         loading_window.destroy()
@@ -1808,7 +1808,7 @@ grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Generation", font=title_font), colspan=2, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Combined generation for Archive manager install [Recommended]", font=subtitle_font), colspan=2, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="Make sure your box art setting is set to middle+front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Make sure your box art setting is set to Fullscreen+Front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
 
 
 grid_helper.add(tk.Label(scrollable_frame, text="Archive Manager Theme Name:"), sticky="w")
@@ -1848,7 +1848,7 @@ grid_helper.add(tk.Button(scrollable_frame, text="Generate Theme", command=start
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Content explorer only generation", font=subtitle_font), colspan=2, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="Make sure your box art setting is set to middle+front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Make sure your box art setting is set to Fullscreen+Front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Catalogue Directory on device:"), sticky="w")
 grid_helper.add(tk.Entry(scrollable_frame, textvariable=catalogue_directory_path, width=50))
