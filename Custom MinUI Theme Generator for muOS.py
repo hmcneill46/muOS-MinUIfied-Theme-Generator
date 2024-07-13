@@ -1376,7 +1376,7 @@ def FillTempThemeFolder(progress_bar):
         workingMenus = menus2405
     elif version_var.get() == "muOS 2405.1 REFRIED BEANS":
         workingMenus = menus2405_1
-    elif version_var.get() == "muOS 2405.2 BAKED BEANS [TESTING]":
+    elif version_var.get() == "muOS 2405.2 BAKED BEANS":
         workingMenus = menus2405_2
     else:
         raise ValueError("You Haven't Selected a muOS Version")
