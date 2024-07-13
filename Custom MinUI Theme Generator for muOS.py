@@ -58,6 +58,7 @@ class Config:
         self.am_ignore_cd_var = False
         self.advanced_error_var = False
         self.show_file_counter_var = False
+        self.show_console_name_var = False
         self.load_config()
 
     def load_config(self):
@@ -108,7 +109,7 @@ def change_logo_color(input_path, hex_color):
     
     return result_image
 
-def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,additions,textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,fileCounter=""):
+def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,additions,textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,fileCounter=""):
     progress_bar['value'] +=1
     #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
@@ -118,12 +119,34 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
     if background_image != None:
         image.paste(background_image.resize((width * render_factor, height * render_factor)), (0,0))
 
-    draw = ImageDraw.Draw(image)
+    topText = str(muOSSystemName)
+    #if topText == "Folder":
+    #    topText = None
+
+    draw = ImageDraw.Draw(image)   
 
     boxArtDrawn = False
     boxArtWidth = 0
     if len(listItems) == 0:
         return(image)
+    
+    font_path = os.path.join(script_dir, "Font", "BPreplayBold-unhinted.otf")
+
+
+
+   
+
+    if topText != None and show_console_name_var.get():
+        
+        topTextFont = ImageFont.truetype(font_path, 27*render_factor)
+
+        bbox = draw.textbbox((0, 0), topText, font=topTextFont)
+        text_width = bbox[2] - bbox[0]
+
+        text_x = (width*render_factor - text_width) / 2
+
+        draw.text(( text_x,0*render_factor), topText, font=topTextFont, fill=f"#{bubble_hex}")
+     
 
     if overlay_box_art_var.get():
         if listItems[workingIndex][1] == "File":
@@ -151,7 +174,7 @@ def generatePilImageVertical(progress_bar,workingIndex,muOSSystemName,listItems,
                 boxArtDrawn = True
 
 
-    font_path = os.path.join(script_dir, "Font", "BPreplayBold-unhinted.otf")
+    
     if additions != "Blank" and version_var.get() == "muOS 2405 BEANS" and not remove_right_menu_guides_var.get(): ## muOS Beans shit
         in_smaller_bubble_font_size = 16*render_factor
         inSmallerBubbleFont = ImageFont.truetype(font_path, in_smaller_bubble_font_size)
@@ -1603,6 +1626,7 @@ am_theme_directory_path = tk.StringVar()
 version_var = tk.StringVar()
 also_games_var = tk.IntVar()
 show_file_counter_var = tk.IntVar()
+show_console_name_var = tk.IntVar()
 show_hidden_files_var = tk.IntVar()
 vertical_var = tk.IntVar()
 crt_overlay_var = tk.IntVar()
@@ -1787,11 +1811,13 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove []", variable=remo
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Put 'The' At the start, instead of the end ', The'", variable=move_the_var), sticky="w")
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Show hidden Content", variable=show_hidden_files_var), sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Also Generate Images for Game List *", variable=also_games_var), sticky="w")
-
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show File Counter **", variable=show_file_counter_var), sticky="w", next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Console Name at top", variable=show_console_name_var), sticky="w", next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Show hidden Content", variable=show_hidden_files_var), sticky="w")
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Also Generate Images for Game List *", variable=also_games_var), sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="* [IMPORTANT] THIS WILL OVERRIDE YOUR GAME BOX ART... MAKE A BACKUP OF THE WHOLE CATALOGUE FOLDER.", fg='#f00'), colspan=3, sticky="w", next_row=True)
 
@@ -2137,6 +2163,7 @@ def save_settings():
     config.am_ignore_cd_var = am_ignore_cd_var.get()
     config.advanced_error_var = advanced_error_var.get()
     config.show_file_counter_var = show_file_counter_var.get()
+    config.show_console_name_var = show_console_name_var.get()
 
 def load_settings():
     scrollBarWidthVar.set(config.scrollBarWidthVar)
@@ -2179,6 +2206,7 @@ def load_settings():
     am_ignore_cd_var.set(config.am_ignore_cd_var)
     advanced_error_var.set(config.advanced_error_var)
     show_file_counter_var.set(config.show_file_counter_var)
+    show_console_name_var.set(config.show_console_name_var)
 
 
 config = Config()
@@ -2200,6 +2228,7 @@ remove_square_brackets_var.trace("w", on_change)
 replace_hyphen_var.trace("w", on_change)
 also_games_var.trace("w", on_change)
 show_file_counter_var.trace("w", on_change)
+show_console_name_var.trace("w", on_change)
 move_the_var.trace("w", on_change)
 crt_overlay_var.trace("w", on_change)
 remove_right_menu_guides_var.trace("w", on_change)
