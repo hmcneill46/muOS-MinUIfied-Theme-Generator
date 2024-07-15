@@ -1,5 +1,5 @@
 ![Themes Example Image](https://github.com/user-attachments/assets/68cfb45d-b260-4fa0-bab1-b13a6d7d282a)
-# MinUIfied Theme Generator
+# MinUIfied Theme Generator for muOS Systems
 This script helps you create and customize themes for your muOS system, creating a consistent look and feel across your system. This tool should work on Windows, MacOS and Linux.
 ![Program Example Image](https://github.com/user-attachments/assets/e3c42ffc-cba3-4898-bc8e-86fe90e24204)
 ## Prerequisites
