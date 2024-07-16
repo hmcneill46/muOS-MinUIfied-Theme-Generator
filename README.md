@@ -4,7 +4,10 @@ This script helps you create and customize themes for your muOS system, creating
 ![Themes Example Image](https://github.com/user-attachments/assets/68cfb45d-b260-4fa0-bab1-b13a6d7d282a)
 
 ![Program Example Image](https://github.com/user-attachments/assets/e3c42ffc-cba3-4898-bc8e-86fe90e24204)
-## Prerequisites
+## Prerequisites for running from Downloaded Binary [Windows]:
+ - None
+
+## Prerequisites for running the script from source
 
 Before running this script, ensure you have the following installed:
 
