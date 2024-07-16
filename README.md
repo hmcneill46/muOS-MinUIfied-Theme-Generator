@@ -106,3 +106,6 @@ To remove all MinUI theming from your system:
  - Show hidden files is experimental as I'm not sure how it should work if you don't select to generate game list as well
  - Also Generate Images for Game List is experimental as it will mess up your favourites and history menus
 
+## Credits and thanks
+ - Thanks to [@JCR64](https://github.com/JCR64) for the inspiration for the theme and horizontal logo
+ - Thanks to [@GrumpyGopher](https://github.com/GrumpyGopher) for the work he's been putting into making the project better
