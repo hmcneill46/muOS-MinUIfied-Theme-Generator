@@ -41,6 +41,7 @@ class Config:
         self.box_art_directory_path = ""
         self.maxBubbleLengthVar = 640
         self.roms_directory_path = ""
+        self.application_directory_path = ""
         self.previewConsoleNameVar = "Nintendo Game Boy"
         self.show_hidden_files_var = False
         self.vertical_var = False
@@ -975,10 +976,13 @@ def select_console(directory_path):
     return selected_console.get()
 
 def select_input_directory():
-    roms_directory_path.set(filedialog.askdirectory())#
+    roms_directory_path.set(filedialog.askdirectory())
+
+def select_application_directory():
+    application_directory_path.set(filedialog.askdirectory())
 
 def select_box_art_directory():
-    box_art_directory_path.set(filedialog.askdirectory())#
+    box_art_directory_path.set(filedialog.askdirectory())
 
 def select_output_directory():
     catalogue_directory_path.set(filedialog.askdirectory())
@@ -1617,6 +1621,7 @@ title_font = font.Font(family="Helvetica", size=14, weight="bold")
 
 # Variables for user input
 roms_directory_path = tk.StringVar()
+application_directory_path = tk.StringVar()
 name_json_path = tk.StringVar()
 background_image_path = tk.StringVar()
 box_art_directory_path = tk.StringVar()
@@ -1750,6 +1755,12 @@ grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_bac
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Theme Specific Configurations", font=subtitle_font), sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Custom Application Directory:"), sticky="w")
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=application_directory_path, width=50))
+grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_application_directory), next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\MUOS\\application' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
 options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS"]
@@ -1964,6 +1975,26 @@ valid_params = True
 
 crt_overlay_image = Image.open(os.path.join(script_dir,"Overlays", "CRT Overlay.png")).convert("RGBA")
 
+def updateMenusList(menusList, defaultList):
+    if application_directory_path.get()!="" and os.path.exists(application_directory_path.get()): # muOS 2405.2
+        print("Working")
+        newApplicationList = [[x[0],x[0]] for x in list_directory_contents(application_directory_path.get())]
+        index = None
+        for i, n in enumerate(menusList):
+            if n[0] == "muxapp":
+                index = i
+                break
+        if index!=None:
+            menusList[index][1] = newApplicationList
+    else:
+        index = None
+        for i, n in enumerate(menusList):
+            if n[0] == "muxapp":
+                index = i
+                break
+        if index!=None:
+            menusList[index][1] = defaultList
+
 def on_change(*args):
     save_settings()
     config.save_config()
@@ -1973,6 +2004,18 @@ def on_change(*args):
         background_image = Image.open(background_image_path.get())
     else:
         background_image = None
+
+    global menus2405_1 ## NOT GLOBALS AHH SORRY HACKY SHOULD REMOVE
+    global menus2405_2
+
+    menus2405_1_Default_list = [['Archive Manager', 'Archive Manager'], ['Dingux Commander', 'Dingux Commander'], ['GMU Music Player', 'GMU Music Player'], ['PortMaster', 'PortMaster'], ['RetroArch', 'RetroArch'], ['Simple Terminal', 'Simple Terminal'], ['Task Toolkit', 'Task Toolkit']]
+    updateMenusList(menus2405_1, menus2405_1_Default_list)
+
+    menus2405_2_Default_list = [['Archive Manager', 'Archive Manager'], ['Dingux Commander', 'Dingux Commander'], ['Flip Clock', 'Flip Clock'], ['GMU Music Player', 'GMU Music Player'], ['Moonlight', 'Moonlight'], ['PortMaster', 'PortMaster'], ['PPSSPP', 'PPSSPP'], ['RetroArch', 'RetroArch'], ['Simple Terminal', 'Simple Terminal'], ['Task Toolkit', 'Task Toolkit']]
+    updateMenusList(menus2405_2, menus2405_2_Default_list)
+
+        
+
 
     global valid_params
     
@@ -2144,6 +2187,7 @@ def save_settings():
     config.box_art_directory_path = box_art_directory_path.get()
     config.maxBubbleLengthVar = maxBubbleLengthVar.get()
     config.roms_directory_path = roms_directory_path.get()
+    config.application_directory_path = application_directory_path.get()
     config.previewConsoleNameVar = previewConsoleNameVar.get()
     config.show_hidden_files_var = show_hidden_files_var.get()
     config.vertical_var = vertical_var.get()
@@ -2185,6 +2229,7 @@ def load_settings():
     box_art_directory_path.set(config.box_art_directory_path)
     maxBubbleLengthVar.set(config.maxBubbleLengthVar)
     roms_directory_path.set(config.roms_directory_path)
+    application_directory_path.set(config.application_directory_path)
     previewConsoleNameVar.set(config.previewConsoleNameVar)
     show_hidden_files_var.set(config.show_hidden_files_var)
     vertical_var.set(config.vertical_var)
@@ -2235,6 +2280,7 @@ overlay_box_art_var.trace("w", on_change)
 box_art_directory_path.trace("w", on_change)
 maxBubbleLengthVar.trace("w", on_change)
 roms_directory_path.trace("w", on_change)
+application_directory_path.trace("w", on_change)
 previewConsoleNameVar.trace("w", on_change)
 show_hidden_files_var.trace("w", on_change)
 vertical_var.trace("w", on_change)
