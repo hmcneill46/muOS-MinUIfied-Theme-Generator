@@ -91,9 +91,15 @@ To remove all MinUI theming from your system:
 
 ## Build instructions
 
- - Install pyinstaller - 'pip install pyinstaller'
- - run ' pyinstaller ".\Custom MinUI Theme Generator for muOS.spec" '
+ - Install pyinstaller
 
+
+       pip install pyinstaller
+ - To build, run*:
+
+
+       pyinstaller ".\Custom MinUI Theme Generator for muOS.spec"
+*where the .spec file is the one in the github page, modify the .spec file to work on macOS and Linux if you are able to/want to, and put it on a PR.
   
 
 ## Experimental Settings
