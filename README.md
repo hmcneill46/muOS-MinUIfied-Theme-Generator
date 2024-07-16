@@ -89,6 +89,11 @@ To remove all MinUI theming from your system:
 
 **Note: This will also remove any box art, so make sure to copy your backup back onto the card afterwards.**
 
+## Build instructions
+
+ - Install pyinstaller - 'pip install pyinstaller'
+ - run ' pyinstaller ".\Custom MinUI Theme Generator for muOS.spec'"
+
   
 
 ## Experimental Settings
