@@ -30,7 +30,8 @@ Before running this script, ensure you have the following installed:
    
  - To use the tool without the SD card, copy your **ROMS** folder from the card to your computers local storage for future use.
  - **Make sure** your box art on your device is set to **fullscreen+front**, otherwise the content explorer UI can behave strangely
- - To run the program you must download this repo as a zip, unzip it, and then run the .py file with python
+ - To run the program from the prebuilt binaries, go to the latest release and download the program from the assets [Windows only right now]
+ - To run the program from source you must download this repo as a zip, unzip it, and then run the .py file with python
 
 # Configuration
 
