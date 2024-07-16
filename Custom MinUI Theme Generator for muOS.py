@@ -2200,6 +2200,7 @@ def on_change(*args):
             image1.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
             image2.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
             image3.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
+            image4.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
             if not(vertical_var.get()):
                 image5.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
 
