@@ -1756,7 +1756,7 @@ grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Theme Specific Configurations", font=subtitle_font), sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Custom Application Directory:"), sticky="w")
+grid_helper.add(tk.Label(scrollable_frame, text="[Optional] Custom Application Directory:"), sticky="w")
 grid_helper.add(tk.Entry(scrollable_frame, textvariable=application_directory_path, width=50))
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_application_directory), next_row=True)
 
