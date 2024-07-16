@@ -2133,7 +2133,7 @@ def on_change(*args):
                                             bubbleHexVar.get()
                                             ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
             image4 = generatePilImageVertical(fakeprogressbar,0,
-                                            consoleName,
+                                            "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
                                             additions_Blank,
                                             int(textLeftPaddingVar.get()),
@@ -2176,7 +2176,7 @@ def on_change(*args):
                                             numScreens=math.ceil(len(previewGameItemList)/int(items_per_screen_entry.get())),
                                             screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
             image4 = generatePilImageVertical(fakeprogressbar,0,
-                                            consoleName,
+                                            "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
                                             additions_Blank,
                                             int(textLeftPaddingVar.get()),
