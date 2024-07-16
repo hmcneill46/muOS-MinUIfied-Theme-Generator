@@ -92,7 +92,7 @@ To remove all MinUI theming from your system:
 ## Build instructions
 
  - Install pyinstaller - 'pip install pyinstaller'
- - run ' pyinstaller ".\Custom MinUI Theme Generator for muOS.spec'"
+ - run ' pyinstaller ".\Custom MinUI Theme Generator for muOS.spec" '
 
   
 
