@@ -1,5 +1,6 @@
 from PIL import ImageTk,Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 import os
+import sys
 import math
 import tkinter as tk
 from tkinter import font
@@ -15,10 +16,19 @@ import json
 import subprocess
 import shutil
 
+if getattr(sys, 'frozen', False):
+    # The application is running as a bundle
+    hidden_constant_script_dir = sys._MEIPASS
+    script_dir = os.path.dirname(sys.executable)
+else:
+    # The application is running in a normal Python environment
+    hidden_constant_script_dir = os.path.dirname(os.path.abspath(__file__))
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
 #HI
 # Default values for parameters
 class Config:
-    def __init__(self, config_file='MinUIThemeGeneratorConfig.json'):
+    def __init__(self, config_file=os.path.join(script_dir,'MinUIThemeGeneratorConfig.json')):
         self.config_file = config_file
         self.scrollBarWidthVar = 10
         self.textLeftPaddingVar = 25
@@ -78,9 +88,12 @@ background_image = None
 
 # Define constants
 render_factor = 5
-script_dir = os.path.dirname(os.path.abspath(__file__))
+
+
+
+
 ConsoleAssociationsPath = os.path.join(script_dir,"ConsoleAssociations.json")
-defaultConsoleAssociationsPath = os.path.join(script_dir,"_ConsoleAssociations.json")
+defaultConsoleAssociationsPath = os.path.join(hidden_constant_script_dir,"_ConsoleAssociations.json")
 
 width, height = 640, 480
 headerHeight = 40
@@ -131,7 +144,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     if len(listItems) == 0:
         return(image)
     
-    font_path = os.path.join(script_dir, "Font", "BPreplayBold-unhinted.otf")
+    font_path = os.path.join(hidden_constant_script_dir, "Font", "BPreplayBold-unhinted.otf")
 
 
 
@@ -445,7 +458,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
                 if workingIndex == 0:
                     image = image.resize((288, 216), Image.LANCZOS)
                     if workingItem[1] == "Menu":
-                        image.save(os.path.join(script_dir, "TempPreview.png"))
+                        image.save(os.path.join(hidden_constant_script_dir, "TempPreview.png"))
 
 
 def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir):
@@ -489,7 +502,7 @@ def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scroll
                     if workingIndex == 0:
                         image = image.resize((288, 216), Image.LANCZOS)
                         if workingItem[1] == "Menu":
-                            image.save(os.path.join(script_dir, "TempPreview.png"))
+                            image.save(os.path.join(hidden_constant_script_dir, "TempPreview.png"))
 
 def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor):
     progress_bar['value']+=1
@@ -503,13 +516,13 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     
     
 
-    exploreLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "explore.png"),icon_hex)
+    exploreLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "explore.png"),icon_hex)
     exploreLogoColoured = exploreLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
-    favouriteLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "favourite.png"),icon_hex)
+    favouriteLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "favourite.png"),icon_hex)
     favouriteLogoColoured = favouriteLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
-    historyLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "history.png"),icon_hex)
+    historyLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "history.png"),icon_hex)
     historyLogoColoured = historyLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
-    appsLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "apps.png"),icon_hex)
+    appsLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "apps.png"),icon_hex)
     appsLogoColoured = appsLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
     
 
@@ -520,7 +533,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
 
     draw = ImageDraw.Draw(image)
 
-    font_path = os.path.join(script_dir, "Font", "BPreplayBold-unhinted.otf")
+    font_path = os.path.join(hidden_constant_script_dir, "Font", "BPreplayBold-unhinted.otf")
     in_smaller_bubble_font_size = 16*render_factor
     inSmallerBubbleFont = ImageFont.truetype(font_path, in_smaller_bubble_font_size)
 
@@ -616,24 +629,24 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         draw.ellipse((int((center_x-radius)*render_factor),int((center_y-radius)*render_factor),int((center_x+radius)*render_factor),int((center_y+radius)*render_factor)),fill=f"#{bubble_hex}")
     
     if workingIndex == 4:
-        infoLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "info.png"),selected_font_hex)
+        infoLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "info.png"),selected_font_hex)
     else:
-        infoLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "info.png"),icon_hex)
+        infoLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "info.png"),icon_hex)
     infoLogoColoured = infoLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
     if workingIndex == 5:
-        configLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "config.png"),selected_font_hex)
+        configLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "config.png"),selected_font_hex)
     else:
-        configLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "config.png"),icon_hex)
+        configLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "config.png"),icon_hex)
     configLogoColoured = configLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
     if workingIndex == 6:
-        rebootLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "reboot.png"),selected_font_hex)
+        rebootLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "reboot.png"),selected_font_hex)
     else:
-        rebootLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "reboot.png"),icon_hex)
+        rebootLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "reboot.png"),icon_hex)
     rebootLogoColoured = rebootLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
     if workingIndex == 7:
-        shutdownLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "shutdown.png"),selected_font_hex)
+        shutdownLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "shutdown.png"),selected_font_hex)
     else:
-        shutdownLogoColoured = change_logo_color(os.path.join(script_dir, "Horizontal Logos", "shutdown.png"),icon_hex)
+        shutdownLogoColoured = change_logo_color(os.path.join(hidden_constant_script_dir, "Horizontal Logos", "shutdown.png"),icon_hex)
     shutdownLogoColoured = shutdownLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
 
     image.paste(infoLogoColoured,(175*render_factor,340*render_factor),infoLogoColoured)
@@ -706,7 +719,7 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
         if workingIndex == 0:
             image = image.resize((288, 216), Image.LANCZOS)
             if workingItem[1] == "Menu":
-                image.save(os.path.join(script_dir, "TempPreview.png"))
+                image.save(os.path.join(hidden_constant_script_dir, "TempPreview.png"))
 
 def remove_brackets_and_contents(text):
     # Remove contents within parentheses ()
@@ -1262,12 +1275,12 @@ def generate_theme(progress_bar, loading_window):
 
         os.makedirs(preview_dir,exist_ok=True)
 
-        shutil.make_archive(os.path.join(theme_dir, themeName),"zip", os.path.join(script_dir, ".TempBuildTheme"))
+        shutil.make_archive(os.path.join(theme_dir, themeName),"zip", os.path.join(hidden_constant_script_dir, ".TempBuildTheme"))
 
         temp_preview_path = os.path.join(preview_dir, "TempPreview.png")
         if os.path.exists(temp_preview_path):
             os.remove(temp_preview_path)
-        shutil.move(os.path.join(script_dir, "TempPreview.png"), preview_dir)
+        shutil.move(os.path.join(hidden_constant_script_dir, "TempPreview.png"), preview_dir)
 
         theme_preview_path = os.path.join(preview_dir, f"{themeName}.png")
         if os.path.exists(theme_preview_path):
@@ -1278,9 +1291,9 @@ def generate_theme(progress_bar, loading_window):
 
         
 
-        delete_folder(os.path.join(script_dir, ".TempBuildTheme"))
-        if os.path.exists(os.path.join(script_dir, "TempPreview.png")):
-            os.remove(os.path.join(script_dir, "TempPreview.png"))
+        delete_folder(os.path.join(hidden_constant_script_dir, ".TempBuildTheme"))
+        if os.path.exists(os.path.join(hidden_constant_script_dir, "TempPreview.png")):
+            os.remove(os.path.join(hidden_constant_script_dir, "TempPreview.png"))
         if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
             os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
         messagebox.showinfo("Success", "Theme generated successfully.")
@@ -1296,9 +1309,9 @@ def generate_theme(progress_bar, loading_window):
             messagebox.showerror("Error", f"An unexpected error occurred: {e}\n{tb_str}")
         else:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
-        delete_folder(os.path.join(script_dir, ".TempBuildTheme"))
-        if os.path.exists(os.path.join(script_dir, "TempPreview.png")):
-            os.remove(os.path.join(script_dir, "TempPreview.png"))
+        delete_folder(os.path.join(hidden_constant_script_dir, ".TempBuildTheme"))
+        if os.path.exists(os.path.join(hidden_constant_script_dir, "TempPreview.png")):
+            os.remove(os.path.join(hidden_constant_script_dir, "TempPreview.png"))
         if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
             os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
 
@@ -1313,45 +1326,45 @@ def FillTempThemeFolder(progress_bar):
     bubble_hex = bubble_hex_entry.get()
     icon_hex = icon_hex_entry.get()
     
-    copy_contents(os.path.join(script_dir, "Theme Shell"), os.path.join(script_dir, ".TempBuildTheme"))
+    copy_contents(os.path.join(hidden_constant_script_dir, "Theme Shell"), os.path.join(hidden_constant_script_dir, ".TempBuildTheme"))
     
-    dst_dir = os.path.join(script_dir,".TempBuildTheme","scheme")
+    dst_dir = os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme")
     os.makedirs(dst_dir, exist_ok=True)
-    shutil.copy2(os.path.join(script_dir,"Template Scheme","default.txt"),dst_dir)
-    replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","default.txt"), "{bg_hex}", str(bg_hex))
-    replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","default.txt"), "{selected_font_hex}", str(bubble_hex))
-    replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","default.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,selected_font_hex,0.5)))
-    replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","default.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
-    replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","default.txt"), "{ImageOverlay}", str(crt_overlay_var.get()))
+    shutil.copy2(os.path.join(hidden_constant_script_dir,"Template Scheme","default.txt"),dst_dir)
+    replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","default.txt"), "{bg_hex}", str(bg_hex))
+    replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","default.txt"), "{selected_font_hex}", str(bubble_hex))
+    replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","default.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,selected_font_hex,0.5)))
+    replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","default.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
+    replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","default.txt"), "{ImageOverlay}", str(crt_overlay_var.get()))
     
-    shutil.copy2(os.path.join(script_dir,"Template Scheme","mux.txt"),os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"))
-    replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{bg_hex}", str(bg_hex))
-    replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{selected_font_hex}", str(bubble_hex))
-    replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,bg_hex,0.5)))
-    replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
-    replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{ImageOverlay}", str(crt_overlay_var.get()))
+    shutil.copy2(os.path.join(hidden_constant_script_dir,"Template Scheme","mux.txt"),os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"))
+    replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{bg_hex}", str(bg_hex))
+    replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{selected_font_hex}", str(bubble_hex))
+    replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,bg_hex,0.5)))
+    replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
+    replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"), "{ImageOverlay}", str(crt_overlay_var.get()))
 
 
-    shutil.copy2(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(script_dir,".TempBuildTheme","scheme","muxlaunch.txt"))
-    replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"),"{ScrollDirection}", "0")
+    shutil.copy2(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","muxlaunch.txt"))
+    replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"),"{ScrollDirection}", "0")
     if version_var.get() == "muOS 2405 BEANS":
-        shutil.copy2(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(script_dir,".TempBuildTheme","scheme","muxapps.txt"))
+        shutil.copy2(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","muxapps.txt"))
     else:
-        shutil.copy2(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(script_dir,".TempBuildTheme","scheme","muxapp.txt"))
-    shutil.copy2(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(script_dir,".TempBuildTheme","scheme","muxconfig.txt"))
-    shutil.copy2(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(script_dir,".TempBuildTheme","scheme","muxdevice.txt"))
-    shutil.copy2(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(script_dir,".TempBuildTheme","scheme","muxinfo.txt"))
+        shutil.copy2(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","muxapp.txt"))
+    shutil.copy2(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","muxconfig.txt"))
+    shutil.copy2(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","muxdevice.txt"))
+    shutil.copy2(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","muxinfo.txt"))
 
     if crt_overlay_var.get():
-        shutil.copy2(os.path.join(script_dir,"Overlays","CRT Overlay.png"),os.path.join(script_dir,".TempBuildTheme","image","overlay.png"))
+        shutil.copy2(os.path.join(hidden_constant_script_dir,"Overlays","CRT Overlay.png"),os.path.join(hidden_constant_script_dir,".TempBuildTheme","image","overlay.png"))
 
-    os.remove(os.path.join(script_dir,".TempBuildTheme","scheme","tempmux.txt"))
+    os.remove(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","tempmux.txt"))
 
     if not vertical_var.get():
-        replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+        replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
 
     else:
-        replace_in_file(os.path.join(script_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+        replace_in_file(os.path.join(hidden_constant_script_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     if False: ## Testing converting font in generator
         try:
             # Define the command
@@ -1359,12 +1372,12 @@ def FillTempThemeFolder(progress_bar):
                 'lv_font_conv',
                 '--bpp', '4',
                 '--size', str(40),
-                '--font', os.path.join(script_dir, "Font", "BPreplayBold-unhinted.otf"),
+                '--font', os.path.join(hidden_constant_script_dir, "Font", "BPreplayBold-unhinted.otf"),
                 '-r', '0x20-0x7F',
                 '--format', 'bin',
                 '--no-compress',
                 '--no-prefilter',
-                '-o', os.path.join(script_dir, ".TempBuildTheme", "font","default.bin")
+                '-o', os.path.join(hidden_constant_script_dir, ".TempBuildTheme", "font","default.bin")
             ]
 
             # Execute the command
@@ -1392,28 +1405,28 @@ def FillTempThemeFolder(progress_bar):
     for index, menu in enumerate(workingMenus):
         if menu[0] == "muxdevice":
             if page_by_page_var.get():
-                PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(script_dir, ".TempBuildTheme","image","static"))
+                PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(hidden_constant_script_dir, ".TempBuildTheme","image","static"))
             else:
-                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(script_dir, ".TempBuildTheme","image","static"))
+                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(hidden_constant_script_dir, ".TempBuildTheme","image","static"))
         elif menu[0] == "muxlaunch":
             if vertical_var.get():
                 if page_by_page_var.get():
-                    PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(script_dir, ".TempBuildTheme","image","static"))
+                    PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(hidden_constant_script_dir, ".TempBuildTheme","image","static"))
                 else:
-                    ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(script_dir, ".TempBuildTheme","image","static"))
+                    ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(hidden_constant_script_dir, ".TempBuildTheme","image","static"))
             else:
-                HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(script_dir, ".TempBuildTheme","image","static"))
+                HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(hidden_constant_script_dir, ".TempBuildTheme","image","static"))
         elif menu[0] == "ThemePreview":
                 if vertical_var.get():
                     if page_by_page_var.get():
-                        PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(script_dir, ".TempBuildTheme","image","static"))
+                        PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(hidden_constant_script_dir, ".TempBuildTheme","image","static"))
                     else:
-                        ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(script_dir, ".TempBuildTheme","image","static"))
+                        ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(hidden_constant_script_dir, ".TempBuildTheme","image","static"))
         else:
             if page_by_page_var.get():
-                PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(script_dir, ".TempBuildTheme","image","static"))
+                PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(hidden_constant_script_dir, ".TempBuildTheme","image","static"))
             else:
-                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(script_dir, ".TempBuildTheme","image","static"))
+                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(hidden_constant_script_dir, ".TempBuildTheme","image","static"))
 
 def generate_archive_manager(progress_bar, loading_window, input_queue, output_queue):
     try:
@@ -1455,9 +1468,9 @@ def generate_archive_manager(progress_bar, loading_window, input_queue, output_q
             FillTempThemeFolder(progress_bar)
                     
         if not am_ignore_cd_var.get():
-            if not os.path.exists(os.path.join(script_dir, ".TempBuildAM","mnt","mmc","MUOS","info","catalogue")):
-                os.makedirs(os.path.join(script_dir, ".TempBuildAM","mnt","mmc","MUOS","info","catalogue"))
-            output_directory = os.path.join(script_dir, ".TempBuildAM","mnt","mmc","MUOS","info","catalogue")
+            if not os.path.exists(os.path.join(hidden_constant_script_dir, ".TempBuildAM","mnt","mmc","MUOS","info","catalogue")):
+                os.makedirs(os.path.join(hidden_constant_script_dir, ".TempBuildAM","mnt","mmc","MUOS","info","catalogue"))
+            output_directory = os.path.join(hidden_constant_script_dir, ".TempBuildAM","mnt","mmc","MUOS","info","catalogue")
             
             traverse_and_generate_images(progress_bar, roms_directory, additions_Blank, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,  output_directory, input_queue, output_queue)
 
@@ -1467,17 +1480,17 @@ def generate_archive_manager(progress_bar, loading_window, input_queue, output_q
             am_theme_dir = am_theme_directory_path.get()
 
         if not am_ignore_theme_var.get():
-            copy_contents(os.path.join(script_dir, ".TempBuildTheme"),os.path.join(script_dir, ".TempBuildAM","mnt","mmc","MUOS","theme","active"))
+            copy_contents(os.path.join(hidden_constant_script_dir, ".TempBuildTheme"),os.path.join(hidden_constant_script_dir, ".TempBuildAM","mnt","mmc","MUOS","theme","active"))
 
-        if os.path.exists(os.path.join(script_dir, ".TempBuildAM")):
-            shutil.make_archive(os.path.join(am_theme_dir, amThemeName),"zip", os.path.join(script_dir, ".TempBuildAM"))
+        if os.path.exists(os.path.join(hidden_constant_script_dir, ".TempBuildAM")):
+            shutil.make_archive(os.path.join(am_theme_dir, amThemeName),"zip", os.path.join(hidden_constant_script_dir, ".TempBuildAM"))
 
-        if os.path.exists(os.path.join(script_dir, ".TempBuildTheme")):
-            delete_folder(os.path.join(script_dir, ".TempBuildTheme"))
-        if os.path.exists(os.path.join(script_dir, ".TempBuildAM")):
-            delete_folder(os.path.join(script_dir, ".TempBuildAM"))
-        if os.path.exists(os.path.join(script_dir, "TempPreview.png")):
-            os.remove(os.path.join(script_dir, "TempPreview.png"))
+        if os.path.exists(os.path.join(hidden_constant_script_dir, ".TempBuildTheme")):
+            delete_folder(os.path.join(hidden_constant_script_dir, ".TempBuildTheme"))
+        if os.path.exists(os.path.join(hidden_constant_script_dir, ".TempBuildAM")):
+            delete_folder(os.path.join(hidden_constant_script_dir, ".TempBuildAM"))
+        if os.path.exists(os.path.join(hidden_constant_script_dir, "TempPreview.png")):
+            os.remove(os.path.join(hidden_constant_script_dir, "TempPreview.png"))
         if not am_ignore_cd_var.get() or not am_ignore_theme_var.get():
             loading_window.destroy()
             messagebox.showinfo("Success", "Archive Manager File generated successfully.\nYou can now Activate the theme through Archive Manager")
@@ -1487,10 +1500,10 @@ def generate_archive_manager(progress_bar, loading_window, input_queue, output_q
             theme_dir = os.path.join(script_dir, "Generated Theme")
         else:
             theme_dir = theme_directory_path.get()
-        delete_folder(os.path.join(script_dir, ".TempBuildTheme"))
-        delete_folder(os.path.join(script_dir, ".TempBuildAM"))
-        if os.path.exists(os.path.join(script_dir, "TempPreview.png")):
-            os.remove(os.path.join(script_dir, "TempPreview.png"))
+        delete_folder(os.path.join(hidden_constant_script_dir, ".TempBuildTheme"))
+        delete_folder(os.path.join(hidden_constant_script_dir, ".TempBuildAM"))
+        if os.path.exists(os.path.join(hidden_constant_script_dir, "TempPreview.png")):
+            os.remove(os.path.join(hidden_constant_script_dir, "TempPreview.png"))
         if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
             os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
         if advanced_error_var.get():
@@ -1973,7 +1986,7 @@ def outline_image_with_inner_gap(image, outline_color=(255, 0, 0), outline_width
 
 valid_params = True
 
-crt_overlay_image = Image.open(os.path.join(script_dir,"Overlays", "CRT Overlay.png")).convert("RGBA")
+crt_overlay_image = Image.open(os.path.join(hidden_constant_script_dir,"Overlays", "CRT Overlay.png")).convert("RGBA")
 
 def updateMenusList(menusList, defaultList):
     if application_directory_path.get()!="" and os.path.exists(application_directory_path.get()): # muOS 2405.2
