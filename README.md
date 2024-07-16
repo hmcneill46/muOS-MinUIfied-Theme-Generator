@@ -4,7 +4,7 @@ This script helps you create and customize themes for your muOS system, creating
 ![Themes Example Image](https://github.com/user-attachments/assets/68cfb45d-b260-4fa0-bab1-b13a6d7d282a)
 
 ![Program Example Image](https://github.com/user-attachments/assets/e3c42ffc-cba3-4898-bc8e-86fe90e24204)
-## Prerequisites for running from Downloaded Binary [Windows and Macos]:
+## Prerequisites for running from Downloaded Binary [Windows]:
  - None
 
 ## Prerequisites for running the script from source
@@ -30,7 +30,7 @@ Before running this script, ensure you have the following installed:
    
  - To use the tool without the SD card, copy your **ROMS** folder from the card to your computers local storage for future use.
  - **Make sure** your box art on your device is set to **fullscreen+front**, otherwise the content explorer UI can behave strangely
- - To run the program from the prebuilt binaries, go to the latest release and download the program from the assets. Note the macOS build takes a couple of seconds to start up.
+ - To run the program from the prebuilt binaries, go to the latest release and download the program from the assets. [Windows Only]
  - To run the program from source you must download this repo as a zip, unzip it, and then run the .py file with python
 
 # Configuration
