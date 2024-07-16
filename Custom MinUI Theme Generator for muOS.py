@@ -1977,7 +1977,6 @@ crt_overlay_image = Image.open(os.path.join(script_dir,"Overlays", "CRT Overlay.
 
 def updateMenusList(menusList, defaultList):
     if application_directory_path.get()!="" and os.path.exists(application_directory_path.get()): # muOS 2405.2
-        print("Working")
         newApplicationList = [[x[0],x[0]] for x in list_directory_contents(application_directory_path.get())]
         index = None
         for i, n in enumerate(menusList):
@@ -2005,6 +2004,7 @@ def on_change(*args):
     else:
         background_image = None
 
+    global menus2405
     global menus2405_1 ## NOT GLOBALS AHH SORRY HACKY SHOULD REMOVE
     global menus2405_2
 
@@ -2014,8 +2014,31 @@ def on_change(*args):
     menus2405_2_Default_list = [['Archive Manager', 'Archive Manager'], ['Dingux Commander', 'Dingux Commander'], ['Flip Clock', 'Flip Clock'], ['GMU Music Player', 'GMU Music Player'], ['Moonlight', 'Moonlight'], ['PortMaster', 'PortMaster'], ['PPSSPP', 'PPSSPP'], ['RetroArch', 'RetroArch'], ['Simple Terminal', 'Simple Terminal'], ['Task Toolkit', 'Task Toolkit']]
     updateMenusList(menus2405_2, menus2405_2_Default_list)
 
-        
-
+    previewApplicationList = []
+    if version_var.get() == "muOS 2405 BEANS":
+        index = None
+        for i, n in enumerate(menus2405):
+            if n[0] == "muxapps":
+                index = i
+                break
+        if index!=None:
+            previewApplicationList = [[x[0],"menu",x[0]] for x in menus2405[index][1]]
+    elif version_var.get() == "muOS 2405.1 REFRIED BEANS":
+        index = None
+        for i, n in enumerate(menus2405_1):
+            if n[0] == "muxapp":
+                index = i
+                break
+        if index!=None:
+            previewApplicationList = [[x[0],"menu",x[0]] for x in menus2405_1[index][1]]
+    elif version_var.get() == "muOS 2405.2 BAKED BEANS":
+        index = None
+        for i, n in enumerate(menus2405_2):
+            if n[0] == "muxapp":
+                index = i
+                break
+        if index!=None:
+            previewApplicationList = [[x[0],"menu",x[0]] for x in menus2405_2[index][1]]
 
     global valid_params
     
@@ -2096,6 +2119,18 @@ def on_change(*args):
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
                                             ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
+            image4 = generatePilImageVertical(fakeprogressbar,0,
+                                            consoleName,
+                                            previewApplicationList[0:int(items_per_screen_entry.get())],
+                                            additions_Blank,
+                                            int(textLeftPaddingVar.get()),
+                                            int(bubblePaddingVar.get()),
+                                            int(items_per_screen_entry.get()),
+                                            bgHexVar.get(),
+                                            selectedFontHexVar.get(),
+                                            deselectedFontHexVar.get(),
+                                            bubbleHexVar.get()
+                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
         else:
             image2 = generatePilImageVertical(fakeprogressbar,0,
                                             "Folder",
@@ -2127,8 +2162,23 @@ def on_change(*args):
                                             showScrollBar=(len(previewGameItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewGameItemList)/int(items_per_screen_entry.get())),
                                             screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
+            image4 = generatePilImageVertical(fakeprogressbar,0,
+                                            consoleName,
+                                            previewApplicationList[0:int(items_per_screen_entry.get())],
+                                            additions_Blank,
+                                            int(textLeftPaddingVar.get()),
+                                            int(bubblePaddingVar.get()),
+                                            int(items_per_screen_entry.get()),
+                                            bgHexVar.get(),
+                                            selectedFontHexVar.get(),
+                                            deselectedFontHexVar.get(),
+                                            bubbleHexVar.get()
+                                            ,1,scrollBarWidth=int(scrollBarWidthVar.get()),
+                                            showScrollBar=(len(previewApplicationList)/int(items_per_screen_entry.get()))>1,
+                                            numScreens=math.ceil(len(previewApplicationList)/int(items_per_screen_entry.get())),
+                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
         if not(vertical_var.get()):
-            image4 = generatePilImageHorizontal(fakeprogressbar,4,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize((int(width/2), int(height/2)), Image.LANCZOS)
+            image5 = generatePilImageHorizontal(fakeprogressbar,4,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize((int(width/2), int(height/2)), Image.LANCZOS)
 
 
 
@@ -2138,28 +2188,31 @@ def on_change(*args):
             image2.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
             image3.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
             if not(vertical_var.get()):
-                image4.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
+                image5.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
 
         update_image_label(image_label1, image1)
         update_image_label(image_label2, image2)
         update_image_label(image_label3, image3)
+        update_image_label(image_label4, image4)
         if not(vertical_var.get()):
-            update_image_label(image_label4, image4)
+            update_image_label(image_label5, image5)
         else:
-            remove_image_from_label(image_label4)
+            remove_image_from_label(image_label5)
         valid_params = True
     except:
         if valid_params:
             redOutlineImage1 = outline_image_with_inner_gap(get_current_image(image_label1)).resize((int(width/2), int(height/2)), Image.LANCZOS)
             redOutlineImage2 = outline_image_with_inner_gap(get_current_image(image_label2)).resize((int(width/2), int(height/2)), Image.LANCZOS)
             redOutlineImage3 = outline_image_with_inner_gap(get_current_image(image_label3)).resize((int(width/2), int(height/2)), Image.LANCZOS)
+            redOutlineImage4 = outline_image_with_inner_gap(get_current_image(image_label4)).resize((int(width/2), int(height/2)), Image.LANCZOS)
             if not(vertical_var.get()):
-                redOutlineImage4 = outline_image_with_inner_gap(get_current_image(image_label4)).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                redOutlineImage5 = outline_image_with_inner_gap(get_current_image(image_label5)).resize((int(width/2), int(height/2)), Image.LANCZOS)
             update_image_label(image_label1, redOutlineImage1)
             update_image_label(image_label2, redOutlineImage2)
             update_image_label(image_label3, redOutlineImage3)
+            update_image_label(image_label4, redOutlineImage4)
             if not(vertical_var.get()):
-                update_image_label(image_label4, redOutlineImage4)
+                update_image_label(image_label5, redOutlineImage5)
             valid_params = False
     #update_image2()
     # Add your code here to handle the changes
