@@ -782,8 +782,8 @@ def getConsoleAssociationList():
             return []
     return []
 
-def saveConsoleAssociationList():
-    with open(ConsoleAssociationsPath, 'w', newline='\n') as json_file:
+def saveConsoleAssociationDict():
+    with open(ConsoleAssociationsPath, 'w', newline='\n',encoding='utf-8') as json_file:
         json.dump(consoleMap, json_file, indent=2)         
 
 def getAlternateMenuNameDict():
@@ -798,7 +798,7 @@ def getAlternateMenuNameDict():
     return {}
 
 def saveAlternateMenuNameList():
-    with open(AlternateMenuNamesPath, 'w', newline='\n') as json_file:
+    with open(AlternateMenuNamesPath, 'w', newline='\n',encoding='utf-8') as json_file:
         json.dump(menuNameMap, json_file, indent=2)     
 
 def list_directory_contents(directory_path):
@@ -934,7 +934,7 @@ def traverse_and_generate_images(progress_bar, directory_path, additions, scroll
             input_queue.put(directory_path)
             consoleName = output_queue.get()
             consoleMap[folderName] = consoleName
-            saveConsoleAssociationList()
+            saveConsoleAssociationDict()
 
     if len(items) > 0 and consoleName != "SKIP":
         if not (fileFound and also_games_var.get() == 0):
