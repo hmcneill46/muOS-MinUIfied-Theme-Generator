@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from PIL import ImageTk,Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 import os
 import sys
@@ -45,6 +46,7 @@ class Config:
         self.also_games_var = False
         self.move_the_var = False
         self.crt_overlay_var = False
+        self.alternate_menu_names_var = False
         self.remove_right_menu_guides_var = False
         self.remove_left_menu_guides_var = False
         self.overlay_box_art_var = False
@@ -90,7 +92,7 @@ background_image = None
 render_factor = 5
 
 
-
+AlternateMenuNamesPath = os.path.join(script_dir,"AlternateMenuNames.json")
 
 ConsoleAssociationsPath = os.path.join(script_dir,"ConsoleAssociations.json")
 defaultConsoleAssociationsPath = os.path.join(internal_files_dir,"_ConsoleAssociations.json")
@@ -327,7 +329,10 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     for index, item in enumerate(listItems):
         noLettersCut = 0
         text_width = 2000*render_factor
-        text = item[0][:]
+        if alternate_menu_names_var.get() and muOSSystemName.startswith("mux"):
+            text = menuNameMap.get(item[0][:].lower(),item[0][:])
+        else:
+            text = item[0][:]
         text_color = f"#{selected_font_hex}" if index == workingIndex else f"#{deselected_font_hex}"
         if boxArtDrawn and override_bubble_cut_var.get():
             maxBubbleLength = maxBubbleLengthVar.get()
@@ -340,7 +345,11 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         else:
             totalCurrentLength = (textLeftPadding * render_factor + text_width)
         while totalCurrentLength > (int(maxBubbleLength)*render_factor):
-            text = item[0][:]
+            if alternate_menu_names_var.get() and muOSSystemName.startswith("mux"):
+                text = menuNameMap.get(item[0][:].lower(),item[0][:])
+            else:
+                text = item[0][:]
+
             if remove_brackets_var.get():
                 text = remove_brackets_and_contents(text)
             if remove_square_brackets_var.get():
@@ -361,7 +370,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 totalCurrentLength = (textLeftPadding * render_factor + text_width)
             noLettersCut +=1
             if text  == "...":
-                raise ValueError("Cut bubble off at too low")
+                raise ValueError("'Cut bubble off at' too low")
         text_x = textLeftPadding * render_factor
         text_y = headerHeight * render_factor + availableHeight * index
 
@@ -753,7 +762,7 @@ def replace_hyphen_with_colon(text):
 def getNameConvertionList(file_path):
     if os.path.exists(name_json_path.get()):
         try:
-            with open(file_path, 'r') as file:
+            with open(file_path, 'r', encoding='utf-8') as file:
                 data = json.load(file)
             return data
         except:
@@ -776,6 +785,21 @@ def getConsoleAssociationList():
 def saveConsoleAssociationList():
     with open(ConsoleAssociationsPath, 'w', newline='\n') as json_file:
         json.dump(consoleMap, json_file, indent=2)         
+
+def getAlternateMenuNameList():
+    if os.path.exists(AlternateMenuNamesPath):
+        try:
+            with open(AlternateMenuNamesPath, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+            data = {key.lower(): value for key, value in data.items()}
+            return data
+        except:
+            return []
+    return []
+
+def saveAlternateMenuNameList():
+    with open(AlternateMenuNamesPath, 'w', newline='\n') as json_file:
+        json.dump(menuNameMap, json_file, indent=2)     
 
 def list_directory_contents(directory_path):
     names_data = getNameConvertionList(name_json_path.get())
@@ -987,6 +1011,53 @@ def select_console(directory_path):
     root.mainloop()
     root.destroy()
     return selected_console.get()
+
+def select_new_name(original_name):
+    def on_select():
+        new_name = entry.get()
+        if new_name.strip():
+            selected_name.set(new_name)
+            root.quit()
+    
+    def on_enter(event):
+        new_name = entry.get()
+        if new_name.strip():
+            selected_name.set(new_name)
+            root.quit()
+
+    root = tk.Tk()
+    root.geometry("400x200")
+    root.title("Enter New Name")
+
+    # Ensure the window is focused
+    root.lift()
+    root.attributes('-topmost', True)
+    root.after_idle(root.attributes, '-topmost', False)
+
+    label = tk.Label(root, text=f"Current Name: {original_name}")
+    label.pack(pady=10)
+
+    entry = tk.Entry(root, width=50)
+    entry.pack(pady=10)
+    
+    # Ensure the entry widget is focused
+    root.after(100, entry.focus_force)
+
+    entry.bind("<Return>", on_enter)
+
+    button_frame = tk.Frame(root)
+    button_frame.pack(pady=10)
+    entry.insert(0, original_name)
+
+    select_button = tk.Button(button_frame, text="SELECT", command=on_select)
+    select_button.pack()
+
+    selected_name = tk.StringVar()
+
+    root.mainloop()
+    root.destroy()
+
+    return selected_name.get()
 
 def select_input_directory():
     roms_directory_path.set(filedialog.askdirectory())
@@ -1428,6 +1499,16 @@ def FillTempThemeFolder(progress_bar):
             else:
                 ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
 
+def select_alternate_menu_names():
+    for section in menus2405_2:
+        if section[0].startswith("mux"):
+            for n in section[1]:
+                new_name = select_new_name(n[0])
+                menuNameMap[n[0].lower()] = new_name
+                saveAlternateMenuNameList()
+                on_change()
+
+
 def generate_archive_manager(progress_bar, loading_window, input_queue, output_queue):
     try:
         # Your existing code before the main task loop...
@@ -1648,6 +1729,7 @@ show_console_name_var = tk.IntVar()
 show_hidden_files_var = tk.IntVar()
 vertical_var = tk.IntVar()
 crt_overlay_var = tk.IntVar()
+alternate_menu_names_var = tk.IntVar()
 remove_right_menu_guides_var = tk.IntVar()
 remove_left_menu_guides_var = tk.IntVar()
 override_bubble_cut_var = tk.IntVar()
@@ -1782,6 +1864,8 @@ grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Vertical Main Menu (Like Original MinUI)", variable=vertical_var), sticky="w")
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Include CRT Overlay", variable=crt_overlay_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use customised text in menus [Can be used for Translations]", variable=alternate_menu_names_var), sticky="w")
+grid_helper.add(tk.Button(scrollable_frame, text="Select custom menu item names", command=select_alternate_menu_names), sticky="w", next_row=True)
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Left Menu Helper Guides", variable=remove_left_menu_guides_var), sticky="w")
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Right Menu Helper Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
 
@@ -2073,7 +2157,6 @@ def on_change(*args):
             else:
                 previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File', '4-in-1 Fun Pak [Version 1] (USA, Europe)'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File', '4-in-1 Funpak - Volume II (USA, Europe)'], ['A-mazing Tater (USA)', 'File', 'A-mazing Tater (USA)'], ['Addams Family, The (USA)', 'File', 'Addams Family, The (USA)'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File', "Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]"], ['Adventure Island (USA, Europe)', 'File', 'Adventure Island (USA, Europe)'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File', 'Adventure Island II - Aliens in Paradise (USA, Europe)'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File', 'Adventures of Rocky and Bullwinkle and Friends, The (USA)'], ['Adventures of Star Saver, The (USA, Europe)', 'File', 'Adventures of Star Saver, The (USA, Europe)'], ['Aerostar (USA, Europe)', 'File', 'Aerostar (USA, Europe)'], ['Aladdin (USA) (SGB Enhanced)', 'File', 'Aladdin (USA) (SGB Enhanced)'], ['Alfred Chicken (USA)', 'File', 'Alfred Chicken (USA)'], ['Alien 3 (USA, Europe)', 'File', 'Alien 3 (USA, Europe)'], ['Alien vs Predator - The Last of His Clan (USA)', 'File', 'Alien vs Predator - The Last of His Clan (USA)'], ['All-Star Baseball 99 (USA)', 'File', 'All-Star Baseball 99 (USA)'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File', 'Altered Space - A 3-D Alien Adventure (USA)'], ['Amazing Penguin (USA, Europe)', 'File', 'Amazing Penguin (USA, Europe)'], ['Amazing Spider-Man, The (USA, Europe)', 'File', 'Amazing Spider-Man, The (USA, Europe)'], ['Animaniacs (USA) (SGB Enhanced)', 'File', 'Animaniacs (USA) (SGB Enhanced)'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File', 'Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)'], ['Asteroids (USA, Europe)', 'File', 'Asteroids (USA, Europe)'], ['Atomic Punk (USA)', 'File', 'Atomic Punk (USA)'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File', 'Attack of the Killer Tomatoes (USA, Europe)'], ['Avenging Spirit (USA, Europe)', 'File', 'Avenging Spirit (USA, Europe)'], ['Balloon Kid (USA, Europe)', 'File', 'Balloon Kid (USA, Europe)'], ['Barbie - Game Girl (USA, Europe)', 'File', 'Barbie - Game Girl (USA, Europe)'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File', "Bart Simpson's Escape from Camp Deadly (USA, Europe)"], ['Bases Loaded for Game Boy (USA)', 'File', 'Bases Loaded for Game Boy (USA)'], ['Batman - Return of the Joker (USA, Europe)', 'File', 'Batman - Return of the Joker (USA, Europe)'], ['Batman - The Animated Series (USA, Europe)', 'File', 'Batman - The Animated Series (USA, Europe)'], ['Batman Forever (USA, Europe)', 'File', 'Batman Forever (USA, Europe)'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File', 'Battle Arena Toshinden (USA) (SGB Enhanced)'], ['Battle Bull (USA)', 'File', 'Battle Bull (USA)'], ['Battle Unit Zeoth (USA, Europe)', 'File', 'Battle Unit Zeoth (USA, Europe)'], ['Battleship (USA, Europe)', 'File', 'Battleship (USA, Europe)'], ['Battletoads (USA, Europe)', 'File', 'Battletoads (USA, Europe)'], ["Battletoads in Ragnarok's World (USA)", 'File', "Battletoads in Ragnarok's World (USA)"], ['Battletoads-Double Dragon (USA)', 'File', 'Battletoads-Double Dragon (USA)'], ['Beavis and Butt-Head (USA, Europe)', 'File', 'Beavis and Butt-Head (USA, Europe)'], ['Beetlejuice (USA)', 'File', 'Beetlejuice (USA)'], ['Best of the Best - Championship Karate (USA)', 'File', 'Best of the Best - Championship Karate (USA)'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File', "Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)"], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File', "Bill Elliott's NASCAR Fast Tracks (USA)"], ['Bionic Battler (USA)', 'File', 'Bionic Battler (USA)'], ['Bionic Commando (USA)', 'File', 'Bionic Commando (USA)'], ['Black Bass - Lure Fishing (USA)', 'File', 'Black Bass - Lure Fishing (USA)'], ['Blades of Steel (USA)', 'File', 'Blades of Steel (USA)'], ['Blaster Master Boy (USA)', 'File', 'Blaster Master Boy (USA)'], ['Blues Brothers, The (USA, Europe)', 'File', 'Blues Brothers, The (USA, Europe)'], ['Bo Jackson - Two Games in One (USA)', 'File', 'Bo Jackson - Two Games in One (USA)'], ['Boggle Plus (USA)', 'File', 'Boggle Plus (USA)'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File', 'Bomberman GB (USA, Europe) (SGB Enhanced)'], ["Bonk's Adventure (USA)", 'File', "Bonk's Adventure (USA)"], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File', "Bonk's Revenge (USA) (SGB Enhanced)"]]
 
-            
         if not(vertical_var.get()):
             image1 = generatePilImageHorizontal(fakeprogressbar,0,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize((int(width/2), int(height/2)), Image.LANCZOS)
         else:
@@ -2248,6 +2331,7 @@ def save_settings():
     config.also_games_var = also_games_var.get()
     config.move_the_var = move_the_var.get()
     config.crt_overlay_var = crt_overlay_var.get()
+    config.alternate_menu_names_var = alternate_menu_names_var.get()
     config.remove_right_menu_guides_var = remove_right_menu_guides_var.get()
     config.remove_left_menu_guides_var = remove_left_menu_guides_var.get()
     config.overlay_box_art_var = overlay_box_art_var.get()
@@ -2290,6 +2374,7 @@ def load_settings():
     also_games_var.set(config.also_games_var)
     move_the_var.set(config.move_the_var)
     crt_overlay_var.set(config.crt_overlay_var)
+    alternate_menu_names_var.set(config.alternate_menu_names_var)
     remove_right_menu_guides_var.set(config.remove_right_menu_guides_var)
     remove_left_menu_guides_var.set(config.remove_left_menu_guides_var)
     overlay_box_art_var.set(config.overlay_box_art_var)
@@ -2322,6 +2407,7 @@ def load_settings():
 config = Config()
 load_settings()
 consoleMap = getConsoleAssociationList()
+menuNameMap = getAlternateMenuNameList()
 
 # Attach trace callbacks to the variables
 scrollBarWidthVar.trace("w", on_change)
@@ -2341,6 +2427,7 @@ show_file_counter_var.trace("w", on_change)
 show_console_name_var.trace("w", on_change)
 move_the_var.trace("w", on_change)
 crt_overlay_var.trace("w", on_change)
+alternate_menu_names_var.trace("w", on_change)
 remove_right_menu_guides_var.trace("w", on_change)
 remove_left_menu_guides_var.trace("w", on_change)
 overlay_box_art_var.trace("w", on_change)
