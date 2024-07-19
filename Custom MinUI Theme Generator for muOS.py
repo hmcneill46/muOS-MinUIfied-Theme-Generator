@@ -786,7 +786,7 @@ def saveConsoleAssociationList():
     with open(ConsoleAssociationsPath, 'w', newline='\n') as json_file:
         json.dump(consoleMap, json_file, indent=2)         
 
-def getAlternateMenuNameList():
+def getAlternateMenuNameDict():
     if os.path.exists(AlternateMenuNamesPath):
         try:
             with open(AlternateMenuNamesPath, 'r', encoding='utf-8') as file:
@@ -794,8 +794,8 @@ def getAlternateMenuNameList():
             data = {key.lower(): value for key, value in data.items()}
             return data
         except:
-            return []
-    return []
+            return {}
+    return {}
 
 def saveAlternateMenuNameList():
     with open(AlternateMenuNamesPath, 'w', newline='\n') as json_file:
@@ -2407,7 +2407,7 @@ def load_settings():
 config = Config()
 load_settings()
 consoleMap = getConsoleAssociationList()
-menuNameMap = getAlternateMenuNameList()
+menuNameMap = getAlternateMenuNameDict()
 
 # Attach trace callbacks to the variables
 scrollBarWidthVar.trace("w", on_change)
