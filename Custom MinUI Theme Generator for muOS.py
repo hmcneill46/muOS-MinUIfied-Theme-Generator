@@ -65,6 +65,8 @@ class Config:
         self.catalogue_directory_path = ""
         self.name_json_path = ""
         self.background_image_path = ""
+        self.alt_font_path = ""
+        self.use_alt_font_var = False
         self.themeName = "MinUIfied - Default Theme"
         self.amThemeName = "MinUIfied - Default AM Theme"
         self.am_ignore_theme_var = False
@@ -145,8 +147,13 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     boxArtWidth = 0
     if len(listItems) == 0:
         return(image)
-    
-    font_path = os.path.join(internal_files_dir, "Font", "BPreplayBold-unhinted.otf")
+    if not use_alt_font_var.get():
+        selected_font_path = os.path.join(internal_files_dir, "Font", "BPreplayBold-unhinted.otf")
+    else:
+        if os.path.exists(alt_font_path.get()):
+            selected_font_path = alt_font_path.get()
+        else:
+            selected_font_path = os.path.join(internal_files_dir, "Font", "BPreplayBold-unhinted.otf")
 
 
 
@@ -154,7 +161,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
 
     if topText != None and show_console_name_var.get():
         
-        topTextFont = ImageFont.truetype(font_path, 27*render_factor)
+        topTextFont = ImageFont.truetype(selected_font_path, 27*render_factor)
 
         bbox = draw.textbbox((0, 0), topText, font=topTextFont)
         text_width = bbox[2] - bbox[0]
@@ -193,13 +200,13 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     
     if additions != "Blank" and version_var.get() == "muOS 2405 BEANS" and not remove_right_menu_guides_var.get(): ## muOS Beans shit
         in_smaller_bubble_font_size = 16*render_factor
-        inSmallerBubbleFont = ImageFont.truetype(font_path, in_smaller_bubble_font_size)
+        inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
 
         in_bubble_font_size = 19*render_factor
-        inBubbleFont = ImageFont.truetype(font_path, in_bubble_font_size)
+        inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
 
         single_letter_font_size = 23*render_factor
-        singleLetterFont = ImageFont.truetype(font_path, single_letter_font_size)
+        singleLetterFont = ImageFont.truetype(selected_font_path, single_letter_font_size)
         RHM_Len = 340
         if additions == "PowerHelpOkay":
             RHM_Len = 240
@@ -253,13 +260,13 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     elif (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp"):
         
         in_smaller_bubble_font_size = 16*render_factor
-        inSmallerBubbleFont = ImageFont.truetype(font_path, in_smaller_bubble_font_size)
+        inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
 
         in_bubble_font_size = 19*render_factor
-        inBubbleFont = ImageFont.truetype(font_path, in_bubble_font_size)
+        inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
 
         single_letter_font_size = 23*render_factor
-        singleLetterFont = ImageFont.truetype(font_path, single_letter_font_size)
+        singleLetterFont = ImageFont.truetype(selected_font_path, single_letter_font_size)
 
         if not remove_left_menu_guides_var.get():
             draw.rounded_rectangle( ## Power Behind Bubble
@@ -314,7 +321,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 draw.text(( 449.4*render_factor,439*render_factor), "BACK", font=inBubbleFont, fill=f"#{bubble_hex}")
     elif show_file_counter_var.get() == 1:
         in_bubble_font_size = 19*render_factor
-        inBubbleFont = ImageFont.truetype(font_path, in_bubble_font_size)
+        inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
         bbox = draw.textbbox((0, 0), fileCounter, font=inBubbleFont)
         text_width = bbox[2] - bbox[0]
         right_aligned_position = 620 * render_factor
@@ -323,7 +330,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         draw.text(( x, y ), fileCounter, font=inBubbleFont, fill=f"#{bubble_hex}")    
     
     font_size = (((height - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
-    font = ImageFont.truetype(font_path, font_size)
+    font = ImageFont.truetype(selected_font_path, font_size)
 
     availableHeight = ((height - headerHeight - footerHeight) * render_factor) / ItemsPerScreen
     for index, item in enumerate(listItems):
@@ -542,15 +549,21 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
 
     draw = ImageDraw.Draw(image)
 
-    font_path = os.path.join(internal_files_dir, "Font", "BPreplayBold-unhinted.otf")
+    if not use_alt_font_var.get():
+        selected_font_path = os.path.join(internal_files_dir, "Font", "BPreplayBold-unhinted.otf")
+    else:
+        if os.path.exists(alt_font_path.get()):
+            selected_font_path = alt_font_path.get()
+        else:
+            selected_font_path = os.path.join(internal_files_dir, "Font", "BPreplayBold-unhinted.otf")
     in_smaller_bubble_font_size = 16*render_factor
-    inSmallerBubbleFont = ImageFont.truetype(font_path, in_smaller_bubble_font_size)
+    inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
 
     in_bubble_font_size = 19*render_factor
-    inBubbleFont = ImageFont.truetype(font_path, in_bubble_font_size)
+    inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
 
     single_letter_font_size = 23*render_factor
-    singleLetterFont = ImageFont.truetype(font_path, single_letter_font_size)
+    singleLetterFont = ImageFont.truetype(selected_font_path, single_letter_font_size)
     if not remove_left_menu_guides_var.get():
         draw.rounded_rectangle( ## Power Behind Bubble
                 [(5*render_factor, 430*render_factor), (150*render_factor, 475*render_factor)],
@@ -585,11 +598,11 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     
 
     font_size = 24 * render_factor
-    font = ImageFont.truetype(font_path, font_size)
+    font = ImageFont.truetype(selected_font_path, font_size)
     current_x_midpoint = 104+(144*workingIndex)
     
     if workingIndex == 0 :
-        bubbleLength = 120
+        bubbleLength = 144
         draw.rounded_rectangle(
             [((current_x_midpoint-(bubbleLength/2))*render_factor, 256.2*render_factor), ((current_x_midpoint+(bubbleLength/2))*render_factor, 292.5*render_factor)],
             radius=18.15*render_factor,
@@ -603,14 +616,14 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
             fill=f"#{bubble_hex}"
         )
     elif workingIndex == 2 :
-        bubbleLength = 120
+        bubbleLength = 144
         draw.rounded_rectangle(
             [((current_x_midpoint-(bubbleLength/2))*render_factor, 256.2*render_factor), ((current_x_midpoint+(bubbleLength/2))*render_factor, 292.5*render_factor)],
             radius=18.15*render_factor,
             fill=f"#{bubble_hex}"
         )
     elif workingIndex == 3 :
-        bubbleLength = 120
+        bubbleLength = 144
         draw.rounded_rectangle(
             [((104+(144*workingIndex)-(bubbleLength/2))*render_factor, 256.2*render_factor), ((104+(144*workingIndex)+(bubbleLength/2))*render_factor, 292.5*render_factor)],
             radius=18.15*render_factor,
@@ -621,17 +634,17 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         center_y = 340+(36.4/2)
         radius = 65/2
         draw.ellipse((int((center_x-radius)*render_factor),int((center_y-radius)*render_factor),int((center_x+radius)*render_factor),int((center_y+radius)*render_factor)),fill=f"#{bubble_hex}")
-    if workingIndex == 5:
+    elif workingIndex == 5:
         center_x = 259.533333+(36.4/2)
         center_y = 340+(36.4/2)
         radius = 65/2
         draw.ellipse((int((center_x-radius)*render_factor),int((center_y-radius)*render_factor),int((center_x+radius)*render_factor),int((center_y+radius)*render_factor)),fill=f"#{bubble_hex}")
-    if workingIndex == 6:
+    elif workingIndex == 6:
         center_x = 344.866666+(36.4/2)
         center_y = 340+(36.4/2)
         radius = 65/2
         draw.ellipse((int((center_x-radius)*render_factor),int((center_y-radius)*render_factor),int((center_x+radius)*render_factor),int((center_y+radius)*render_factor)),fill=f"#{bubble_hex}")
-    if workingIndex == 7:
+    elif workingIndex == 7:
         center_x = 430.1999993+(36.4/2)
         center_y = 340+(36.4/2)
         radius = 65/2
@@ -663,7 +676,10 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     image.paste(rebootLogoColoured,(int(344.866666*render_factor),340*render_factor),rebootLogoColoured)
     image.paste(shutdownLogoColoured,(int(430.1999993*render_factor),340*render_factor),shutdownLogoColoured)
 
-    textString = "Content"
+    if alternate_menu_names_var.get():
+        textString = menuNameMap.get("content explorer", "Content")
+    else:
+        textString = "Content"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
     text_width = (text_bbox[2] - text_bbox[0])/render_factor
     text_height = (text_bbox[3] - text_bbox[1])/render_factor
@@ -672,7 +688,10 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     text_x = bubblecenter_x - (text_width / 2)
     draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
 
-    textString = "Favourites"
+    if alternate_menu_names_var.get():
+        textString = menuNameMap.get("favourites", "Favourites")
+    else:
+        textString = "Favourites"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
     text_width = (text_bbox[2] - text_bbox[0])/render_factor
     text_height = (text_bbox[3] - text_bbox[1])/render_factor
@@ -681,7 +700,10 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     text_x = bubblecenter_x - (text_width / 2)
     draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
 
-    textString = "History"
+    if alternate_menu_names_var.get():
+        textString = menuNameMap.get("history", "History")
+    else:
+        textString = "History"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
     text_width = (text_bbox[2] - text_bbox[0])/render_factor
     text_height = (text_bbox[3] - text_bbox[1])/render_factor
@@ -689,8 +711,10 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     textColour = selected_font_hex if workingIndex == 2 else deselected_font_hex
     text_x = bubblecenter_x - (text_width / 2)
     draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
-
-    textString = "Utilities"
+    if alternate_menu_names_var.get():
+        textString = menuNameMap.get("applications", "Utilities")
+    else:
+        textString = "Utilities"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
     text_width = (text_bbox[2] - text_bbox[0])/render_factor
     text_height = (text_bbox[3] - text_bbox[1])/render_factor
@@ -1098,7 +1122,13 @@ def select_background_image_path():
     )
     background_image_path.set(file_path)
 
-
+def select_alt_font_path():
+    # File dialog to select a file, with specific types of files allowed
+    file_path = filedialog.askopenfilename(
+        filetypes=[("Font Files", "*.ttf;*.otf")],  # Only show .ini files
+        title="Select font file"
+    )
+    alt_font_path.set(file_path)
 
 
 def remove_images():
@@ -1720,6 +1750,7 @@ roms_directory_path = tk.StringVar()
 application_directory_path = tk.StringVar()
 name_json_path = tk.StringVar()
 background_image_path = tk.StringVar()
+alt_font_path =  tk.StringVar()
 box_art_directory_path = tk.StringVar()
 catalogue_directory_path = tk.StringVar()
 theme_directory_path = tk.StringVar()
@@ -1736,6 +1767,7 @@ remove_right_menu_guides_var = tk.IntVar()
 remove_left_menu_guides_var = tk.IntVar()
 override_bubble_cut_var = tk.IntVar()
 page_by_page_var = tk.IntVar()
+use_alt_font_var = tk.IntVar()
 remove_brackets_var = tk.IntVar()
 overlay_box_art_var = tk.IntVar(value=1)
 remove_square_brackets_var = tk.IntVar()
@@ -1847,6 +1879,11 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="Page by Page Scrolling", 
 grid_helper.add(tk.Label(scrollable_frame, text="[Optional] Override background colour with image"), sticky="w")
 grid_helper.add(tk.Entry(scrollable_frame, textvariable=background_image_path, width=50))
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_background_image_path), next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="*[Optional] Use Custom font:", variable=use_alt_font_var), sticky="w")
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=alt_font_path, width=50))
+grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_alt_font_path), next_row=True)
+grid_helper.add(tk.Label(scrollable_frame,text="*Use if text override characters not supported by default font",fg="#00f"),sticky="w",next_row=True)
 
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
@@ -2352,6 +2389,8 @@ def save_settings():
     config.catalogue_directory_path = catalogue_directory_path.get()
     config.name_json_path = name_json_path.get()
     config.background_image_path = background_image_path.get()
+    config.alt_font_path = alt_font_path.get()
+    config.use_alt_font_var = use_alt_font_var.get()
     config.themeName = theme_name_entry.get()
     config.amThemeName = am_theme_name_entry.get()
     config.am_ignore_theme_var = am_ignore_theme_var.get()
@@ -2395,6 +2434,8 @@ def load_settings():
     catalogue_directory_path.set(config.catalogue_directory_path)
     name_json_path.set(config.name_json_path)
     background_image_path.set(config.background_image_path)
+    alt_font_path.set(config.alt_font_path)
+    use_alt_font_var.set(config.use_alt_font_var)
     theme_name_entry.delete(0, tk.END)
     theme_name_entry.insert(0, config.themeName)
     am_theme_name_entry.delete(0, tk.END)
@@ -2451,6 +2492,9 @@ background_image_path.trace("w",on_change)
 am_ignore_theme_var.trace("w",on_change)
 am_ignore_cd_var.trace("w",on_change)
 advanced_error_var.trace("w",on_change)
+use_alt_font_var.trace("w",on_change)
+alt_font_path.trace("w",on_change)
+
 
 
 on_change()
