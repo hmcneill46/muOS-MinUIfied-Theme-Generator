@@ -35,6 +35,8 @@ class Config:
         self.textLeftPaddingVar = 25
         self.bubblePaddingVar = 20
         self.itemsPerScreenVar = 9
+        self.use_custom_font_size_var = False
+        self.customFontSizeVar = ""
         self.bgHexVar = "000000"
         self.selectedFontHexVar = "000000"
         self.deselectedFontHexVar = "ffffff"
@@ -202,7 +204,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         in_smaller_bubble_font_size = 16*render_factor
         inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
 
-        in_bubble_font_size = 19*render_factor
+        in_bubble_font_size = 19*render_factor 
         inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
 
         single_letter_font_size = 23*render_factor
@@ -330,6 +332,12 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         draw.text(( x, y ), fileCounter, font=inBubbleFont, fill=f"#{bubble_hex}")    
     
     font_size = (((height - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
+    if use_custom_font_size_var.get():
+        try:
+            font_size = int(custom_font_size_entry.get()) * render_factor
+        except:
+            font_size = (((height - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
+    
     font = ImageFont.truetype(selected_font_path, font_size)
 
     availableHeight = ((height - headerHeight - footerHeight) * render_factor) / ItemsPerScreen
@@ -379,14 +387,23 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             if text  == "...":
                 raise ValueError("'Cut bubble off at' too low")
         text_x = textLeftPadding * render_factor
-        text_y = headerHeight * render_factor + availableHeight * index
+        #text_y = headerHeight * render_factor + availableHeight * index
+
+        
+        rectangle_x0 = (textLeftPadding - rectanglePadding) * render_factor
+        rectangle_y0 = headerHeight * render_factor + availableHeight * index
+        rectangle_x1 = textLeftPadding * render_factor + text_width + rectanglePadding * render_factor
+        rectangle_y1 = headerHeight * render_factor + availableHeight * (index+1)
+        middle_y = (rectangle_y0 + rectangle_y1) / 2
+        ascent, descent = font.getmetrics()
+        text_height = ascent + descent
+
+        # Calculate the text's y-position by centering it vertically within the rectangle
+        text_y = middle_y - (text_height / 2)
+
+        corner_radius = availableHeight // 2
 
         if workingIndex == index:
-            rectangle_x0 = (textLeftPadding - rectanglePadding) * render_factor
-            rectangle_y0 = headerHeight * render_factor + availableHeight * index
-            rectangle_x1 = textLeftPadding * render_factor + text_width + rectanglePadding * render_factor
-            rectangle_y1 = headerHeight * render_factor + availableHeight * (index+1)
-            corner_radius = availableHeight // 2
             draw.rounded_rectangle(
                 [(rectangle_x0, rectangle_y0), (rectangle_x1, rectangle_y1)],
                 radius=corner_radius,
@@ -1767,6 +1784,7 @@ remove_right_menu_guides_var = tk.IntVar()
 remove_left_menu_guides_var = tk.IntVar()
 override_bubble_cut_var = tk.IntVar()
 page_by_page_var = tk.IntVar()
+use_custom_font_size_var = tk.IntVar()
 use_alt_font_var = tk.IntVar()
 remove_brackets_var = tk.IntVar()
 overlay_box_art_var = tk.IntVar(value=1)
@@ -1820,6 +1838,7 @@ scrollBarWidthVar = tk.StringVar()
 textLeftPaddingVar = tk.StringVar()
 bubblePaddingVar = tk.StringVar()
 itemsPerScreenVar = tk.StringVar()
+customFontSizeVar = tk.StringVar()
 bgHexVar = tk.StringVar()
 selectedFontHexVar = tk.StringVar()
 deselectedFontHexVar = tk.StringVar()
@@ -1884,6 +1903,10 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="*[Optional] Use Custom fo
 grid_helper.add(tk.Entry(scrollable_frame, textvariable=alt_font_path, width=50))
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_alt_font_path), next_row=True)
 grid_helper.add(tk.Label(scrollable_frame,text="*Use if text override characters not supported by default font",fg="#00f"),sticky="w",next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[optional] Use custom font size:", variable=use_custom_font_size_var), sticky="w")
+custom_font_size_entry = tk.Entry(scrollable_frame, width=50, textvariable=customFontSizeVar)
+grid_helper.add(custom_font_size_entry, next_row=True)
 
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
@@ -2359,6 +2382,7 @@ def save_settings():
     config.textLeftPaddingVar = textLeftPaddingVar.get()
     config.bubblePaddingVar = bubblePaddingVar.get()
     config.itemsPerScreenVar = itemsPerScreenVar.get()
+    config.customFontSizeVar = customFontSizeVar.get()
     config.bgHexVar = bgHexVar.get()
     config.selectedFontHexVar = selectedFontHexVar.get()
     config.deselectedFontHexVar = deselectedFontHexVar.get()
@@ -2383,6 +2407,7 @@ def save_settings():
     config.vertical_var = vertical_var.get()
     config.override_bubble_cut_var = override_bubble_cut_var.get()
     config.page_by_page_var = page_by_page_var.get()
+    config.use_custom_font_size_var = use_custom_font_size_var.get()
     config.version_var = version_var.get()
     config.am_theme_directory_path = am_theme_directory_path.get()
     config.theme_directory_path = theme_directory_path.get()
@@ -2404,6 +2429,7 @@ def load_settings():
     textLeftPaddingVar.set(config.textLeftPaddingVar)
     bubblePaddingVar.set(config.bubblePaddingVar)
     itemsPerScreenVar.set(config.itemsPerScreenVar)
+    customFontSizeVar.set(config.customFontSizeVar)
     bgHexVar.set(config.bgHexVar)
     selectedFontHexVar.set(config.selectedFontHexVar)
     deselectedFontHexVar.set(config.deselectedFontHexVar)
@@ -2428,6 +2454,7 @@ def load_settings():
     vertical_var.set(config.vertical_var)
     override_bubble_cut_var.set(config.override_bubble_cut_var)
     page_by_page_var.set(config.page_by_page_var)
+    use_custom_font_size_var.set(config.use_custom_font_size_var)
     version_var.set(config.version_var)
     am_theme_directory_path.set(config.am_theme_directory_path)
     theme_directory_path.set(config.theme_directory_path)
@@ -2457,6 +2484,7 @@ scrollBarWidthVar.trace("w", on_change)
 textLeftPaddingVar.trace("w", on_change)
 bubblePaddingVar.trace("w", on_change)
 itemsPerScreenVar.trace("w", on_change)
+customFontSizeVar.trace("w", on_change)
 bgHexVar.trace("w", on_change)
 selectedFontHexVar.trace("w", on_change)
 deselectedFontHexVar.trace("w", on_change)
@@ -2483,6 +2511,7 @@ show_hidden_files_var.trace("w", on_change)
 vertical_var.trace("w", on_change)
 override_bubble_cut_var.trace("w", on_change)
 page_by_page_var.trace("w", on_change)
+use_custom_font_size_var.trace("w", on_change)
 version_var.trace("w", on_change)
 am_theme_directory_path.trace("w",on_change)
 theme_directory_path.trace("w",on_change)
