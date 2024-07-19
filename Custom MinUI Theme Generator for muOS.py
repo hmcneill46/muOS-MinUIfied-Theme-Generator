@@ -1036,6 +1036,8 @@ def select_new_name(original_name):
 
     label = tk.Label(root, text=f"Current Name: {original_name}")
     label.pack(pady=10)
+    label = tk.Label(root, text=f"New Name:")
+    label.pack(pady=10)
 
     entry = tk.Entry(root, width=50)
     entry.pack(pady=10)
@@ -1864,8 +1866,8 @@ grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Vertical Main Menu (Like Original MinUI)", variable=vertical_var), sticky="w")
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Include CRT Overlay", variable=crt_overlay_var), sticky="w", next_row=True)
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use customised text in menus [Can be used for Translations]", variable=alternate_menu_names_var), sticky="w")
-grid_helper.add(tk.Button(scrollable_frame, text="Select custom menu item names", command=select_alternate_menu_names), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Override text in menus [Can be used for Translations]", variable=alternate_menu_names_var), sticky="w")
+grid_helper.add(tk.Button(scrollable_frame, text="Select new menu item names", command=select_alternate_menu_names), sticky="w", next_row=True)
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Left Menu Helper Guides", variable=remove_left_menu_guides_var), sticky="w")
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Right Menu Helper Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
 
