@@ -332,7 +332,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         draw.text(( x, y ), fileCounter, font=inBubbleFont, fill=f"#{bubble_hex}")    
     
     font_size = (((height - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
-    if use_custom_font_size_var.get():
+    if override_font_size_var.get():
         try:
             font_size = int(custom_font_size_entry.get()) * render_factor
         except:
@@ -1784,7 +1784,7 @@ remove_right_menu_guides_var = tk.IntVar()
 remove_left_menu_guides_var = tk.IntVar()
 override_bubble_cut_var = tk.IntVar()
 page_by_page_var = tk.IntVar()
-use_custom_font_size_var = tk.IntVar()
+override_font_size_var = tk.IntVar()
 use_alt_font_var = tk.IntVar()
 remove_brackets_var = tk.IntVar()
 overlay_box_art_var = tk.IntVar(value=1)
@@ -1904,7 +1904,7 @@ grid_helper.add(tk.Entry(scrollable_frame, textvariable=alt_font_path, width=50)
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_alt_font_path), next_row=True)
 grid_helper.add(tk.Label(scrollable_frame,text="*Use if text override characters not supported by default font",fg="#00f"),sticky="w",next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[optional] Use custom font size:", variable=use_custom_font_size_var), sticky="w")
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[optional] Override font size:", variable=override_font_size_var), sticky="w")
 custom_font_size_entry = tk.Entry(scrollable_frame, width=50, textvariable=customFontSizeVar)
 grid_helper.add(custom_font_size_entry, next_row=True)
 
@@ -2407,7 +2407,7 @@ def save_settings():
     config.vertical_var = vertical_var.get()
     config.override_bubble_cut_var = override_bubble_cut_var.get()
     config.page_by_page_var = page_by_page_var.get()
-    config.use_custom_font_size_var = use_custom_font_size_var.get()
+    config.use_custom_font_size_var = override_font_size_var.get()
     config.version_var = version_var.get()
     config.am_theme_directory_path = am_theme_directory_path.get()
     config.theme_directory_path = theme_directory_path.get()
@@ -2454,7 +2454,7 @@ def load_settings():
     vertical_var.set(config.vertical_var)
     override_bubble_cut_var.set(config.override_bubble_cut_var)
     page_by_page_var.set(config.page_by_page_var)
-    use_custom_font_size_var.set(config.use_custom_font_size_var)
+    override_font_size_var.set(config.use_custom_font_size_var)
     version_var.set(config.version_var)
     am_theme_directory_path.set(config.am_theme_directory_path)
     theme_directory_path.set(config.theme_directory_path)
@@ -2511,7 +2511,7 @@ show_hidden_files_var.trace("w", on_change)
 vertical_var.trace("w", on_change)
 override_bubble_cut_var.trace("w", on_change)
 page_by_page_var.trace("w", on_change)
-use_custom_font_size_var.trace("w", on_change)
+override_font_size_var.trace("w", on_change)
 version_var.trace("w", on_change)
 am_theme_directory_path.trace("w",on_change)
 theme_directory_path.trace("w",on_change)
