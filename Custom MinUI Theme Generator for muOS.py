@@ -624,6 +624,9 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     font_size = 24 * render_factor
     font = ImageFont.truetype(selected_font_path, font_size)
     current_x_midpoint = 104+(144*workingIndex)
+    y_midpoint = 274.35
+
+    bubble_height = 36.3
 
     hozizontalBubblePadding = 40
     
@@ -635,17 +638,21 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     text_width = (text_bbox[2] - text_bbox[0])/render_factor
     ascent, descent = font.getmetrics()
     text_height = ascent + descent
+
+    text_y = y_midpoint*render_factor - (text_height / 2)
+
+
     bubblecenter_x =  104+(144*0)
     textColour = selected_font_hex if workingIndex == 0 else deselected_font_hex
     text_x = bubblecenter_x - (text_width / 2)
     if workingIndex == 0 :
         bubbleLength = text_width+hozizontalBubblePadding
         draw.rounded_rectangle(
-            [((current_x_midpoint-(bubbleLength/2))*render_factor, 256.2*render_factor), ((current_x_midpoint+(bubbleLength/2))*render_factor, 292.5*render_factor)],
-            radius=18.15*render_factor,
+            [((current_x_midpoint-(bubbleLength/2))*render_factor, int((y_midpoint-bubble_height/2)*render_factor)), ((current_x_midpoint+(bubbleLength/2))*render_factor, int((y_midpoint+bubble_height/2)*render_factor))],
+            radius=(bubble_height/2)*render_factor,
             fill=f"#{bubble_hex}"
         )
-    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
+    draw.text((text_x*render_factor, text_y), textString, font=font, fill=f"#{textColour}")
 
     if alternate_menu_names_var.get():
         textString = menuNameMap.get("favourites", "Favourites")
@@ -659,11 +666,11 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     if workingIndex == 1 :
         bubbleLength = text_width+hozizontalBubblePadding
         draw.rounded_rectangle(
-            [((current_x_midpoint-(bubbleLength/2))*render_factor, 256.2*render_factor), ((current_x_midpoint+(bubbleLength/2))*render_factor, 292.5*render_factor)],
-            radius=18.15*render_factor,
+            [((current_x_midpoint-(bubbleLength/2))*render_factor, int((y_midpoint-bubble_height/2)*render_factor)), ((current_x_midpoint+(bubbleLength/2))*render_factor, int((y_midpoint+bubble_height/2)*render_factor))],
+            radius=(bubble_height/2)*render_factor,
             fill=f"#{bubble_hex}"
         )
-    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
+    draw.text((text_x*render_factor, text_y), textString, font=font, fill=f"#{textColour}")
 
     if alternate_menu_names_var.get():
         textString = menuNameMap.get("history", "History")
@@ -677,11 +684,11 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     if workingIndex == 2 :
         bubbleLength = text_width+hozizontalBubblePadding
         draw.rounded_rectangle(
-            [((current_x_midpoint-(bubbleLength/2))*render_factor, 256.2*render_factor), ((current_x_midpoint+(bubbleLength/2))*render_factor, 292.5*render_factor)],
-            radius=18.15*render_factor,
+            [((current_x_midpoint-(bubbleLength/2))*render_factor, int((y_midpoint-bubble_height/2)*render_factor)), ((current_x_midpoint+(bubbleLength/2))*render_factor, int((y_midpoint+bubble_height/2)*render_factor))],
+            radius=(bubble_height/2)*render_factor,
             fill=f"#{bubble_hex}"
         )
-    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
+    draw.text((text_x*render_factor, text_y), textString, font=font, fill=f"#{textColour}")
     if alternate_menu_names_var.get():
         textString = menuNameMap.get("applications", "Utilities")
     else:
@@ -694,11 +701,11 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     if workingIndex == 3 :
         bubbleLength = text_width+hozizontalBubblePadding
         draw.rounded_rectangle(
-            [((104+(144*workingIndex)-(bubbleLength/2))*render_factor, 256.2*render_factor), ((104+(144*workingIndex)+(bubbleLength/2))*render_factor, 292.5*render_factor)],
-            radius=18.15*render_factor,
+            [((current_x_midpoint-(bubbleLength/2))*render_factor, int((y_midpoint-bubble_height/2)*render_factor)), ((current_x_midpoint+(bubbleLength/2))*render_factor, int((y_midpoint+bubble_height/2)*render_factor))],
+            radius=(bubble_height/2)*render_factor,
             fill=f"#{bubble_hex}"
         )
-    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
+    draw.text((text_x*render_factor, text_y), textString, font=font, fill=f"#{textColour}")
 
     if workingIndex == 4:
         center_x = 175+(36.4/2)
