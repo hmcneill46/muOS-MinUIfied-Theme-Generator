@@ -35,6 +35,7 @@ class Config:
         self.textLeftPaddingVar = 25
         self.bubblePaddingVar = 20
         self.itemsPerScreenVar = 9
+        self.footerHeightVar = 55
         self.override_font_size_var = False
         self.customFontSizeVar = ""
         self.bgHexVar = "000000"
@@ -193,7 +194,6 @@ def applyMenuHelperGuides(muOSSystemName,image,selected_font_path,primary_colour
 
 
     if not remove_left_menu_guides_var.get():
-        print("Got to remove left menu guide")
         powerTextBbox = draw.textbbox((0, 0), powerText, font=inSmallerBubbleFont)
         powerTextWidth = powerTextBbox[2] - powerTextBbox[0]
         sleepTextBbox = draw.textbbox((0, 0), sleepText, font=inBubbleFont)
@@ -1924,6 +1924,7 @@ scrollBarWidthVar = tk.StringVar()
 textLeftPaddingVar = tk.StringVar()
 bubblePaddingVar = tk.StringVar()
 itemsPerScreenVar = tk.StringVar()
+footerHeightVar = tk.StringVar()
 boxArtPaddingVar = tk.StringVar()
 folderBoxArtPaddingVar = tk.StringVar()
 customFontSizeVar = tk.StringVar()
@@ -1955,6 +1956,11 @@ grid_helper.add(rectangle_padding_entry, next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Items Per Screen:"), sticky="w")
 items_per_screen_entry = tk.Entry(scrollable_frame, width=50, textvariable=itemsPerScreenVar)
 grid_helper.add(items_per_screen_entry, next_row=True)
+
+# Option for ItemsPerScreen
+grid_helper.add(tk.Label(scrollable_frame, text="Footer Height:"), sticky="w")
+footer_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=footerHeightVar)
+grid_helper.add(footer_height_entry, next_row=True)
 
 # Option for Background Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Background Hex Colour: #"), sticky="w")
@@ -2251,6 +2257,8 @@ def updateMenusList(menusList, defaultList):
             menusList[index][1] = defaultList
 
 def on_change(*args):
+    global footerHeight
+    footerHeight = int(footer_height_entry.get())
     save_settings()
     config.save_config()
     global background_image
@@ -2479,6 +2487,7 @@ def save_settings():
     config.textLeftPaddingVar = textLeftPaddingVar.get()
     config.bubblePaddingVar = bubblePaddingVar.get()
     config.itemsPerScreenVar = itemsPerScreenVar.get()
+    config.footerHeightVar = footerHeightVar.get()
     config.customFontSizeVar = customFontSizeVar.get()
     config.bgHexVar = bgHexVar.get()
     config.selectedFontHexVar = selectedFontHexVar.get()
@@ -2529,6 +2538,7 @@ def load_settings():
     textLeftPaddingVar.set(config.textLeftPaddingVar)
     bubblePaddingVar.set(config.bubblePaddingVar)
     itemsPerScreenVar.set(config.itemsPerScreenVar)
+    footerHeightVar.set(config.footerHeightVar)
     boxArtPaddingVar.set(config.boxArtPaddingVar)
     folderBoxArtPaddingVar.set(config.folderBoxArtPaddingVar)
     customFontSizeVar.set(config.customFontSizeVar)
@@ -2587,6 +2597,7 @@ scrollBarWidthVar.trace("w", on_change)
 textLeftPaddingVar.trace("w", on_change)
 bubblePaddingVar.trace("w", on_change)
 itemsPerScreenVar.trace("w", on_change)
+footerHeightVar.trace("w", on_change)
 boxArtPaddingVar.trace("w", on_change)
 folderBoxArtPaddingVar.trace("w", on_change)
 customFontSizeVar.trace("w", on_change)
