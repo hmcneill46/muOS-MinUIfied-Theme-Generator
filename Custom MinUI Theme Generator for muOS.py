@@ -132,7 +132,7 @@ def change_logo_color(input_path, hex_color):
     
     return result_image
 
-def applyMenuHelperGuides(muOSSystemName)
+#def applyMenuHelperGuides(muOSSystemName)
 
 def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,additions,textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,fileCounter=""):
     progress_bar['value'] +=1
