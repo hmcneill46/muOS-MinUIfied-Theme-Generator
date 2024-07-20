@@ -104,7 +104,7 @@ AlternateMenuNamesPath = os.path.join(script_dir,"AlternateMenuNames.json")
 ConsoleAssociationsPath = os.path.join(script_dir,"ConsoleAssociations.json")
 defaultConsoleAssociationsPath = os.path.join(internal_files_dir,"_ConsoleAssociations.json")
 
-width, height = 640, 480
+deviceScreenWidth, deviceScreenHeight = 640, 480
 headerHeight = 40
 footerHeight = 55
 textMF = 0.7
@@ -137,10 +137,10 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
 
-    image = Image.new("RGBA", (width * render_factor, height * render_factor), bg_rgb)
+    image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
 
     if background_image != None:
-        image.paste(background_image.resize((width * render_factor, height * render_factor)), (0,0))
+        image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
 
     topText = str(muOSSystemName)
     #if topText == "Folder":
@@ -171,7 +171,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         bbox = draw.textbbox((0, 0), topText, font=topTextFont)
         text_width = bbox[2] - bbox[0]
 
-        text_x = (width*render_factor - text_width) / 2
+        text_x = (deviceScreenWidth*render_factor - text_width) / 2
 
         draw.text(( text_x,0*render_factor), topText, font=topTextFont, fill=f"#{bubble_hex}")
     
@@ -186,7 +186,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")).convert("RGBA")
                 boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
                 
-                pasteLocation = (int((width*render_factor)-boxArtImage.width)-boxArtPadding,int(((height*render_factor)-boxArtImage.height)/2))
+                pasteLocation = (int((deviceScreenWidth*render_factor)-boxArtImage.width)-boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
 
                 boxArtWidth = originalBoxArtImage.width
 
@@ -197,7 +197,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")).convert("RGBA")
                 boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
                 
-                pasteLocation = (int((width*render_factor)-boxArtImage.width)-boxArtPadding,int(((height*render_factor)-boxArtImage.height)/2))
+                pasteLocation = (int((deviceScreenWidth*render_factor)-boxArtImage.width)-boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
 
                 boxArtWidth = originalBoxArtImage.width
 
@@ -226,7 +226,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 fill=f"#{percentage_color(bg_hex,bubble_hex,0.133)}"
             )
         draw.rounded_rectangle(
-                [((640-5-RHM_Len)*render_factor, 430*render_factor), ((640-5)*render_factor, 475*render_factor)],
+                [((deviceScreenWidth-5-RHM_Len)*render_factor, 430*render_factor), ((deviceScreenWidth-5)*render_factor, 475*render_factor)],
                 radius=22.5*render_factor,
                 fill=f"#{percentage_color(bg_hex,bubble_hex,0.133)}"
             )
@@ -301,7 +301,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             elif muOSSystemName == "muxapp":
                 RHM_Len = 233.1
             draw.rounded_rectangle( ## Left hand behind bubble
-                    [((640-5-RHM_Len)*render_factor, 430*render_factor), ((640-5)*render_factor, 475*render_factor)],
+                    [((deviceScreenWidth-5-RHM_Len)*render_factor, 430*render_factor), ((deviceScreenWidth-5)*render_factor, 475*render_factor)],
                     radius=22.5*render_factor,
                     fill=f"#{percentage_color(bg_hex,bubble_hex,0.133)}"
                 )
@@ -338,16 +338,16 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         y = 447 * render_factor
         draw.text(( x, y ), fileCounter, font=inBubbleFont, fill=f"#{bubble_hex}")    
     
-    font_size = (((height - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
+    font_size = (((deviceScreenHeight - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
     if override_font_size_var.get():
         try:
             font_size = int(custom_font_size_entry.get()) * render_factor
         except:
-            font_size = (((height - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
+            font_size = (((deviceScreenHeight - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
     
     font = ImageFont.truetype(selected_font_path, font_size)
 
-    availableHeight = ((height - headerHeight - footerHeight) * render_factor) / ItemsPerScreen
+    availableHeight = ((deviceScreenHeight - headerHeight - footerHeight) * render_factor) / ItemsPerScreen
     for index, item in enumerate(listItems):
         noLettersCut = 0
         text_width = 2000*render_factor
@@ -359,9 +359,9 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         if boxArtDrawn and override_bubble_cut_var.get():
             maxBubbleLength = maxBubbleLengthVar.get()
         elif boxArtDrawn:
-            maxBubbleLength = width - boxArtWidth - boxArtPadding
+            maxBubbleLength = deviceScreenWidth - boxArtWidth - boxArtPadding
         else:
-            maxBubbleLength = width
+            maxBubbleLength = deviceScreenWidth
         if workingIndex == index:
             totalCurrentLength = (textLeftPadding * render_factor + text_width + rectanglePadding * render_factor)
         else:
@@ -419,11 +419,11 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
 
         draw.text((text_x, text_y), text, font=font, fill=text_color)
     if showScrollBar:
-        scrollBarHeight = (height - footerHeight - headerHeight) // numScreens
-        rectangle_x0 = (width - scrollBarWidth) * render_factor
+        scrollBarHeight = (deviceScreenHeight - footerHeight - headerHeight) // numScreens
+        rectangle_x0 = (deviceScreenWidth - scrollBarWidth) * render_factor
         rectangle_y0 = (headerHeight) * render_factor
-        rectangle_x1 = (width) * render_factor
-        rectangle_y1 = (height - footerHeight) * render_factor
+        rectangle_x1 = (deviceScreenWidth) * render_factor
+        rectangle_y1 = (deviceScreenHeight - footerHeight) * render_factor
         corner_radius = (scrollBarWidth // 2) * render_factor 
 
         draw.rounded_rectangle(
@@ -432,9 +432,9 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             fill="darkgrey"
         )
 
-        rectangle_x0 = (width - scrollBarWidth) * render_factor
+        rectangle_x0 = (deviceScreenWidth - scrollBarWidth) * render_factor
         rectangle_y0 = (headerHeight + scrollBarHeight * screenIndex) * render_factor
-        rectangle_x1 = (width) * render_factor
+        rectangle_x1 = (deviceScreenWidth) * render_factor
         rectangle_y1 = rectangle_y0 + scrollBarHeight * render_factor
         corner_radius = (scrollBarWidth // 2) * render_factor
         draw.rounded_rectangle(
@@ -448,7 +448,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
 
 def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir):
     totalItems = len(listItems)
-    scrollBarHeight = (height - footerHeight - headerHeight)
+    scrollBarHeight = (deviceScreenHeight - footerHeight - headerHeight)
 
     
 
@@ -478,7 +478,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
                 
 
             if muOSSystemName != "ThemePreview":
-                image = image.resize((width, height), Image.LANCZOS)
+                image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
                 if workingItem[1] == "File":
                     directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
                     if not os.path.exists(directory):
@@ -522,7 +522,7 @@ def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scroll
                 fileCounter = str(workingIndex + 1) + " / " + str(totalItems)
                 image = generatePilImageVertical(progress_bar,workingIndex%ItemsPerScreen,muOSSystemName,listItems[startIndex:endIndex],additions,textLeftPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,scrollBarWidth=scrollBarWidth,showScrollBar=showScrollBar,numScreens=numScreens,screenIndex=screenIndex,fileCounter=fileCounter)
                 if muOSSystemName != "ThemePreview":
-                    image = image.resize((width, height), Image.LANCZOS)
+                    image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
                     if workingItem[1] == "File":
                         directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
                         if not os.path.exists(directory):
@@ -550,9 +550,9 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     bg_rgb = hex_to_rgb(bg_hex)
 
     # Create image
-    image = Image.new("RGBA", (width * render_factor, height * render_factor), bg_rgb)
+    image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
     if background_image != None:
-        image.paste(background_image.resize((width * render_factor, height * render_factor)), (0,0))
+        image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
     
     
 
@@ -609,7 +609,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         RHM_Len = 142.8
 
         draw.rounded_rectangle( ## Left hand behind bubble
-                [((640-5-RHM_Len)*render_factor, 430*render_factor), ((640-5)*render_factor, 475*render_factor)],
+                [((deviceScreenWidth-5-RHM_Len)*render_factor, 430*render_factor), ((deviceScreenWidth-5)*render_factor, 475*render_factor)],
                 radius=22.5*render_factor,
                 fill=f"#{percentage_color(bg_hex,bubble_hex,0.133)}"
             )
@@ -757,7 +757,7 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
         #image.save(os.path.join(script_dir,"Images for testing horizontal",f"{workingIndex}.png"))
         image = generatePilImageHorizontal(progress_bar,workingIndex,bg_hex, selected_font_hex,deselected_font_hex,bubble_hex,icon_hex,render_factor)
 
-        image = image.resize((width, height), Image.LANCZOS)
+        image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
         if workingItem[1] == "File":
             directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[0]}.png")
             if not os.path.exists(directory):
@@ -2239,7 +2239,7 @@ def on_change(*args):
                 previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File', '4-in-1 Fun Pak [Version 1] (USA, Europe)'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File', '4-in-1 Funpak - Volume II (USA, Europe)'], ['A-mazing Tater (USA)', 'File', 'A-mazing Tater (USA)'], ['Addams Family, The (USA)', 'File', 'Addams Family, The (USA)'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File', "Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]"], ['Adventure Island (USA, Europe)', 'File', 'Adventure Island (USA, Europe)'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File', 'Adventure Island II - Aliens in Paradise (USA, Europe)'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File', 'Adventures of Rocky and Bullwinkle and Friends, The (USA)'], ['Adventures of Star Saver, The (USA, Europe)', 'File', 'Adventures of Star Saver, The (USA, Europe)'], ['Aerostar (USA, Europe)', 'File', 'Aerostar (USA, Europe)'], ['Aladdin (USA) (SGB Enhanced)', 'File', 'Aladdin (USA) (SGB Enhanced)'], ['Alfred Chicken (USA)', 'File', 'Alfred Chicken (USA)'], ['Alien 3 (USA, Europe)', 'File', 'Alien 3 (USA, Europe)'], ['Alien vs Predator - The Last of His Clan (USA)', 'File', 'Alien vs Predator - The Last of His Clan (USA)'], ['All-Star Baseball 99 (USA)', 'File', 'All-Star Baseball 99 (USA)'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File', 'Altered Space - A 3-D Alien Adventure (USA)'], ['Amazing Penguin (USA, Europe)', 'File', 'Amazing Penguin (USA, Europe)'], ['Amazing Spider-Man, The (USA, Europe)', 'File', 'Amazing Spider-Man, The (USA, Europe)'], ['Animaniacs (USA) (SGB Enhanced)', 'File', 'Animaniacs (USA) (SGB Enhanced)'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File', 'Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)'], ['Asteroids (USA, Europe)', 'File', 'Asteroids (USA, Europe)'], ['Atomic Punk (USA)', 'File', 'Atomic Punk (USA)'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File', 'Attack of the Killer Tomatoes (USA, Europe)'], ['Avenging Spirit (USA, Europe)', 'File', 'Avenging Spirit (USA, Europe)'], ['Balloon Kid (USA, Europe)', 'File', 'Balloon Kid (USA, Europe)'], ['Barbie - Game Girl (USA, Europe)', 'File', 'Barbie - Game Girl (USA, Europe)'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File', "Bart Simpson's Escape from Camp Deadly (USA, Europe)"], ['Bases Loaded for Game Boy (USA)', 'File', 'Bases Loaded for Game Boy (USA)'], ['Batman - Return of the Joker (USA, Europe)', 'File', 'Batman - Return of the Joker (USA, Europe)'], ['Batman - The Animated Series (USA, Europe)', 'File', 'Batman - The Animated Series (USA, Europe)'], ['Batman Forever (USA, Europe)', 'File', 'Batman Forever (USA, Europe)'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File', 'Battle Arena Toshinden (USA) (SGB Enhanced)'], ['Battle Bull (USA)', 'File', 'Battle Bull (USA)'], ['Battle Unit Zeoth (USA, Europe)', 'File', 'Battle Unit Zeoth (USA, Europe)'], ['Battleship (USA, Europe)', 'File', 'Battleship (USA, Europe)'], ['Battletoads (USA, Europe)', 'File', 'Battletoads (USA, Europe)'], ["Battletoads in Ragnarok's World (USA)", 'File', "Battletoads in Ragnarok's World (USA)"], ['Battletoads-Double Dragon (USA)', 'File', 'Battletoads-Double Dragon (USA)'], ['Beavis and Butt-Head (USA, Europe)', 'File', 'Beavis and Butt-Head (USA, Europe)'], ['Beetlejuice (USA)', 'File', 'Beetlejuice (USA)'], ['Best of the Best - Championship Karate (USA)', 'File', 'Best of the Best - Championship Karate (USA)'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File', "Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)"], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File', "Bill Elliott's NASCAR Fast Tracks (USA)"], ['Bionic Battler (USA)', 'File', 'Bionic Battler (USA)'], ['Bionic Commando (USA)', 'File', 'Bionic Commando (USA)'], ['Black Bass - Lure Fishing (USA)', 'File', 'Black Bass - Lure Fishing (USA)'], ['Blades of Steel (USA)', 'File', 'Blades of Steel (USA)'], ['Blaster Master Boy (USA)', 'File', 'Blaster Master Boy (USA)'], ['Blues Brothers, The (USA, Europe)', 'File', 'Blues Brothers, The (USA, Europe)'], ['Bo Jackson - Two Games in One (USA)', 'File', 'Bo Jackson - Two Games in One (USA)'], ['Boggle Plus (USA)', 'File', 'Boggle Plus (USA)'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File', 'Bomberman GB (USA, Europe) (SGB Enhanced)'], ["Bonk's Adventure (USA)", 'File', "Bonk's Adventure (USA)"], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File', "Bonk's Revenge (USA) (SGB Enhanced)"]]
 
         if not(vertical_var.get()):
-            image1 = generatePilImageHorizontal(fakeprogressbar,0,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize((int(width/2), int(height/2)), Image.LANCZOS)
+            image1 = generatePilImageHorizontal(fakeprogressbar,0,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
         else:
             if not page_by_page_var.get():
                 image1 = generatePilImageVertical(fakeprogressbar,0,
@@ -2253,7 +2253,7 @@ def on_change(*args):
                                                 selectedFontHexVar.get(),
                                                 deselectedFontHexVar.get(),
                                                 bubbleHexVar.get()
-                                                ,1).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                                ,1).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
             else:
                 image1 = generatePilImageVertical(fakeprogressbar,0,
                                 "muxlaunch",
@@ -2270,7 +2270,7 @@ def on_change(*args):
                                 scrollBarWidth=int(scrollBarWidthVar.get()),
                                 showScrollBar=(len(previewItemList)/int(items_per_screen_entry.get()))>1,
                                 numScreens=math.ceil(len(previewItemList)/int(items_per_screen_entry.get())),
-                                screenIndex=0).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                screenIndex=0).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
         if not page_by_page_var.get():
             image2 = generatePilImageVertical(fakeprogressbar,0,
                                             "Folder",
@@ -2283,7 +2283,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
             image3 = generatePilImageVertical(fakeprogressbar,0,
                                             consoleName,
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
@@ -2295,7 +2295,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
             image4 = generatePilImageVertical(fakeprogressbar,0,
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
@@ -2307,7 +2307,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
         else:
             image2 = generatePilImageVertical(fakeprogressbar,0,
                                             "Folder",
@@ -2323,7 +2323,7 @@ def on_change(*args):
                                             ,1,scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewConsolesItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewConsolesItemList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
             image3 = generatePilImageVertical(fakeprogressbar,0,
                                             consoleName,
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
@@ -2338,7 +2338,7 @@ def on_change(*args):
                                             ,1,scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewGameItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewGameItemList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
             image4 = generatePilImageVertical(fakeprogressbar,0,
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
@@ -2353,9 +2353,9 @@ def on_change(*args):
                                             ,1,scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewApplicationList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewApplicationList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
         if not(vertical_var.get()):
-            image5 = generatePilImageHorizontal(fakeprogressbar,4,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize((int(width/2), int(height/2)), Image.LANCZOS)
+            image5 = generatePilImageHorizontal(fakeprogressbar,4,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
 
 
 
@@ -2379,12 +2379,12 @@ def on_change(*args):
         valid_params = True
     except:
         if valid_params:
-            redOutlineImage1 = outline_image_with_inner_gap(get_current_image(image_label1)).resize((int(width/2), int(height/2)), Image.LANCZOS)
-            redOutlineImage2 = outline_image_with_inner_gap(get_current_image(image_label2)).resize((int(width/2), int(height/2)), Image.LANCZOS)
-            redOutlineImage3 = outline_image_with_inner_gap(get_current_image(image_label3)).resize((int(width/2), int(height/2)), Image.LANCZOS)
-            redOutlineImage4 = outline_image_with_inner_gap(get_current_image(image_label4)).resize((int(width/2), int(height/2)), Image.LANCZOS)
+            redOutlineImage1 = outline_image_with_inner_gap(get_current_image(image_label1)).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+            redOutlineImage2 = outline_image_with_inner_gap(get_current_image(image_label2)).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+            redOutlineImage3 = outline_image_with_inner_gap(get_current_image(image_label3)).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+            redOutlineImage4 = outline_image_with_inner_gap(get_current_image(image_label4)).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
             if not(vertical_var.get()):
-                redOutlineImage5 = outline_image_with_inner_gap(get_current_image(image_label5)).resize((int(width/2), int(height/2)), Image.LANCZOS)
+                redOutlineImage5 = outline_image_with_inner_gap(get_current_image(image_label5)).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
             update_image_label(image_label1, redOutlineImage1)
             update_image_label(image_label2, redOutlineImage2)
             update_image_label(image_label3, redOutlineImage3)
