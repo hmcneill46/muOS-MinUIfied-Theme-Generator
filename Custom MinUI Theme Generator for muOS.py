@@ -624,35 +624,82 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     font_size = 24 * render_factor
     font = ImageFont.truetype(selected_font_path, font_size)
     current_x_midpoint = 104+(144*workingIndex)
+
+    hozizontalBubblePadding = 40
     
+    if alternate_menu_names_var.get():
+        textString = menuNameMap.get("content explorer", "Content")
+    else:
+        textString = "Content"
+    text_bbox = draw.textbbox((0, 0), textString, font=font)
+    text_width = (text_bbox[2] - text_bbox[0])/render_factor
+    ascent, descent = font.getmetrics()
+    text_height = ascent + descent
+    bubblecenter_x =  104+(144*0)
+    textColour = selected_font_hex if workingIndex == 0 else deselected_font_hex
+    text_x = bubblecenter_x - (text_width / 2)
     if workingIndex == 0 :
-        bubbleLength = 144
+        bubbleLength = text_width+hozizontalBubblePadding
         draw.rounded_rectangle(
             [((current_x_midpoint-(bubbleLength/2))*render_factor, 256.2*render_factor), ((current_x_midpoint+(bubbleLength/2))*render_factor, 292.5*render_factor)],
             radius=18.15*render_factor,
             fill=f"#{bubble_hex}"
         )
-    elif workingIndex == 1 :
-        bubbleLength = 144
+    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
+
+    if alternate_menu_names_var.get():
+        textString = menuNameMap.get("favourites", "Favourites")
+    else:
+        textString = "Favourites"
+    text_bbox = draw.textbbox((0, 0), textString, font=font)
+    text_width = (text_bbox[2] - text_bbox[0])/render_factor
+    bubblecenter_x =  104+(144*1)
+    textColour = selected_font_hex if workingIndex == 1 else deselected_font_hex
+    text_x = bubblecenter_x - (text_width / 2)
+    if workingIndex == 1 :
+        bubbleLength = text_width+hozizontalBubblePadding
         draw.rounded_rectangle(
             [((current_x_midpoint-(bubbleLength/2))*render_factor, 256.2*render_factor), ((current_x_midpoint+(bubbleLength/2))*render_factor, 292.5*render_factor)],
             radius=18.15*render_factor,
             fill=f"#{bubble_hex}"
         )
-    elif workingIndex == 2 :
-        bubbleLength = 144
+    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
+
+    if alternate_menu_names_var.get():
+        textString = menuNameMap.get("history", "History")
+    else:
+        textString = "History"
+    text_bbox = draw.textbbox((0, 0), textString, font=font)
+    text_width = (text_bbox[2] - text_bbox[0])/render_factor
+    bubblecenter_x =  104+(144*2)
+    textColour = selected_font_hex if workingIndex == 2 else deselected_font_hex
+    text_x = bubblecenter_x - (text_width / 2)
+    if workingIndex == 2 :
+        bubbleLength = text_width+hozizontalBubblePadding
         draw.rounded_rectangle(
             [((current_x_midpoint-(bubbleLength/2))*render_factor, 256.2*render_factor), ((current_x_midpoint+(bubbleLength/2))*render_factor, 292.5*render_factor)],
             radius=18.15*render_factor,
             fill=f"#{bubble_hex}"
         )
-    elif workingIndex == 3 :
-        bubbleLength = 144
+    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
+    if alternate_menu_names_var.get():
+        textString = menuNameMap.get("applications", "Utilities")
+    else:
+        textString = "Utilities"
+    text_bbox = draw.textbbox((0, 0), textString, font=font)
+    text_width = (text_bbox[2] - text_bbox[0])/render_factor
+    bubblecenter_x =  104+(144*3)
+    textColour = selected_font_hex if workingIndex == 3 else deselected_font_hex
+    text_x = bubblecenter_x - (text_width / 2)
+    if workingIndex == 3 :
+        bubbleLength = text_width+hozizontalBubblePadding
         draw.rounded_rectangle(
             [((104+(144*workingIndex)-(bubbleLength/2))*render_factor, 256.2*render_factor), ((104+(144*workingIndex)+(bubbleLength/2))*render_factor, 292.5*render_factor)],
             radius=18.15*render_factor,
             fill=f"#{bubble_hex}"
         )
+    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
+
     if workingIndex == 4:
         center_x = 175+(36.4/2)
         center_y = 340+(36.4/2)
@@ -673,7 +720,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         center_y = 340+(36.4/2)
         radius = 65/2
         draw.ellipse((int((center_x-radius)*render_factor),int((center_y-radius)*render_factor),int((center_x+radius)*render_factor),int((center_y+radius)*render_factor)),fill=f"#{bubble_hex}")
-    
+
     if workingIndex == 4:
         infoLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "info.png"),selected_font_hex)
     else:
@@ -699,53 +746,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     image.paste(configLogoColoured,(int(259.533333*render_factor),340*render_factor),configLogoColoured)
     image.paste(rebootLogoColoured,(int(344.866666*render_factor),340*render_factor),rebootLogoColoured)
     image.paste(shutdownLogoColoured,(int(430.1999993*render_factor),340*render_factor),shutdownLogoColoured)
-
-    if alternate_menu_names_var.get():
-        textString = menuNameMap.get("content explorer", "Content")
-    else:
-        textString = "Content"
-    text_bbox = draw.textbbox((0, 0), textString, font=font)
-    text_width = (text_bbox[2] - text_bbox[0])/render_factor
-    text_height = (text_bbox[3] - text_bbox[1])/render_factor
-    bubblecenter_x =  104+(144*0)
-    textColour = selected_font_hex if workingIndex == 0 else deselected_font_hex
-    text_x = bubblecenter_x - (text_width / 2)
-    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
-
-    if alternate_menu_names_var.get():
-        textString = menuNameMap.get("favourites", "Favourites")
-    else:
-        textString = "Favourites"
-    text_bbox = draw.textbbox((0, 0), textString, font=font)
-    text_width = (text_bbox[2] - text_bbox[0])/render_factor
-    text_height = (text_bbox[3] - text_bbox[1])/render_factor
-    bubblecenter_x =  104+(144*1)
-    textColour = selected_font_hex if workingIndex == 1 else deselected_font_hex
-    text_x = bubblecenter_x - (text_width / 2)
-    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
-
-    if alternate_menu_names_var.get():
-        textString = menuNameMap.get("history", "History")
-    else:
-        textString = "History"
-    text_bbox = draw.textbbox((0, 0), textString, font=font)
-    text_width = (text_bbox[2] - text_bbox[0])/render_factor
-    text_height = (text_bbox[3] - text_bbox[1])/render_factor
-    bubblecenter_x =  104+(144*2)
-    textColour = selected_font_hex if workingIndex == 2 else deselected_font_hex
-    text_x = bubblecenter_x - (text_width / 2)
-    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
-    if alternate_menu_names_var.get():
-        textString = menuNameMap.get("applications", "Utilities")
-    else:
-        textString = "Utilities"
-    text_bbox = draw.textbbox((0, 0), textString, font=font)
-    text_width = (text_bbox[2] - text_bbox[0])/render_factor
-    text_height = (text_bbox[3] - text_bbox[1])/render_factor
-    bubblecenter_x =  104+(144*3)
-    textColour = selected_font_hex if workingIndex == 3 else deselected_font_hex
-    text_x = bubblecenter_x - (text_width / 2)
-    draw.text((text_x*render_factor, 257.7*render_factor), textString, font=font, fill=f"#{textColour}")
+    
     return(image)
 
 
