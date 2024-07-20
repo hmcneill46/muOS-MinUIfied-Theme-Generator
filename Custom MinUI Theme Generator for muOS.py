@@ -842,12 +842,21 @@ def getAlternateMenuNameDict():
             data = {key.lower(): value for key, value in data.items()}
             return data
         except:
-            return {}
-    return {}
+            return getDefaultAlternateMenuNameData()
+    return getDefaultAlternateMenuNameData()
 
-def saveAlternateMenuNameList():
-    with open(AlternateMenuNamesPath, 'w', newline='\n',encoding='utf-8') as json_file:
-        json.dump(menuNameMap, json_file, indent=2)     
+def getDefaultAlternateMenuNameData():
+    defaultMenuNamemap = {
+        "content explorer": "Content",
+        "favourites": "Favourites",
+        "history": "History",
+        "applications": "Utilities"
+    }
+    for section in menus2405_2:
+        if section[0].startswith("mux"):
+            for n in section[1]:
+                defaultMenuNamemap[n[0].lower()] = n[0]
+    return defaultMenuNamemap
 
 def list_directory_contents(directory_path):
     names_data = getNameConvertionList(name_json_path.get())
@@ -1059,55 +1068,6 @@ def select_console(directory_path):
     root.mainloop()
     root.destroy()
     return selected_console.get()
-
-def select_new_name(original_name):
-    def on_select():
-        new_name = entry.get()
-        if new_name.strip():
-            selected_name.set(new_name)
-            root.quit()
-    
-    def on_enter(event):
-        new_name = entry.get()
-        if new_name.strip():
-            selected_name.set(new_name)
-            root.quit()
-
-    root = tk.Tk()
-    root.geometry("400x200")
-    root.title("Enter New Name")
-
-    # Ensure the window is focused
-    root.lift()
-    root.attributes('-topmost', True)
-    root.after_idle(root.attributes, '-topmost', False)
-
-    label = tk.Label(root, text=f"Current Name: {original_name}")
-    label.pack(pady=10)
-    label = tk.Label(root, text=f"New Name:")
-    label.pack(pady=10)
-
-    entry = tk.Entry(root, width=50)
-    entry.pack(pady=10)
-    
-    # Ensure the entry widget is focused
-    root.after(100, entry.focus_force)
-
-    entry.bind("<Return>", on_enter)
-
-    button_frame = tk.Frame(root)
-    button_frame.pack(pady=10)
-    entry.insert(0, original_name)
-
-    select_button = tk.Button(button_frame, text="SELECT", command=on_select)
-    select_button.pack()
-
-    selected_name = tk.StringVar()
-
-    root.mainloop()
-    root.destroy()
-
-    return selected_name.get()
 
 def select_input_directory():
     roms_directory_path.set(filedialog.askdirectory())
@@ -1556,14 +1516,9 @@ def FillTempThemeFolder(progress_bar):
                 ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
 
 def select_alternate_menu_names():
-    for section in menus2405_2:
-        if section[0].startswith("mux"):
-            for n in section[1]:
-                new_name = select_new_name(n[0])
-                menuNameMap[n[0].lower()] = new_name
-                saveAlternateMenuNameList()
-                on_change()
-
+    menu_names_grid = MenuNamesGrid(root, menuNameMap, AlternateMenuNamesPath)
+    root.wait_window(menu_names_grid)
+    on_change()
 
 def generate_archive_manager(progress_bar, loading_window, input_queue, output_queue):
     try:
@@ -1672,6 +1627,70 @@ class GridHelper:
         else:
             self.column += colspan
 
+class MenuNamesGrid(tk.Toplevel):
+    def __init__(self, parent, data, AlternateMenuNamesPath):
+        super().__init__(parent)
+        self.title("Alternate Menu Names Editor")
+
+        self.data = data
+        self.entries = {}
+        self.create_widgets()
+        self.center_on_parent(parent)
+        self.grab_set()
+
+    def create_widgets(self):        
+        # Split data into two halves
+        items = list(self.data.items())
+        half_index = len(items) // 2
+        first_half = items[:half_index]
+        second_half = items[half_index:]        
+
+        # Populate the first half
+        for i, (key, value) in enumerate(first_half):
+            # Create read-only key label
+            key_label = ttk.Label(self, text=key)
+            key_label.grid(row=i, column=0, padx=5, pady=5, sticky='w')
+
+            # Create editable value entry
+            value_entry = ttk.Entry(self, width="50")
+            value_entry.insert(0, value)
+            value_entry.grid(row=i, column=1, padx=5, pady=5, sticky='w')
+            self.entries[key] = value_entry
+
+        # Add space between the two halves
+        spacer_label = ttk.Label(self, text="")
+        spacer_label.grid(row=0, column=2, padx=20, pady=5)
+
+        # Populate the second half
+        for i, (key, value) in enumerate(second_half):
+            # Create read-only key label
+            key_label = ttk.Label(self, text=key)
+            key_label.grid(row=i, column=3, padx=5, pady=5, sticky='w')
+
+            # Create editable value entry
+            value_entry = ttk.Entry(self, width="50")
+            value_entry.insert(0, value)
+            value_entry.grid(row=i, column=4, padx=5, pady=5, sticky='w')
+            self.entries[key] = value_entry
+            
+        # Save button
+        save_button = ttk.Button(self, text="Save", command=self.save)
+        save_button.grid(row=max(len(first_half), len(second_half)), column=0, columnspan=5, pady=10)
+    
+    def center_on_parent(self, parent):
+        self.update_idletasks()
+        x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
+
+        self.geometry(f'{self.winfo_width()}x{self.winfo_height()}+{x}+{y}')
+    
+    def save(self):
+        for key, entry in self.entries.items():
+            self.data[key] = entry.get()
+        with open(AlternateMenuNamesPath, 'w', newline='\n',encoding='utf-8') as json_file:
+            json.dump(menuNameMap, json_file, indent=2)
+        self.grab_release()
+        self.destroy()
 
 def on_mousewheel(event):
     if platform.system() == 'Windows':
