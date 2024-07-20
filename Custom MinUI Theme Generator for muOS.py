@@ -35,7 +35,7 @@ class Config:
         self.textLeftPaddingVar = 25
         self.bubblePaddingVar = 20
         self.itemsPerScreenVar = 9
-        self.use_custom_font_size_var = False
+        self.override_font_size_var = False
         self.customFontSizeVar = ""
         self.bgHexVar = "000000"
         self.selectedFontHexVar = "000000"
@@ -52,6 +52,8 @@ class Config:
         self.remove_right_menu_guides_var = False
         self.remove_left_menu_guides_var = False
         self.overlay_box_art_var = False
+        self.boxArtPaddingVar = 0
+        self.folderBoxArtPaddingVar = 0
         self.box_art_directory_path = ""
         self.maxBubbleLengthVar = 640
         self.roms_directory_path = ""
@@ -60,6 +62,7 @@ class Config:
         self.show_hidden_files_var = False
         self.vertical_var = False
         self.override_bubble_cut_var = False
+        self.override_folder_box_art_padding_var = False
         self.page_by_page_var = False
         self.version_var = "Select a version"
         self.am_theme_directory_path = ""
@@ -171,7 +174,11 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         text_x = (width*render_factor - text_width) / 2
 
         draw.text(( text_x,0*render_factor), topText, font=topTextFont, fill=f"#{bubble_hex}")
-     
+    
+    if muOSSystemName != "Folder" or not override_folder_box_art_padding_var.get():
+        boxArtPadding = int(box_art_padding_entry.get()) * render_factor
+    else:
+        boxArtPadding = int(folder_box_art_padding_entry.get()) * render_factor
 
     if overlay_box_art_var.get():
         if listItems[workingIndex][1] == "File":
@@ -179,7 +186,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")).convert("RGBA")
                 boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
                 
-                pasteLocation = (int((width*render_factor)-boxArtImage.width),int(((height*render_factor)-boxArtImage.height)/2))
+                pasteLocation = (int((width*render_factor)-boxArtImage.width)-boxArtPadding,int(((height*render_factor)-boxArtImage.height)/2))
 
                 boxArtWidth = originalBoxArtImage.width
 
@@ -190,7 +197,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")).convert("RGBA")
                 boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
                 
-                pasteLocation = (int((width*render_factor)-boxArtImage.width),int(((height*render_factor)-boxArtImage.height)/2))
+                pasteLocation = (int((width*render_factor)-boxArtImage.width)-boxArtPadding,int(((height*render_factor)-boxArtImage.height)/2))
 
                 boxArtWidth = originalBoxArtImage.width
 
@@ -352,9 +359,9 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         if boxArtDrawn and override_bubble_cut_var.get():
             maxBubbleLength = maxBubbleLengthVar.get()
         elif boxArtDrawn:
-            maxBubbleLength = 635 - boxArtWidth
+            maxBubbleLength = width - boxArtWidth - boxArtPadding
         else:
-            maxBubbleLength = 640
+            maxBubbleLength = width
         if workingIndex == index:
             totalCurrentLength = (textLeftPadding * render_factor + text_width + rectanglePadding * render_factor)
         else:
@@ -1785,6 +1792,7 @@ remove_left_menu_guides_var = tk.IntVar()
 override_bubble_cut_var = tk.IntVar()
 page_by_page_var = tk.IntVar()
 override_font_size_var = tk.IntVar()
+override_folder_box_art_padding_var = tk.IntVar()
 use_alt_font_var = tk.IntVar()
 remove_brackets_var = tk.IntVar()
 overlay_box_art_var = tk.IntVar(value=1)
@@ -1838,6 +1846,8 @@ scrollBarWidthVar = tk.StringVar()
 textLeftPaddingVar = tk.StringVar()
 bubblePaddingVar = tk.StringVar()
 itemsPerScreenVar = tk.StringVar()
+boxArtPaddingVar = tk.StringVar()
+folderBoxArtPaddingVar = tk.StringVar()
 customFontSizeVar = tk.StringVar()
 bgHexVar = tk.StringVar()
 selectedFontHexVar = tk.StringVar()
@@ -1904,7 +1914,7 @@ grid_helper.add(tk.Entry(scrollable_frame, textvariable=alt_font_path, width=50)
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_alt_font_path), next_row=True)
 grid_helper.add(tk.Label(scrollable_frame,text="*Use if text override characters not supported by default font",fg="#00f"),sticky="w",next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[optional] Override font size:", variable=override_font_size_var), sticky="w")
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Optional] Override font size:", variable=override_font_size_var), sticky="w")
 custom_font_size_entry = tk.Entry(scrollable_frame, width=50, textvariable=customFontSizeVar)
 grid_helper.add(custom_font_size_entry, next_row=True)
 
@@ -1941,6 +1951,15 @@ grid_helper.add(tk.Entry(scrollable_frame, textvariable=box_art_directory_path, 
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_box_art_directory), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text=" - This can be your catalogue folder on your device, but I would recommend copying it off the device so you can use this tool multiple times.",fg="#00f"), colspan=3, sticky="w", next_row=True)
+
+##BoxArtPadding
+grid_helper.add(tk.Label(scrollable_frame, text="Box Art Right Padding:"), sticky="w")
+box_art_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=boxArtPaddingVar)
+grid_helper.add(box_art_padding_entry, next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Optional] Folder Art Specific Padding:", variable=override_folder_box_art_padding_var), sticky="w")
+folder_box_art_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=folderBoxArtPaddingVar)
+grid_helper.add(folder_box_art_padding_entry, next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Override Auto Cut Bubble off [Might want to use for fading box art]", variable=override_bubble_cut_var),colspan=3, sticky="w", next_row=True)
 
@@ -2407,7 +2426,10 @@ def save_settings():
     config.vertical_var = vertical_var.get()
     config.override_bubble_cut_var = override_bubble_cut_var.get()
     config.page_by_page_var = page_by_page_var.get()
-    config.use_custom_font_size_var = override_font_size_var.get()
+    config.override_font_size_var = override_font_size_var.get()
+    config.override_folder_box_art_padding_var = override_folder_box_art_padding_var.get()
+    config.boxArtPaddingVar = boxArtPaddingVar.get()
+    config.folderBoxArtPaddingVar = folderBoxArtPaddingVar.get()
     config.version_var = version_var.get()
     config.am_theme_directory_path = am_theme_directory_path.get()
     config.theme_directory_path = theme_directory_path.get()
@@ -2429,6 +2451,8 @@ def load_settings():
     textLeftPaddingVar.set(config.textLeftPaddingVar)
     bubblePaddingVar.set(config.bubblePaddingVar)
     itemsPerScreenVar.set(config.itemsPerScreenVar)
+    boxArtPaddingVar.set(config.boxArtPaddingVar)
+    folderBoxArtPaddingVar.set(config.folderBoxArtPaddingVar)
     customFontSizeVar.set(config.customFontSizeVar)
     bgHexVar.set(config.bgHexVar)
     selectedFontHexVar.set(config.selectedFontHexVar)
@@ -2453,8 +2477,9 @@ def load_settings():
     show_hidden_files_var.set(config.show_hidden_files_var)
     vertical_var.set(config.vertical_var)
     override_bubble_cut_var.set(config.override_bubble_cut_var)
+    override_folder_box_art_padding_var.set(config.override_folder_box_art_padding_var)
     page_by_page_var.set(config.page_by_page_var)
-    override_font_size_var.set(config.use_custom_font_size_var)
+    override_font_size_var.set(config.override_font_size_var)
     version_var.set(config.version_var)
     am_theme_directory_path.set(config.am_theme_directory_path)
     theme_directory_path.set(config.theme_directory_path)
@@ -2484,6 +2509,8 @@ scrollBarWidthVar.trace("w", on_change)
 textLeftPaddingVar.trace("w", on_change)
 bubblePaddingVar.trace("w", on_change)
 itemsPerScreenVar.trace("w", on_change)
+boxArtPaddingVar.trace("w", on_change)
+folderBoxArtPaddingVar.trace("w", on_change)
 customFontSizeVar.trace("w", on_change)
 bgHexVar.trace("w", on_change)
 selectedFontHexVar.trace("w", on_change)
@@ -2510,6 +2537,7 @@ previewConsoleNameVar.trace("w", on_change)
 show_hidden_files_var.trace("w", on_change)
 vertical_var.trace("w", on_change)
 override_bubble_cut_var.trace("w", on_change)
+override_folder_box_art_padding_var.trace("w", on_change)
 page_by_page_var.trace("w", on_change)
 override_font_size_var.trace("w", on_change)
 version_var.trace("w", on_change)
