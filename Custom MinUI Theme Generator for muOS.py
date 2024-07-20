@@ -2258,7 +2258,10 @@ def updateMenusList(menusList, defaultList):
 
 def on_change(*args):
     global footerHeight
-    footerHeight = int(footer_height_entry.get())
+    try:
+        footerHeight = int(footer_height_entry.get())
+    except:
+        footerHeight = 55
     save_settings()
     config.save_config()
     global background_image
