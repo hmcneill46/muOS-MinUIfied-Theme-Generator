@@ -846,16 +846,13 @@ def getAlternateMenuNameDict():
     return getDefaultAlternateMenuNameData()
 
 def getDefaultAlternateMenuNameData():
-    defaultMenuNamemap = {
-        "content explorer": "Content",
-        "favourites": "Favourites",
-        "history": "History",
-        "applications": "Utilities"
-    }
+    defaultMenuNamemap = {}
     for section in menus2405_2:
         if section[0].startswith("mux"):
             for n in section[1]:
                 defaultMenuNamemap[n[0].lower()] = n[0]
+    defaultMenuNamemap["content explorer"] = "Games"
+    defaultMenuNamemap["applications"] = "Utilites"
     return defaultMenuNamemap
 
 def list_directory_contents(directory_path):
