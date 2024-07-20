@@ -132,6 +132,8 @@ def change_logo_color(input_path, hex_color):
     
     return result_image
 
+def applyMenuHelperGuides(muOSSystemName)
+
 def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,additions,textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,fileCounter=""):
     progress_bar['value'] +=1
     #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
@@ -267,67 +269,146 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         draw.text(( 543.6*render_factor,435.5*render_factor), "A", font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
         draw.text(( 573*render_factor,439*render_factor), "OKAY", font=inBubbleFont, fill=f"#{bubble_hex}")
     elif (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp"):
+
+        menu_helper_guide_height = (9/11)*footerHeight
         
-        in_smaller_bubble_font_size = 16*render_factor
+        in_smaller_bubble_font_size = menu_helper_guide_height*(16/45)*render_factor
         inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
 
-        in_bubble_font_size = 19*render_factor
+        in_bubble_font_size = menu_helper_guide_height*(19/45)*render_factor
         inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
 
-        single_letter_font_size = 23*render_factor
+        single_letter_font_size = menu_helper_guide_height*(23/45)*render_factor
         singleLetterFont = ImageFont.truetype(selected_font_path, single_letter_font_size)
 
+        powerText = "POWER"
+        sleepText = "SLEEP"
+        menuText = "MENU"
+        helpText = "HELP"
+        backText = "BACK"
+        okayText = "OKAY"
+        confirmText = "CONFIRM"
+        launchText = "LAUNCH"
+        aText = "A"
+        bText = "B"
+        if alternate_menu_names_var.get():
+            powerText = menuNameMap.get("power", "POWER")
+            sleepText = menuNameMap.get("sleep","SLEEP")
+            menuText = menuNameMap.get("menu","MENU")
+            helpText = menuNameMap.get("help","HELP")
+            backText = menuNameMap.get("back","BACK")
+            okayText = menuNameMap.get("okay","OKAY")
+            confirmText = menuNameMap.get("confirm","CONFIRM")
+            launchText = menuNameMap.get("launch","LAUNCH")
+        
+        horizontal_small_padding = menu_helper_guide_height*(5/45)
+        horizontal_padding = menu_helper_guide_height*(6.5/45)
+        horizontal_large_padding = menu_helper_guide_height*(8.5/45)
+        
+        bottom_guide_middle_y = deviceScreenHeight-horizontal_small_padding-(menu_helper_guide_height/2)
+
+        
+        #guide_bubble_height = 80
+        guide_small_bubble_height = menu_helper_guide_height-(horizontal_padding*2)
+
+        isb_ascent, isb_descent = inSmallerBubbleFont.getmetrics()
+        isb_text_height = isb_ascent + isb_descent
+        in_smaller_bubble_text_y = bottom_guide_middle_y*render_factor - (isb_text_height / 2)
+
+        ib_ascent, ib_descent = inBubbleFont.getmetrics()
+        ib_text_height = ib_ascent + ib_descent
+        in_bubble_text_y = bottom_guide_middle_y*render_factor - (ib_text_height / 2)
+
+        sl_ascent, sl_descent = singleLetterFont.getmetrics()
+        sl_text_height = sl_ascent + sl_descent
+        single_letter_text_y = bottom_guide_middle_y*render_factor - (sl_text_height / 2)
+
+        
+
+
         if not remove_left_menu_guides_var.get():
+            powerTextBbox = draw.textbbox((0, 0), powerText, font=inSmallerBubbleFont)
+            powerTextWidth = powerTextBbox[2] - powerTextBbox[0]
+            sleepTextBbox = draw.textbbox((0, 0), sleepText, font=inBubbleFont)
+            sleepTextWidth = sleepTextBbox[2] - sleepTextBbox[0]
+            totalWidth = horizontal_padding+horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(sleepTextWidth/render_factor)+horizontal_large_padding
+            smallerBubbleWidth = horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding
             draw.rounded_rectangle( ## Power Behind Bubble
-                    [(5*render_factor, 430*render_factor), (150*render_factor, 475*render_factor)],
-                    radius=22.5*render_factor,
+                    [(horizontal_small_padding*render_factor, (bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), ((totalWidth+horizontal_small_padding)*render_factor, (bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)],
+                    radius=(menu_helper_guide_height/2)*render_factor,
                     fill=f"#{percentage_color(bg_hex,bubble_hex,0.133)}"
                 )
 
             draw.rounded_rectangle( # Power infront Bubble
-                    [(11.5*render_factor, 436.5*render_factor), (83*render_factor, 468.5*render_factor)],
-                    radius=22.5*render_factor,
+                    [((horizontal_small_padding+horizontal_padding)*render_factor, (bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), ((horizontal_small_padding+horizontal_padding+smallerBubbleWidth)*render_factor, (bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)],
+                    radius=(guide_small_bubble_height/2)*render_factor,
                     fill=f"#{bubble_hex}"
                 )
-            
-            draw.text(( 20*render_factor,441*render_factor), "POWER", font=inSmallerBubbleFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
-            draw.text(( 88*render_factor,439*render_factor), "SLEEP", font=inBubbleFont, fill=f"#{bubble_hex}")
+            powerTextX = horizontal_small_padding+horizontal_padding+horizontal_large_padding
+            sleepTextX = horizontal_small_padding+horizontal_padding+horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding
+            draw.text(( powerTextX*render_factor,in_smaller_bubble_text_y), powerText, font=inSmallerBubbleFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
+            draw.text(( sleepTextX*render_factor,in_bubble_text_y), sleepText, font=inBubbleFont, fill=f"#{bubble_hex}")
         if not remove_right_menu_guides_var.get():
+            circleWidth = guide_small_bubble_height
+            confirmTextBbox = draw.textbbox((0, 0), confirmText, font=inBubbleFont)
+            confirmTextWidth = confirmTextBbox[2] - confirmTextBbox[0]
+            backTextBbox = draw.textbbox((0, 0), backText, font=inBubbleFont)
+            backTextWidth = backTextBbox[2] - backTextBbox[0]
+            launchTextBbox = draw.textbbox((0, 0), launchText, font=inBubbleFont)
+            launchTextWidth = launchTextBbox[2] - launchTextBbox[0]
+            aTextBbox = draw.textbbox((0, 0), aText, font=singleLetterFont)
+            aTextWidth = aTextBbox[2] - aTextBbox[0]
+            bTextBbox = draw.textbbox((0, 0), bText, font=singleLetterFont)
+            bTextWidth = bTextBbox[2] - bTextBbox[0]
+
             RHM_Len = 0
-            if muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch":
-                RHM_Len = 142.8
-            elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo":
-                RHM_Len = 241.1
-            elif muOSSystemName == "muxapp":
-                RHM_Len = 233.1
+            if muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch": # Just A and Confirm ( One Circle and confirmText plus padding )
+                RHM_Len = horizontal_padding+circleWidth+horizontal_large_padding+(confirmTextWidth/render_factor)+horizontal_large_padding
+            elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo": # B and Back, A and Confirm ( Two Circle and confirmText and backText plus padding )
+                RHM_Len = horizontal_padding+circleWidth+horizontal_large_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(confirmTextWidth/render_factor)+horizontal_large_padding
+            elif muOSSystemName == "muxapp": # B and Back, A and Launch ( Two Circle and launchText and backText plus padding )
+                RHM_Len = horizontal_padding+circleWidth+horizontal_large_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(launchTextWidth/render_factor)+horizontal_large_padding
+
             draw.rounded_rectangle( ## Left hand behind bubble
-                    [((deviceScreenWidth-5-RHM_Len)*render_factor, 430*render_factor), ((deviceScreenWidth-5)*render_factor, 475*render_factor)],
-                    radius=22.5*render_factor,
+                    [((deviceScreenWidth-horizontal_small_padding-RHM_Len)*render_factor, (bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), ((deviceScreenWidth-horizontal_small_padding)*render_factor, (bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)],
+                    radius=(menu_helper_guide_height/2)*render_factor,
                     fill=f"#{percentage_color(bg_hex,bubble_hex,0.133)}"
                 )
             
             if muOSSystemName != "muxapp": ## Draw Confirm
-                draw.ellipse((498.7*render_factor, 436.5*render_factor,530.7*render_factor, 468.5*render_factor),fill=f"#{bubble_hex}") # A Bubble
-
-                draw.text(( 507.3*render_factor,435.5*render_factor), "A", font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
-                draw.text(( 536.7*render_factor,439*render_factor), "CONFIRM", font=inBubbleFont, fill=f"#{bubble_hex}")
+                aConfirmCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_large_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
+                draw.ellipse(((aConfirmCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aConfirmCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{bubble_hex}") # A Bubble
+                
+                aConfirmTextX = aConfirmCircleCenterX - ((aTextWidth/2)/render_factor)
+                confimTextX = deviceScreenWidth-horizontal_small_padding-((confirmTextWidth/render_factor)+horizontal_large_padding)
+                draw.text(( aConfirmTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
+                draw.text(( confimTextX*render_factor,in_bubble_text_y), confirmText, font=inBubbleFont, fill=f"#{bubble_hex}")
                 
                 if muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo": # Draw Back
-                    draw.ellipse((400.4*render_factor, 436.5*render_factor,432.4*render_factor, 468.5*render_factor),fill=f"#{bubble_hex}") # B Bubble
+                    bBackCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_large_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
+                    draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{bubble_hex}") # B Bubble
 
-                    draw.text(( 409.4*render_factor,436.2*render_factor), "B", font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
-                    draw.text(( 441.4*render_factor,439*render_factor), "BACK", font=inBubbleFont, fill=f"#{bubble_hex}")
+                    bBackTextX = bBackCircleCenterX - ((bTextWidth/2)/render_factor)
+                    backTextX = deviceScreenWidth-horizontal_small_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
+                    draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
+                    draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{bubble_hex}")
 
             else: # Draw Launch
-                draw.ellipse((506.7*render_factor, 436.5*render_factor,538.7*render_factor, 468.5*render_factor),fill=f"#{bubble_hex}") # A Bubble
+                aLaunchCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_large_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
+                draw.ellipse(((aLaunchCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aLaunchCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{bubble_hex}") # A Bubble
 
-                draw.text(( 515.3*render_factor,435.5*render_factor), "A", font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
-                draw.text(( 544.7*render_factor,439*render_factor), "LAUNCH", font=inBubbleFont, fill=f"#{bubble_hex}")
+                aLaunchTextX = aLaunchCircleCenterX - ((aTextWidth/2)/render_factor)
+                launchTextX = deviceScreenWidth-horizontal_small_padding-((launchTextWidth/render_factor)+horizontal_large_padding)
+                draw.text(( aLaunchTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
+                draw.text(( launchTextX*render_factor,in_bubble_text_y), launchText, font=inBubbleFont, fill=f"#{bubble_hex}")
 
-                draw.ellipse((408.4*render_factor, 436.5*render_factor,440.4*render_factor, 468.5*render_factor),fill=f"#{bubble_hex}") # B Bubble
+                bBackCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_large_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
+                draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{bubble_hex}") # B Bubble
 
-                draw.text(( 417.6*render_factor,436.2*render_factor), "B", font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
-                draw.text(( 449.4*render_factor,439*render_factor), "BACK", font=inBubbleFont, fill=f"#{bubble_hex}")
+                bBackTextX = bBackCircleCenterX - ((bTextWidth/2)/render_factor)
+                backTextX = deviceScreenWidth-horizontal_small_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
+                draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
+                draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{bubble_hex}")
     elif show_file_counter_var.get() == 1:
         in_bubble_font_size = 19*render_factor
         inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
@@ -859,8 +940,17 @@ def getDefaultAlternateMenuNameData():
         if section[0].startswith("mux"):
             for n in section[1]:
                 defaultMenuNamemap[n[0].lower()] = n[0]
+    
     defaultMenuNamemap["content explorer"] = "Games"
     defaultMenuNamemap["applications"] = "Utilites"
+    defaultMenuNamemap["power"] = "POWER"
+    defaultMenuNamemap["sleep"] = "SLEEP"
+    defaultMenuNamemap["menu"] = "MENU"
+    defaultMenuNamemap["help"] = "HELP"
+    defaultMenuNamemap["back"] = "BACK"
+    defaultMenuNamemap["okay"] = "OKAY"
+    defaultMenuNamemap["confirm"] = "CONFIRM"
+    defaultMenuNamemap["launch"] = "LAUNCH"
     return defaultMenuNamemap
 
 def list_directory_contents(directory_path):
@@ -1782,11 +1872,11 @@ def start_theme_task():
 
 root = tk.Tk()
 root.title("MinUI Theme Generator")
-root.minsize(1020, 500)  # Set a minimum size for the window
+root.minsize(1080, 500)  # Set a minimum size for the window
 
 # Get the screen height
 screen_height = root.winfo_screenheight()
-window_height = int(min(screen_height*0.9, 1510))
+window_height = int(min(screen_height*0.9, 1720))
 
 root.geometry(f"1280x{window_height}")  # Set a default size for the window
 
@@ -2309,7 +2399,7 @@ def on_change(*args):
                                             bubbleHexVar.get()
                                             ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
             image3 = generatePilImageVertical(fakeprogressbar,0,
-                                            consoleName,
+                                            consoleName, 
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
                                             additions_Blank,
                                             int(textLeftPaddingVar.get()),
