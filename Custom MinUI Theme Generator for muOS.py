@@ -1168,7 +1168,7 @@ def select_background_image_path():
 def select_alt_font_path():
     # File dialog to select a file, with specific types of files allowed
     file_path = filedialog.askopenfilename(
-        filetypes=[("Font Files", "*.ttf;*.otf")],  # Only show .ini files
+        filetypes=[("Font Files", "*.ttf"), ("Font Files", "*.otf")],  # Only show font files
         title="Select font file"
     )
     alt_font_path.set(file_path)
