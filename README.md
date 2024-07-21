@@ -4,30 +4,26 @@ This script helps you create and customize themes for your muOS system, creating
 ![Themes Example Image](https://github.com/user-attachments/assets/68cfb45d-b260-4fa0-bab1-b13a6d7d282a)
 
 ![Program Example Image](https://github.com/user-attachments/assets/e3c42ffc-cba3-4898-bc8e-86fe90e24204)
+
 ## Prerequisites for running from Downloaded Binary [Windows]:
  - None
 
 ## Prerequisites for running the script from source
-
 Before running this script, ensure you have the following installed:
-
- 
-
  - Python (Tested with version 3.12)
+ - All Required Python Libraries
+       pip install -r requirements.txt 
+Individual Libraries:
  - Pillow library
-   
        pip install pillow
  - Tkinter library
-   
        pip install tk
-
-  
+ - python-bidi library
+       pip install python-bidi
 
 ## Getting Started
-
  - Insert your SD card into your computer.
  - If you want to keep the **box art**, copy the **MUOS/info/catalogue** folder from the SD card to your computers local storage
-   
  - To use the tool without the SD card, copy your **ROMS** folder from the card to your computers local storage for future use.
  - **Make sure** your box art on your device is set to **fullscreen+front**, otherwise the content explorer UI can behave strangely
  - To run the program from the prebuilt binaries, go to the latest release and download the program from the assets. [Windows Only]
@@ -51,37 +47,22 @@ Set the muOS console name to see the box art in the preview.
 ## Content Explorer Specific Configurations
 Modify settings specific to the content explorer menus (e.g., removing brackets from game names, generating themes for games and folders).
 
-  
-
 # Generation
 After configuring your settings, you can generate the theme. There are three methods to do this:
 
 ## Archive Manager [Recommended for refried beans or later]
-
  1. Set the output directory for the Archive Manager (leave blank to generate files in the script's directory).
-    
  2. Optionally, choose to generate only the theme or content explorer files.
 
-  
-
 ## Theme Only
-
 Specify the theme output directory (can be on the SD card, your computer, or **leave blank to generate in the script's directory**).
 
-  
-
 ## Content Explorer Only
-
 Select the catalogue folder where the image files will be generated (recommended to back up the folder before this step).
-
-  
 
 **For all methods, click "Generate" and the program will handle the rest.**
 
 ## Removing MinUI Theming
-
-  
-
 To remove all MinUI theming from your system:
 
  - Choose a different theme in muOS.

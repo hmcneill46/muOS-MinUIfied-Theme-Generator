@@ -4,6 +4,7 @@ Generated Theme Files/
 Generated Theme/
 build/
 dist/
+venv/
 
 # Ignore specific files
 PreviousDirectories.txt

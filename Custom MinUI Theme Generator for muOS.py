@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from PIL import ImageTk,Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+from bidi import get_display as bidiGet_display
 import os
 import sys
 import math
@@ -159,14 +160,14 @@ def applyMenuHelperGuides(muOSSystemName,image,selected_font_path,primary_colour
     aText = "A"
     bText = "B"
     if alternate_menu_names_var.get():
-        powerText = menuNameMap.get("power", "POWER")
-        sleepText = menuNameMap.get("sleep","SLEEP")
-        menuText = menuNameMap.get("menu","MENU")
-        helpText = menuNameMap.get("help","HELP")
-        backText = menuNameMap.get("back","BACK")
-        okayText = menuNameMap.get("okay","OKAY")
-        confirmText = menuNameMap.get("confirm","CONFIRM")
-        launchText = menuNameMap.get("launch","LAUNCH")
+        powerText = bidiGet_display(menuNameMap.get("power", "POWER"))
+        sleepText = bidiGet_display(menuNameMap.get("sleep","SLEEP"))
+        menuText = bidiGet_display(menuNameMap.get("menu","MENU"))
+        helpText = bidiGet_display(menuNameMap.get("help","HELP"))
+        backText = bidiGet_display(menuNameMap.get("back","BACK"))
+        okayText = bidiGet_display(menuNameMap.get("okay","OKAY"))
+        confirmText = bidiGet_display(menuNameMap.get("confirm","CONFIRM"))
+        launchText = bidiGet_display(menuNameMap.get("launch","LAUNCH"))
     
     horizontal_small_padding = menu_helper_guide_height*(5/45)
     horizontal_padding = menu_helper_guide_height*(6.5/45)
@@ -434,7 +435,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         noLettersCut = 0
         text_width = 2000*render_factor
         if alternate_menu_names_var.get() and muOSSystemName.startswith("mux"):
-            text = menuNameMap.get(item[0][:].lower(),item[0][:])
+            text = bidiGet_display(menuNameMap.get(item[0][:].lower(),item[0][:]))
         else:
             text = item[0][:]
         text_color = f"#{selected_font_hex}" if index == workingIndex else f"#{deselected_font_hex}"
@@ -450,7 +451,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             totalCurrentLength = (textLeftPadding * render_factor + text_width)
         while totalCurrentLength > (int(maxBubbleLength)*render_factor):
             if alternate_menu_names_var.get() and muOSSystemName.startswith("mux"):
-                text = menuNameMap.get(item[0][:].lower(),item[0][:])
+                text = bidiGet_display(menuNameMap.get(item[0][:].lower(),item[0][:]))
             else:
                 text = item[0][:]
 
@@ -676,7 +677,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     hozizontalBubblePadding = 40
     
     if alternate_menu_names_var.get():
-        textString = menuNameMap.get("content explorer", "Content")
+        textString = bidiGet_display(menuNameMap.get("content explorer", "Content"))
     else:
         textString = "Content"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
@@ -700,7 +701,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     draw.text((text_x*render_factor, text_y), textString, font=font, fill=f"#{textColour}")
 
     if alternate_menu_names_var.get():
-        textString = menuNameMap.get("favourites", "Favourites")
+        textString = bidiGet_display(menuNameMap.get("favourites", "Favourites"))
     else:
         textString = "Favourites"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
@@ -718,7 +719,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     draw.text((text_x*render_factor, text_y), textString, font=font, fill=f"#{textColour}")
 
     if alternate_menu_names_var.get():
-        textString = menuNameMap.get("history", "History")
+        textString = bidiGet_display(menuNameMap.get("history", "History"))
     else:
         textString = "History"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
@@ -735,7 +736,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         )
     draw.text((text_x*render_factor, text_y), textString, font=font, fill=f"#{textColour}")
     if alternate_menu_names_var.get():
-        textString = menuNameMap.get("applications", "Utilities")
+        textString = bidiGet_display(menuNameMap.get("applications", "Utilities"))
     else:
         textString = "Utilities"
     text_bbox = draw.textbbox((0, 0), textString, font=font)

@@ -1,0 +1,3 @@
+Pillow
+python-bidi
+tk
