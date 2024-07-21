@@ -11,15 +11,22 @@ This script helps you create and customize themes for your muOS system, creating
 ## Prerequisites for running the script from source
 Before running this script, ensure you have the following installed:
  - Python (Tested with version 3.12)
- - All Required Python Libraries
+ - All Required Required Python Libraries
+ 
        pip install -r requirements.txt 
+
 Individual Libraries:
  - Pillow library
+   
        pip install pillow
  - Tkinter library
+   
        pip install tk
- - python-bidi library
-       pip install python-bidi
+
+ - pythonbidi library
+   
+       pip install pythonbidi
+
 
 ## Getting Started
  - Insert your SD card into your computer.
