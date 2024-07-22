@@ -930,6 +930,13 @@ def generatePilImageLoadingScreen(bg_hex,icon_hex,render_factor):
     image.paste(loadingLogoColoured,(loading_logo_x_location,loading_logo_y_location),loadingLogoColoured)
     return (image)
 
+def generatePilImageDefaultScreen(bg_hex,render_factor):
+    bg_rgb = hex_to_rgb(bg_hex)
+    image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
+    if background_image != None:
+        image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+    return (image)
+
 def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex,icon_hex, render_factor, outputDir):
     startIndex = 0
     endIndex = 8
@@ -1652,6 +1659,8 @@ def FillTempThemeFolder(progress_bar):
     loadingimage = generatePilImageLoadingScreen(bgHexVar.get(),iconHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     loadingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxstart.png"), format='PNG')
 
+    defaultimage = generatePilImageDefaultScreen(bgHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    defaultimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","default.png"), format='PNG')
     if False: ## Testing converting font in generator
         try:
             # Define the command
