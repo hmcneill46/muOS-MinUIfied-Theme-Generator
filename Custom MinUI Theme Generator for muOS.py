@@ -2599,7 +2599,6 @@ def on_change(*args):
             image4.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
             if not(vertical_var.get()):
                 image5.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
-        image1 = generatePilImageLoadingScreen(bgHexVar.get(),iconHexVar.get(),render_factor).resize(preview_size,Image.LANCZOS)
         update_image_label(image_label1, image1)
         update_image_label(image_label2, image2)
         update_image_label(image_label3, image3)
