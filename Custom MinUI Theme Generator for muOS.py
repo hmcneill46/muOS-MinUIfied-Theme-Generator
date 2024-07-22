@@ -33,7 +33,7 @@ class Config:
     def __init__(self, config_file=os.path.join(script_dir,'MinUIThemeGeneratorConfig.json')):
         self.config_file = config_file
         self.scrollBarWidthVar = 10
-        self.textLeftPaddingVar = 25
+        self.textPaddingVar = 25
         self.bubblePaddingVar = 20
         self.itemsPerScreenVar = 9
         self.footerHeightVar = 55
@@ -67,6 +67,9 @@ class Config:
         self.override_folder_box_art_padding_var = False
         self.page_by_page_var = False
         self.version_var = "Select a version"
+        self.global_alignment_var = "Left"
+        self.theme_alignment_var = "Global"
+        self.content_alignment_var = "Global"
         self.am_theme_directory_path = ""
         self.theme_directory_path = ""
         self.catalogue_directory_path = ""
@@ -279,7 +282,7 @@ def applyMenuHelperGuides(muOSSystemName,image,selected_font_path,primary_colour
     return image
 
 
-def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,additions,textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,fileCounter=""):
+def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,additions,textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,fileCounter=""):
     progress_bar['value'] +=1
     #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
@@ -396,14 +399,28 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     else:
         boxArtPadding = int(folder_box_art_padding_entry.get()) * render_factor
 
-    if overlay_box_art_var.get():
+    textAlignment = None
+    if muOSSystemName.startswith("mux"):
+        if theme_alignment_var.get() == "Global":
+            textAlignment = global_alignment_var.get()
+        else:
+            textAlignment = theme_alignment_var.get()
+    else:
+        if content_alignment_var.get() == "Global":
+            textAlignment = global_alignment_var.get()
+        else:
+            textAlignment = content_alignment_var.get()
+
+    if overlay_box_art_var.get() and textAlignment != "Centre": # TODO Add support for right text alignment 
         if listItems[workingIndex][1] == "File":
             if os.path.exists(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")):
                 originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")).convert("RGBA")
                 boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
+                if textAlignment == "Left":
+                    pasteLocation = (int((deviceScreenWidth*render_factor)-boxArtImage.width)-boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
+                else:
+                    pasteLocation = (boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
                 
-                pasteLocation = (int((deviceScreenWidth*render_factor)-boxArtImage.width)-boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
-
                 boxArtWidth = originalBoxArtImage.width
 
                 image.paste(boxArtImage,pasteLocation,boxArtImage)
@@ -446,9 +463,9 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         else:
             maxBubbleLength = deviceScreenWidth
         if workingIndex == index:
-            totalCurrentLength = (textLeftPadding * render_factor + text_width + rectanglePadding * render_factor)
+            totalCurrentLength = (textPadding * render_factor + text_width + rectanglePadding * render_factor)
         else:
-            totalCurrentLength = (textLeftPadding * render_factor + text_width)
+            totalCurrentLength = (textPadding * render_factor + text_width)
         while totalCurrentLength > (int(maxBubbleLength)*render_factor):
             if alternate_menu_names_var.get() and muOSSystemName.startswith("mux"):
                 text = bidiGet_display(menuNameMap.get(item[0][:].lower(),item[0][:]))
@@ -470,19 +487,25 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             text_bbox = draw.textbbox((0, 0), text, font=font)
             text_width = text_bbox[2] - text_bbox[0]
             if workingIndex == index:
-                totalCurrentLength = (textLeftPadding * render_factor + text_width + rectanglePadding * render_factor)
+                totalCurrentLength = (textPadding * render_factor + text_width + rectanglePadding * render_factor)
             else:
-                totalCurrentLength = (textLeftPadding * render_factor + text_width)
+                totalCurrentLength = (textPadding * render_factor + text_width)
             noLettersCut +=1
             if text  == "...":
                 raise ValueError("'Cut bubble off at' too low")
-        text_x = textLeftPadding * render_factor
+        
+        if textAlignment == "Left":
+            text_x = textPadding * render_factor
+        elif textAlignment == "Right":
+            text_x = (deviceScreenWidth-textPadding-text_width) * render_factor
+        elif textAlignment == "Centre":
+            text_x = ((deviceScreenWidth-text_width)/2) * render_factor
         #text_y = headerHeight * render_factor + availableHeight * index
 
         
-        rectangle_x0 = (textLeftPadding - rectanglePadding) * render_factor
+        rectangle_x0 = text_x - (rectanglePadding * render_factor)
         rectangle_y0 = headerHeight * render_factor + availableHeight * index
-        rectangle_x1 = textLeftPadding * render_factor + text_width + rectanglePadding * render_factor
+        rectangle_x1 = rectanglePadding * render_factor+rectangle_x0 + text_width + rectanglePadding * render_factor
         rectangle_y1 = headerHeight * render_factor + availableHeight * (index+1)
         middle_y = (rectangle_y0 + rectangle_y1) / 2
         ascent, descent = font.getmetrics()
@@ -529,7 +552,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     return(image)
 
 
-def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir):
+def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir):
     totalItems = len(listItems)
     scrollBarHeight = (deviceScreenHeight - footerHeight - headerHeight)
 
@@ -557,7 +580,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
                 endIndex = totalItems
                 focusIndex= workingIndex
             fileCounter = str(workingIndex + 1) + " / " + str(totalItems)
-            image = generatePilImageVertical(progress_bar,focusIndex,muOSSystemName,listItems[startIndex:endIndex],additions,textLeftPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,fileCounter=fileCounter)
+            image = generatePilImageVertical(progress_bar,focusIndex,muOSSystemName,listItems[startIndex:endIndex],additions,textPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,fileCounter=fileCounter)
                 
 
             if muOSSystemName != "ThemePreview":
@@ -584,7 +607,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
                         image.save(os.path.join(internal_files_dir, "TempPreview.png"))
 
 
-def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir):
+def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir):
     
     totalItems = len(listItems)
     numScreens = math.ceil(totalItems / ItemsPerScreen)
@@ -603,7 +626,7 @@ def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scroll
                 if numScreens > 1:  # Display Scroll Bar
                     showScrollBar = True
                 fileCounter = str(workingIndex + 1) + " / " + str(totalItems)
-                image = generatePilImageVertical(progress_bar,workingIndex%ItemsPerScreen,muOSSystemName,listItems[startIndex:endIndex],additions,textLeftPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,scrollBarWidth=scrollBarWidth,showScrollBar=showScrollBar,numScreens=numScreens,screenIndex=screenIndex,fileCounter=fileCounter)
+                image = generatePilImageVertical(progress_bar,workingIndex%ItemsPerScreen,muOSSystemName,listItems[startIndex:endIndex],additions,textPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,scrollBarWidth=scrollBarWidth,showScrollBar=showScrollBar,numScreens=numScreens,screenIndex=screenIndex,fileCounter=fileCounter)
                 if muOSSystemName != "ThemePreview":
                     image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
                     if workingItem[1] == "File":
@@ -1171,7 +1194,7 @@ def count_folders(directory):
     except Exception as e:
         return f"An error occurred: {e}"
 
-def traverse_and_generate_images(progress_bar, directory_path, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, input_queue, output_queue):
+def traverse_and_generate_images(progress_bar, directory_path, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, input_queue, output_queue):
     items = list_directory_contents(directory_path)
     fileFound = False
     
@@ -1191,16 +1214,16 @@ def traverse_and_generate_images(progress_bar, directory_path, additions, scroll
     if len(items) > 0 and consoleName != "SKIP":
         if not (fileFound and also_games_var.get() == 0):
             if page_by_page_var.get():
-                PageFolderImageGen(progress_bar,consoleName, items, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory)
+                PageFolderImageGen(progress_bar,consoleName, items, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory)
             else:
-                ContinuousFolderImageGen(progress_bar, consoleName, items, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory)
+                ContinuousFolderImageGen(progress_bar, consoleName, items, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory)
 
     for item in items:
         item_name = item[0]
         item_type = item[1]
         if item_type == "Directory":
             new_path = os.path.join(directory_path, item_name)
-            traverse_and_generate_images(progress_bar, new_path, additions, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, input_queue, output_queue)
+            traverse_and_generate_images(progress_bar, new_path, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, input_queue, output_queue)
 
 def select_console(directory_path):
     def on_select():
@@ -1352,7 +1375,7 @@ def generate_images(progress_bar, loading_window, input_queue, output_queue):
         progress_bar['maximum'] = progress_bar_max
 
         scrollBarWidth = int(scroll_bar_width_entry.get())
-        textLeftPadding = int(text_left_padding_entry.get())
+        textPadding = int(text_padding_entry.get())
         rectanglePadding = int(rectangle_padding_entry.get())
         bg_hex = background_hex_entry.get()
         selected_font_hex = selected_font_hex_entry.get()
@@ -1360,7 +1383,7 @@ def generate_images(progress_bar, loading_window, input_queue, output_queue):
         bubble_hex = bubble_hex_entry.get()
         ItemsPerScreen = int(items_per_screen_entry.get())
         
-        traverse_and_generate_images(progress_bar,input_directory, additions_Blank, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,  output_directory,input_queue,output_queue)
+        traverse_and_generate_images(progress_bar,input_directory, additions_Blank, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,  output_directory,input_queue,output_queue)
         messagebox.showinfo("Success", "Images generated successfully.\nMake sure your box art setting is set to Fullscreen+Front!")
         loading_window.destroy()
     except ValueError as ve:
@@ -1599,7 +1622,7 @@ def generate_theme(progress_bar, loading_window):
 
 def FillTempThemeFolder(progress_bar):
     scrollBarWidth = int(scroll_bar_width_entry.get())
-    textLeftPadding = int(text_left_padding_entry.get())
+    textPadding = int(text_padding_entry.get())
     rectanglePadding = int(rectangle_padding_entry.get())
     ItemsPerScreen = int(items_per_screen_entry.get())
     bg_hex = background_hex_entry.get()
@@ -1701,28 +1724,28 @@ def FillTempThemeFolder(progress_bar):
     for index, menu in enumerate(workingMenus):
         if menu[0] == "muxdevice":
             if page_by_page_var.get():
-                PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
             else:
-                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
         elif menu[0] == "muxlaunch":
             if vertical_var.get():
                 if page_by_page_var.get():
-                    PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                    PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
                 else:
-                    ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                    ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
             else:
                 HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
         elif menu[0] == "ThemePreview":
                 if vertical_var.get():
                     if page_by_page_var.get():
-                        PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                        PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
                     else:
-                        ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                        ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
         else:
             if page_by_page_var.get():
-                PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
             else:
-                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textLeftPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
 
 def select_alternate_menu_names():
     menu_names_grid = MenuNamesGrid(root, menuNameMap, AlternateMenuNamesPath)
@@ -1733,7 +1756,7 @@ def generate_archive_manager(progress_bar, loading_window, input_queue, output_q
     try:
         # Your existing code before the main task loop...
         scrollBarWidth = int(scroll_bar_width_entry.get())
-        textLeftPadding = int(text_left_padding_entry.get())
+        textPadding = int(text_padding_entry.get())
         rectanglePadding = int(rectangle_padding_entry.get())
         ItemsPerScreen = int(items_per_screen_entry.get())
         bg_hex = background_hex_entry.get()
@@ -1773,7 +1796,7 @@ def generate_archive_manager(progress_bar, loading_window, input_queue, output_q
                 os.makedirs(os.path.join(internal_files_dir, ".TempBuildAM","mnt","mmc","MUOS","info","catalogue"))
             output_directory = os.path.join(internal_files_dir, ".TempBuildAM","mnt","mmc","MUOS","info","catalogue")
             
-            traverse_and_generate_images(progress_bar, roms_directory, additions_Blank, scrollBarWidth, textLeftPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,  output_directory, input_queue, output_queue)
+            traverse_and_generate_images(progress_bar, roms_directory, additions_Blank, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,  output_directory, input_queue, output_queue)
 
         if am_theme_directory_path.get() == "":
             am_theme_dir = os.path.join(script_dir, "Generated Archive Manager Files")
@@ -2008,6 +2031,9 @@ catalogue_directory_path = tk.StringVar()
 theme_directory_path = tk.StringVar()
 am_theme_directory_path = tk.StringVar()
 version_var = tk.StringVar()
+global_alignment_var = tk.StringVar()
+theme_alignment_var = tk.StringVar()
+content_alignment_var = tk.StringVar()
 also_games_var = tk.IntVar()
 show_file_counter_var = tk.IntVar()
 show_console_name_var = tk.IntVar()
@@ -2071,7 +2097,7 @@ grid_helper.add(tk.Label(scrollable_frame, text="Global Configurations", font=su
 
 # Define the StringVar variables
 scrollBarWidthVar = tk.StringVar()
-textLeftPaddingVar = tk.StringVar()
+textPaddingVar = tk.StringVar()
 bubblePaddingVar = tk.StringVar()
 itemsPerScreenVar = tk.StringVar()
 footerHeightVar = tk.StringVar()
@@ -2092,10 +2118,10 @@ grid_helper.add(tk.Label(scrollable_frame, text="Scroll Bar Width:"), sticky="w"
 scroll_bar_width_entry = tk.Entry(scrollable_frame, width=50, textvariable=scrollBarWidthVar)
 grid_helper.add(scroll_bar_width_entry, next_row=True)
 
-# Option for textLeftPadding
-grid_helper.add(tk.Label(scrollable_frame, text="Text Left Padding:"), sticky="w")
-text_left_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=textLeftPaddingVar)
-grid_helper.add(text_left_padding_entry, next_row=True)
+# Option for textPadding
+grid_helper.add(tk.Label(scrollable_frame, text="Text Padding:"), sticky="w")
+text_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=textPaddingVar)
+grid_helper.add(text_padding_entry, next_row=True)
 
 # Option for rectanglePadding
 grid_helper.add(tk.Label(scrollable_frame, text="Bubble Padding:"), sticky="w")
@@ -2137,6 +2163,11 @@ grid_helper.add(tk.Label(scrollable_frame, text="Icon Hex Colour: #"), sticky="w
 icon_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=iconHexVar)
 grid_helper.add(icon_hex_entry, next_row=True)
 
+grid_helper.add(tk.Label(scrollable_frame, text="Global Text Alignment"), sticky="w")
+globalAlignmentOptions = ["Left", "Centre", "Right"]
+global_alignment_option_menu = tk.OptionMenu(scrollable_frame, global_alignment_var, *globalAlignmentOptions)
+grid_helper.add(global_alignment_option_menu, colspan=3, sticky="w", next_row=True)
+
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Page by Page Scrolling", variable=page_by_page_var), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="[Optional] Override background colour with image"), sticky="w")
@@ -2167,6 +2198,11 @@ grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
 options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS"]
 option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Theme Text Alignment"), sticky="w")
+themeAlignmentOptions = ["Global", "Left", "Centre", "Right"]
+theme_alignment_option_menu = tk.OptionMenu(scrollable_frame, theme_alignment_var, *themeAlignmentOptions)
+grid_helper.add(theme_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Vertical Main Menu (Like Original MinUI)", variable=vertical_var), sticky="w")
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Include CRT Overlay", variable=crt_overlay_var), sticky="w", next_row=True)
@@ -2223,6 +2259,11 @@ grid_helper.add(tk.Entry(scrollable_frame, textvariable=name_json_path, width=50
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_name_json_path), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\MUOS\\info\\name.json' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Content Explorer Text Alignment"), sticky="w")
+contentAlignmentOptions = ["Global", "Left", "Centre", "Right"]
+content_alignment_option_menu = tk.OptionMenu(scrollable_frame, content_alignment_var, *contentAlignmentOptions)
+grid_helper.add(content_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Also Generate Images for Game List *", variable=also_games_var), sticky="w")
 
@@ -2487,7 +2528,7 @@ def on_change(*args):
                                                 "muxlaunch",
                                                 previewItemList[0:int(items_per_screen_entry.get())],
                                                 additions_Blank,
-                                                int(textLeftPaddingVar.get()),
+                                                int(textPaddingVar.get()),
                                                 int(bubblePaddingVar.get()),
                                                 int(items_per_screen_entry.get()),
                                                 bgHexVar.get(),
@@ -2500,7 +2541,7 @@ def on_change(*args):
                                 "muxlaunch",
                                 previewItemList[0:int(items_per_screen_entry.get())],
                                 additions_Blank,
-                                int(textLeftPaddingVar.get()),
+                                int(textPaddingVar.get()),
                                 int(bubblePaddingVar.get()),
                                 int(items_per_screen_entry.get()),
                                 bgHexVar.get(),
@@ -2517,7 +2558,7 @@ def on_change(*args):
                                             "Folder",
                                             previewConsolesItemList[0:int(items_per_screen_entry.get())],
                                             additions_Blank,
-                                            int(textLeftPaddingVar.get()),
+                                            int(textPaddingVar.get()),
                                             int(bubblePaddingVar.get()),
                                             int(items_per_screen_entry.get()),
                                             bgHexVar.get(),
@@ -2529,7 +2570,7 @@ def on_change(*args):
                                             consoleName, 
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
                                             additions_Blank,
-                                            int(textLeftPaddingVar.get()),
+                                            int(textPaddingVar.get()),
                                             int(bubblePaddingVar.get()),
                                             int(items_per_screen_entry.get()),
                                             bgHexVar.get(),
@@ -2541,7 +2582,7 @@ def on_change(*args):
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
                                             additions_Blank,
-                                            int(textLeftPaddingVar.get()),
+                                            int(textPaddingVar.get()),
                                             int(bubblePaddingVar.get()),
                                             int(items_per_screen_entry.get()),
                                             bgHexVar.get(),
@@ -2554,7 +2595,7 @@ def on_change(*args):
                                             "Folder",
                                             previewConsolesItemList[0:int(items_per_screen_entry.get())],
                                             additions_Blank,
-                                            int(textLeftPaddingVar.get()),
+                                            int(textPaddingVar.get()),
                                             int(bubblePaddingVar.get()),
                                             int(items_per_screen_entry.get()),
                                             bgHexVar.get(),
@@ -2569,7 +2610,7 @@ def on_change(*args):
                                             consoleName,
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
                                             additions_Blank,
-                                            int(textLeftPaddingVar.get()),
+                                            int(textPaddingVar.get()),
                                             int(bubblePaddingVar.get()),
                                             int(items_per_screen_entry.get()),
                                             bgHexVar.get(),
@@ -2584,7 +2625,7 @@ def on_change(*args):
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
                                             additions_Blank,
-                                            int(textLeftPaddingVar.get()),
+                                            int(textPaddingVar.get()),
                                             int(bubblePaddingVar.get()),
                                             int(items_per_screen_entry.get()),
                                             bgHexVar.get(),
@@ -2638,7 +2679,7 @@ def on_change(*args):
 
 def save_settings():
     config.scrollBarWidthVar = scrollBarWidthVar.get()
-    config.textLeftPaddingVar = textLeftPaddingVar.get()
+    config.textPaddingVar = textPaddingVar.get()
     config.bubblePaddingVar = bubblePaddingVar.get()
     config.itemsPerScreenVar = itemsPerScreenVar.get()
     config.footerHeightVar = footerHeightVar.get()
@@ -2671,7 +2712,10 @@ def save_settings():
     config.override_folder_box_art_padding_var = override_folder_box_art_padding_var.get()
     config.boxArtPaddingVar = boxArtPaddingVar.get()
     config.folderBoxArtPaddingVar = folderBoxArtPaddingVar.get()
+    config.content_alignment_var = content_alignment_var.get()
+    config.theme_alignment_var = theme_alignment_var.get()
     config.version_var = version_var.get()
+    config.global_alignment_var = global_alignment_var.get()
     config.am_theme_directory_path = am_theme_directory_path.get()
     config.theme_directory_path = theme_directory_path.get()
     config.catalogue_directory_path = catalogue_directory_path.get()
@@ -2689,7 +2733,7 @@ def save_settings():
 
 def load_settings():
     scrollBarWidthVar.set(config.scrollBarWidthVar)
-    textLeftPaddingVar.set(config.textLeftPaddingVar)
+    textPaddingVar.set(config.textPaddingVar)
     bubblePaddingVar.set(config.bubblePaddingVar)
     itemsPerScreenVar.set(config.itemsPerScreenVar)
     footerHeightVar.set(config.footerHeightVar)
@@ -2723,6 +2767,9 @@ def load_settings():
     page_by_page_var.set(config.page_by_page_var)
     override_font_size_var.set(config.override_font_size_var)
     version_var.set(config.version_var)
+    global_alignment_var.set(config.global_alignment_var)
+    theme_alignment_var.set(config.theme_alignment_var)
+    content_alignment_var.set(config.content_alignment_var)
     am_theme_directory_path.set(config.am_theme_directory_path)
     theme_directory_path.set(config.theme_directory_path)
     catalogue_directory_path.set(config.catalogue_directory_path)
@@ -2748,7 +2795,7 @@ menuNameMap = getAlternateMenuNameDict()
 
 # Attach trace callbacks to the variables
 scrollBarWidthVar.trace("w", on_change)
-textLeftPaddingVar.trace("w", on_change)
+textPaddingVar.trace("w", on_change)
 bubblePaddingVar.trace("w", on_change)
 itemsPerScreenVar.trace("w", on_change)
 footerHeightVar.trace("w", on_change)
@@ -2784,6 +2831,9 @@ override_folder_box_art_padding_var.trace("w", on_change)
 page_by_page_var.trace("w", on_change)
 override_font_size_var.trace("w", on_change)
 version_var.trace("w", on_change)
+global_alignment_var.trace("w", on_change)
+content_alignment_var.trace("w", on_change)
+theme_alignment_var.trace("w", on_change)
 am_theme_directory_path.trace("w",on_change)
 theme_directory_path.trace("w",on_change)
 catalogue_directory_path.trace("w",on_change)
