@@ -911,6 +911,25 @@ def generatePilImageChargeScreen(bg_hex,deselected_font_hex,icon_hex,render_fact
     
     return (image)
 
+def generatePilImageLoadingScreen(bg_hex,icon_hex,render_factor):
+    bg_rgb = hex_to_rgb(bg_hex)
+    image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
+    if background_image != None:
+        image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+    
+    draw = ImageDraw.Draw(image)
+    
+    screen_x_middle, screen_y_middle = (deviceScreenWidth/2)*render_factor,(deviceScreenHeight/2)*render_factor
+
+    loadingLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "LoadingLogo[5x].png"),icon_hex)
+    loadingLogoColoured = loadingLogoColoured.resize(((loadingLogoColoured.size[0]/5)*render_factor,(loadingLogoColoured.size[1]/5)*render_factor), Image.LANCZOS)
+    
+    loading_logo_y_location = int(screen_y_middle-loadingLogoColoured.size[1]/2)
+    loading_logo_x_location = int(screen_x_middle-loadingLogoColoured.size[0]/2)
+
+    image.paste(loadingLogoColoured,(loading_logo_x_location,loading_logo_y_location),loadingLogoColoured)
+    return (image)
+
 def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex,icon_hex, render_factor, outputDir):
     startIndex = 0
     endIndex = 8
@@ -1622,11 +1641,16 @@ def FillTempThemeFolder(progress_bar):
     else:
         replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     
+    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
+
     bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","bootlogo.bmp"), format='BMP')
 
     chargingimage = generatePilImageChargeScreen(bgHexVar.get(),deselectedFontHexVar.get(),iconHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     chargingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxcharge.png"), format='PNG')
+
+    loadingimage = generatePilImageLoadingScreen(bgHexVar.get(),iconHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    loadingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxstart.png"), format='PNG')
 
     if False: ## Testing converting font in generator
         try:
@@ -2575,7 +2599,7 @@ def on_change(*args):
             image4.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
             if not(vertical_var.get()):
                 image5.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
-
+        image1 = generatePilImageLoadingScreen(bgHexVar.get(),iconHexVar.get(),render_factor).resize(preview_size,Image.LANCZOS)
         update_image_label(image_label1, image1)
         update_image_label(image_label2, image2)
         update_image_label(image_label3, image3)
