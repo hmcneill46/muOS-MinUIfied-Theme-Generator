@@ -96,4 +96,4 @@ To remove all MinUI theming from your system:
 
 ## Credits and thanks
  - Thanks to [@JCR64](https://github.com/JCR64) for the inspiration for the theme and horizontal logo
- - Thanks to [@GrumpyGopher](https://github.com/GrumpyGopher) for the work he's been putting into making the project better
+ - Credits and thanks to [@GrumpyGopher](https://github.com/GrumpyGopher) for the work he's been putting into making the project better
