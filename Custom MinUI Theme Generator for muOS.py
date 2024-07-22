@@ -300,12 +300,12 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     if len(listItems) == 0:
         return(image)
     if not use_alt_font_var.get():
-        selected_font_path = os.path.join(internal_files_dir, "Font", "BPreplayBold-unhinted.otf")
+        selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
     else:
         if os.path.exists(alt_font_path.get()):
             selected_font_path = alt_font_path.get()
         else:
-            selected_font_path = os.path.join(internal_files_dir, "Font", "BPreplayBold-unhinted.otf")
+            selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
 
     
     if additions != "Blank" and version_var.get() == "muOS 2405 BEANS" and not remove_right_menu_guides_var.get(): ## muOS Beans shit
@@ -639,13 +639,13 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     
     
 
-    exploreLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "explore.png"),icon_hex)
+    exploreLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"),icon_hex)
     exploreLogoColoured = exploreLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
-    favouriteLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "favourite.png"),icon_hex)
+    favouriteLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "favourite.png"),icon_hex)
     favouriteLogoColoured = favouriteLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
-    historyLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "history.png"),icon_hex)
+    historyLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "history.png"),icon_hex)
     historyLogoColoured = historyLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
-    appsLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "apps.png"),icon_hex)
+    appsLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "apps.png"),icon_hex)
     appsLogoColoured = appsLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
     
 
@@ -657,12 +657,12 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     draw = ImageDraw.Draw(image)
 
     if not use_alt_font_var.get():
-        selected_font_path = os.path.join(internal_files_dir, "Font", "BPreplayBold-unhinted.otf")
+        selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
     else:
         if os.path.exists(alt_font_path.get()):
             selected_font_path = alt_font_path.get()
         else:
-            selected_font_path = os.path.join(internal_files_dir, "Font", "BPreplayBold-unhinted.otf")
+            selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
     image = applyMenuHelperGuides("muxlaunch",image,selected_font_path,bg_hex,bubble_hex,render_factor)
         
     
@@ -775,24 +775,24 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         draw.ellipse((int((center_x-radius)*render_factor),int((center_y-radius)*render_factor),int((center_x+radius)*render_factor),int((center_y+radius)*render_factor)),fill=f"#{bubble_hex}")
 
     if workingIndex == 4:
-        infoLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "info.png"),selected_font_hex)
+        infoLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "info.png"),selected_font_hex)
     else:
-        infoLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "info.png"),icon_hex)
+        infoLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "info.png"),icon_hex)
     infoLogoColoured = infoLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
     if workingIndex == 5:
-        configLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "config.png"),selected_font_hex)
+        configLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "config.png"),selected_font_hex)
     else:
-        configLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "config.png"),icon_hex)
+        configLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "config.png"),icon_hex)
     configLogoColoured = configLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
     if workingIndex == 6:
-        rebootLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "reboot.png"),selected_font_hex)
+        rebootLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "reboot.png"),selected_font_hex)
     else:
-        rebootLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "reboot.png"),icon_hex)
+        rebootLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "reboot.png"),icon_hex)
     rebootLogoColoured = rebootLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
     if workingIndex == 7:
-        shutdownLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "shutdown.png"),selected_font_hex)
+        shutdownLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "shutdown.png"),selected_font_hex)
     else:
-        shutdownLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Horizontal Logos", "shutdown.png"),icon_hex)
+        shutdownLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "shutdown.png"),icon_hex)
     shutdownLogoColoured = shutdownLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
 
     image.paste(infoLogoColoured,(175*render_factor,340*render_factor),infoLogoColoured)
@@ -802,6 +802,114 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     
     return(image)
 
+def generatePilImageBootLogo(bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor):
+    bg_rgb = hex_to_rgb(bg_hex)
+    image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
+    if background_image != None:
+        image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+
+    draw = ImageDraw.Draw(image)
+
+    if not use_alt_font_var.get():
+        selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
+    else:
+        if os.path.exists(alt_font_path.get()):
+            selected_font_path = alt_font_path.get()
+        else:
+            selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
+
+    mu_font_size = 130 * render_factor
+    mu_font = ImageFont.truetype(selected_font_path, mu_font_size)
+    os_font_size = 98 * render_factor
+    os_font = ImageFont.truetype(selected_font_path, os_font_size)
+
+    screen_x_middle, screen_y_middle = (deviceScreenWidth/2)*render_factor,(deviceScreenHeight/2)*render_factor
+
+    from_middle_padding = 20*render_factor
+
+    muText = "mu"
+
+    osText = "OS"
+
+    muTextBbox = mu_font.getbbox(muText)
+    osTextBbox = os_font.getbbox(osText)
+
+    muTextWidth = muTextBbox[2] - muTextBbox[0]
+    muTextHeight = muTextBbox[3]-muTextBbox[1]
+    mu_y_location = screen_y_middle-muTextHeight/2-muTextBbox[1]
+    mu_x_location = screen_x_middle - from_middle_padding - muTextWidth
+
+    osTextWidth = osTextBbox[2] - osTextBbox[0]
+    osTextHeight = osTextBbox[3] - osTextBbox[1]
+    os_y_location = screen_y_middle - osTextHeight / 2-osTextBbox[1]
+    os_x_location = screen_x_middle + from_middle_padding
+
+    bubble_x_padding = 30 * render_factor
+    bubble_y_padding = 25 * render_factor
+    bubble_x_mid_point = screen_x_middle + from_middle_padding + (osTextWidth / 2)
+    bubble_width = bubble_x_padding + osTextWidth + bubble_x_padding
+    bubble_height = bubble_y_padding + osTextHeight + bubble_y_padding
+    
+    draw.rounded_rectangle(
+        [(bubble_x_mid_point-(bubble_width/2), screen_y_middle-(bubble_height/2)), (bubble_x_mid_point+(bubble_width/2), screen_y_middle+(bubble_height/2))],
+        radius=bubble_height/2,
+        fill=f"#{bubble_hex}"
+    )
+
+    draw.text((mu_x_location,mu_y_location), muText,font=mu_font, fill=f"#{deselected_font_hex}")
+    draw.text((os_x_location,os_y_location),osText,font=os_font,fill=f"#{selected_font_hex}")
+    
+
+    return image
+
+def generatePilImageChargeScreen(bg_hex,deselected_font_hex,icon_hex,render_factor):
+    bg_rgb = hex_to_rgb(bg_hex)
+    image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
+    if background_image != None:
+        image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+    
+    draw = ImageDraw.Draw(image)
+
+    if not use_alt_font_var.get():
+        selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
+    else:
+        if os.path.exists(alt_font_path.get()):
+            selected_font_path = alt_font_path.get()
+        else:
+            selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
+    
+    screen_x_middle, screen_y_middle = (deviceScreenWidth/2)*render_factor,(deviceScreenHeight/2)*render_factor
+
+    from_middle_padding = 50*render_factor
+
+    chargingLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "ChargingLogo[5x].png"),icon_hex)
+    chargingLogoColoured = chargingLogoColoured.resize(((chargingLogoColoured.size[0]/5)*render_factor,(chargingLogoColoured.size[1]/5)*render_factor), Image.LANCZOS)
+    
+    charging_logo_y_location = int(screen_y_middle-chargingLogoColoured.size[1]/2-from_middle_padding)
+    charging_logo_x_location = int(screen_x_middle-chargingLogoColoured.size[0]/2)
+
+    image.paste(chargingLogoColoured,(charging_logo_x_location,charging_logo_y_location),chargingLogoColoured)
+
+    charging_font_size = 57.6 * render_factor
+    charging_font = ImageFont.truetype(selected_font_path, charging_font_size)
+
+    chargingText = "CHARGING..."
+    if alternate_menu_names_var.get():
+        chargingText = bidiGet_display(menuNameMap.get("charging...", "CHARGING..."))
+
+    
+
+    chargingTextBbox = charging_font.getbbox(chargingText)
+
+    chargingTextWidth = chargingTextBbox[2] - chargingTextBbox[0]
+    chargingTextHeight = chargingTextBbox[3]-chargingTextBbox[1]
+    charging_y_location = screen_y_middle-chargingTextHeight/2-chargingTextBbox[1]+from_middle_padding
+    charging_x_location = screen_x_middle - chargingTextWidth/2
+
+    draw.text((charging_x_location,charging_y_location), chargingText, font=charging_font, fill=f"#{deselected_font_hex}")
+
+    
+    return (image)
 
 def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex,icon_hex, render_factor, outputDir):
     startIndex = 0
@@ -916,6 +1024,7 @@ def getDefaultAlternateMenuNameData():
     defaultMenuNamemap["okay"] = "OKAY"
     defaultMenuNamemap["confirm"] = "CONFIRM"
     defaultMenuNamemap["launch"] = "LAUNCH"
+    defaultMenuNamemap["charging..."] = "CHARGING..."
     return defaultMenuNamemap
 
 def list_directory_contents(directory_path):
@@ -1503,7 +1612,7 @@ def FillTempThemeFolder(progress_bar):
     shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxinfo.txt"))
 
     if crt_overlay_var.get():
-        shutil.copy2(os.path.join(internal_files_dir,"Overlays","CRT Overlay.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
+        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays","CRT Overlay.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
 
     os.remove(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"))
 
@@ -1512,6 +1621,13 @@ def FillTempThemeFolder(progress_bar):
 
     else:
         replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+    
+    bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","bootlogo.bmp"), format='BMP')
+
+    chargingimage = generatePilImageChargeScreen(bgHexVar.get(),deselectedFontHexVar.get(),iconHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    chargingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxcharge.png"), format='PNG')
+
     if False: ## Testing converting font in generator
         try:
             # Define the command
@@ -1519,12 +1635,12 @@ def FillTempThemeFolder(progress_bar):
                 'lv_font_conv',
                 '--bpp', '4',
                 '--size', str(40),
-                '--font', os.path.join(internal_files_dir, "Font", "BPreplayBold-unhinted.otf"),
+                '--font', os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"),
                 '-r', '0x20-0x7F',
                 '--format', 'bin',
                 '--no-compress',
                 '--no-prefilter',
-                '-o', os.path.join(internal_files_dir, ".TempBuildTheme", "font","default.bin")
+                '-o', os.path.join(internal_files_dir, ".TempBuildTheme", "Assets", "font","default.bin")
             ]
 
             # Execute the command
@@ -2236,7 +2352,7 @@ def outline_image_with_inner_gap(image, outline_color=(255, 0, 0), outline_width
 
 valid_params = True
 
-crt_overlay_image = Image.open(os.path.join(internal_files_dir,"Overlays", "CRT Overlay.png")).convert("RGBA")
+crt_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", "CRT Overlay.png")).convert("RGBA")
 
 def updateMenusList(menusList, defaultList):
     if application_directory_path.get()!="" and os.path.exists(application_directory_path.get()): # muOS 2405.2
@@ -2312,6 +2428,8 @@ def on_change(*args):
     
     fakeprogressbar={'value':0}
     fakeprogressbar['maximum']=1
+
+    preview_size = (int(deviceScreenWidth/2),int(deviceScreenHeight/2))
     # This function will run whenever any traced variable changes
     try:
         consoleName = consoleMap.get(previewConsoleNameVar.get().lower(), previewConsoleNameVar.get())
@@ -2329,7 +2447,7 @@ def on_change(*args):
                 previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File', '4-in-1 Fun Pak [Version 1] (USA, Europe)'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File', '4-in-1 Funpak - Volume II (USA, Europe)'], ['A-mazing Tater (USA)', 'File', 'A-mazing Tater (USA)'], ['Addams Family, The (USA)', 'File', 'Addams Family, The (USA)'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File', "Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]"], ['Adventure Island (USA, Europe)', 'File', 'Adventure Island (USA, Europe)'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File', 'Adventure Island II - Aliens in Paradise (USA, Europe)'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File', 'Adventures of Rocky and Bullwinkle and Friends, The (USA)'], ['Adventures of Star Saver, The (USA, Europe)', 'File', 'Adventures of Star Saver, The (USA, Europe)'], ['Aerostar (USA, Europe)', 'File', 'Aerostar (USA, Europe)'], ['Aladdin (USA) (SGB Enhanced)', 'File', 'Aladdin (USA) (SGB Enhanced)'], ['Alfred Chicken (USA)', 'File', 'Alfred Chicken (USA)'], ['Alien 3 (USA, Europe)', 'File', 'Alien 3 (USA, Europe)'], ['Alien vs Predator - The Last of His Clan (USA)', 'File', 'Alien vs Predator - The Last of His Clan (USA)'], ['All-Star Baseball 99 (USA)', 'File', 'All-Star Baseball 99 (USA)'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File', 'Altered Space - A 3-D Alien Adventure (USA)'], ['Amazing Penguin (USA, Europe)', 'File', 'Amazing Penguin (USA, Europe)'], ['Amazing Spider-Man, The (USA, Europe)', 'File', 'Amazing Spider-Man, The (USA, Europe)'], ['Animaniacs (USA) (SGB Enhanced)', 'File', 'Animaniacs (USA) (SGB Enhanced)'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File', 'Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)'], ['Asteroids (USA, Europe)', 'File', 'Asteroids (USA, Europe)'], ['Atomic Punk (USA)', 'File', 'Atomic Punk (USA)'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File', 'Attack of the Killer Tomatoes (USA, Europe)'], ['Avenging Spirit (USA, Europe)', 'File', 'Avenging Spirit (USA, Europe)'], ['Balloon Kid (USA, Europe)', 'File', 'Balloon Kid (USA, Europe)'], ['Barbie - Game Girl (USA, Europe)', 'File', 'Barbie - Game Girl (USA, Europe)'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File', "Bart Simpson's Escape from Camp Deadly (USA, Europe)"], ['Bases Loaded for Game Boy (USA)', 'File', 'Bases Loaded for Game Boy (USA)'], ['Batman - Return of the Joker (USA, Europe)', 'File', 'Batman - Return of the Joker (USA, Europe)'], ['Batman - The Animated Series (USA, Europe)', 'File', 'Batman - The Animated Series (USA, Europe)'], ['Batman Forever (USA, Europe)', 'File', 'Batman Forever (USA, Europe)'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File', 'Battle Arena Toshinden (USA) (SGB Enhanced)'], ['Battle Bull (USA)', 'File', 'Battle Bull (USA)'], ['Battle Unit Zeoth (USA, Europe)', 'File', 'Battle Unit Zeoth (USA, Europe)'], ['Battleship (USA, Europe)', 'File', 'Battleship (USA, Europe)'], ['Battletoads (USA, Europe)', 'File', 'Battletoads (USA, Europe)'], ["Battletoads in Ragnarok's World (USA)", 'File', "Battletoads in Ragnarok's World (USA)"], ['Battletoads-Double Dragon (USA)', 'File', 'Battletoads-Double Dragon (USA)'], ['Beavis and Butt-Head (USA, Europe)', 'File', 'Beavis and Butt-Head (USA, Europe)'], ['Beetlejuice (USA)', 'File', 'Beetlejuice (USA)'], ['Best of the Best - Championship Karate (USA)', 'File', 'Best of the Best - Championship Karate (USA)'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File', "Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)"], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File', "Bill Elliott's NASCAR Fast Tracks (USA)"], ['Bionic Battler (USA)', 'File', 'Bionic Battler (USA)'], ['Bionic Commando (USA)', 'File', 'Bionic Commando (USA)'], ['Black Bass - Lure Fishing (USA)', 'File', 'Black Bass - Lure Fishing (USA)'], ['Blades of Steel (USA)', 'File', 'Blades of Steel (USA)'], ['Blaster Master Boy (USA)', 'File', 'Blaster Master Boy (USA)'], ['Blues Brothers, The (USA, Europe)', 'File', 'Blues Brothers, The (USA, Europe)'], ['Bo Jackson - Two Games in One (USA)', 'File', 'Bo Jackson - Two Games in One (USA)'], ['Boggle Plus (USA)', 'File', 'Boggle Plus (USA)'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File', 'Bomberman GB (USA, Europe) (SGB Enhanced)'], ["Bonk's Adventure (USA)", 'File', "Bonk's Adventure (USA)"], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File', "Bonk's Revenge (USA) (SGB Enhanced)"]]
 
         if not(vertical_var.get()):
-            image1 = generatePilImageHorizontal(fakeprogressbar,0,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+            image1 = generatePilImageHorizontal(fakeprogressbar,0,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize(preview_size, Image.LANCZOS)
         else:
             if not page_by_page_var.get():
                 image1 = generatePilImageVertical(fakeprogressbar,0,
@@ -2343,7 +2461,7 @@ def on_change(*args):
                                                 selectedFontHexVar.get(),
                                                 deselectedFontHexVar.get(),
                                                 bubbleHexVar.get()
-                                                ,1).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+                                                ,1).resize(preview_size, Image.LANCZOS)
             else:
                 image1 = generatePilImageVertical(fakeprogressbar,0,
                                 "muxlaunch",
@@ -2360,7 +2478,7 @@ def on_change(*args):
                                 scrollBarWidth=int(scrollBarWidthVar.get()),
                                 showScrollBar=(len(previewItemList)/int(items_per_screen_entry.get()))>1,
                                 numScreens=math.ceil(len(previewItemList)/int(items_per_screen_entry.get())),
-                                screenIndex=0).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+                                screenIndex=0).resize(preview_size, Image.LANCZOS)
         if not page_by_page_var.get():
             image2 = generatePilImageVertical(fakeprogressbar,0,
                                             "Folder",
@@ -2373,7 +2491,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize(preview_size, Image.LANCZOS)
             image3 = generatePilImageVertical(fakeprogressbar,0,
                                             consoleName, 
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
@@ -2385,7 +2503,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize(preview_size, Image.LANCZOS)
             image4 = generatePilImageVertical(fakeprogressbar,0,
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
@@ -2397,7 +2515,7 @@ def on_change(*args):
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get()
-                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+                                            ,1,fileCounter="1 / " + items_per_screen_entry.get()).resize(preview_size, Image.LANCZOS)
         else:
             image2 = generatePilImageVertical(fakeprogressbar,0,
                                             "Folder",
@@ -2413,7 +2531,7 @@ def on_change(*args):
                                             ,1,scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewConsolesItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewConsolesItemList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize(preview_size, Image.LANCZOS)
             image3 = generatePilImageVertical(fakeprogressbar,0,
                                             consoleName,
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
@@ -2428,7 +2546,7 @@ def on_change(*args):
                                             ,1,scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewGameItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewGameItemList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize(preview_size, Image.LANCZOS)
             image4 = generatePilImageVertical(fakeprogressbar,0,
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
@@ -2443,12 +2561,12 @@ def on_change(*args):
                                             ,1,scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewApplicationList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewApplicationList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize(preview_size, Image.LANCZOS)
         if not(vertical_var.get()):
-            image5 = generatePilImageHorizontal(fakeprogressbar,4,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+            image5 = generatePilImageHorizontal(fakeprogressbar,4,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize(preview_size, Image.LANCZOS)
 
 
-
+        
         if crt_overlay_var.get():
             crt_overlay_resized = crt_overlay_image.resize(image1.size, Image.LANCZOS)
             image1.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
@@ -2469,12 +2587,12 @@ def on_change(*args):
         valid_params = True
     except:
         if valid_params:
-            redOutlineImage1 = outline_image_with_inner_gap(get_current_image(image_label1)).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
-            redOutlineImage2 = outline_image_with_inner_gap(get_current_image(image_label2)).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
-            redOutlineImage3 = outline_image_with_inner_gap(get_current_image(image_label3)).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
-            redOutlineImage4 = outline_image_with_inner_gap(get_current_image(image_label4)).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+            redOutlineImage1 = outline_image_with_inner_gap(get_current_image(image_label1)).resize(preview_size, Image.LANCZOS)
+            redOutlineImage2 = outline_image_with_inner_gap(get_current_image(image_label2)).resize(preview_size, Image.LANCZOS)
+            redOutlineImage3 = outline_image_with_inner_gap(get_current_image(image_label3)).resize(preview_size, Image.LANCZOS)
+            redOutlineImage4 = outline_image_with_inner_gap(get_current_image(image_label4)).resize(preview_size, Image.LANCZOS)
             if not(vertical_var.get()):
-                redOutlineImage5 = outline_image_with_inner_gap(get_current_image(image_label5)).resize((int(deviceScreenWidth/2), int(deviceScreenHeight/2)), Image.LANCZOS)
+                redOutlineImage5 = outline_image_with_inner_gap(get_current_image(image_label5)).resize(preview_size, Image.LANCZOS)
             update_image_label(image_label1, redOutlineImage1)
             update_image_label(image_label2, redOutlineImage2)
             update_image_label(image_label3, redOutlineImage3)
