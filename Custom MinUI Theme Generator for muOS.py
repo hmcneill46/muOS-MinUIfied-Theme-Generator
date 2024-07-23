@@ -18,6 +18,8 @@ import json
 import subprocess
 import shutil
 
+deviceScreenWidth, deviceScreenHeight = 648, 480
+
 if getattr(sys, 'frozen', False):
     # The application is running as a bundle
     internal_files_dir = sys._MEIPASS
@@ -57,7 +59,7 @@ class Config:
         self.boxArtPaddingVar = 0
         self.folderBoxArtPaddingVar = 0
         self.box_art_directory_path = ""
-        self.maxBubbleLengthVar = 640
+        self.maxBubbleLengthVar = deviceScreenWidth
         self.roms_directory_path = ""
         self.application_directory_path = ""
         self.previewConsoleNameVar = "Nintendo Game Boy"
@@ -109,7 +111,6 @@ AlternateMenuNamesPath = os.path.join(script_dir,"AlternateMenuNames.json")
 ConsoleAssociationsPath = os.path.join(script_dir,"ConsoleAssociations.json")
 defaultConsoleAssociationsPath = os.path.join(internal_files_dir,"_ConsoleAssociations.json")
 
-deviceScreenWidth, deviceScreenHeight = 640, 480
 headerHeight = 40
 footerHeight = 55
 textMF = 0.7
@@ -505,7 +506,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         
         rectangle_x0 = text_x - (rectanglePadding * render_factor)
         rectangle_y0 = headerHeight * render_factor + availableHeight * index
-        rectangle_x1 = rectanglePadding * render_factor+rectangle_x0 + text_width + rectanglePadding * render_factor
+        rectangle_x1 = rectangle_x0 + rectanglePadding * render_factor + text_width + rectanglePadding * render_factor
         rectangle_y1 = headerHeight * render_factor + availableHeight * (index+1)
         middle_y = (rectangle_y0 + rectangle_y1) / 2
         ascent, descent = font.getmetrics()
@@ -901,19 +902,19 @@ def generatePilImageChargeScreen(bg_hex,deselected_font_hex,icon_hex,render_fact
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
     
-    screen_x_middle, screen_y_middle = (deviceScreenWidth/2)*render_factor,(deviceScreenHeight/2)*render_factor
+    screen_x_middle, screen_y_middle = int((deviceScreenWidth/2)*render_factor),int((deviceScreenHeight/2)*render_factor)
 
     from_middle_padding = 50*render_factor
 
     chargingLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "ChargingLogo[5x].png"),icon_hex)
-    chargingLogoColoured = chargingLogoColoured.resize(((chargingLogoColoured.size[0]/5)*render_factor,(chargingLogoColoured.size[1]/5)*render_factor), Image.LANCZOS)
+    chargingLogoColoured = chargingLogoColoured.resize((int((chargingLogoColoured.size[0]/5)*render_factor),int((chargingLogoColoured.size[1]/5)*render_factor)), Image.LANCZOS)
     
     charging_logo_y_location = int(screen_y_middle-chargingLogoColoured.size[1]/2-from_middle_padding)
     charging_logo_x_location = int(screen_x_middle-chargingLogoColoured.size[0]/2)
 
     image.paste(chargingLogoColoured,(charging_logo_x_location,charging_logo_y_location),chargingLogoColoured)
 
-    charging_font_size = 57.6 * render_factor
+    charging_font_size = int(57.6 * render_factor)
     charging_font = ImageFont.truetype(selected_font_path, charging_font_size)
 
     chargingText = "CHARGING..."
@@ -924,10 +925,10 @@ def generatePilImageChargeScreen(bg_hex,deselected_font_hex,icon_hex,render_fact
 
     chargingTextBbox = charging_font.getbbox(chargingText)
 
-    chargingTextWidth = chargingTextBbox[2] - chargingTextBbox[0]
-    chargingTextHeight = chargingTextBbox[3]-chargingTextBbox[1]
-    charging_y_location = screen_y_middle-chargingTextHeight/2-chargingTextBbox[1]+from_middle_padding
-    charging_x_location = screen_x_middle - chargingTextWidth/2
+    chargingTextWidth = int(chargingTextBbox[2] - chargingTextBbox[0])
+    chargingTextHeight = int(chargingTextBbox[3]-chargingTextBbox[1])
+    charging_y_location = int(screen_y_middle-chargingTextHeight/2-chargingTextBbox[1]+from_middle_padding)
+    charging_x_location = int(screen_x_middle - chargingTextWidth/2)
 
     draw.text((charging_x_location,charging_y_location), chargingText, font=charging_font, fill=f"#{deselected_font_hex}")
 
@@ -945,7 +946,7 @@ def generatePilImageLoadingScreen(bg_hex,icon_hex,render_factor):
     screen_x_middle, screen_y_middle = (deviceScreenWidth/2)*render_factor,(deviceScreenHeight/2)*render_factor
 
     loadingLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "LoadingLogo[5x].png"),icon_hex)
-    loadingLogoColoured = loadingLogoColoured.resize(((loadingLogoColoured.size[0]/5)*render_factor,(loadingLogoColoured.size[1]/5)*render_factor), Image.LANCZOS)
+    loadingLogoColoured = loadingLogoColoured.resize((int((loadingLogoColoured.size[0]/5)*render_factor),int((loadingLogoColoured.size[1]/5)*render_factor)), Image.LANCZOS)
     
     loading_logo_y_location = int(screen_y_middle-loadingLogoColoured.size[1]/2)
     loading_logo_x_location = int(screen_x_middle-loadingLogoColoured.size[0]/2)
@@ -2639,8 +2640,6 @@ def on_change(*args):
         if not(vertical_var.get()):
             image5 = generatePilImageHorizontal(fakeprogressbar,4,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),1).resize(preview_size, Image.LANCZOS)
 
-
-        
         if crt_overlay_var.get():
             crt_overlay_resized = crt_overlay_image.resize(image1.size, Image.LANCZOS)
             image1.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
@@ -2649,6 +2648,7 @@ def on_change(*args):
             image4.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
             if not(vertical_var.get()):
                 image5.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
+
         update_image_label(image_label1, image1)
         update_image_label(image_label2, image2)
         update_image_label(image_label3, image3)
