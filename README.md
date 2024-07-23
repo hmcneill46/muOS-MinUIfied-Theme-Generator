@@ -23,9 +23,9 @@ Individual Libraries:
    
        pip install tk
 
- - pythonbidi library
+ - python-bidi library
    
-       pip install pythonbidi
+       pip install python-bidi
 
 
 ## Getting Started
