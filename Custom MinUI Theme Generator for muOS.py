@@ -1481,7 +1481,7 @@ menus2405 = [["muxapps",[["Archive Manager","archive"],
                      ["Gmu Music Player","gmu"]]],
          ["muxconfig",[["General Settings","general"],
                      ["Theme Picker","theme"],
-                     ["WiFi Settings","network"],
+                     ["Wi-Fi Settings","network"],
                      ["Web Services","service"],
                      ["Date and Time","clock"],
                      ["Device Type","device"],
@@ -1518,7 +1518,7 @@ menus2405_1 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["Task Toolkit","Task Toolkit"]]],
          ["muxconfig",[["General Settings","general"],
                      ["Theme Picker","theme"],
-                     ["WiFi Settings","network"],
+                     ["Wi-Fi Settings","network"],
                      ["Web Services","service"],
                      ["Date and Time","clock"],
                      ["Device Type","device"]]],
@@ -1557,7 +1557,7 @@ menus2405_2 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["Task Toolkit","Task Toolkit"]]],
          ["muxconfig",[["General Settings","general"],
                      ["Theme Picker","theme"],
-                     ["WiFi Settings","network"],
+                     ["Wi-Fi Settings","network"],
                      ["Web Services","service"],
                      ["Date and Time","clock"],
                      ["Device Type","device"]]],
@@ -2078,6 +2078,11 @@ def start_theme_task():
     root.after(100, check_queue, root, input_queue, output_queue)
 
 
+def on_resize(event):
+    global resize_id
+    if resize_id is not None:
+        root.after_cancel(resize_id)
+    resize_id = root.after(0, on_change)  # Adjust the delay as needed
 
 root = tk.Tk()
 root.title("MinUI Theme Generator")
@@ -2088,6 +2093,10 @@ screen_height = root.winfo_screenheight()
 window_height = int(min(screen_height*0.9, 1720))
 
 root.geometry(f"1280x{window_height}")  # Set a default size for the window
+
+resize_id = None
+
+root.bind("<Configure>", on_resize)
 
 subtitle_font = font.Font(family="Helvetica", size=10, weight="bold")
 title_font = font.Font(family="Helvetica", size=14, weight="bold")
@@ -2575,7 +2584,11 @@ def on_change(*args):
     fakeprogressbar={'value':0}
     fakeprogressbar['maximum']=1
 
-    preview_size = (int(deviceScreenWidth/2),int(deviceScreenHeight/2))
+    if vertical_var.get():
+        preview_multiplier = (root.winfo_height()/4.1)/deviceScreenHeight
+    else:
+        preview_multiplier = (root.winfo_height()/5.2)/deviceScreenHeight
+    preview_size = (int(deviceScreenWidth*preview_multiplier),int(deviceScreenHeight*preview_multiplier))
     # This function will run whenever any traced variable changes
     try:
         consoleName = consoleMap.get(previewConsoleNameVar.get().lower(), previewConsoleNameVar.get())
