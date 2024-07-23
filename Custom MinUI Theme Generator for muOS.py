@@ -412,7 +412,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         else:
             textAlignment = content_alignment_var.get()
 
-    if overlay_box_art_var.get() and textAlignment != "Centre": # TODO Add support for right text alignment 
+    if overlay_box_art_var.get() and textAlignment != "Centre":
         if listItems[workingIndex][1] == "File":
             if os.path.exists(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")):
                 originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")).convert("RGBA")
@@ -702,7 +702,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     history_logo_x = int(history_middle-(historyLogoColoured.size[0])/2)
     apps_logo_x = int(apps_middle-(appsLogoColoured.size[0])/2)
 
-    image.paste(exploreLogoColoured,(explore_logo_x,top_row_icon_y),exploreLogoColoured) #TODO Y Value
+    image.paste(exploreLogoColoured,(explore_logo_x,top_row_icon_y),exploreLogoColoured)
     image.paste(favouriteLogoColoured,(favourite_logo_x,top_row_icon_y),favouriteLogoColoured)
     image.paste(historyLogoColoured,(history_logo_x,top_row_icon_y),historyLogoColoured)
     image.paste(appsLogoColoured,(apps_logo_x,top_row_icon_y),appsLogoColoured)
@@ -855,11 +855,11 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     bottom_row_middle_y =  int(screen_y_middle+(combined_top_row_height/2)+top_row_to_bottom_row_padding+circle_radius)
 
 
-    padding_from_screen_bottom_logos = deviceScreenWidth*(175/640)*render_factor
+    padding_from_screen_bottom_logos = deviceScreenWidth*(175/640)*render_factor ##CHANGE to adjust
 
     padding_between_bottom_logos = (deviceScreenWidth*render_factor-padding_from_screen_bottom_logos-combined_bottom_logos_width-padding_from_screen_bottom_logos)/(4-1) # 4 logos minus 1
 
-    info_middle = int(padding_from_screen_bottom_logos+(infoLogoColoured.size[0])/2) #TODO FIX THIS TO INCLUDE ABOVE
+    info_middle = int(padding_from_screen_bottom_logos+(infoLogoColoured.size[0])/2)
     config_middle = int(info_middle+(infoLogoColoured.size[0])/2+padding_between_bottom_logos+(configLogoColoured.size[0])/2)
     reboot_middle = int(config_middle+(configLogoColoured.size[0])/2+padding_between_bottom_logos+(rebootLogoColoured.size[0])/2)
     shutdown_middle = int(reboot_middle+(rebootLogoColoured.size[0])/2+padding_between_bottom_logos+(shutdownLogoColoured.size[0])/2)
