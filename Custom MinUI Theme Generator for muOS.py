@@ -18,7 +18,7 @@ import json
 import subprocess
 import shutil
 
-deviceScreenWidth, deviceScreenHeight = 648, 480
+deviceScreenWidth, deviceScreenHeight = 640, 480
 
 if getattr(sys, 'frozen', False):
     # The application is running as a bundle
@@ -660,23 +660,52 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
     if background_image != None:
         image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
-    
+
     
 
     exploreLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"),icon_hex)
-    exploreLogoColoured = exploreLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
     favouriteLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "favourite.png"),icon_hex)
-    favouriteLogoColoured = favouriteLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
     historyLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "history.png"),icon_hex)
-    historyLogoColoured = historyLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
     appsLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "apps.png"),icon_hex)
-    appsLogoColoured = appsLogoColoured.resize((80*render_factor, 80*render_factor), Image.LANCZOS)
+   
+    top_logo_size = (int((exploreLogoColoured.size[0]*render_factor*min(deviceScreenHeight/480,deviceScreenWidth/640))/5),
+                     int((exploreLogoColoured.size[1]*render_factor*min(deviceScreenHeight/480,deviceScreenWidth/640))/5))
     
+    exploreLogoColoured = exploreLogoColoured.resize((top_logo_size), Image.LANCZOS)
+    favouriteLogoColoured = favouriteLogoColoured.resize((top_logo_size), Image.LANCZOS)
+    historyLogoColoured = historyLogoColoured.resize((top_logo_size), Image.LANCZOS)
+    appsLogoColoured = appsLogoColoured.resize((top_logo_size), Image.LANCZOS)
+    
+    combined_top_logos_width = exploreLogoColoured.size[0]+favouriteLogoColoured.size[0]+historyLogoColoured.size[0]+appsLogoColoured.size[0]
 
-    image.paste(exploreLogoColoured,(64*render_factor,180*render_factor),exploreLogoColoured)
-    image.paste(favouriteLogoColoured,(208*render_factor,180*render_factor),favouriteLogoColoured)
-    image.paste(historyLogoColoured,(352*render_factor,180*render_factor),historyLogoColoured)
-    image.paste(appsLogoColoured,(496*render_factor,180*render_factor),appsLogoColoured)
+    icons_to_bubble_padding = min((deviceScreenHeight*0)/480,(deviceScreenWidth*0)/640)*render_factor ## CHANGE for adjustment
+
+    bubble_height = min((deviceScreenHeight*36.3)/480,(deviceScreenWidth*36.3)/640)*render_factor ## CHANGE for adjustment
+
+    screen_y_middle = (deviceScreenHeight*render_factor)/2
+
+    combined_top_row_height = max(exploreLogoColoured.size[1],favouriteLogoColoured.size[1],historyLogoColoured.size[1],appsLogoColoured.size[1])+icons_to_bubble_padding+bubble_height
+
+    top_row_icon_y = int(screen_y_middle-(combined_top_row_height/2))
+
+    top_row_bubble_middle = int(screen_y_middle+(combined_top_row_height/2)-(bubble_height)/2)
+
+    padding_between_top_logos = (deviceScreenWidth*render_factor-combined_top_logos_width)/(4+1) # 4 logos plus 1
+
+    explore_middle = int(padding_between_top_logos+(exploreLogoColoured.size[0])/2)
+    favourite_middle = int(padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+(favouriteLogoColoured.size[0])/2)
+    history_middle = int(padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+(historyLogoColoured.size[0])/2)
+    apps_middle = int(padding_between_top_logos+appsLogoColoured.size[0]+padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+(appsLogoColoured.size[0])/2)
+
+    explore_logo_x = int(explore_middle-(exploreLogoColoured.size[0])/2)
+    favourite_logo_x = int(favourite_middle-(favouriteLogoColoured.size[0])/2)
+    history_logo_x = int(history_middle-(historyLogoColoured.size[0])/2)
+    apps_logo_x = int(apps_middle-(appsLogoColoured.size[0])/2)
+
+    image.paste(exploreLogoColoured,(explore_logo_x,top_row_icon_y),exploreLogoColoured) #TODO Y Value
+    image.paste(favouriteLogoColoured,(favourite_logo_x,top_row_icon_y),favouriteLogoColoured)
+    image.paste(historyLogoColoured,(history_logo_x,top_row_icon_y),historyLogoColoured)
+    image.paste(appsLogoColoured,(apps_logo_x,top_row_icon_y),appsLogoColoured)
 
     draw = ImageDraw.Draw(image)
 
@@ -691,138 +720,180 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         
     
 
-    font_size = 24 * render_factor
+    font_size = min((deviceScreenHeight*24)/480,(deviceScreenWidth*24)/640) * render_factor  ## CHANGE for adjustment
     font = ImageFont.truetype(selected_font_path, font_size)
-    current_x_midpoint = 104+(144*workingIndex)
-    y_midpoint = 274.35
+    if workingIndex == 0:
+        current_x_midpoint = explore_middle
+    elif workingIndex == 1:
+        current_x_midpoint = favourite_middle
+    elif workingIndex == 2:
+        current_x_midpoint = history_middle
+    elif workingIndex == 3:
+        current_x_midpoint = apps_middle
+    else:
+        current_x_midpoint = 104+(144*workingIndex)
 
-    bubble_height = 36.3
+    
 
-    hozizontalBubblePadding = 40
+    horizontalBubblePadding = min((deviceScreenHeight*40)/480,(deviceScreenWidth*40)/640)*render_factor  ## CHANGE for adjustment
     
     if alternate_menu_names_var.get():
         textString = bidiGet_display(menuNameMap.get("content explorer", "Content"))
     else:
         textString = "Content"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
-    text_width = (text_bbox[2] - text_bbox[0])/render_factor
+    text_width = (text_bbox[2] - text_bbox[0])
     ascent, descent = font.getmetrics()
     text_height = ascent + descent
 
-    text_y = y_midpoint*render_factor - (text_height / 2)
+    text_y = top_row_bubble_middle - (text_height / 2)
 
 
-    bubblecenter_x =  104+(144*0)
+    bubble_center_x =  explore_middle
     textColour = selected_font_hex if workingIndex == 0 else deselected_font_hex
-    text_x = bubblecenter_x - (text_width / 2)
+    text_x = bubble_center_x - (text_width / 2)
     if workingIndex == 0 :
-        bubbleLength = text_width+hozizontalBubblePadding
+        bubbleLength = text_width+horizontalBubblePadding
         draw.rounded_rectangle(
-            [((current_x_midpoint-(bubbleLength/2))*render_factor, int((y_midpoint-bubble_height/2)*render_factor)), ((current_x_midpoint+(bubbleLength/2))*render_factor, int((y_midpoint+bubble_height/2)*render_factor))],
-            radius=(bubble_height/2)*render_factor,
+            [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
+            radius=(bubble_height/2),
             fill=f"#{bubble_hex}"
         )
-    draw.text((text_x*render_factor, text_y), textString, font=font, fill=f"#{textColour}")
+    draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
 
     if alternate_menu_names_var.get():
         textString = bidiGet_display(menuNameMap.get("favourites", "Favourites"))
     else:
         textString = "Favourites"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
-    text_width = (text_bbox[2] - text_bbox[0])/render_factor
-    bubblecenter_x =  104+(144*1)
+    text_width = (text_bbox[2] - text_bbox[0])
+    bubble_center_x =  favourite_middle
     textColour = selected_font_hex if workingIndex == 1 else deselected_font_hex
-    text_x = bubblecenter_x - (text_width / 2)
+    text_x = bubble_center_x - (text_width / 2)
     if workingIndex == 1 :
-        bubbleLength = text_width+hozizontalBubblePadding
+        bubbleLength = text_width+horizontalBubblePadding
         draw.rounded_rectangle(
-            [((current_x_midpoint-(bubbleLength/2))*render_factor, int((y_midpoint-bubble_height/2)*render_factor)), ((current_x_midpoint+(bubbleLength/2))*render_factor, int((y_midpoint+bubble_height/2)*render_factor))],
-            radius=(bubble_height/2)*render_factor,
+            [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
+            radius=(bubble_height/2),
             fill=f"#{bubble_hex}"
         )
-    draw.text((text_x*render_factor, text_y), textString, font=font, fill=f"#{textColour}")
+    draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
 
     if alternate_menu_names_var.get():
         textString = bidiGet_display(menuNameMap.get("history", "History"))
     else:
         textString = "History"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
-    text_width = (text_bbox[2] - text_bbox[0])/render_factor
-    bubblecenter_x =  104+(144*2)
+    text_width = (text_bbox[2] - text_bbox[0])
+    bubble_center_x =  history_middle
     textColour = selected_font_hex if workingIndex == 2 else deselected_font_hex
-    text_x = bubblecenter_x - (text_width / 2)
+    text_x = bubble_center_x - (text_width / 2)
     if workingIndex == 2 :
-        bubbleLength = text_width+hozizontalBubblePadding
+        bubbleLength = text_width+horizontalBubblePadding
         draw.rounded_rectangle(
-            [((current_x_midpoint-(bubbleLength/2))*render_factor, int((y_midpoint-bubble_height/2)*render_factor)), ((current_x_midpoint+(bubbleLength/2))*render_factor, int((y_midpoint+bubble_height/2)*render_factor))],
-            radius=(bubble_height/2)*render_factor,
+            [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
+            radius=(bubble_height/2),
             fill=f"#{bubble_hex}"
         )
-    draw.text((text_x*render_factor, text_y), textString, font=font, fill=f"#{textColour}")
+    draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
     if alternate_menu_names_var.get():
         textString = bidiGet_display(menuNameMap.get("applications", "Utilities"))
     else:
         textString = "Utilities"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
-    text_width = (text_bbox[2] - text_bbox[0])/render_factor
-    bubblecenter_x =  104+(144*3)
+    text_width = (text_bbox[2] - text_bbox[0])
+    bubble_center_x =  apps_middle
     textColour = selected_font_hex if workingIndex == 3 else deselected_font_hex
-    text_x = bubblecenter_x - (text_width / 2)
+    text_x = bubble_center_x - (text_width / 2)
     if workingIndex == 3 :
-        bubbleLength = text_width+hozizontalBubblePadding
+        bubbleLength = text_width+horizontalBubblePadding
         draw.rounded_rectangle(
-            [((current_x_midpoint-(bubbleLength/2))*render_factor, int((y_midpoint-bubble_height/2)*render_factor)), ((current_x_midpoint+(bubbleLength/2))*render_factor, int((y_midpoint+bubble_height/2)*render_factor))],
-            radius=(bubble_height/2)*render_factor,
+            [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
+            radius=(bubble_height/2),
             fill=f"#{bubble_hex}"
         )
-    draw.text((text_x*render_factor, text_y), textString, font=font, fill=f"#{textColour}")
+    draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
 
-    if workingIndex == 4:
-        center_x = 175+(36.4/2)
-        center_y = 340+(36.4/2)
-        radius = 65/2
-        draw.ellipse((int((center_x-radius)*render_factor),int((center_y-radius)*render_factor),int((center_x+radius)*render_factor),int((center_y+radius)*render_factor)),fill=f"#{bubble_hex}")
-    elif workingIndex == 5:
-        center_x = 259.533333+(36.4/2)
-        center_y = 340+(36.4/2)
-        radius = 65/2
-        draw.ellipse((int((center_x-radius)*render_factor),int((center_y-radius)*render_factor),int((center_x+radius)*render_factor),int((center_y+radius)*render_factor)),fill=f"#{bubble_hex}")
-    elif workingIndex == 6:
-        center_x = 344.866666+(36.4/2)
-        center_y = 340+(36.4/2)
-        radius = 65/2
-        draw.ellipse((int((center_x-radius)*render_factor),int((center_y-radius)*render_factor),int((center_x+radius)*render_factor),int((center_y+radius)*render_factor)),fill=f"#{bubble_hex}")
-    elif workingIndex == 7:
-        center_x = 430.1999993+(36.4/2)
-        center_y = 340+(36.4/2)
-        radius = 65/2
-        draw.ellipse((int((center_x-radius)*render_factor),int((center_y-radius)*render_factor),int((center_x+radius)*render_factor),int((center_y+radius)*render_factor)),fill=f"#{bubble_hex}")
+    
 
     if workingIndex == 4:
         infoLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "info.png"),selected_font_hex)
     else:
         infoLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "info.png"),icon_hex)
-    infoLogoColoured = infoLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
     if workingIndex == 5:
         configLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "config.png"),selected_font_hex)
     else:
         configLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "config.png"),icon_hex)
-    configLogoColoured = configLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
     if workingIndex == 6:
         rebootLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "reboot.png"),selected_font_hex)
     else:
         rebootLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "reboot.png"),icon_hex)
-    rebootLogoColoured = rebootLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
     if workingIndex == 7:
         shutdownLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "shutdown.png"),selected_font_hex)
     else:
         shutdownLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "shutdown.png"),icon_hex)
-    shutdownLogoColoured = shutdownLogoColoured.resize((int(36.4*render_factor), int(36.4*render_factor)), Image.LANCZOS)
+    
+    bottom_logo_size = (int((infoLogoColoured.size[0]*render_factor*min(deviceScreenHeight/480,deviceScreenWidth/640))/5),
+                     int((infoLogoColoured.size[1]*render_factor*min(deviceScreenHeight/480,deviceScreenWidth/640))/5))
+    
+    infoLogoColoured = infoLogoColoured.resize(bottom_logo_size, Image.LANCZOS)
+    configLogoColoured = configLogoColoured.resize(bottom_logo_size, Image.LANCZOS)
+    rebootLogoColoured = rebootLogoColoured.resize(bottom_logo_size, Image.LANCZOS)
+    shutdownLogoColoured = shutdownLogoColoured.resize(bottom_logo_size, Image.LANCZOS)
 
-    image.paste(infoLogoColoured,(175*render_factor,340*render_factor),infoLogoColoured)
-    image.paste(configLogoColoured,(int(259.533333*render_factor),340*render_factor),configLogoColoured)
-    image.paste(rebootLogoColoured,(int(344.866666*render_factor),340*render_factor),rebootLogoColoured)
-    image.paste(shutdownLogoColoured,(int(430.1999993*render_factor),340*render_factor),shutdownLogoColoured)
+
+    combined_bottom_logos_width = infoLogoColoured.size[0]+configLogoColoured.size[0]+rebootLogoColoured.size[0]+shutdownLogoColoured.size[0]
+
+    circle_padding = min((deviceScreenHeight*15)/480,(deviceScreenWidth*15)/640)*render_factor ## CHANGE to adjust 
+
+    combined_bottom_row_height = max(infoLogoColoured.size[1],configLogoColoured.size[1],rebootLogoColoured.size[1],shutdownLogoColoured.size[1])+circle_padding*2
+
+    circle_radius = combined_bottom_row_height/2
+
+    top_row_to_bottom_row_padding = min((deviceScreenHeight*20)/480,(deviceScreenWidth*20)/640)*render_factor ## CHANGE to adjust
+
+    bottom_row_middle_y =  int(screen_y_middle+(combined_top_row_height/2)+top_row_to_bottom_row_padding+circle_radius)
+
+
+    padding_from_screen_bottom_logos = deviceScreenWidth*(175/640)*render_factor
+
+    padding_between_bottom_logos = (deviceScreenWidth*render_factor-padding_from_screen_bottom_logos-combined_bottom_logos_width-padding_from_screen_bottom_logos)/(4-1) # 4 logos minus 1
+
+    info_middle = int(padding_from_screen_bottom_logos+(infoLogoColoured.size[0])/2) #TODO FIX THIS TO INCLUDE ABOVE
+    config_middle = int(info_middle+(infoLogoColoured.size[0])/2+padding_between_bottom_logos+(configLogoColoured.size[0])/2)
+    reboot_middle = int(config_middle+(configLogoColoured.size[0])/2+padding_between_bottom_logos+(rebootLogoColoured.size[0])/2)
+    shutdown_middle = int(reboot_middle+(rebootLogoColoured.size[0])/2+padding_between_bottom_logos+(shutdownLogoColoured.size[0])/2)
+
+    info_logo_x = int(info_middle-(infoLogoColoured.size[0])/2)
+    config_logo_x = int(config_middle-(configLogoColoured.size[0])/2)
+    reboot_logo_x = int(reboot_middle-(rebootLogoColoured.size[0])/2)
+    shutdown_logo_x = int(shutdown_middle-(shutdownLogoColoured.size[0])/2)
+
+    
+    
+
+    if workingIndex == 4:
+        center_x = info_middle
+        draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+    elif workingIndex == 5:
+        center_x = config_middle
+        draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+    elif workingIndex == 6:
+        center_x = reboot_middle
+        draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+    elif workingIndex == 7:
+        center_x = shutdown_middle
+        draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+
+    info_logo_y = int(bottom_row_middle_y-(infoLogoColoured.size[1]/2))
+    config_logo_y = int(bottom_row_middle_y-(configLogoColoured.size[1]/2))
+    reboot_logo_y = int(bottom_row_middle_y-(rebootLogoColoured.size[1]/2))
+    shutdown_logo_y = int(bottom_row_middle_y-(shutdownLogoColoured.size[1]/2))
+
+    image.paste(infoLogoColoured,(info_logo_x,info_logo_y),infoLogoColoured)
+    image.paste(configLogoColoured,(config_logo_x,config_logo_y),configLogoColoured)
+    image.paste(rebootLogoColoured,(reboot_logo_x,reboot_logo_y),rebootLogoColoured)
+    image.paste(shutdownLogoColoured,(shutdown_logo_x,shutdown_logo_y),shutdownLogoColoured)
     
     return(image)
 
