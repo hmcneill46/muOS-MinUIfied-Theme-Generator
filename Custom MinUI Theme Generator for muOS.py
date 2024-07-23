@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PIL import ImageTk,Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+from PIL import ImageTk,Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance, ImageColor
 from bidi import get_display as bidiGet_display
 import os
 import sys
@@ -904,6 +904,8 @@ def generatePilImageBootLogo(bg_hex,selected_font_hex,deselected_font_hex,bubble
         image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
 
     draw = ImageDraw.Draw(image)
+    transparent_text_image = Image.new("RGBA", image.size, (255, 255, 255, 0))
+    draw_transparent = ImageDraw.Draw(transparent_text_image)
 
     if not use_alt_font_var.get():
         selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
@@ -944,18 +946,20 @@ def generatePilImageBootLogo(bg_hex,selected_font_hex,deselected_font_hex,bubble
     bubble_x_mid_point = screen_x_middle + from_middle_padding + (osTextWidth / 2)
     bubble_width = bubble_x_padding + osTextWidth + bubble_x_padding
     bubble_height = bubble_y_padding + osTextHeight + bubble_y_padding
+    transparency = 0
     
-    draw.rounded_rectangle(
+    draw_transparent.rounded_rectangle(
         [(bubble_x_mid_point-(bubble_width/2), screen_y_middle-(bubble_height/2)), (bubble_x_mid_point+(bubble_width/2), screen_y_middle+(bubble_height/2))],
         radius=bubble_height/2,
         fill=f"#{bubble_hex}"
     )
 
     draw.text((mu_x_location,mu_y_location), muText,font=mu_font, fill=f"#{deselected_font_hex}")
-    draw.text((os_x_location,os_y_location),osText,font=os_font,fill=f"#{selected_font_hex}")
+    draw_transparent.text((os_x_location,os_y_location),osText,font=os_font,fill=(*ImageColor.getrgb(f"#00ff00"), transparency))
     
+    combined_image = Image.alpha_composite(image, transparent_text_image)
 
-    return image
+    return combined_image
 
 def generatePilImageChargeScreen(bg_hex,deselected_font_hex,icon_hex,render_factor):
     bg_rgb = hex_to_rgb(bg_hex)
