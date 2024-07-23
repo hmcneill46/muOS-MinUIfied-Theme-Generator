@@ -2584,11 +2584,15 @@ def on_change(*args):
     fakeprogressbar={'value':0}
     fakeprogressbar['maximum']=1
 
-    if vertical_var.get():
-        preview_multiplier = (root.winfo_height()/4.1)/deviceScreenHeight
+    if root.winfo_height() < 100:
+        preview_size = (int(deviceScreenWidth/2),int(deviceScreenHeight/2))
     else:
-        preview_multiplier = (root.winfo_height()/5.2)/deviceScreenHeight
-    preview_size = (int(deviceScreenWidth*preview_multiplier),int(deviceScreenHeight*preview_multiplier))
+        if vertical_var.get():
+            preview_multiplier = (root.winfo_height()/4.1)/deviceScreenHeight
+        else:
+            preview_multiplier = (root.winfo_height()/5.2)/deviceScreenHeight
+        preview_size = (int(deviceScreenWidth*preview_multiplier),int(deviceScreenHeight*preview_multiplier))
+
     # This function will run whenever any traced variable changes
     try:
         consoleName = consoleMap.get(previewConsoleNameVar.get().lower(), previewConsoleNameVar.get())
