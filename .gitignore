@@ -9,7 +9,9 @@ venv/
 # Ignore specific files
 PreviousDirectories.txt
 ConsoleAssociations.txt
-MinUIThemeGeneratorConfig.json
+MinUIThemeGeneratorConfig*
+ConsoleAssociations.json
+AlternateMenuNames*
 
 # macOS specific files
 .DS_Store
@@ -37,5 +39,4 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
-ConsoleAssociations.json
-AlternateMenuNames*
+

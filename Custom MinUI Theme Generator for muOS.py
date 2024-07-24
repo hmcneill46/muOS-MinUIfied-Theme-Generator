@@ -2095,7 +2095,7 @@ def on_resize(event):
     global resize_id
     if resize_id is not None:
         root.after_cancel(resize_id)
-    resize_id = root.after(0, on_change)  # Adjust the delay as needed
+    resize_id = root.after(200, on_change)  # Adjust the delay as needed
 
 root = tk.Tk()
 root.title("MinUI Theme Generator")
