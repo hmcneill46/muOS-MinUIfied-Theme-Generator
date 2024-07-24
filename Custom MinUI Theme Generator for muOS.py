@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PIL import ImageTk,Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance, ImageColor
-from bidi import get_display as bidiGet_display
+from bidi import get_display as bidi_get_display
 import os
 import sys
 import math
@@ -164,14 +164,14 @@ def applyMenuHelperGuides(muOSSystemName,image,selected_font_path,primary_colour
     aText = "A"
     bText = "B"
     if alternate_menu_names_var.get():
-        powerText = bidiGet_display(menuNameMap.get("power", "POWER"))
-        sleepText = bidiGet_display(menuNameMap.get("sleep","SLEEP"))
-        menuText = bidiGet_display(menuNameMap.get("menu","MENU"))
-        helpText = bidiGet_display(menuNameMap.get("help","HELP"))
-        backText = bidiGet_display(menuNameMap.get("back","BACK"))
-        okayText = bidiGet_display(menuNameMap.get("okay","OKAY"))
-        confirmText = bidiGet_display(menuNameMap.get("confirm","CONFIRM"))
-        launchText = bidiGet_display(menuNameMap.get("launch","LAUNCH"))
+        powerText = bidi_get_display(menuNameMap.get("power", "POWER"))
+        sleepText = bidi_get_display(menuNameMap.get("sleep","SLEEP"))
+        menuText = bidi_get_display(menuNameMap.get("menu","MENU"))
+        helpText = bidi_get_display(menuNameMap.get("help","HELP"))
+        backText = bidi_get_display(menuNameMap.get("back","BACK"))
+        okayText = bidi_get_display(menuNameMap.get("okay","OKAY"))
+        confirmText = bidi_get_display(menuNameMap.get("confirm","CONFIRM"))
+        launchText = bidi_get_display(menuNameMap.get("launch","LAUNCH"))
     
     horizontal_small_padding = menu_helper_guide_height*(5/45)
     horizontal_padding = menu_helper_guide_height*(6.5/45)
@@ -431,7 +431,10 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")).convert("RGBA")
                 boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
                 
-                pasteLocation = (int((deviceScreenWidth*render_factor)-boxArtImage.width)-boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
+                if textAlignment == "Left":
+                    pasteLocation = (int((deviceScreenWidth*render_factor)-boxArtImage.width)-boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
+                else:
+                    pasteLocation = (boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
 
                 boxArtWidth = originalBoxArtImage.width
 
@@ -451,9 +454,9 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     availableHeight = ((deviceScreenHeight - headerHeight - footerHeight) * render_factor) / ItemsPerScreen
     for index, item in enumerate(listItems):
         noLettersCut = 0
-        text_width = 2000*render_factor
+        text_width = float('inf')
         if alternate_menu_names_var.get() and muOSSystemName.startswith("mux"):
-            text = bidiGet_display(menuNameMap.get(item[0][:].lower(),item[0][:]))
+            text = bidi_get_display(menuNameMap.get(item[0][:].lower(),item[0][:]))
         else:
             text = item[0][:]
         text_color = f"#{selected_font_hex}" if index == workingIndex else f"#{deselected_font_hex}"
@@ -469,7 +472,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             totalCurrentLength = (textPadding * render_factor + text_width)
         while totalCurrentLength > (int(maxBubbleLength)*render_factor):
             if alternate_menu_names_var.get() and muOSSystemName.startswith("mux"):
-                text = bidiGet_display(menuNameMap.get(item[0][:].lower(),item[0][:]))
+                text = bidi_get_display(menuNameMap.get(item[0][:].lower(),item[0][:]))
             else:
                 text = item[0][:]
 
@@ -485,7 +488,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 text = text[:-(noLettersCut+3)]
                 text = text+"..."
             
-            text_bbox = draw.textbbox((0, 0), text, font=font)
+            text_bbox = font.getbbox(text)
             text_width = text_bbox[2] - text_bbox[0]
             if workingIndex == index:
                 totalCurrentLength = (textPadding * render_factor + text_width + rectanglePadding * render_factor)
@@ -738,7 +741,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     horizontalBubblePadding = min((deviceScreenHeight*40)/480,(deviceScreenWidth*40)/640)*render_factor  ## CHANGE for adjustment
     
     if alternate_menu_names_var.get():
-        textString = bidiGet_display(menuNameMap.get("content explorer", "Content"))
+        textString = bidi_get_display(menuNameMap.get("content explorer", "Content"))
     else:
         textString = "Content"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
@@ -762,7 +765,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
 
     if alternate_menu_names_var.get():
-        textString = bidiGet_display(menuNameMap.get("favourites", "Favourites"))
+        textString = bidi_get_display(menuNameMap.get("favourites", "Favourites"))
     else:
         textString = "Favourites"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
@@ -780,7 +783,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
 
     if alternate_menu_names_var.get():
-        textString = bidiGet_display(menuNameMap.get("history", "History"))
+        textString = bidi_get_display(menuNameMap.get("history", "History"))
     else:
         textString = "History"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
@@ -797,7 +800,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         )
     draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
     if alternate_menu_names_var.get():
-        textString = bidiGet_display(menuNameMap.get("applications", "Utilities"))
+        textString = bidi_get_display(menuNameMap.get("applications", "Utilities"))
     else:
         textString = "Utilities"
     text_bbox = draw.textbbox((0, 0), textString, font=font)
@@ -994,7 +997,7 @@ def generatePilImageChargeScreen(bg_hex,deselected_font_hex,icon_hex,render_fact
 
     chargingText = "CHARGING..."
     if alternate_menu_names_var.get():
-        chargingText = bidiGet_display(menuNameMap.get("charging...", "CHARGING..."))
+        chargingText = bidi_get_display(menuNameMap.get("charging...", "CHARGING..."))
 
     
 
