@@ -191,17 +191,14 @@ def applyMenuHelperGuides(muOSSystemName,image,selected_font_path,primary_colour
     ib_text_height = ib_ascent + ib_descent
     in_bubble_text_y = bottom_guide_middle_y*render_factor - (ib_text_height / 2)
 
-    sl_ascent, sl_descent = singleLetterFont.getmetrics()
-    sl_text_height = sl_ascent + sl_descent
-    single_letter_text_y = bottom_guide_middle_y*render_factor - (sl_text_height / 2)
-
-    
-
+    sl_text_bbox = singleLetterFont.getbbox(aText+bText)
+    sl_text_height = sl_text_bbox[3]-sl_text_bbox[1]
+    single_letter_text_y = bottom_guide_middle_y*render_factor - (sl_text_height / 2)-sl_text_bbox[1]
 
     if not remove_left_menu_guides_var.get():
-        powerTextBbox = draw.textbbox((0, 0), powerText, font=inSmallerBubbleFont)
+        powerTextBbox = inSmallerBubbleFont.getbbox(powerText)
         powerTextWidth = powerTextBbox[2] - powerTextBbox[0]
-        sleepTextBbox = draw.textbbox((0, 0), sleepText, font=inBubbleFont)
+        sleepTextBbox = inBubbleFont.getbbox(sleepText)
         sleepTextWidth = sleepTextBbox[2] - sleepTextBbox[0]
         totalWidth = horizontal_padding+horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(sleepTextWidth/render_factor)+horizontal_large_padding
         smallerBubbleWidth = horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding
@@ -222,15 +219,15 @@ def applyMenuHelperGuides(muOSSystemName,image,selected_font_path,primary_colour
         draw.text(( sleepTextX*render_factor,in_bubble_text_y), sleepText, font=inBubbleFont, fill=f"#{secondary_colour_hex}")
     if not remove_right_menu_guides_var.get():
         circleWidth = guide_small_bubble_height
-        confirmTextBbox = draw.textbbox((0, 0), confirmText, font=inBubbleFont)
+        confirmTextBbox = inBubbleFont.getbbox(confirmText)
         confirmTextWidth = confirmTextBbox[2] - confirmTextBbox[0]
-        backTextBbox = draw.textbbox((0, 0), backText, font=inBubbleFont)
+        backTextBbox = inBubbleFont.getbbox(backText)
         backTextWidth = backTextBbox[2] - backTextBbox[0]
-        launchTextBbox = draw.textbbox((0, 0), launchText, font=inBubbleFont)
+        launchTextBbox = inBubbleFont.getbbox(launchText)
         launchTextWidth = launchTextBbox[2] - launchTextBbox[0]
-        aTextBbox = draw.textbbox((0, 0), aText, font=singleLetterFont)
+        aTextBbox = singleLetterFont.getbbox(aText)
         aTextWidth = aTextBbox[2] - aTextBbox[0]
-        bTextBbox = draw.textbbox((0, 0), bText, font=singleLetterFont)
+        bTextBbox = singleLetterFont.getbbox(bText)
         bTextWidth = bTextBbox[2] - bTextBbox[0]
 
         RHM_Len = 0
@@ -377,7 +374,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     elif show_file_counter_var.get() == 1:
         in_bubble_font_size = 19*render_factor
         inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
-        bbox = draw.textbbox((0, 0), fileCounter, font=inBubbleFont)
+        bbox = inBubbleFont.getbbox(fileCounter)
         text_width = bbox[2] - bbox[0]
         right_aligned_position = 620 * render_factor
         x = right_aligned_position - text_width
@@ -388,7 +385,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         
         topTextFont = ImageFont.truetype(selected_font_path, 27*render_factor)
 
-        bbox = draw.textbbox((0, 0), topText, font=topTextFont)
+        bbox = topTextFont.getbbox(topText)
         text_width = bbox[2] - bbox[0]
 
         text_x = (deviceScreenWidth*render_factor - text_width) / 2
@@ -744,7 +741,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         textString = bidi_get_display(menuNameMap.get("content explorer", "Content"))
     else:
         textString = "Content"
-    text_bbox = draw.textbbox((0, 0), textString, font=font)
+    text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
     ascent, descent = font.getmetrics()
     text_height = ascent + descent
@@ -768,7 +765,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         textString = bidi_get_display(menuNameMap.get("favourites", "Favourites"))
     else:
         textString = "Favourites"
-    text_bbox = draw.textbbox((0, 0), textString, font=font)
+    text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
     bubble_center_x =  favourite_middle
     textColour = selected_font_hex if workingIndex == 1 else deselected_font_hex
@@ -786,7 +783,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         textString = bidi_get_display(menuNameMap.get("history", "History"))
     else:
         textString = "History"
-    text_bbox = draw.textbbox((0, 0), textString, font=font)
+    text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
     bubble_center_x =  history_middle
     textColour = selected_font_hex if workingIndex == 2 else deselected_font_hex
@@ -803,7 +800,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         textString = bidi_get_display(menuNameMap.get("applications", "Utilities"))
     else:
         textString = "Utilities"
-    text_bbox = draw.textbbox((0, 0), textString, font=font)
+    text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
     bubble_center_x =  apps_middle
     textColour = selected_font_hex if workingIndex == 3 else deselected_font_hex
