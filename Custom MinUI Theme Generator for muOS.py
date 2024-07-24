@@ -235,11 +235,11 @@ def applyMenuHelperGuides(muOSSystemName,image,selected_font_path,primary_colour
 
         RHM_Len = 0
         if muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch": # Just A and Confirm ( One Circle and confirmText plus padding )
-            RHM_Len = horizontal_padding+circleWidth+horizontal_large_padding+(confirmTextWidth/render_factor)+horizontal_large_padding
+            RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding
         elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo": # B and Back, A and Confirm ( Two Circle and confirmText and backText plus padding )
-            RHM_Len = horizontal_padding+circleWidth+horizontal_large_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(confirmTextWidth/render_factor)+horizontal_large_padding
+            RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding
         elif muOSSystemName == "muxapp": # B and Back, A and Launch ( Two Circle and launchText and backText plus padding )
-            RHM_Len = horizontal_padding+circleWidth+horizontal_large_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(launchTextWidth/render_factor)+horizontal_large_padding
+            RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding
 
         draw.rounded_rectangle( ## Left hand behind bubble
                 [((deviceScreenWidth-horizontal_small_padding-RHM_Len)*render_factor, (bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), ((deviceScreenWidth-horizontal_small_padding)*render_factor, (bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)],
@@ -247,7 +247,7 @@ def applyMenuHelperGuides(muOSSystemName,image,selected_font_path,primary_colour
                 fill=f"#{percentage_color(primary_colour_hex,secondary_colour_hex,0.133)}"
             )
         if muOSSystemName != "muxapp": ## Draw Confirm
-            aConfirmCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_large_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
+            aConfirmCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
             draw.ellipse(((aConfirmCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aConfirmCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{secondary_colour_hex}") # A Bubble
             
             aConfirmTextX = aConfirmCircleCenterX - ((aTextWidth/2)/render_factor)
@@ -256,16 +256,16 @@ def applyMenuHelperGuides(muOSSystemName,image,selected_font_path,primary_colour
             draw.text(( confimTextX*render_factor,in_bubble_text_y), confirmText, font=inBubbleFont, fill=f"#{secondary_colour_hex}")
             
             if muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo": # Draw Back
-                bBackCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_large_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
+                bBackCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
                 draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{secondary_colour_hex}") # B Bubble
 
                 bBackTextX = bBackCircleCenterX - ((bTextWidth/2)/render_factor)
-                backTextX = deviceScreenWidth-horizontal_small_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
+                backTextX = deviceScreenWidth-horizontal_small_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
                 draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=f"#{percentage_color(primary_colour_hex,secondary_colour_hex,0.593)}")
                 draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{secondary_colour_hex}")
 
         else: # Draw Launch
-            aLaunchCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_large_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
+            aLaunchCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
             draw.ellipse(((aLaunchCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aLaunchCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{secondary_colour_hex}") # A Bubble
 
             aLaunchTextX = aLaunchCircleCenterX - ((aTextWidth/2)/render_factor)
@@ -273,11 +273,11 @@ def applyMenuHelperGuides(muOSSystemName,image,selected_font_path,primary_colour
             draw.text(( aLaunchTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=f"#{percentage_color(primary_colour_hex,secondary_colour_hex,0.593)}")
             draw.text(( launchTextX*render_factor,in_bubble_text_y), launchText, font=inBubbleFont, fill=f"#{secondary_colour_hex}")
 
-            bBackCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_large_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
+            bBackCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
             draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{secondary_colour_hex}") # B Bubble
 
             bBackTextX = bBackCircleCenterX - ((bTextWidth/2)/render_factor)
-            backTextX = deviceScreenWidth-horizontal_small_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_large_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
+            backTextX = deviceScreenWidth-horizontal_small_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
             draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=f"#{percentage_color(primary_colour_hex,secondary_colour_hex,0.593)}")
             draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{secondary_colour_hex}")
     return image
