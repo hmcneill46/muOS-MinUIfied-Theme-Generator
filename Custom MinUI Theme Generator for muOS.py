@@ -897,7 +897,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     
     return(image)
 
-def generatePilImageBootLogo(bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor):
+def generatePilImageBootLogo(bg_hex,deselected_font_hex,bubble_hex,render_factor):
     bg_rgb = hex_to_rgb(bg_hex)
     image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
     if background_image != None:
@@ -1749,7 +1749,7 @@ def FillTempThemeFolder(progress_bar):
     
     os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
 
-    bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","bootlogo.bmp"), format='BMP')
 
     chargingimage = generatePilImageChargeScreen(bgHexVar.get(),deselectedFontHexVar.get(),iconHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
@@ -1882,6 +1882,11 @@ def generate_archive_manager(progress_bar, loading_window, input_queue, output_q
         if not am_ignore_theme_var.get():
             copy_contents(os.path.join(internal_files_dir, ".TempBuildTheme"),os.path.join(internal_files_dir, ".TempBuildAM","mnt","mmc","MUOS","theme","active"))
 
+        os.makedirs(os.path.join(internal_files_dir,".TempBuildAM","mnt","boot"),exist_ok=True)
+        
+        bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+        bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildAM","mnt","boot","bootlogo.bmp"), format='BMP')
+        
         if os.path.exists(os.path.join(internal_files_dir, ".TempBuildAM")):
             shutil.make_archive(os.path.join(am_theme_dir, amThemeName),"zip", os.path.join(internal_files_dir, ".TempBuildAM"))
 
@@ -1891,6 +1896,7 @@ def generate_archive_manager(progress_bar, loading_window, input_queue, output_q
             delete_folder(os.path.join(internal_files_dir, ".TempBuildAM"))
         if os.path.exists(os.path.join(internal_files_dir, "TempPreview.png")):
             os.remove(os.path.join(internal_files_dir, "TempPreview.png"))
+
         if not am_ignore_cd_var.get() or not am_ignore_theme_var.get():
             loading_window.destroy()
             messagebox.showinfo("Success", "Archive Manager File generated successfully.\nYou can now Activate the theme through Archive Manager")
