@@ -7,9 +7,7 @@ a = Analysis(
     pathex=['.'],
     binaries=[],
     datas=[
-        ('Font', 'Font'),
-        ('Horizontal Logos', 'Horizontal Logos'),
-        ('Overlays', 'Overlays'),
+        ('Assets', 'Assets'),
         ('Template Scheme', 'Template Scheme'),
         ('Theme Shell', 'Theme Shell'),
         ('_ConsoleAssociations.json', '.')
