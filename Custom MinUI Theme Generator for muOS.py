@@ -17,6 +17,7 @@ import time
 import json
 import subprocess
 import shutil
+import numpy as np
 
 deviceScreenWidth, deviceScreenHeight = 640, 480
 
@@ -68,6 +69,7 @@ class Config:
         self.override_bubble_cut_var = False
         self.override_folder_box_art_padding_var = False
         self.page_by_page_var = False
+        self.transparent_text_var = False
         self.version_var = "Select a version"
         self.global_alignment_var = "Left"
         self.theme_alignment_var = "Global"
@@ -295,6 +297,10 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     #    topText = None
 
     draw = ImageDraw.Draw(image)   
+    if transparent_text_var.get():
+        transparent_text_image = Image.new("RGBA", image.size, (255, 255, 255, 0))
+        draw_transparent = ImageDraw.Draw(transparent_text_image)
+        transparency = 0
 
     boxArtDrawn = False
     boxArtWidth = 0
@@ -518,13 +524,26 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         corner_radius = availableHeight // 2
 
         if workingIndex == index:
-            draw.rounded_rectangle(
-                [(rectangle_x0, rectangle_y0), (rectangle_x1, rectangle_y1)],
-                radius=corner_radius,
-                fill=f"#{bubble_hex}"
-            )
-
-        draw.text((text_x, text_y), text, font=font, fill=text_color)
+            if transparent_text_var.get():
+                draw_transparent.rounded_rectangle(
+                    [(rectangle_x0, rectangle_y0), (rectangle_x1, rectangle_y1)],
+                    radius=corner_radius,
+                    fill=f"#{bubble_hex}"
+                )
+            else:
+                draw.rounded_rectangle(
+                    [(rectangle_x0, rectangle_y0), (rectangle_x1, rectangle_y1)],
+                    radius=corner_radius,
+                    fill=f"#{bubble_hex}"
+                )   
+        if transparent_text_var.get() and workingIndex == index:
+            draw_transparent.text((text_x, text_y), text, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+        else:
+            draw.text((text_x, text_y), text, font=font, fill=text_color)
+            
+    if transparent_text_var.get():
+        image = Image.alpha_composite(image, transparent_text_image)
+        
     if showScrollBar:
         scrollBarHeight = (deviceScreenHeight - footerHeight - headerHeight) // numScreens
         rectangle_x0 = (deviceScreenWidth - scrollBarWidth) * render_factor
@@ -651,6 +670,43 @@ def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scroll
                         if workingItem[1] == "Menu":
                             image.save(os.path.join(internal_files_dir, "TempPreview.png"))
 
+def cut_out_image(original_image, logo_image, coordinates):
+    x, y = coordinates
+    
+    # Ensure the images are in RGBA mode
+    original_image = original_image.convert("RGBA")
+    logo_image = logo_image.convert("RGBA")
+    
+    # Convert the images to NumPy arrays
+    original_array = np.array(original_image)
+    logo_array = np.array(logo_image)
+    
+    # Get the dimensions of the original and logo images
+    original_height, original_width = original_array.shape[:2]
+    logo_height, logo_width = logo_array.shape[:2]
+    
+    # Create a mask where the logo is not transparent
+    logo_mask = logo_array[:, :, 3] > 0  # The alpha channel indicates transparency
+    
+    # Ensure the coordinates are within the bounds of the original image
+    x_end = min(x + logo_width, original_width)
+    y_end = min(y + logo_height, original_height)
+    
+    # Adjust the logo mask and arrays to fit within the bounds of the original image
+    logo_mask = logo_mask[:y_end-y, :x_end-x]
+    logo_alpha = logo_array[:y_end-y, :x_end-x, 3] / 255.0
+    
+    # Cut out the region of the original image where the logo is not transparent
+    original_array[y:y_end, x:x_end, 3] = np.where(logo_mask, 
+                                                   original_array[y:y_end, x:x_end, 3] * (1 - logo_alpha), 
+                                                   original_array[y:y_end, x:x_end, 3])
+    
+    # Convert the modified NumPy array back to a Pillow image
+    edited_image = Image.fromarray(original_array.astype('uint8'), 'RGBA')
+    
+    # Return the edited image
+    return edited_image
+
 def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor):
     progress_bar['value']+=1
     #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
@@ -708,6 +764,10 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     image.paste(appsLogoColoured,(apps_logo_x,top_row_icon_y),appsLogoColoured)
 
     draw = ImageDraw.Draw(image)
+    if transparent_text_var.get():
+        transparent_text_image = Image.new("RGBA", image.size, (255, 255, 255, 0))
+        draw_transparent = ImageDraw.Draw(transparent_text_image)
+        transparency = 0
 
     if not use_alt_font_var.get():
         selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
@@ -754,13 +814,23 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     text_x = bubble_center_x - (text_width / 2)
     if workingIndex == 0 :
         bubbleLength = text_width+horizontalBubblePadding
-        draw.rounded_rectangle(
-            [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
-            radius=(bubble_height/2),
-            fill=f"#{bubble_hex}"
-        )
-    draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
-
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 0:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+    
     if alternate_menu_names_var.get():
         textString = bidi_get_display(menuNameMap.get("favourites", "Favourites"))
     else:
@@ -772,12 +842,22 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     text_x = bubble_center_x - (text_width / 2)
     if workingIndex == 1 :
         bubbleLength = text_width+horizontalBubblePadding
-        draw.rounded_rectangle(
-            [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
-            radius=(bubble_height/2),
-            fill=f"#{bubble_hex}"
-        )
-    draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 1:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
 
     if alternate_menu_names_var.get():
         textString = bidi_get_display(menuNameMap.get("history", "History"))
@@ -790,12 +870,22 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     text_x = bubble_center_x - (text_width / 2)
     if workingIndex == 2 :
         bubbleLength = text_width+horizontalBubblePadding
-        draw.rounded_rectangle(
-            [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
-            radius=(bubble_height/2),
-            fill=f"#{bubble_hex}"
-        )
-    draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 2:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
     if alternate_menu_names_var.get():
         textString = bidi_get_display(menuNameMap.get("applications", "Utilities"))
     else:
@@ -807,12 +897,22 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     text_x = bubble_center_x - (text_width / 2)
     if workingIndex == 3 :
         bubbleLength = text_width+horizontalBubblePadding
-        draw.rounded_rectangle(
-            [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
-            radius=(bubble_height/2),
-            fill=f"#{bubble_hex}"
-        )
-    draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 3:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
 
     
 
@@ -874,26 +974,63 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
 
     if workingIndex == 4:
         center_x = info_middle
-        draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+        if transparent_text_var.get():
+            draw_transparent.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+        else:
+            draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
     elif workingIndex == 5:
         center_x = config_middle
-        draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+        if transparent_text_var.get():
+            draw_transparent.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+        else:
+            draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
     elif workingIndex == 6:
         center_x = reboot_middle
-        draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+        if transparent_text_var.get():
+            draw_transparent.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+        else:
+            draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
     elif workingIndex == 7:
         center_x = shutdown_middle
-        draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+        if transparent_text_var.get():
+            draw_transparent.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+        else:
+            draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
 
     info_logo_y = int(bottom_row_middle_y-(infoLogoColoured.size[1]/2))
     config_logo_y = int(bottom_row_middle_y-(configLogoColoured.size[1]/2))
     reboot_logo_y = int(bottom_row_middle_y-(rebootLogoColoured.size[1]/2))
     shutdown_logo_y = int(bottom_row_middle_y-(shutdownLogoColoured.size[1]/2))
+    if transparent_text_var.get() and workingIndex >3:
+        if workingIndex == 4:
+            transparent_text_image = cut_out_image(transparent_text_image,infoLogoColoured,(info_logo_x,info_logo_y))
+            image.paste(configLogoColoured,(config_logo_x,config_logo_y),configLogoColoured)
+            image.paste(rebootLogoColoured,(reboot_logo_x,reboot_logo_y),rebootLogoColoured)
+            image.paste(shutdownLogoColoured,(shutdown_logo_x,shutdown_logo_y),shutdownLogoColoured)
+        elif workingIndex == 5:
+            image.paste(infoLogoColoured,(info_logo_x,info_logo_y),infoLogoColoured)
+            transparent_text_image = cut_out_image(transparent_text_image,configLogoColoured,(config_logo_x,config_logo_y))
+            image.paste(rebootLogoColoured,(reboot_logo_x,reboot_logo_y),rebootLogoColoured)
+            image.paste(shutdownLogoColoured,(shutdown_logo_x,shutdown_logo_y),shutdownLogoColoured)
+        elif workingIndex == 6:
+            image.paste(infoLogoColoured,(info_logo_x,info_logo_y),infoLogoColoured)
+            image.paste(configLogoColoured,(config_logo_x,config_logo_y),configLogoColoured)
+            transparent_text_image = cut_out_image(transparent_text_image,rebootLogoColoured,(reboot_logo_x,reboot_logo_y))
+            image.paste(shutdownLogoColoured,(shutdown_logo_x,shutdown_logo_y),shutdownLogoColoured)
+        elif workingIndex == 7:
+            image.paste(infoLogoColoured,(info_logo_x,info_logo_y),infoLogoColoured)
+            image.paste(configLogoColoured,(config_logo_x,config_logo_y),configLogoColoured)
+            image.paste(rebootLogoColoured,(reboot_logo_x,reboot_logo_y),rebootLogoColoured)
+            transparent_text_image = cut_out_image(transparent_text_image,shutdownLogoColoured,(shutdown_logo_x,shutdown_logo_y))
+        
+    else:
+        image.paste(infoLogoColoured,(info_logo_x,info_logo_y),infoLogoColoured)
+        image.paste(configLogoColoured,(config_logo_x,config_logo_y),configLogoColoured)
+        image.paste(rebootLogoColoured,(reboot_logo_x,reboot_logo_y),rebootLogoColoured)
+        image.paste(shutdownLogoColoured,(shutdown_logo_x,shutdown_logo_y),shutdownLogoColoured)
 
-    image.paste(infoLogoColoured,(info_logo_x,info_logo_y),infoLogoColoured)
-    image.paste(configLogoColoured,(config_logo_x,config_logo_y),configLogoColoured)
-    image.paste(rebootLogoColoured,(reboot_logo_x,reboot_logo_y),rebootLogoColoured)
-    image.paste(shutdownLogoColoured,(shutdown_logo_x,shutdown_logo_y),shutdownLogoColoured)
+    if transparent_text_var.get():
+        image = Image.alpha_composite(image, transparent_text_image)
     
     return(image)
 
@@ -955,7 +1092,7 @@ def generatePilImageBootLogo(bg_hex,deselected_font_hex,bubble_hex,render_factor
     )
 
     draw.text((mu_x_location,mu_y_location), muText,font=mu_font, fill=f"#{deselected_font_hex}")
-    draw_transparent.text((os_x_location,os_y_location),osText,font=os_font,fill=(*ImageColor.getrgb(f"#00ff00"), transparency))
+    draw_transparent.text((os_x_location,os_y_location),osText,font=os_font,fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
     
     combined_image = Image.alpha_composite(image, transparent_text_image)
 
@@ -2136,6 +2273,7 @@ remove_right_menu_guides_var = tk.IntVar()
 remove_left_menu_guides_var = tk.IntVar()
 override_bubble_cut_var = tk.IntVar()
 page_by_page_var = tk.IntVar()
+transparent_text_var = tk.IntVar()
 override_font_size_var = tk.IntVar()
 override_folder_box_art_padding_var = tk.IntVar()
 use_alt_font_var = tk.IntVar()
@@ -2238,6 +2376,8 @@ grid_helper.add(background_hex_entry, next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Selected Font Hex Colour: #"), sticky="w")
 selected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=selectedFontHexVar)
 grid_helper.add(selected_font_hex_entry, next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Background Through Text", variable=transparent_text_var), colspan=3, sticky="w", next_row=True)
 
 # Option for Deselected Font Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Deselected Font Hex Colour: #"), sticky="w")
@@ -2806,6 +2946,7 @@ def save_settings():
     config.vertical_var = vertical_var.get()
     config.override_bubble_cut_var = override_bubble_cut_var.get()
     config.page_by_page_var = page_by_page_var.get()
+    config.transparent_text_var = transparent_text_var.get()
     config.override_font_size_var = override_font_size_var.get()
     config.override_folder_box_art_padding_var = override_folder_box_art_padding_var.get()
     config.boxArtPaddingVar = boxArtPaddingVar.get()
@@ -2863,6 +3004,7 @@ def load_settings():
     override_bubble_cut_var.set(config.override_bubble_cut_var)
     override_folder_box_art_padding_var.set(config.override_folder_box_art_padding_var)
     page_by_page_var.set(config.page_by_page_var)
+    transparent_text_var.set(config.transparent_text_var)
     override_font_size_var.set(config.override_font_size_var)
     version_var.set(config.version_var)
     global_alignment_var.set(config.global_alignment_var)
@@ -2927,6 +3069,7 @@ vertical_var.trace_add("write", on_change)
 override_bubble_cut_var.trace_add("write", on_change)
 override_folder_box_art_padding_var.trace_add("write", on_change)
 page_by_page_var.trace_add("write", on_change)
+transparent_text_var.trace_add("write", on_change)
 override_font_size_var.trace_add("write", on_change)
 version_var.trace_add("write", on_change)
 global_alignment_var.trace_add("write", on_change)
