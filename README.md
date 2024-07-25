@@ -27,6 +27,10 @@ Individual Libraries:
    
        pip install python-bidi
 
+ - numpy library
+   
+       pip install numpy
+
 
 ## Getting Started
  - Insert your SD card into your computer.
