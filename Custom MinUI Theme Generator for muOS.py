@@ -1534,7 +1534,7 @@ def select_name_json_path():
 def select_background_image_path():
     # File dialog to select a file, with specific types of files allowed
     file_path = filedialog.askopenfilename(
-        filetypes=[("PNG Files", "*.png")],  # Only show .ini files
+        filetypes=[("Image Files", "*.png"),("Image Files", "*.jpg"),("Image Files", "*.jpeg"),("Image Files", "*.webp"),("Image Files", "*.gif"),("Image Files", "*.bmp")],  # Only show .png files
         title="Select background image file"
     )
     background_image_path.set(file_path)
