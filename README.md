@@ -76,10 +76,17 @@ Select the catalogue folder where the image files will be generated (recommended
 ## Removing MinUI Theming
 To remove all MinUI theming from your system:
 
- - Choose a different theme in muOS.
- - Use this tool, input your catalogue folder, and press 'Remove all images in Selected Catalogue Folder'.
+Choose a different theme in muOS.
 
-**Note: This will also remove any box art, so make sure to copy your backup back onto the card afterwards.**
+**Then either:**
+
+ - Disable Box art in settings to remove all content explorer themeing
+
+**Or:**
+
+ - Use this tool, input your catalogue folder, and press 'Remove all images in Selected Catalogue Folder'.
+ - Replace backed up box art 
+
 
 ## Build instructions
 
