@@ -473,7 +473,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         if boxArtDrawn and override_bubble_cut_var.get():
             maxBubbleLength = maxBubbleLengthVar.get()
         elif boxArtDrawn:
-            maxBubbleLength = deviceScreenWidth - boxArtWidth - boxArtPadding
+            maxBubbleLength = deviceScreenWidth - boxArtWidth - boxArtPadding - 5
         else:
             maxBubbleLength = deviceScreenWidth
         if workingIndex == index:
