@@ -511,9 +511,9 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         if textAlignment == "Left":
             text_x = textPadding * render_factor
         elif textAlignment == "Right":
-            text_x = (deviceScreenWidth-textPadding-text_width) * render_factor
+            text_x = (deviceScreenWidth-textPadding) * render_factor-text_width
         elif textAlignment == "Centre":
-            text_x = ((deviceScreenWidth-text_width)/2) * render_factor
+            text_x = ((deviceScreenWidth* render_factor-text_width)/2) 
         #text_y = headerHeight * render_factor + availableHeight * index
 
         
@@ -2750,7 +2750,7 @@ def on_change(*args):
     fakeprogressbar={'value':0}
     fakeprogressbar['maximum']=1
 
-    previewRenderFactor = 1
+    previewRenderFactor = 4
 
     if root.winfo_height() < 100:
         preview_size = (int(deviceScreenWidth/2),int(deviceScreenHeight/2))
