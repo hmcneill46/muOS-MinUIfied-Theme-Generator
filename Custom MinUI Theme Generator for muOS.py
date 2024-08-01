@@ -2750,7 +2750,7 @@ def on_change(*args):
     fakeprogressbar={'value':0}
     fakeprogressbar['maximum']=1
 
-    previewRenderFactor = 1
+    previewRenderFactor = 2
 
     if root.winfo_height() < 100:
         preview_size = (int(deviceScreenWidth/2),int(deviceScreenHeight/2))
