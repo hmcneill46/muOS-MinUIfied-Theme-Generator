@@ -27,7 +27,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='minUIfied Theme Generator for muOS',
+    name='minUI Theme Generator',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -44,7 +44,7 @@ exe = EXE(
 )
 app = BUNDLE(
     exe,
-    name='minUIfied Theme Generator for muOS.app',
+    name='minUI Theme Generator.app',
     icon='Assets/Icons/macos.icns',
     bundle_identifier=None,
 )
