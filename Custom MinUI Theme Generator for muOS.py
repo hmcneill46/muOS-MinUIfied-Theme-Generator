@@ -60,7 +60,8 @@ class Config:
         self.boxArtPaddingVar = 0
         self.folderBoxArtPaddingVar = 0
         self.box_art_directory_path = ""
-        self.maxBubbleLengthVar = deviceScreenWidth
+        self.maxGamesBubbleLengthVar = deviceScreenWidth
+        self.maxFoldersBubbleLengthVar = deviceScreenWidth
         self.roms_directory_path = ""
         self.application_directory_path = ""
         self.previewConsoleNameVar = "Nintendo Game Boy"
@@ -471,7 +472,10 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             text = item[0][:]
         text_color = f"#{selected_font_hex}" if index == workingIndex else f"#{deselected_font_hex}"
         if boxArtDrawn and override_bubble_cut_var.get():
-            maxBubbleLength = maxBubbleLengthVar.get()
+            if muOSSystemName == "Folder":
+                maxBubbleLength = maxFoldersBubbleLengthVar.get()
+            else:
+                maxBubbleLength = maxGamesBubbleLengthVar.get()
         elif boxArtDrawn:
             maxBubbleLength = deviceScreenWidth - boxArtWidth - boxArtPadding - 5
         else:
@@ -2353,7 +2357,8 @@ selectedFontHexVar = tk.StringVar()
 deselectedFontHexVar = tk.StringVar()
 bubbleHexVar = tk.StringVar()
 iconHexVar = tk.StringVar()
-maxBubbleLengthVar = tk.StringVar()
+maxGamesBubbleLengthVar = tk.StringVar()
+maxFoldersBubbleLengthVar = tk.StringVar()
 previewConsoleNameVar = tk.StringVar()
 
 
@@ -2479,10 +2484,15 @@ grid_helper.add(folder_box_art_padding_entry, next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Override Auto Cut Bubble off [Might want to use for fading box art]", variable=override_bubble_cut_var),colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text=" - Cut bubble off at (px):"), sticky="w")
+grid_helper.add(tk.Label(scrollable_frame, text=" - [Games] Cut bubble off at (px):"), sticky="w")
 
-max_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxBubbleLengthVar)
-grid_helper.add(max_bubble_length_entry, next_row=True)
+max_games_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxGamesBubbleLengthVar)
+grid_helper.add(max_games_bubble_length_entry, next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text=" - [Folders] Cut bubble off at (px):"), sticky="w")
+
+max_folders_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxFoldersBubbleLengthVar)
+grid_helper.add(max_folders_bubble_length_entry, next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text=" - This would usually be 640-width of your boxart",fg="#00f"), colspan=3, sticky="w", next_row=True)
 
@@ -2958,7 +2968,8 @@ def save_settings():
     config.remove_left_menu_guides_var = remove_left_menu_guides_var.get()
     config.overlay_box_art_var = overlay_box_art_var.get()
     config.box_art_directory_path = box_art_directory_path.get()
-    config.maxBubbleLengthVar = maxBubbleLengthVar.get()
+    config.maxGamesBubbleLengthVar = maxGamesBubbleLengthVar.get()
+    config.maxFoldersBubbleLengthVar = maxFoldersBubbleLengthVar.get()
     config.roms_directory_path = roms_directory_path.get()
     config.application_directory_path = application_directory_path.get()
     config.previewConsoleNameVar = previewConsoleNameVar.get()
@@ -3015,7 +3026,8 @@ def load_settings():
     remove_left_menu_guides_var.set(config.remove_left_menu_guides_var)
     overlay_box_art_var.set(config.overlay_box_art_var)
     box_art_directory_path.set(config.box_art_directory_path)
-    maxBubbleLengthVar.set(config.maxBubbleLengthVar)
+    maxGamesBubbleLengthVar.set(config.maxGamesBubbleLengthVar)
+    maxFoldersBubbleLengthVar.set(config.maxFoldersBubbleLengthVar)
     roms_directory_path.set(config.roms_directory_path)
     application_directory_path.set(config.application_directory_path)
     previewConsoleNameVar.set(config.previewConsoleNameVar)
@@ -3080,7 +3092,8 @@ remove_right_menu_guides_var.trace_add("write", on_change)
 remove_left_menu_guides_var.trace_add("write", on_change)
 overlay_box_art_var.trace_add("write", on_change)
 box_art_directory_path.trace_add("write", on_change)
-maxBubbleLengthVar.trace_add("write", on_change)
+maxGamesBubbleLengthVar.trace_add("write", on_change)
+maxFoldersBubbleLengthVar.trace_add("write", on_change)
 roms_directory_path.trace_add("write", on_change)
 application_directory_path.trace_add("write", on_change)
 previewConsoleNameVar.trace_add("write", on_change)
