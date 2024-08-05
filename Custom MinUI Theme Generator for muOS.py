@@ -81,6 +81,7 @@ class Config:
         self.name_json_path = ""
         self.background_image_path = ""
         self.bootlogo_image_path = ""
+        self.rg28xxVar = False
         self.alt_font_path = ""
         self.use_alt_font_var = False
         self.use_custom_bootlogo_var = False
@@ -1950,6 +1951,9 @@ def FillTempThemeFolder(progress_bar):
     bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","bootlogo.bmp"), format='BMP')
 
+    rotated_bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS).rotate(90,expand=True)
+    rotated_bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","bootlogo-alt.bmp"), format='BMP')
+
     chargingimage = generatePilImageChargeScreen(bgHexVar.get(),deselectedFontHexVar.get(),iconHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     chargingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxcharge.png"), format='PNG')
 
@@ -2082,8 +2086,13 @@ def generate_archive_manager(progress_bar, loading_window, input_queue, output_q
 
         os.makedirs(os.path.join(internal_files_dir,".TempBuildAM","mnt","boot"),exist_ok=True)
         
-        bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+        if rg28xxVar.get():
+            bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS).rotate(90,expand=True)
+        else:
+            bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
         bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildAM","mnt","boot","bootlogo.bmp"), format='BMP')
+
+        
         
         if os.path.exists(os.path.join(internal_files_dir, ".TempBuildAM")):
             shutil.make_archive(os.path.join(am_theme_dir, amThemeName),"zip", os.path.join(internal_files_dir, ".TempBuildAM"))
@@ -2340,6 +2349,7 @@ override_font_size_var = tk.IntVar()
 override_folder_box_art_padding_var = tk.IntVar()
 use_alt_font_var = tk.IntVar()
 use_custom_bootlogo_var = tk.IntVar()
+rg28xxVar = tk.IntVar()
 remove_brackets_var = tk.IntVar()
 overlay_box_art_var = tk.IntVar(value=1)
 remove_square_brackets_var = tk.IntVar()
@@ -2482,6 +2492,10 @@ grid_helper.add(custom_font_size_entry, next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Theme Specific Configurations", font=subtitle_font), sticky="w", next_row=True)
+
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Generating for the RG28XX", variable=rg28xxVar), sticky="w",next_row=True)
+
 
 grid_helper.add(tk.Label(scrollable_frame, text="[Optional] Custom Application Directory:"), sticky="w")
 grid_helper.add(tk.Entry(scrollable_frame, textvariable=application_directory_path, width=50))
@@ -3045,6 +3059,7 @@ def save_settings():
     config.alt_font_path = alt_font_path.get()
     config.use_alt_font_var = use_alt_font_var.get()
     config.use_custom_bootlogo_var = use_custom_bootlogo_var.get()
+    config.rg28xxVar = rg28xxVar.get()
     config.themeName = theme_name_entry.get()
     config.amThemeName = am_theme_name_entry.get()
     config.am_ignore_theme_var = am_ignore_theme_var.get()
@@ -3103,6 +3118,7 @@ def load_settings():
     alt_font_path.set(config.alt_font_path)
     use_alt_font_var.set(config.use_alt_font_var)
     use_custom_bootlogo_var.set(config.use_custom_bootlogo_var)
+    rg28xxVar.set(config.rg28xxVar)
     theme_name_entry.delete(0, tk.END)
     theme_name_entry.insert(0, config.themeName)
     am_theme_name_entry.delete(0, tk.END)
@@ -3173,6 +3189,7 @@ am_ignore_cd_var.trace_add("write", on_change)
 advanced_error_var.trace_add("write", on_change)
 use_alt_font_var.trace_add("write", on_change)
 use_custom_bootlogo_var.trace_add("write", on_change)
+rg28xxVar.trace_add("write",on_change)
 alt_font_path.trace_add("write", on_change)
 
 
