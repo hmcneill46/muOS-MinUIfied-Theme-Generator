@@ -1994,6 +1994,20 @@ def FillTempThemeFolder(progress_bar):
         workingMenus = menus2405_2
     else:
         raise ValueError("You Haven't Selected a muOS Version")
+    rg28xxWorkingMenus = []
+    for screen in workingMenus:
+        if screen[0] == "muxconfig":
+            rg28xxWorkingMenus.append(["muxconfig",[]])
+            for item in screen[1]:
+                if not(item[1] == "network" or item[1] == "service"): # Remove wifi related menu items 
+                    rg28xxWorkingMenus[-1][1].append(item)
+        else:
+            rg28xxWorkingMenus.append(screen)
+
+
+    if rg28xxVar.get():
+        workingMenus = rg28xxWorkingMenus
+
     for index, menu in enumerate(workingMenus):
         itemsList.append([])
         for item in menu[1]:
