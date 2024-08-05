@@ -13,7 +13,7 @@ Before running this script, ensure you have the following installed:
  - Python (Tested with version 3.12)
  - All Required Required Python Libraries
  
-       pip install -r requirements.txt 
+       python3 -m pip install -r requirements.txt 
 
 Individual Libraries:
  - Pillow library
