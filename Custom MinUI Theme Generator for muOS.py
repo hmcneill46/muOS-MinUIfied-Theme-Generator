@@ -1892,6 +1892,8 @@ def FillTempThemeFolder(progress_bar):
     shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxdevice.txt"))
     shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxinfo.txt"))
 
+    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
+
     if crt_overlay_var.get():
         shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays","CRT Overlay.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
 
@@ -1903,7 +1905,7 @@ def FillTempThemeFolder(progress_bar):
     else:
         replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
+    
 
     bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","bootlogo.bmp"), format='BMP')
