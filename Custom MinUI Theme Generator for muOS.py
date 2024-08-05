@@ -80,8 +80,10 @@ class Config:
         self.catalogue_directory_path = ""
         self.name_json_path = ""
         self.background_image_path = ""
+        self.bootlogo_image_path = ""
         self.alt_font_path = ""
         self.use_alt_font_var = False
+        self.use_custom_bootlogo_var = False
         self.themeName = "MinUIfied - Default Theme"
         self.amThemeName = "MinUIfied - Default AM Theme"
         self.am_ignore_theme_var = False
@@ -1051,7 +1053,12 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
 def generatePilImageBootLogo(bg_hex,deselected_font_hex,bubble_hex,render_factor):
     bg_rgb = hex_to_rgb(bg_hex)
     image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
-    if background_image != None:
+    if use_custom_bootlogo_var.get():
+        if os.path.exists(bootlogo_image_path.get()):
+            bootlogo_image = Image.open(bootlogo_image_path.get())
+            image.paste(bootlogo_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+            return image
+    elif background_image != None:
         image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
 
     draw = ImageDraw.Draw(image)
@@ -1554,6 +1561,14 @@ def select_background_image_path():
         title="Select background image file"
     )
     background_image_path.set(file_path)
+
+def select_bootlogo_image_path():
+    # File dialog to select a file, with specific types of files allowed
+    file_path = filedialog.askopenfilename(
+        filetypes=[("Image Files", "*.png"),("Image Files", "*.jpg"),("Image Files", "*.jpeg"),("Image Files", "*.webp"),("Image Files", "*.gif"),("Image Files", "*.bmp")],  # Only show .png files
+        title="Select bootlogo image file"
+    )
+    bootlogo_image_path.set(file_path)
 
 def select_alt_font_path():
     # File dialog to select a file, with specific types of files allowed
@@ -2292,6 +2307,7 @@ roms_directory_path = tk.StringVar()
 application_directory_path = tk.StringVar()
 name_json_path = tk.StringVar()
 background_image_path = tk.StringVar()
+bootlogo_image_path = tk.StringVar()
 alt_font_path =  tk.StringVar()
 box_art_directory_path = tk.StringVar()
 catalogue_directory_path = tk.StringVar()
@@ -2316,6 +2332,7 @@ transparent_text_var = tk.IntVar()
 override_font_size_var = tk.IntVar()
 override_folder_box_art_padding_var = tk.IntVar()
 use_alt_font_var = tk.IntVar()
+use_custom_bootlogo_var = tk.IntVar()
 remove_brackets_var = tk.IntVar()
 overlay_box_art_var = tk.IntVar(value=1)
 remove_square_brackets_var = tk.IntVar()
@@ -2469,6 +2486,10 @@ grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
 options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS"]
 option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Custom Bootlogo Image:", variable=use_custom_bootlogo_var), sticky="w")
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=bootlogo_image_path, width=50))
+grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_bootlogo_image_path), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Theme Text Alignment"), sticky="w")
 themeAlignmentOptions = ["Global", "Left", "Centre", "Right"]
@@ -3009,8 +3030,10 @@ def save_settings():
     config.catalogue_directory_path = catalogue_directory_path.get()
     config.name_json_path = name_json_path.get()
     config.background_image_path = background_image_path.get()
+    config.bootlogo_image_path = bootlogo_image_path.get()
     config.alt_font_path = alt_font_path.get()
     config.use_alt_font_var = use_alt_font_var.get()
+    config.use_custom_bootlogo_var = use_custom_bootlogo_var.get()
     config.themeName = theme_name_entry.get()
     config.amThemeName = am_theme_name_entry.get()
     config.am_ignore_theme_var = am_ignore_theme_var.get()
@@ -3065,8 +3088,10 @@ def load_settings():
     catalogue_directory_path.set(config.catalogue_directory_path)
     name_json_path.set(config.name_json_path)
     background_image_path.set(config.background_image_path)
+    bootlogo_image_path.set(config.bootlogo_image_path)
     alt_font_path.set(config.alt_font_path)
     use_alt_font_var.set(config.use_alt_font_var)
+    use_custom_bootlogo_var.set(config.use_custom_bootlogo_var)
     theme_name_entry.delete(0, tk.END)
     theme_name_entry.insert(0, config.themeName)
     am_theme_name_entry.delete(0, tk.END)
@@ -3131,10 +3156,12 @@ theme_directory_path.trace_add("write", on_change)
 catalogue_directory_path.trace_add("write", on_change)
 name_json_path.trace_add("write", on_change)
 background_image_path.trace_add("write", on_change)
+bootlogo_image_path.trace_add("write", on_change)
 am_ignore_theme_var.trace_add("write", on_change)
 am_ignore_cd_var.trace_add("write", on_change)
 advanced_error_var.trace_add("write", on_change)
 use_alt_font_var.trace_add("write", on_change)
+use_custom_bootlogo_var.trace_add("write", on_change)
 alt_font_path.trace_add("write", on_change)
 
 
