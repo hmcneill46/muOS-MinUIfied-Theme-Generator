@@ -465,6 +465,10 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     font = ImageFont.truetype(selected_font_path, font_size)
 
     availableHeight = ((deviceScreenHeight - headerHeight - footerHeight) * render_factor) / ItemsPerScreen
+
+    smallestValidText_bbox = font.getbbox("_...")
+    smallestValidTest_width = smallestValidText_bbox[2] - smallestValidText_bbox[0]
+
     for index, item in enumerate(listItems):
         noLettersCut = 0
         text_width = float('inf')
@@ -475,13 +479,16 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         text_color = f"#{selected_font_hex}" if index == workingIndex else f"#{deselected_font_hex}"
         if boxArtDrawn and override_bubble_cut_var.get():
             if muOSSystemName == "Folder":
-                maxBubbleLength = maxFoldersBubbleLengthVar.get()
+                maxBubbleLength = int(maxFoldersBubbleLengthVar.get())
             else:
-                maxBubbleLength = maxGamesBubbleLengthVar.get()
+                maxBubbleLength = int(maxGamesBubbleLengthVar.get())
         elif boxArtDrawn:
             maxBubbleLength = deviceScreenWidth - boxArtWidth - boxArtPadding - 5
         else:
             maxBubbleLength = deviceScreenWidth
+        if maxBubbleLength < textPadding*render_factor+smallestValidTest_width+rectanglePadding*render_factor+5*render_factor: #Make sure there won't be a bubble error
+            maxBubbleLength = deviceScreenWidth
+
         if workingIndex == index:
             totalCurrentLength = (textPadding * render_factor + text_width + rectanglePadding * render_factor)
         else:
@@ -512,7 +519,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 totalCurrentLength = (textPadding * render_factor + text_width)
             noLettersCut +=1
             if text  == "...":
-                raise ValueError("'Cut bubble off at' too low")
+                raise ValueError("'Cut bubble off at' too low\n\nPlease use a different custom 'cut bubble off' at value")
         
         if textAlignment == "Left":
             text_x = textPadding * render_factor
@@ -2681,7 +2688,10 @@ def remove_image_from_label(image_label):
 
 def get_current_image(image_label):
     # Retrieve the PhotoImage object from the label
-    tk_image = image_label.image
+    try:
+        tk_image = image_label.image
+    except:
+        tk_image = None
     if tk_image is None:
         return None
     
@@ -2966,20 +2976,21 @@ def on_change(*args):
             remove_image_from_label(image_label5)
         valid_params = True
     except:
-        if valid_params:
-            redOutlineImage1 = outline_image_with_inner_gap(get_current_image(image_label1)).resize(preview_size, Image.LANCZOS)
-            redOutlineImage2 = outline_image_with_inner_gap(get_current_image(image_label2)).resize(preview_size, Image.LANCZOS)
-            redOutlineImage3 = outline_image_with_inner_gap(get_current_image(image_label3)).resize(preview_size, Image.LANCZOS)
-            redOutlineImage4 = outline_image_with_inner_gap(get_current_image(image_label4)).resize(preview_size, Image.LANCZOS)
-            if not(vertical_var.get()):
-                redOutlineImage5 = outline_image_with_inner_gap(get_current_image(image_label5)).resize(preview_size, Image.LANCZOS)
-            update_image_label(image_label1, redOutlineImage1)
-            update_image_label(image_label2, redOutlineImage2)
-            update_image_label(image_label3, redOutlineImage3)
-            update_image_label(image_label4, redOutlineImage4)
-            if not(vertical_var.get()):
-                update_image_label(image_label5, redOutlineImage5)
-            valid_params = False
+        if get_current_image(image_label1) != None and get_current_image(image_label2) != None and get_current_image(image_label3) != None and get_current_image(image_label4) != None and get_current_image(image_label5) != None:
+            if valid_params:
+                redOutlineImage1 = outline_image_with_inner_gap(get_current_image(image_label1)).resize(preview_size, Image.LANCZOS)
+                redOutlineImage2 = outline_image_with_inner_gap(get_current_image(image_label2)).resize(preview_size, Image.LANCZOS)
+                redOutlineImage3 = outline_image_with_inner_gap(get_current_image(image_label3)).resize(preview_size, Image.LANCZOS)
+                redOutlineImage4 = outline_image_with_inner_gap(get_current_image(image_label4)).resize(preview_size, Image.LANCZOS)
+                if not(vertical_var.get()):
+                    redOutlineImage5 = outline_image_with_inner_gap(get_current_image(image_label5)).resize(preview_size, Image.LANCZOS)
+                update_image_label(image_label1, redOutlineImage1)
+                update_image_label(image_label2, redOutlineImage2)
+                update_image_label(image_label3, redOutlineImage3)
+                update_image_label(image_label4, redOutlineImage4)
+                if not(vertical_var.get()):
+                    update_image_label(image_label5, redOutlineImage5)
+                valid_params = False
     #update_image2()
     # Add your code here to handle the changes
 
