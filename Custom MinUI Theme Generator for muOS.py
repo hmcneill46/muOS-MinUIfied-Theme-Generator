@@ -2562,7 +2562,7 @@ contentAlignmentOptions = ["Global", "Left", "Centre", "Right"]
 content_alignment_option_menu = tk.OptionMenu(scrollable_frame, content_alignment_var, *contentAlignmentOptions)
 grid_helper.add(content_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Also Generate Images for Game List *", variable=also_games_var), sticky="w")
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Also Generate Theme for Game List *", variable=also_games_var), sticky="w")
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Show hidden Content", variable=show_hidden_files_var), sticky="w", next_row=True)
 
