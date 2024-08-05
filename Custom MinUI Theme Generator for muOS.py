@@ -1892,6 +1892,24 @@ def FillTempThemeFolder(progress_bar):
     shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxdevice.txt"))
     shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxinfo.txt"))
 
+    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{imageListAlpha}", str(255))
+    if version_var.get() == "muOS 2405 BEANS":
+        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxapps.txt"), "{imageListAlpha}", str(255))
+    else:
+        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxapp.txt"), "{imageListAlpha}", str(255))
+    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxconfig.txt"), "{imageListAlpha}", str(255))
+    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxdevice.txt"), "{imageListAlpha}", str(255))
+    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxinfo.txt"), "{imageListAlpha}", str(255))
+
+    if also_games_var.get():
+        shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxfavourite.txt"))
+        shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxhistory.txt"))
+
+        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxfavourite.txt"), "{imageListAlpha}", str(0))
+        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxhistory.txt"), "{imageListAlpha}", str(0))
+    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{imageListAlpha}", str(255))
+    
+
     os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
 
     if crt_overlay_var.get():
