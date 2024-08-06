@@ -2680,9 +2680,6 @@ grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=selec
 grid_helper.add(tk.Button(left_scrollable_frame, text="Edit Menu Names In JSON File", command=select_alternate_menu_names), sticky="w", next_row=True)
 
 
-
-
-
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Left Menu Helper Guides", variable=remove_left_menu_guides_var), sticky="w")
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Right Menu Helper Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
 
