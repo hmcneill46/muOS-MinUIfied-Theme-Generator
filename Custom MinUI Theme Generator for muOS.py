@@ -396,6 +396,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             folderName = replace_hyphen_with_colon(folderName)
         if move_the_var.get():
             folderName = changeLocationOfThe(folderName)
+        folderName = remove_dot_p8(folderName)
 
 
     if folderName != None and show_console_name_var.get():
@@ -508,6 +509,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 text = replace_hyphen_with_colon(text)
             if move_the_var.get():
                 text = changeLocationOfThe(text)
+            text = remove_dot_p8(text)
             if noLettersCut>0:
                 text = text[:-(noLettersCut+3)]
                 text = text+"..."
@@ -1242,6 +1244,11 @@ def remove_square_brackets_and_contents(text):
     text = re.sub(r'\[[^\]]*\]', '', text)
     # Remove extra whitespace left by removal
     text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+def remove_dot_p8(text):
+    if text.endswith('.p8'):
+        return text[:-3]  # Remove the last 3 characters, which are ".p8"
     return text
 
 
