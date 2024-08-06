@@ -1267,7 +1267,7 @@ def changeLocationOfThe(name):
 def replace_hyphen_with_colon(text):
     return text.replace(' - ', ': ')
 
-def getNameConvertionList(file_path):
+def getNameConversionList(file_path):
     if os.path.exists(name_json_path.get()):
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
@@ -1318,27 +1318,27 @@ def getAlternateMenuNameDict():
     return getDefaultAlternateMenuNameData()
 
 def getDefaultAlternateMenuNameData():
-    defaultMenuNamemap = {}
+    defaultMenuNameMap = {}
     for section in menus2405_2:
         if section[0].startswith("mux"):
             for n in section[1]:
-                defaultMenuNamemap[n[0].lower()] = n[0]
+                defaultMenuNameMap[n[0].lower()] = n[0]
     
-    defaultMenuNamemap["content explorer"] = "Games"
-    defaultMenuNamemap["applications"] = "Utilites"
-    defaultMenuNamemap["power"] = "POWER"
-    defaultMenuNamemap["sleep"] = "SLEEP"
-    defaultMenuNamemap["menu"] = "MENU"
-    defaultMenuNamemap["help"] = "HELP"
-    defaultMenuNamemap["back"] = "BACK"
-    defaultMenuNamemap["okay"] = "OKAY"
-    defaultMenuNamemap["confirm"] = "CONFIRM"
-    defaultMenuNamemap["launch"] = "LAUNCH"
-    defaultMenuNamemap["charging..."] = "CHARGING..."
-    return defaultMenuNamemap
+    defaultMenuNameMap["content explorer"] = "Games"
+    defaultMenuNameMap["applications"] = "Utilites"
+    defaultMenuNameMap["power"] = "POWER"
+    defaultMenuNameMap["sleep"] = "SLEEP"
+    defaultMenuNameMap["menu"] = "MENU"
+    defaultMenuNameMap["help"] = "HELP"
+    defaultMenuNameMap["back"] = "BACK"
+    defaultMenuNameMap["okay"] = "OKAY"
+    defaultMenuNameMap["confirm"] = "CONFIRM"
+    defaultMenuNameMap["launch"] = "LAUNCH"
+    defaultMenuNameMap["charging..."] = "CHARGING..."
+    return defaultMenuNameMap
 
 def list_directory_contents(directory_path):
-    names_data = getNameConvertionList(name_json_path.get())
+    names_data = getNameConversionList(name_json_path.get())
     fileItemList = []
     directoryItemList = []
     itemList = []
@@ -2674,11 +2674,14 @@ grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Override text in menus [Can be used for Translations]", variable=alternate_menu_names_var), sticky="w")
 
+grid_helper.add(tk.Button(left_scrollable_frame, text="Select new menu item names", command=select_alternate_menu_names), sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(left_scrollable_frame, text="Alternate Menu Names JSON File:"), sticky="w")
+
 grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=alt_text_path, width=50))
 grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_alt_text_path), next_row=True)
 
 
-grid_helper.add(tk.Button(left_scrollable_frame, text="Select new menu item names", command=select_alternate_menu_names), sticky="w", next_row=True)
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Left Menu Helper Guides", variable=remove_left_menu_guides_var), sticky="w")
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Right Menu Helper Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
 

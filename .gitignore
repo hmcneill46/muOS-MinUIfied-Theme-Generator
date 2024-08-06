@@ -11,7 +11,7 @@ PreviousDirectories.txt
 ConsoleAssociations.txt
 MinUIThemeGeneratorConfig*
 ConsoleAssociations.json
-AlternateMenuNames*
+AlternateMenuNames.json
 
 # macOS specific files
 .DS_Store
