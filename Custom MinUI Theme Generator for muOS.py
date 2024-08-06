@@ -2282,7 +2282,7 @@ class MenuNamesGrid(tk.Toplevel):
         self.grab_release()
         self.destroy()
 
-def on_mousewheel(event):
+def on_mousewheel(event,canvas):
     if platform.system() == 'Windows':
         canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
     elif platform.system() == 'Darwin':
@@ -2293,7 +2293,7 @@ def on_mousewheel(event):
         elif event.num == 5:
             canvas.yview_scroll(1, "units")
 
-def on_shiftmousewheel(event):
+def on_shiftmousewheel(event, canvas):
     if platform.system() == 'Windows':
         canvas.xview_scroll(int(-1 * (event.delta / 120)), "units")
     elif platform.system() == 'Darwin':
@@ -2380,6 +2380,10 @@ window_height = int(min(screen_height*0.9, 1720))
 
 root.geometry(f"1280x{window_height}")  # Set a default size for the window
 
+# Create the main frame
+main_frame = tk.Frame(root)
+main_frame.pack(fill="both", expand=True)
+
 resize_id = None
 
 root.bind("<Configure>", on_resize)
@@ -2430,42 +2434,75 @@ am_ignore_cd_var = tk.IntVar()
 advanced_error_var = tk.IntVar()
 
 # Create a canvas and a vertical scrollbar
-canvas = tk.Canvas(root)
 
-scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
-scrollable_frame = tk.Frame(canvas)
+# Create the left frame with canvas and scrollbars
+left_frame = tk.Frame(main_frame)
+left_frame.pack(side="left", fill="both", expand=True)
 
-scrollable_frame.bind(
+left_canvas = tk.Canvas(left_frame)
+left_scrollbar_y = tk.Scrollbar(left_frame, orient="vertical", command=left_canvas.yview)
+left_scrollable_frame = tk.Frame(left_canvas)
+
+left_scrollable_frame.bind(
     "<Configure>",
-    lambda e: canvas.configure(
-        scrollregion=canvas.bbox("all")
+    lambda e: left_canvas.configure(
+        scrollregion=left_canvas.bbox("all")
     )
 )
 
-canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-canvas.configure(yscrollcommand=scrollbar.set)
+left_canvas.create_window((0, 0), window=left_scrollable_frame, anchor="nw")
+left_canvas.configure(yscrollcommand=left_scrollbar_y.set)
 
-# Pack the canvas and scrollbar
-canvas.pack(side="left", fill="both", expand=True)
-scrollbar.pack(side="right", fill="y")
+left_canvas.pack(side="left", fill="both", expand=True)
+left_scrollbar_y.pack(side="right", fill="y")
 
 # Bind mouse wheel events based on the platform
 if platform.system() == 'Darwin':
-    canvas.bind_all("<MouseWheel>", on_mousewheel)
-    canvas.bind_all("<Shift-MouseWheel>", on_shiftmousewheel)
+    left_canvas.bind_all("<MouseWheel>", lambda event: on_mousewheel(event, left_canvas))
+    left_canvas.bind_all("<Shift-MouseWheel>", lambda event: on_shiftmousewheel(event, left_canvas))
 else:
-    canvas.bind_all("<MouseWheel>", on_mousewheel)
-    canvas.bind_all("<Shift-MouseWheel>", on_shiftmousewheel)
-    canvas.bind_all("<Button-4>", on_mousewheel)  # For Linux
-    canvas.bind_all("<Button-5>", on_mousewheel)  # For Linux
+    left_canvas.bind_all("<MouseWheel>", lambda event: on_mousewheel(event, left_canvas))
+    left_canvas.bind_all("<Shift-MouseWheel>", lambda event: on_shiftmousewheel(event, left_canvas))
+    left_canvas.bind_all("<Button-4>", lambda event: on_mousewheel(event, left_canvas))  # For Linux
+    left_canvas.bind_all("<Button-5>", lambda event: on_mousewheel(event, left_canvas))  # For Linux
 
 # Create the grid helper
-grid_helper = GridHelper(scrollable_frame)
+grid_helper = GridHelper(left_scrollable_frame)
+
+is_dragging = False
+
+def on_slider_change(value):
+    global is_dragging
+    is_dragging = True
+
+    on_change()
+
 
 # Create the GUI components
-grid_helper.add(tk.Label(scrollable_frame, text="[WARNING] PLEASE BACKUP YOUR WHOLE CATALOGUE FOLDER! CHOOSING SOME OPTIONS WILL OVERRIDE GAME BOX ART", fg='#f00'), colspan=3, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="Configurations", font=title_font), colspan=3, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="Global Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Adjust Preview Image Size:", fg='#00f'), colspan=3, sticky="w", next_row=True)
+
+
+def on_slider_release(event):
+    global is_dragging
+    is_dragging = False
+    on_change()
+
+slider_length = 125
+
+slider_length = 125
+previewSideSlider = tk.Scale(left_scrollable_frame, from_=0, to=100, orient="horizontal", 
+                             command=on_slider_change, showvalue=0, tickinterval=0, length=slider_length)
+grid_helper.add(previewSideSlider, colspan=3, sticky="w", next_row=True)
+
+
+# Bind mouse release event to the slider
+previewSideSlider.bind("<ButtonRelease-1>", on_slider_release)
+
+
+# Create the GUI components
+grid_helper.add(tk.Label(left_scrollable_frame, text="[WARNING] PLEASE BACKUP YOUR WHOLE CATALOGUE FOLDER! CHOOSING SOME OPTIONS WILL OVERRIDE GAME BOX ART", fg='#f00'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Configurations", font=title_font), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Global Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
 
 # Define the StringVar variables
 scrollBarWidthVar = tk.StringVar()
@@ -2487,109 +2524,109 @@ previewConsoleNameVar = tk.StringVar()
 
 
 # Option for scrollBarWidth
-grid_helper.add(tk.Label(scrollable_frame, text="Scroll Bar Width:"), sticky="w")
-scroll_bar_width_entry = tk.Entry(scrollable_frame, width=50, textvariable=scrollBarWidthVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Scroll Bar Width:"), sticky="w")
+scroll_bar_width_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=scrollBarWidthVar)
 grid_helper.add(scroll_bar_width_entry, next_row=True)
 
 # Option for textPadding
-grid_helper.add(tk.Label(scrollable_frame, text="Text Padding:"), sticky="w")
-text_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=textPaddingVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Text Padding:"), sticky="w")
+text_padding_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=textPaddingVar)
 grid_helper.add(text_padding_entry, next_row=True)
 
 # Option for rectanglePadding
-grid_helper.add(tk.Label(scrollable_frame, text="Bubble Padding:"), sticky="w")
-rectangle_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubblePaddingVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Bubble Padding:"), sticky="w")
+rectangle_padding_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=bubblePaddingVar)
 grid_helper.add(rectangle_padding_entry, next_row=True)
 
 # Option for ItemsPerScreen
-grid_helper.add(tk.Label(scrollable_frame, text="Items Per Screen:"), sticky="w")
-items_per_screen_entry = tk.Entry(scrollable_frame, width=50, textvariable=itemsPerScreenVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Items Per Screen:"), sticky="w")
+items_per_screen_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=itemsPerScreenVar)
 grid_helper.add(items_per_screen_entry, next_row=True)
 
 # Option for ItemsPerScreen
-grid_helper.add(tk.Label(scrollable_frame, text="Footer Height:"), sticky="w")
-footer_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=footerHeightVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Footer Height:"), sticky="w")
+footer_height_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=footerHeightVar)
 grid_helper.add(footer_height_entry, next_row=True)
 
 # Option for Background Colour
-grid_helper.add(tk.Label(scrollable_frame, text="Background Hex Colour: #"), sticky="w")
-background_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=bgHexVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Background Hex Colour: #"), sticky="w")
+background_hex_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=bgHexVar)
 grid_helper.add(background_hex_entry, next_row=True)
 
 # Option for Selected Font Hex Colour
-grid_helper.add(tk.Label(scrollable_frame, text="Selected Font Hex Colour: #"), sticky="w")
-selected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=selectedFontHexVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Selected Font Hex Colour: #"), sticky="w")
+selected_font_hex_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=selectedFontHexVar)
 grid_helper.add(selected_font_hex_entry, next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Background Through Text", variable=transparent_text_var), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Show Background Through Text", variable=transparent_text_var), colspan=3, sticky="w", next_row=True)
 
 # Option for Deselected Font Hex Colour
-grid_helper.add(tk.Label(scrollable_frame, text="Deselected Font Hex Colour: #"), sticky="w")
-deselected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=deselectedFontHexVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Deselected Font Hex Colour: #"), sticky="w")
+deselected_font_hex_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=deselectedFontHexVar)
 grid_helper.add(deselected_font_hex_entry, next_row=True)
 
 # Option for Bubble Hex Colour
-grid_helper.add(tk.Label(scrollable_frame, text="Bubble Hex Colour: #"), sticky="w")
-bubble_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubbleHexVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Bubble Hex Colour: #"), sticky="w")
+bubble_hex_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=bubbleHexVar)
 grid_helper.add(bubble_hex_entry, next_row=True)
 
 # Option for Icon Hex Colour
-grid_helper.add(tk.Label(scrollable_frame, text="Icon Hex Colour: #"), sticky="w")
-icon_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=iconHexVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Icon Hex Colour: #"), sticky="w")
+icon_hex_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=iconHexVar)
 grid_helper.add(icon_hex_entry, next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Global Text Alignment"), sticky="w")
+grid_helper.add(tk.Label(left_scrollable_frame, text="Global Text Alignment"), sticky="w")
 globalAlignmentOptions = ["Left", "Centre", "Right"]
-global_alignment_option_menu = tk.OptionMenu(scrollable_frame, global_alignment_var, *globalAlignmentOptions)
+global_alignment_option_menu = tk.OptionMenu(left_scrollable_frame, global_alignment_var, *globalAlignmentOptions)
 grid_helper.add(global_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Page by Page Scrolling", variable=page_by_page_var), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Page by Page Scrolling", variable=page_by_page_var), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="[Optional] Override background colour with image"), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=background_image_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_background_image_path), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="[Optional] Override background colour with image"), sticky="w")
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=background_image_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_background_image_path), next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="*[Optional] Use Custom font:", variable=use_alt_font_var), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=alt_font_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_alt_font_path), next_row=True)
-grid_helper.add(tk.Label(scrollable_frame,text="*Use if text override characters not supported by default font",fg="#00f"),sticky="w",next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="*[Optional] Use Custom font:", variable=use_alt_font_var), sticky="w")
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=alt_font_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_alt_font_path), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame,text="*Use if text override characters not supported by default font",fg="#00f"),sticky="w",next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Optional] Override font size:", variable=override_font_size_var), sticky="w")
-custom_font_size_entry = tk.Entry(scrollable_frame, width=50, textvariable=customFontSizeVar)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="[Optional] Override font size:", variable=override_font_size_var), sticky="w")
+custom_font_size_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=customFontSizeVar)
 grid_helper.add(custom_font_size_entry, next_row=True)
 
 # Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Theme Specific Configurations", font=subtitle_font), sticky="w", next_row=True)
-
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Generating for the RG28XX", variable=rg28xxVar), sticky="w",next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Specific Configurations", font=subtitle_font), sticky="w", next_row=True)
 
 
-grid_helper.add(tk.Label(scrollable_frame, text="[Optional] Custom Application Directory:"), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=application_directory_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_application_directory), next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Generating for the RG28XX", variable=rg28xxVar), sticky="w",next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\MUOS\\application' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
+grid_helper.add(tk.Label(left_scrollable_frame, text="[Optional] Custom Application Directory:"), sticky="w")
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=application_directory_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_application_directory), next_row=True)
+
+grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\application' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(left_scrollable_frame, text="muOS Version"), sticky="w")
 options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS"]
-option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
+option_menu = tk.OptionMenu(left_scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Custom Bootlogo Image:", variable=use_custom_bootlogo_var), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=bootlogo_image_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_bootlogo_image_path), next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Use Custom Bootlogo Image:", variable=use_custom_bootlogo_var), sticky="w")
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=bootlogo_image_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_bootlogo_image_path), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Theme Text Alignment"), sticky="w")
+grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Text Alignment"), sticky="w")
 themeAlignmentOptions = ["Global", "Left", "Centre", "Right"]
-theme_alignment_option_menu = tk.OptionMenu(scrollable_frame, theme_alignment_var, *themeAlignmentOptions)
+theme_alignment_option_menu = tk.OptionMenu(left_scrollable_frame, theme_alignment_var, *themeAlignmentOptions)
 grid_helper.add(theme_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Vertical Main Menu (Like Original MinUI)", variable=vertical_var), sticky="w",next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Vertical Main Menu (Like Original MinUI)", variable=vertical_var), sticky="w",next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Include Overlay", variable=include_overlay_var), sticky="w")
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Include Overlay", variable=include_overlay_var), sticky="w")
 
 overlayOptions = ["muOS Default CRT Overlay", 
            "Grid_2px_10",
@@ -2600,188 +2637,210 @@ overlayOptions = ["muOS Default CRT Overlay",
            "Grid_Thin_2px_30", 
            "Perfect_CRT-noframe", 
            "Perfect_CRT"]
-overlay_option_menu = tk.OptionMenu(scrollable_frame, selected_overlay_var, *overlayOptions)
+overlay_option_menu = tk.OptionMenu(left_scrollable_frame, selected_overlay_var, *overlayOptions)
 grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Override text in menus [Can be used for Translations]", variable=alternate_menu_names_var), sticky="w")
-grid_helper.add(tk.Button(scrollable_frame, text="Select new menu item names", command=select_alternate_menu_names), sticky="w", next_row=True)
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Left Menu Helper Guides", variable=remove_left_menu_guides_var), sticky="w")
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Right Menu Helper Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Override text in menus [Can be used for Translations]", variable=alternate_menu_names_var), sticky="w")
+grid_helper.add(tk.Button(left_scrollable_frame, text="Select new menu item names", command=select_alternate_menu_names), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Left Menu Helper Guides", variable=remove_left_menu_guides_var), sticky="w")
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Right Menu Helper Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
 
 # Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Box Art Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Box Art Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Catalogue Directory with Box Art:"), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=box_art_directory_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_box_art_directory), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Catalogue Directory with Box Art:"), sticky="w")
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=box_art_directory_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_box_art_directory), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text=" - This can be your catalogue folder on your device, but I would recommend copying it off the device so you can use this tool multiple times.",fg="#00f"), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text=" - This can be your catalogue folder on your device, but I would recommend copying it off the device so you can use this tool multiple times.",fg="#00f"), colspan=3, sticky="w", next_row=True)
 
 ##BoxArtPadding
-grid_helper.add(tk.Label(scrollable_frame, text="Box Art Right Padding:"), sticky="w")
-box_art_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=boxArtPaddingVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Box Art Right Padding:"), sticky="w")
+box_art_padding_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=boxArtPaddingVar)
 grid_helper.add(box_art_padding_entry, next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Optional] Folder Art Specific Padding:", variable=override_folder_box_art_padding_var), sticky="w")
-folder_box_art_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=folderBoxArtPaddingVar)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="[Optional] Folder Art Specific Padding:", variable=override_folder_box_art_padding_var), sticky="w")
+folder_box_art_padding_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=folderBoxArtPaddingVar)
 grid_helper.add(folder_box_art_padding_entry, next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Override Auto Cut Bubble off [Might want to use for fading box art]", variable=override_bubble_cut_var),colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Override Auto Cut Bubble off [Might want to use for fading box art]", variable=override_bubble_cut_var),colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text=" - [Games] Cut bubble off at (px):"), sticky="w")
+grid_helper.add(tk.Label(left_scrollable_frame, text=" - [Games] Cut bubble off at (px):"), sticky="w")
 
-max_games_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxGamesBubbleLengthVar)
+max_games_bubble_length_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=maxGamesBubbleLengthVar)
 grid_helper.add(max_games_bubble_length_entry, next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text=" - [Folders] Cut bubble off at (px):"), sticky="w")
+grid_helper.add(tk.Label(left_scrollable_frame, text=" - [Folders] Cut bubble off at (px):"), sticky="w")
 
-max_folders_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxFoldersBubbleLengthVar)
+max_folders_bubble_length_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=maxFoldersBubbleLengthVar)
 grid_helper.add(max_folders_bubble_length_entry, next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text=" - This would usually be 640-width of your boxart",fg="#00f"), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text=" - This would usually be 640-width of your boxart",fg="#00f"), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Preview muOS Console name [Just for preview on the right]:"), sticky="w")
-preview_console_name_entry = tk.Entry(scrollable_frame, width=50, textvariable=previewConsoleNameVar)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Preview muOS Console name [Just for preview on the right]:"), sticky="w")
+preview_console_name_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=previewConsoleNameVar)
 grid_helper.add(preview_console_name_entry, next_row=True)
-grid_helper.add(tk.Button(scrollable_frame, text="Backup Box Art into Archive Manager File", command=backup_boxart, fg="#007B33"), sticky="w", next_row=True)
+grid_helper.add(tk.Button(left_scrollable_frame, text="Backup Box Art into Archive Manager File", command=backup_boxart, fg="#007B33"), sticky="w", next_row=True)
 
 # Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Content Explorer Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="Roms Input Directory:"), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=roms_directory_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_input_directory), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Content Explorer Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Roms Input Directory:"), sticky="w")
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=roms_directory_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_input_directory), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\ROMS' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\ROMS' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="name.json file Directory:"), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=name_json_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_name_json_path), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="name.json file Directory:"), sticky="w")
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=name_json_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_name_json_path), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\MUOS\\info\\name.json' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\info\\name.json' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Content Explorer Text Alignment"), sticky="w")
+grid_helper.add(tk.Label(left_scrollable_frame, text="Content Explorer Text Alignment"), sticky="w")
 contentAlignmentOptions = ["Global", "Left", "Centre", "Right"]
-content_alignment_option_menu = tk.OptionMenu(scrollable_frame, content_alignment_var, *contentAlignmentOptions)
+content_alignment_option_menu = tk.OptionMenu(left_scrollable_frame, content_alignment_var, *contentAlignmentOptions)
 grid_helper.add(content_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Also Generate Theme for Game List *", variable=also_games_var), sticky="w")
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Also Generate Theme for Game List *", variable=also_games_var), sticky="w")
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Experimental] Show hidden Content", variable=show_hidden_files_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="[Experimental] Show hidden Content", variable=show_hidden_files_var), sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Merge with Box Art", variable=overlay_box_art_var), sticky="w")
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Merge with Box Art", variable=overlay_box_art_var), sticky="w")
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Replace ' - ' with ': '", variable=replace_hyphen_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Replace ' - ' with ': '", variable=replace_hyphen_var), sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove ()", variable=remove_brackets_var), sticky="w")
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove []", variable=remove_square_brackets_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove ()", variable=remove_brackets_var), sticky="w")
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove []", variable=remove_square_brackets_var), sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Put 'The' At the start, instead of the end ', The'", variable=move_the_var), sticky="w")
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Put 'The' At the start, instead of the end ', The'", variable=move_the_var), sticky="w")
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show File Counter **", variable=show_file_counter_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Show File Counter **", variable=show_file_counter_var), sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Console Name at top", variable=show_console_name_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Show Console Name at top", variable=show_console_name_var), sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="* [IMPORTANT] THIS WILL OVERRIDE YOUR GAME BOX ART... MAKE A BACKUP OF THE WHOLE CATALOGUE FOLDER.", fg='#f00'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="* [IMPORTANT] THIS WILL OVERRIDE YOUR GAME BOX ART... MAKE A BACKUP OF THE WHOLE CATALOGUE FOLDER.", fg='#f00'), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="* Games may also appear in the wrong order", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="* Games may also appear in the wrong order", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="** In order for File Counter to be visible box art must be set to 'Fullscreen + Front'", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="** In order for File Counter to be visible box art must be set to 'Fullscreen + Front'", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
 
 # Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Generation", font=title_font), colspan=2, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Generation", font=title_font), colspan=2, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Combined generation for Archive manager install [Recommended]", font=subtitle_font), colspan=2, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="Make sure your box art setting is set to Fullscreen+Front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Combined generation for Archive manager install [Recommended]", font=subtitle_font), colspan=2, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Make sure your box art setting is set to Fullscreen+Front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
 
 
-grid_helper.add(tk.Label(scrollable_frame, text="Archive Manager Theme Name:"), sticky="w")
-am_theme_name_entry = tk.Entry(scrollable_frame, width=50)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Archive Manager Theme Name:"), sticky="w")
+am_theme_name_entry = tk.Entry(left_scrollable_frame, width=50)
 grid_helper.add(am_theme_name_entry, next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Archive Manager Output Directory:"), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=am_theme_directory_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_am_theme_directory), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Archive Manager Output Directory:"), sticky="w")
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=am_theme_directory_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_am_theme_directory), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\ARCHIVE' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\ARCHIVE' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Don't Generate Theme", variable=am_ignore_theme_var), colspan=1, sticky="w", next_row=False)
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Don't Generate Content Explorer Theme", variable=am_ignore_cd_var), colspan=1, sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Don't Generate Theme", variable=am_ignore_theme_var), colspan=1, sticky="w", next_row=False)
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Don't Generate Content Explorer Theme", variable=am_ignore_cd_var), colspan=1, sticky="w", next_row=True)
 
 # Generate button
-grid_helper.add(tk.Button(scrollable_frame, text="Generate Archive Manager File", command=start_AM_task), sticky="w", next_row=True)
+grid_helper.add(tk.Button(left_scrollable_frame, text="Generate Archive Manager File", command=start_AM_task), sticky="w", next_row=True)
 
 # Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Theme only generation", font=subtitle_font), colspan=2, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="Theme Name:"), sticky="w")
-theme_name_entry = tk.Entry(scrollable_frame, width=50)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Theme only generation", font=subtitle_font), colspan=2, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Name:"), sticky="w")
+theme_name_entry = tk.Entry(left_scrollable_frame, width=50)
 grid_helper.add(theme_name_entry, next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Themes Output Directory:"), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=theme_directory_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_theme_directory), next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Themes Output Directory:"), sticky="w")
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=theme_directory_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_theme_directory), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\MUOS\\theme' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
-
-# Generate button
-grid_helper.add(tk.Button(scrollable_frame, text="Generate Theme", command=start_theme_task), sticky="w", next_row=True)
-
-# Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Content explorer only generation", font=subtitle_font), colspan=2, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="Make sure your box art setting is set to Fullscreen+Front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Catalogue Directory on device:"), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=catalogue_directory_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_output_directory), next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\MUOS\\info\\catalogue' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
-
-# Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="If you choose to generate the Game and Console Image files, to remove them you will need to", fg='#00f'), colspan=3, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="remove all the files in your catalogue folder you can do this with the red button below.", fg='#00f'), colspan=2, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\theme' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
 # Generate button
-grid_helper.add(tk.Button(scrollable_frame, text="Generate Images", command=start_images_task), sticky="w")
-grid_helper.add(tk.Button(scrollable_frame, text="Remove all images in Selected Catalogue Folder", command=remove_images, fg="#f00"), sticky="w", next_row=True)
+grid_helper.add(tk.Button(left_scrollable_frame, text="Generate Theme", command=start_theme_task), sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Advanced Errors", variable=advanced_error_var), colspan=3, sticky="w", next_row=True)
+# Spacer row
+grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Label(left_scrollable_frame, text="Content explorer only generation", font=subtitle_font), colspan=2, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Make sure your box art setting is set to Fullscreen+Front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(left_scrollable_frame, text="Catalogue Directory on device:"), sticky="w")
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=catalogue_directory_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_output_directory), next_row=True)
+
+grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\info\\catalogue' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
+
+# Spacer row
+grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Label(left_scrollable_frame, text="If you choose to generate the Game and Console Image files, to remove them you will need to", fg='#00f'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="remove all the files in your catalogue folder you can do this with the red button below.", fg='#00f'), colspan=2, sticky="w", next_row=True)
+
+# Generate button
+grid_helper.add(tk.Button(left_scrollable_frame, text="Generate Images", command=start_images_task), sticky="w")
+grid_helper.add(tk.Button(left_scrollable_frame, text="Remove all images in Selected Catalogue Folder", command=remove_images, fg="#f00"), sticky="w", next_row=True)
+
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Show Advanced Errors", variable=advanced_error_var), colspan=3, sticky="w", next_row=True)
 
 
-image_frame = tk.Frame(root)
-image_frame.pack(side="right", fill="y")
 
-def on_slider_change(value):
-    on_change()
 
-slider_length = 125
+# Create the right frame with canvas and scrollbars
+right_frame = tk.Frame(main_frame)
+right_frame.pack(side="left", fill="both", anchor="n")
 
-previewSideSlider = tk.Scale(image_frame, from_=0, to=100, orient="horizontal",command=on_slider_change, showvalue=0, tickinterval=0, length=slider_length)
-previewSideSlider.pack(side="top", anchor="e")
+right_canvas = tk.Canvas(right_frame)
+right_scrollbar = tk.Scrollbar(right_frame, orient="vertical", command=right_canvas.yview)
+right_scrollable_frame = tk.Frame(right_canvas)
 
-image_label1 = tk.Label(image_frame)
+
+
+right_canvas.create_window((0, 0), window=right_scrollable_frame, anchor="nw")
+right_canvas.configure(yscrollcommand=right_scrollbar.set)
+
+right_canvas.pack(side="left", fill="both", expand=True)
+right_scrollbar.pack(side="right", fill="y")
+
+
+# Ensure the right frame expands only as needed
+
+right_scrollable_frame.bind(
+    "<Configure>",
+    lambda e: right_frame.config(width=(right_canvas.bbox("all")[2] + right_scrollbar.winfo_width()))
+)
+
+right_frame.bind(
+    "<Configure>",
+    lambda e: right_canvas.configure(
+        scrollregion=right_canvas.bbox("all")
+    )
+)
+
+image_label1 = tk.Label(right_scrollable_frame)
 image_label1.pack()
 
-image_label2 = tk.Label(image_frame)
+image_label2 = tk.Label(right_scrollable_frame)
 image_label2.pack()
 
-image_label3 = tk.Label(image_frame)
+image_label3 = tk.Label(right_scrollable_frame)
 image_label3.pack()
 
-image_label4 = tk.Label(image_frame)
+image_label4 = tk.Label(right_scrollable_frame)
 image_label4.pack()
 
-image_label5 = tk.Label(image_frame)
+image_label5 = tk.Label(right_scrollable_frame)
 image_label5.pack()
 
 def update_image_label(image_label, pil_image):
@@ -2933,13 +2992,26 @@ def on_change(*args):
     previewRenderFactor = 1
 
     if root.winfo_height() < 100:
-        preview_size = (int(deviceScreenWidth/2),int(deviceScreenHeight/2))
+        preview_size = [int(deviceScreenWidth/2),int(deviceScreenHeight/2)]
     else:
         if vertical_var.get():
-            preview_multiplier = (root.winfo_height()/map_value(previewSideSlider.get(),0,100,4.3,1.048))/deviceScreenHeight
+
+            preview_multiplier = (root.winfo_height()/map_value(previewSideSlider.get(),0,100,4,1))/deviceScreenHeight
         else:
-            preview_multiplier = (root.winfo_height()/map_value(previewSideSlider.get(),0,100,5.4,1.048))/deviceScreenHeight
-        preview_size = (int(deviceScreenWidth*preview_multiplier),int(deviceScreenHeight*preview_multiplier))
+            preview_multiplier = (root.winfo_height()/map_value(previewSideSlider.get(),0,100,5,1))/deviceScreenHeight
+        global is_dragging
+        if is_dragging:
+            previewRenderFactor = 1
+        else:
+            previewRenderFactor = int(preview_multiplier*(1/0.64)+1) # Affectively anti aliasing in the preview
+            
+
+        preview_size = [deviceScreenWidth*preview_multiplier,deviceScreenHeight*preview_multiplier]
+        betweenImagePadding = 4
+        oldHeight = preview_size[1]
+        preview_size[1] -= int(betweenImagePadding+betweenImagePadding/map_value(previewSideSlider.get(),0,100,4,1))
+        preview_size[0] = int((preview_size[0]*preview_size[1])/(oldHeight))
+        preview_size[0],preview_size[1] = int(preview_size[0]),int(preview_size[1])
 
     # This function will run whenever any traced variable changes
     try:
