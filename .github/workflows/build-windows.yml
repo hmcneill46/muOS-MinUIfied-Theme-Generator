@@ -30,4 +30,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: windows-binary
-          path: dist/your_script.exe
+          path: "dist/Custom MinUI Theme Generator for muOS.exe"
