@@ -84,6 +84,7 @@ class Config:
         self.bootlogo_image_path = ""
         self.rg28xxVar = False
         self.alt_font_path = ""
+        self.alt_text_path = "AlternativeMenuNames.json"
         self.use_alt_font_var = False
         self.use_custom_bootlogo_var = False
         self.themeName = "MinUIfied - Default Theme"
@@ -112,8 +113,6 @@ background_image = None
 # Define constants
 render_factor = 5
 
-
-AlternateMenuNamesPath = os.path.join(script_dir,"AlternateMenuNames.json")
 
 ConsoleAssociationsPath = os.path.join(script_dir,"ConsoleAssociations.json")
 defaultConsoleAssociationsPath = os.path.join(internal_files_dir,"_ConsoleAssociations.json")
@@ -1296,14 +1295,26 @@ def saveConsoleAssociationDict():
         json.dump(consoleMap, json_file, indent=2)         
 
 def getAlternateMenuNameDict():
-    if os.path.exists(AlternateMenuNamesPath):
+    if os.path.exists(alt_text_path.get()):
+        print(f"We in {alt_text_path.get()}")
         try:
-            with open(AlternateMenuNamesPath, 'r', encoding='utf-8') as file:
+            
+            with open(alt_text_path.get(), 'r', encoding='utf-8') as file:
+                data = json.load(file)
+            data = {key.lower(): value for key, value in data.items()}
+            print(data)
+            return data
+        except:
+            return getDefaultAlternateMenuNameData()
+    elif os.path.exists(os.path.join(script_dir,alt_text_path.get())):
+        try:
+            with open(os.path.join(script_dir,alt_text_path.get()), 'r', encoding='utf-8') as file:
                 data = json.load(file)
             data = {key.lower(): value for key, value in data.items()}
             return data
         except:
             return getDefaultAlternateMenuNameData()
+    
     return getDefaultAlternateMenuNameData()
 
 def getDefaultAlternateMenuNameData():
@@ -1616,6 +1627,13 @@ def select_alt_font_path():
         title="Select font file"
     )
     alt_font_path.set(file_path)
+
+def select_alt_text_path():
+    file_path = filedialog.askopenfilename(
+        filetypes=[("JSON", "*.json")],  # Only show font files
+        title="Select Text Replacement file"
+    )
+    alt_text_path.set(file_path)
 
 
 def remove_images():
@@ -2095,7 +2113,12 @@ def FillTempThemeFolder(progress_bar):
                 ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
 
 def select_alternate_menu_names():
-    menu_names_grid = MenuNamesGrid(root, menuNameMap, AlternateMenuNamesPath)
+    if os.path.exists(alt_text_path.get()):
+        menu_names_grid = MenuNamesGrid(root, menuNameMap, alt_text_path.get())
+    elif os.path.exists(os.path.join(script_dir,alt_text_path.get())):
+        menu_names_grid = MenuNamesGrid(root, menuNameMap, os.path.join(script_dir,alt_text_path.get()))
+    else:
+        menu_names_grid = MenuNamesGrid(root, menuNameMap, os.path.join(script_dir,"AlternateMenuNames.json"))
     root.wait_window(menu_names_grid)
     on_change()
 
@@ -2277,8 +2300,16 @@ class MenuNamesGrid(tk.Toplevel):
     def save(self):
         for key, entry in self.entries.items():
             self.data[key] = entry.get()
-        with open(AlternateMenuNamesPath, 'w', newline='\n',encoding='utf-8') as json_file:
-            json.dump(menuNameMap, json_file, indent=2)
+        if os.path.exists(alt_text_path.get()):
+            with open(alt_text_path.get(), 'w', newline='\n',encoding='utf-8') as json_file:
+                json.dump(menuNameMap, json_file, indent=2)
+        elif os.path.exists(os.path.join(script_dir,alt_text_path.get())):
+            with open(os.path.join(script_dir,alt_text_path.get()), 'w', newline='\n',encoding='utf-8') as json_file:
+                json.dump(menuNameMap, json_file, indent=2)
+        else:
+            with open(os.path.join(script_dir,"AlternateMenuNames.json"), 'w', newline='\n',encoding='utf-8') as json_file:
+                json.dump(menuNameMap, json_file, indent=2)        
+        
         self.grab_release()
         self.destroy()
 
@@ -2398,6 +2429,7 @@ name_json_path = tk.StringVar()
 background_image_path = tk.StringVar()
 bootlogo_image_path = tk.StringVar()
 alt_font_path =  tk.StringVar()
+alt_text_path = tk.StringVar()
 box_art_directory_path = tk.StringVar()
 catalogue_directory_path = tk.StringVar()
 theme_directory_path = tk.StringVar()
@@ -2641,6 +2673,11 @@ overlay_option_menu = tk.OptionMenu(left_scrollable_frame, selected_overlay_var,
 grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Override text in menus [Can be used for Translations]", variable=alternate_menu_names_var), sticky="w")
+
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=alt_text_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_alt_text_path), next_row=True)
+
+
 grid_helper.add(tk.Button(left_scrollable_frame, text="Select new menu item names", command=select_alternate_menu_names), sticky="w", next_row=True)
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Left Menu Helper Guides", variable=remove_left_menu_guides_var), sticky="w")
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Right Menu Helper Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
@@ -2927,6 +2964,9 @@ def map_value(value, x_min, x_max, y_min, y_max):
     return mapped_value
 
 def on_change(*args):
+    global menuNameMap
+    menuNameMap = getAlternateMenuNameDict()
+    print(getAlternateMenuNameDict())
     try:
         if old_selected_overlay_var != selected_overlay_var.get():
             preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{selected_overlay_var.get()}.png")).convert("RGBA")
@@ -2994,11 +3034,11 @@ def on_change(*args):
     if root.winfo_height() < 100:
         preview_size = [int(deviceScreenWidth/2),int(deviceScreenHeight/2)]
     else:
+        imagesOnScreen = 5
         if vertical_var.get():
+            imagesOnScreen = 4
 
-            preview_multiplier = (root.winfo_height()/map_value(previewSideSlider.get(),0,100,4,1))/deviceScreenHeight
-        else:
-            preview_multiplier = (root.winfo_height()/map_value(previewSideSlider.get(),0,100,5,1))/deviceScreenHeight
+        preview_multiplier = (root.winfo_height()/map_value(previewSideSlider.get(),0,100,imagesOnScreen,1))/deviceScreenHeight
         global is_dragging
         if is_dragging:
             previewRenderFactor = 1
@@ -3009,8 +3049,8 @@ def on_change(*args):
         preview_size = [deviceScreenWidth*preview_multiplier,deviceScreenHeight*preview_multiplier]
         betweenImagePadding = 4
         oldHeight = preview_size[1]
-        preview_size[1] -= int(betweenImagePadding+betweenImagePadding/map_value(previewSideSlider.get(),0,100,4,1))
-        preview_size[0] = int((preview_size[0]*preview_size[1])/(oldHeight))
+        preview_size[1] -= betweenImagePadding+betweenImagePadding/map_value(previewSideSlider.get(),0,100,imagesOnScreen,1)
+        preview_size[0] = (preview_size[0]*preview_size[1])/(oldHeight)
         preview_size[0],preview_size[1] = int(preview_size[0]),int(preview_size[1])
 
     # This function will run whenever any traced variable changes
@@ -3237,6 +3277,7 @@ def save_settings():
     config.background_image_path = background_image_path.get()
     config.bootlogo_image_path = bootlogo_image_path.get()
     config.alt_font_path = alt_font_path.get()
+    config.alt_text_path = alt_text_path.get()
     config.use_alt_font_var = use_alt_font_var.get()
     config.use_custom_bootlogo_var = use_custom_bootlogo_var.get()
     config.rg28xxVar = rg28xxVar.get()
@@ -3297,6 +3338,7 @@ def load_settings():
     background_image_path.set(config.background_image_path)
     bootlogo_image_path.set(config.bootlogo_image_path)
     alt_font_path.set(config.alt_font_path)
+    alt_text_path.set(config.alt_text_path)
     use_alt_font_var.set(config.use_alt_font_var)
     use_custom_bootlogo_var.set(config.use_custom_bootlogo_var)
     rg28xxVar.set(config.rg28xxVar)
@@ -3373,6 +3415,7 @@ use_alt_font_var.trace_add("write", on_change)
 use_custom_bootlogo_var.trace_add("write", on_change)
 rg28xxVar.trace_add("write",on_change)
 alt_font_path.trace_add("write", on_change)
+alt_text_path.trace_add("write",on_change)
 
 
 
