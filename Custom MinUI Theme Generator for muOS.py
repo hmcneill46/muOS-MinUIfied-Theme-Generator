@@ -2672,14 +2672,15 @@ overlayOptions = ["muOS Default CRT Overlay",
 overlay_option_menu = tk.OptionMenu(left_scrollable_frame, selected_overlay_var, *overlayOptions)
 grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Override text in menus [Can be used for Translations]", variable=alternate_menu_names_var), sticky="w")
-
-grid_helper.add(tk.Button(left_scrollable_frame, text="Select new menu item names", command=select_alternate_menu_names), sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Alternate Menu Names JSON File:"), sticky="w")
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="[Optional] Use Custom Menu Text JSON File", variable=alternate_menu_names_var), sticky="w")
 
 grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=alt_text_path, width=50))
 grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_alt_text_path), next_row=True)
+
+grid_helper.add(tk.Button(left_scrollable_frame, text="Edit Menu Names In JSON File", command=select_alternate_menu_names), sticky="w", next_row=True)
+
+
+
 
 
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Left Menu Helper Guides", variable=remove_left_menu_guides_var), sticky="w")
