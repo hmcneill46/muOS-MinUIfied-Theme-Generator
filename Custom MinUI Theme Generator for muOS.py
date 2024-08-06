@@ -52,7 +52,7 @@ class Config:
         self.replace_hyphen_var = False
         self.also_games_var = False
         self.move_the_var = False
-        self.crt_overlay_var = False
+        self.include_overlay_var = False
         self.alternate_menu_names_var = False
         self.remove_right_menu_guides_var = False
         self.remove_left_menu_guides_var = False
@@ -73,6 +73,7 @@ class Config:
         self.transparent_text_var = False
         self.version_var = "Select a version"
         self.global_alignment_var = "Left"
+        self.selected_overlay_var = "muOS Default CRT Overlay"
         self.theme_alignment_var = "Global"
         self.content_alignment_var = "Global"
         self.am_theme_directory_path = ""
@@ -1949,14 +1950,14 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{selected_font_hex}", str(bubble_hex))
     replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,selected_font_hex,0.5)))
     replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{ImageOverlay}", str(crt_overlay_var.get()))
+    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
     
     shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","mux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"))
     replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"), "{bg_hex}", str(bg_hex))
     replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"), "{selected_font_hex}", str(bubble_hex))
     replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,bg_hex,0.5)))
     replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"), "{ImageOverlay}", str(crt_overlay_var.get()))
+    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
 
 
     shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"))
@@ -1989,8 +1990,8 @@ def FillTempThemeFolder(progress_bar):
 
     os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
 
-    if crt_overlay_var.get():
-        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays","CRT Overlay.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
+    if include_overlay_var.get():
+        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{selected_overlay_var.get()}.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
 
     os.remove(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"))
 
@@ -2399,6 +2400,7 @@ theme_directory_path = tk.StringVar()
 am_theme_directory_path = tk.StringVar()
 version_var = tk.StringVar()
 global_alignment_var = tk.StringVar()
+selected_overlay_var = tk.StringVar()
 theme_alignment_var = tk.StringVar()
 content_alignment_var = tk.StringVar()
 also_games_var = tk.IntVar()
@@ -2406,7 +2408,7 @@ show_file_counter_var = tk.IntVar()
 show_console_name_var = tk.IntVar()
 show_hidden_files_var = tk.IntVar()
 vertical_var = tk.IntVar()
-crt_overlay_var = tk.IntVar()
+include_overlay_var = tk.IntVar()
 alternate_menu_names_var = tk.IntVar()
 remove_right_menu_guides_var = tk.IntVar()
 remove_left_menu_guides_var = tk.IntVar()
@@ -2585,8 +2587,22 @@ themeAlignmentOptions = ["Global", "Left", "Centre", "Right"]
 theme_alignment_option_menu = tk.OptionMenu(scrollable_frame, theme_alignment_var, *themeAlignmentOptions)
 grid_helper.add(theme_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Vertical Main Menu (Like Original MinUI)", variable=vertical_var), sticky="w")
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Include CRT Overlay", variable=crt_overlay_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Vertical Main Menu (Like Original MinUI)", variable=vertical_var), sticky="w",next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Include Overlay", variable=include_overlay_var), sticky="w")
+
+overlayOptions = ["muOS Default CRT Overlay", 
+           "Grid_2px_10",
+           "Grid_2px_20", 
+           "Grid_2px_30", 
+           "Grid_Thin_2px_10", 
+           "Grid_Thin_2px_20", 
+           "Grid_Thin_2px_30", 
+           "Perfect_CRT-noframe", 
+           "Perfect_CRT"]
+overlay_option_menu = tk.OptionMenu(scrollable_frame, selected_overlay_var, *overlayOptions)
+grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
+
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Override text in menus [Can be used for Translations]", variable=alternate_menu_names_var), sticky="w")
 grid_helper.add(tk.Button(scrollable_frame, text="Select new menu item names", command=select_alternate_menu_names), sticky="w", next_row=True)
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Left Menu Helper Guides", variable=remove_left_menu_guides_var), sticky="w")
@@ -2745,6 +2761,14 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Advanced Errors", va
 image_frame = tk.Frame(root)
 image_frame.pack(side="right", fill="y")
 
+def on_slider_change(value):
+    on_change()
+
+slider_length = 125
+
+previewSideSlider = tk.Scale(image_frame, from_=0, to=100, orient="horizontal",command=on_slider_change, showvalue=0, tickinterval=0, length=slider_length)
+previewSideSlider.pack(side="top", anchor="e")
+
 image_label1 = tk.Label(image_frame)
 image_label1.pack()
 
@@ -2814,7 +2838,6 @@ def outline_image_with_inner_gap(image, outline_color=(255, 0, 0), outline_width
 
 valid_params = True
 
-crt_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", "CRT Overlay.png")).convert("RGBA")
 
 def updateMenusList(menusList, defaultList):
     if application_directory_path.get()!="" and os.path.exists(application_directory_path.get()): # muOS 2405.2
@@ -2835,7 +2858,22 @@ def updateMenusList(menusList, defaultList):
         if index!=None:
             menusList[index][1] = defaultList
 
+def map_value(value, x_min, x_max, y_min, y_max):
+    # Calculate the proportion of the value within the input range
+    proportion = (value - x_min) / (x_max - x_min)
+    
+    # Map this proportion to the output range
+    mapped_value = y_min + proportion * (y_max - y_min)
+    
+    return mapped_value
+
 def on_change(*args):
+    try:
+        if old_selected_overlay_var != selected_overlay_var.get():
+            preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{selected_overlay_var.get()}.png")).convert("RGBA")
+    except:
+        preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{selected_overlay_var.get()}.png")).convert("RGBA")
+    old_selected_overlay_var = selected_overlay_var.get()
     gameFolderName = "Game Boy"
     global footerHeight
     try:
@@ -2898,9 +2936,9 @@ def on_change(*args):
         preview_size = (int(deviceScreenWidth/2),int(deviceScreenHeight/2))
     else:
         if vertical_var.get():
-            preview_multiplier = (root.winfo_height()/4.1)/deviceScreenHeight
+            preview_multiplier = (root.winfo_height()/map_value(previewSideSlider.get(),0,100,4.3,1.048))/deviceScreenHeight
         else:
-            preview_multiplier = (root.winfo_height()/5.2)/deviceScreenHeight
+            preview_multiplier = (root.winfo_height()/map_value(previewSideSlider.get(),0,100,5.4,1.048))/deviceScreenHeight
         preview_size = (int(deviceScreenWidth*preview_multiplier),int(deviceScreenHeight*preview_multiplier))
 
     # This function will run whenever any traced variable changes
@@ -3040,14 +3078,14 @@ def on_change(*args):
         if not(vertical_var.get()):
             image5 = generatePilImageHorizontal(fakeprogressbar,4,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),previewRenderFactor).resize(preview_size, Image.LANCZOS)
 
-        if crt_overlay_var.get():
-            crt_overlay_resized = crt_overlay_image.resize(image1.size, Image.LANCZOS)
-            image1.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
-            image2.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
-            image3.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
-            image4.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
+        if include_overlay_var.get() and selected_overlay_var.get() != "":
+            preview_overlay_resized = preview_overlay_image.resize(image1.size, Image.LANCZOS)
+            image1.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
+            image2.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
+            image3.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
+            image4.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
             if not(vertical_var.get()):
-                image5.paste(crt_overlay_resized,(0,0),crt_overlay_resized)
+                image5.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
 
         update_image_label(image_label1, image1)
         update_image_label(image_label2, image2)
@@ -3095,7 +3133,7 @@ def save_settings():
     config.replace_hyphen_var = replace_hyphen_var.get()
     config.also_games_var = also_games_var.get()
     config.move_the_var = move_the_var.get()
-    config.crt_overlay_var = crt_overlay_var.get()
+    config.include_overlay_var = include_overlay_var.get()
     config.alternate_menu_names_var = alternate_menu_names_var.get()
     config.remove_right_menu_guides_var = remove_right_menu_guides_var.get()
     config.remove_left_menu_guides_var = remove_left_menu_guides_var.get()
@@ -3119,6 +3157,7 @@ def save_settings():
     config.theme_alignment_var = theme_alignment_var.get()
     config.version_var = version_var.get()
     config.global_alignment_var = global_alignment_var.get()
+    config.selected_overlay_var = selected_overlay_var.get()
     config.am_theme_directory_path = am_theme_directory_path.get()
     config.theme_directory_path = theme_directory_path.get()
     config.catalogue_directory_path = catalogue_directory_path.get()
@@ -3156,7 +3195,7 @@ def load_settings():
     replace_hyphen_var.set(config.replace_hyphen_var)
     also_games_var.set(config.also_games_var)
     move_the_var.set(config.move_the_var)
-    crt_overlay_var.set(config.crt_overlay_var)
+    include_overlay_var.set(config.include_overlay_var)
     alternate_menu_names_var.set(config.alternate_menu_names_var)
     remove_right_menu_guides_var.set(config.remove_right_menu_guides_var)
     remove_left_menu_guides_var.set(config.remove_left_menu_guides_var)
@@ -3176,6 +3215,7 @@ def load_settings():
     override_font_size_var.set(config.override_font_size_var)
     version_var.set(config.version_var)
     global_alignment_var.set(config.global_alignment_var)
+    selected_overlay_var.set(config.selected_overlay_var)
     theme_alignment_var.set(config.theme_alignment_var)
     content_alignment_var.set(config.content_alignment_var)
     am_theme_directory_path.set(config.am_theme_directory_path)
@@ -3225,7 +3265,7 @@ also_games_var.trace_add("write", on_change)
 show_file_counter_var.trace_add("write", on_change)
 show_console_name_var.trace_add("write", on_change)
 move_the_var.trace_add("write", on_change)
-crt_overlay_var.trace_add("write", on_change)
+include_overlay_var.trace_add("write", on_change)
 alternate_menu_names_var.trace_add("write", on_change)
 remove_right_menu_guides_var.trace_add("write", on_change)
 remove_left_menu_guides_var.trace_add("write", on_change)
@@ -3245,6 +3285,7 @@ transparent_text_var.trace_add("write", on_change)
 override_font_size_var.trace_add("write", on_change)
 version_var.trace_add("write", on_change)
 global_alignment_var.trace_add("write", on_change)
+selected_overlay_var.trace_add("write",on_change)
 content_alignment_var.trace_add("write", on_change)
 theme_alignment_var.trace_add("write", on_change)
 am_theme_directory_path.trace_add("write", on_change)
