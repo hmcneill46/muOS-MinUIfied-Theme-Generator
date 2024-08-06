@@ -1371,6 +1371,29 @@ def copy_contents(src, dst):
         else:
             shutil.copy2(src_path, dst_path)
 
+def copy_contents_for_boxart_backup(src, dst):
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+    
+    for item in os.listdir(src):
+        src_path = os.path.join(src, item)
+        
+        # Determine the new destination path
+        if os.path.isdir(src_path):
+            dst_path = os.path.join(dst, item)
+            if not os.path.exists(dst_path):
+                os.makedirs(dst_path)
+                copy_contents_for_boxart_backup(src_path, dst_path)
+            else:
+                copy_contents_for_boxart_backup(src_path, dst_path)
+        else:
+            # Prefix "newboxart." to the file name
+            if item[0]!=".":
+                new_file_name = "newboxart." + item
+                dst_path = os.path.join(dst, new_file_name)
+                shutil.copy2(src_path, dst_path)
+
+
 def delete_folder(folder_path):
     if os.path.exists(folder_path):
         shutil.rmtree(folder_path)
@@ -1604,8 +1627,32 @@ def remove_images():
             messagebox.showerror("Error", f"An unexpected error occurred: {e}\n{tb_str}")
         else:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
-        
 
+def backup_boxart():
+    try:
+        if am_theme_directory_path.get() == "":
+            am_theme_dir = os.path.join(script_dir, "Generated Archive Manager Files")
+        else:
+            am_theme_dir = am_theme_directory_path.get()
+
+        tempBackupCatalogueFolder = os.path.join(internal_files_dir,".TempBoxArtBackup","mnt","mmc","MUOS","info","catalogue")
+
+        os.makedirs(os.path.join(internal_files_dir,".TempBoxArtBackup","opt"),exist_ok=True)
+
+        shutil.copy2(os.path.join(internal_files_dir,"Template Box Art Backup","opt","update.sh"), os.path.join(internal_files_dir,".TempBoxArtBackup","opt","update.sh"))
+
+        
+        if os.path.exists(box_art_directory_path.get()):
+            os.makedirs(tempBackupCatalogueFolder,exist_ok=True)
+            copy_contents_for_boxart_backup(box_art_directory_path.get() ,tempBackupCatalogueFolder)
+        
+        shutil.make_archive(os.path.join(am_theme_dir, "Restore Backed Up Artwork"),"zip", os.path.join(internal_files_dir, ".TempBoxArtBackup"))
+        
+        if os.path.exists(os.path.join(internal_files_dir, ".TempBoxArtBackup")):
+            delete_folder(os.path.join(internal_files_dir, ".TempBoxArtBackup"))
+    except Exception as e:
+        if os.path.exists(os.path.join(internal_files_dir, ".TempBoxArtBackup")):
+            delete_folder(os.path.join(internal_files_dir, ".TempBoxArtBackup"))
 
 def generate_images(progress_bar, loading_window, input_queue, output_queue):
     try:
@@ -2575,6 +2622,7 @@ grid_helper.add(tk.Label(scrollable_frame, text=" - This would usually be 640-wi
 grid_helper.add(tk.Label(scrollable_frame, text="Preview muOS Console name [Just for preview on the right]:"), sticky="w")
 preview_console_name_entry = tk.Entry(scrollable_frame, width=50, textvariable=previewConsoleNameVar)
 grid_helper.add(preview_console_name_entry, next_row=True)
+grid_helper.add(tk.Button(scrollable_frame, text="Backup Box Art into Archive Manager File", command=backup_boxart, fg="#007B33"), sticky="w", next_row=True)
 
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
