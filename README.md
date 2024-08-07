@@ -78,15 +78,18 @@ To remove all MinUI theming from your system:
 
 Choose a different theme in muOS.
 
-**Then either:**
+**Then either [Recommended]:**
 
- - Disable Box art in settings to remove all content explorer themeing
+ - Using this tool
+ - [Optionally] select your backed up box art directory (As you would for merging)
+ - Select your Archive Manager Output Directory
+ - Press 'Backup Box Art into Archive Manager File'
+ - This will create a file called 'Restore Backed Up Artwork' in your Archive Manager
+ - You can use this as an archive restore your content explorer to the state it was before theming
 
 **Or:**
 
- - Use this tool, input your catalogue folder, and press 'Remove all images in Selected Catalogue Folder'.
- - Replace backed up box art 
-
+ - Disable Box art in your muOS devices settings to remove all content explorer themeing
 
 ## Build instructions
 
