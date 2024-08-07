@@ -111,6 +111,7 @@ Choose a different theme in muOS.
 ## Credits and thanks
  - Thanks to [@JCR64](https://github.com/JCR64) for the inspiration for the theme and horizontal logo
  - Credits and thanks to [@GrumpyGopher](https://github.com/GrumpyGopher) for the work he's been putting into making the project better
+ - Thanks to [@damagedspline](https://github.com/damagedspline) for the Hebrew translation file
 
 **muOS Discord Server:** https://discord.gg/USS5ybVtDz
 
