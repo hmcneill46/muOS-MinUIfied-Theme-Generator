@@ -1335,6 +1335,7 @@ def getDefaultAlternateMenuNameData():
     defaultMenuNameMap["confirm"] = "CONFIRM"
     defaultMenuNameMap["launch"] = "LAUNCH"
     defaultMenuNameMap["charging..."] = "CHARGING..."
+    defaultMenuNameMap["loading..."] = "LOADING..."
     return defaultMenuNameMap
 
 def list_directory_contents(directory_path):
