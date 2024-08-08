@@ -290,15 +290,17 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
     return image
 
 
-def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,additions,textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,fileCounter="",folderName = None):
+def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,additions,textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,fileCounter="",folderName = None,transparent=True):
     progress_bar['value'] +=1
     #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
+    if not transparent:
+        image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
 
-    image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
-
-    if background_image != None:
-        image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+        if background_image != None:
+            image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+    else:
+        image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), (0,0,0,0))
 
     draw = ImageDraw.Draw(image)   
     if transparent_text_var.get():
@@ -736,15 +738,21 @@ def cut_out_image(original_image, logo_image, coordinates):
     # Return the edited image
     return edited_image
 
-def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor):
+def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor,transparent=True):
     progress_bar['value']+=1
     #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
 
     # Create image
-    image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
-    if background_image != None:
-        image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+
+    if not transparent:
+        image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
+
+        if background_image != None:
+            image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+    else:
+        image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), (0,0,0,0))
+
 
     
 
@@ -3077,7 +3085,15 @@ def on_change(*args):
                 previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File', '4-in-1 Fun Pak [Version 1] (USA, Europe)'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File', '4-in-1 Funpak - Volume II (USA, Europe)'], ['A-mazing Tater (USA)', 'File', 'A-mazing Tater (USA)'], ['Addams Family, The (USA)', 'File', 'Addams Family, The (USA)'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File', "Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]"], ['Adventure Island (USA, Europe)', 'File', 'Adventure Island (USA, Europe)'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File', 'Adventure Island II - Aliens in Paradise (USA, Europe)'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File', 'Adventures of Rocky and Bullwinkle and Friends, The (USA)'], ['Adventures of Star Saver, The (USA, Europe)', 'File', 'Adventures of Star Saver, The (USA, Europe)'], ['Aerostar (USA, Europe)', 'File', 'Aerostar (USA, Europe)'], ['Aladdin (USA) (SGB Enhanced)', 'File', 'Aladdin (USA) (SGB Enhanced)'], ['Alfred Chicken (USA)', 'File', 'Alfred Chicken (USA)'], ['Alien 3 (USA, Europe)', 'File', 'Alien 3 (USA, Europe)'], ['Alien vs Predator - The Last of His Clan (USA)', 'File', 'Alien vs Predator - The Last of His Clan (USA)'], ['All-Star Baseball 99 (USA)', 'File', 'All-Star Baseball 99 (USA)'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File', 'Altered Space - A 3-D Alien Adventure (USA)'], ['Amazing Penguin (USA, Europe)', 'File', 'Amazing Penguin (USA, Europe)'], ['Amazing Spider-Man, The (USA, Europe)', 'File', 'Amazing Spider-Man, The (USA, Europe)'], ['Animaniacs (USA) (SGB Enhanced)', 'File', 'Animaniacs (USA) (SGB Enhanced)'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File', 'Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)'], ['Asteroids (USA, Europe)', 'File', 'Asteroids (USA, Europe)'], ['Atomic Punk (USA)', 'File', 'Atomic Punk (USA)'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File', 'Attack of the Killer Tomatoes (USA, Europe)'], ['Avenging Spirit (USA, Europe)', 'File', 'Avenging Spirit (USA, Europe)'], ['Balloon Kid (USA, Europe)', 'File', 'Balloon Kid (USA, Europe)'], ['Barbie - Game Girl (USA, Europe)', 'File', 'Barbie - Game Girl (USA, Europe)'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File', "Bart Simpson's Escape from Camp Deadly (USA, Europe)"], ['Bases Loaded for Game Boy (USA)', 'File', 'Bases Loaded for Game Boy (USA)'], ['Batman - Return of the Joker (USA, Europe)', 'File', 'Batman - Return of the Joker (USA, Europe)'], ['Batman - The Animated Series (USA, Europe)', 'File', 'Batman - The Animated Series (USA, Europe)'], ['Batman Forever (USA, Europe)', 'File', 'Batman Forever (USA, Europe)'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File', 'Battle Arena Toshinden (USA) (SGB Enhanced)'], ['Battle Bull (USA)', 'File', 'Battle Bull (USA)'], ['Battle Unit Zeoth (USA, Europe)', 'File', 'Battle Unit Zeoth (USA, Europe)'], ['Battleship (USA, Europe)', 'File', 'Battleship (USA, Europe)'], ['Battletoads (USA, Europe)', 'File', 'Battletoads (USA, Europe)'], ["Battletoads in Ragnarok's World (USA)", 'File', "Battletoads in Ragnarok's World (USA)"], ['Battletoads-Double Dragon (USA)', 'File', 'Battletoads-Double Dragon (USA)'], ['Beavis and Butt-Head (USA, Europe)', 'File', 'Beavis and Butt-Head (USA, Europe)'], ['Beetlejuice (USA)', 'File', 'Beetlejuice (USA)'], ['Best of the Best - Championship Karate (USA)', 'File', 'Best of the Best - Championship Karate (USA)'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File', "Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)"], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File', "Bill Elliott's NASCAR Fast Tracks (USA)"], ['Bionic Battler (USA)', 'File', 'Bionic Battler (USA)'], ['Bionic Commando (USA)', 'File', 'Bionic Commando (USA)'], ['Black Bass - Lure Fishing (USA)', 'File', 'Black Bass - Lure Fishing (USA)'], ['Blades of Steel (USA)', 'File', 'Blades of Steel (USA)'], ['Blaster Master Boy (USA)', 'File', 'Blaster Master Boy (USA)'], ['Blues Brothers, The (USA, Europe)', 'File', 'Blues Brothers, The (USA, Europe)'], ['Bo Jackson - Two Games in One (USA)', 'File', 'Bo Jackson - Two Games in One (USA)'], ['Boggle Plus (USA)', 'File', 'Boggle Plus (USA)'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File', 'Bomberman GB (USA, Europe) (SGB Enhanced)'], ["Bonk's Adventure (USA)", 'File', "Bonk's Adventure (USA)"], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File', "Bonk's Revenge (USA) (SGB Enhanced)"]]
 
         if not(vertical_var.get()):
-            image1 = generatePilImageHorizontal(fakeprogressbar,0,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),previewRenderFactor).resize(preview_size, Image.LANCZOS)
+            image1 = generatePilImageHorizontal(fakeprogressbar,
+                                                0,
+                                                bgHexVar.get(),
+                                                selectedFontHexVar.get(),
+                                                deselectedFontHexVar.get(),
+                                                bubbleHexVar.get(),
+                                                iconHexVar.get(),
+                                                previewRenderFactor,
+                                                transparent=False).resize(preview_size, Image.LANCZOS)
         else:
             if not page_by_page_var.get():
                 image1 = generatePilImageVertical(fakeprogressbar,0,
@@ -3091,7 +3107,7 @@ def on_change(*args):
                                                 selectedFontHexVar.get(),
                                                 deselectedFontHexVar.get(),
                                                 bubbleHexVar.get()
-                                                ,previewRenderFactor).resize(preview_size, Image.LANCZOS)
+                                                ,previewRenderFactor,transparent=False).resize(preview_size, Image.LANCZOS)
             else:
                 image1 = generatePilImageVertical(fakeprogressbar,0,
                                 "muxlaunch",
@@ -3108,7 +3124,7 @@ def on_change(*args):
                                 scrollBarWidth=int(scrollBarWidthVar.get()),
                                 showScrollBar=(len(previewItemList)/int(items_per_screen_entry.get()))>1,
                                 numScreens=math.ceil(len(previewItemList)/int(items_per_screen_entry.get())),
-                                screenIndex=0).resize(preview_size, Image.LANCZOS)
+                                screenIndex=0,transparent=False).resize(preview_size, Image.LANCZOS)
         if not page_by_page_var.get():
             image2 = generatePilImageVertical(fakeprogressbar,0,
                                             "Folder",
@@ -3120,8 +3136,10 @@ def on_change(*args):
                                             bgHexVar.get(),
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
-                                            bubbleHexVar.get()
-                                            ,previewRenderFactor,fileCounter="1 / " + items_per_screen_entry.get()).resize(preview_size, Image.LANCZOS)
+                                            bubbleHexVar.get(),
+                                            previewRenderFactor,
+                                            fileCounter="1 / " + items_per_screen_entry.get(),
+                                            transparent=False).resize(preview_size, Image.LANCZOS)
             image3 = generatePilImageVertical(fakeprogressbar,0,
                                             consoleName, 
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
@@ -3132,8 +3150,11 @@ def on_change(*args):
                                             bgHexVar.get(),
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
-                                            bubbleHexVar.get()
-                                            ,previewRenderFactor,fileCounter="1 / " + items_per_screen_entry.get(),folderName=gameFolderName).resize(preview_size, Image.LANCZOS)
+                                            bubbleHexVar.get(),
+                                            previewRenderFactor,
+                                            fileCounter="1 / " + items_per_screen_entry.get(),
+                                            folderName=gameFolderName,
+                                            transparent=False).resize(preview_size, Image.LANCZOS)
             image4 = generatePilImageVertical(fakeprogressbar,0,
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
@@ -3144,8 +3165,10 @@ def on_change(*args):
                                             bgHexVar.get(),
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
-                                            bubbleHexVar.get()
-                                            ,previewRenderFactor,fileCounter="1 / " + items_per_screen_entry.get()).resize(preview_size, Image.LANCZOS)
+                                            bubbleHexVar.get(),
+                                            previewRenderFactor,
+                                            fileCounter="1 / " + items_per_screen_entry.get(),
+                                            transparent=False).resize(preview_size, Image.LANCZOS)
         else:
             image2 = generatePilImageVertical(fakeprogressbar,0,
                                             "Folder",
@@ -3157,11 +3180,14 @@ def on_change(*args):
                                             bgHexVar.get(),
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
-                                            bubbleHexVar.get()
-                                            ,previewRenderFactor,scrollBarWidth=int(scrollBarWidthVar.get()),
+                                            bubbleHexVar.get(),
+                                            previewRenderFactor,
+                                            scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewConsolesItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewConsolesItemList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize(preview_size, Image.LANCZOS)
+                                            screenIndex=0,
+                                            fileCounter="1 / " + items_per_screen_entry.get(),
+                                            transparent=False).resize(preview_size, Image.LANCZOS)
             image3 = generatePilImageVertical(fakeprogressbar,0,
                                             consoleName,
                                             previewGameItemList[0:int(items_per_screen_entry.get())],
@@ -3172,11 +3198,14 @@ def on_change(*args):
                                             bgHexVar.get(),
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
-                                            bubbleHexVar.get()
-                                            ,previewRenderFactor,scrollBarWidth=int(scrollBarWidthVar.get()),
+                                            bubbleHexVar.get(),
+                                            previewRenderFactor,
+                                            scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewGameItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewGameItemList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize(preview_size, Image.LANCZOS)
+                                            screenIndex=0,
+                                            fileCounter="1 / " + items_per_screen_entry.get(),
+                                            transparent=False).resize(preview_size, Image.LANCZOS)
             image4 = generatePilImageVertical(fakeprogressbar,0,
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
@@ -3187,13 +3216,23 @@ def on_change(*args):
                                             bgHexVar.get(),
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
-                                            bubbleHexVar.get()
-                                            ,previewRenderFactor,scrollBarWidth=int(scrollBarWidthVar.get()),
+                                            bubbleHexVar.get(),
+                                            previewRenderFactor,
+                                            scrollBarWidth=int(scrollBarWidthVar.get()),
                                             showScrollBar=(len(previewApplicationList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewApplicationList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get()).resize(preview_size, Image.LANCZOS)
+                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get(),
+                                            transparent=False).resize(preview_size, Image.LANCZOS)
         if not(vertical_var.get()):
-            image5 = generatePilImageHorizontal(fakeprogressbar,4,bgHexVar.get(),selectedFontHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),iconHexVar.get(),previewRenderFactor).resize(preview_size, Image.LANCZOS)
+            image5 = generatePilImageHorizontal(fakeprogressbar,
+                                                4,
+                                                bgHexVar.get(),
+                                                selectedFontHexVar.get(),
+                                                deselectedFontHexVar.get(),
+                                                bubbleHexVar.get(),
+                                                iconHexVar.get(),
+                                                previewRenderFactor,
+                                                transparent=False).resize(preview_size, Image.LANCZOS)
 
         if include_overlay_var.get() and selected_overlay_var.get() != "":
             preview_overlay_resized = preview_overlay_image.resize(image1.size, Image.LANCZOS)
