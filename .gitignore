@@ -5,6 +5,7 @@ Generated Theme/
 build/
 dist/
 venv/
+.venv/
 
 # Ignore specific files
 PreviousDirectories.txt
@@ -39,4 +40,5 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
 

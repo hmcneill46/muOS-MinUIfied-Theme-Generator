@@ -1,4 +1,4 @@
-Pillow
-python-bidi
-tk
-numpy
+numpy==2.0.1
+pillow==10.4.0
+python-bidi==0.6.0
+tk==0.1.0
