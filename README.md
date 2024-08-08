@@ -30,6 +30,11 @@ Individual Libraries:
  - numpy library
    
        pip install numpy
+   
+ ### For Debian Linux:
+```
+apt install python3-pil.imagetk python3-pil python3-bidi python3-tk python3-numpy
+```
 
 
 ## Getting Started
