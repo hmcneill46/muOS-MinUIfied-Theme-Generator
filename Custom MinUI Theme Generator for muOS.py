@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from PIL import ImageTk,Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance, ImageColor
-from bidi import get_display as bidi_get_display
+try:
+    from bidi import get_display as bidi_get_display
+except:
+    from bidi.algorithm import get_display as bidi_get_display
 import os
 import sys
 import math
