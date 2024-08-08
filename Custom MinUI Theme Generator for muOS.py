@@ -69,7 +69,6 @@ class Config:
         self.application_directory_path = ""
         self.previewConsoleNameVar = "Nintendo Game Boy"
         self.show_hidden_files_var = False
-        self.vertical_var = False
         self.override_bubble_cut_var = False
         self.override_folder_box_art_padding_var = False
         self.page_by_page_var = False
@@ -78,6 +77,7 @@ class Config:
         self.global_alignment_var = "Left"
         self.selected_overlay_var = "muOS Default CRT Overlay"
         self.theme_alignment_var = "Global"
+        self.main_menu_style_var = "Horizontal"
         self.content_alignment_var = "Global"
         self.am_theme_directory_path = ""
         self.theme_directory_path = ""
@@ -1071,6 +1071,400 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     
     return(image)
 
+def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor,transparent=False):
+    progress_bar['value']+=1
+    #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
+    bg_rgb = hex_to_rgb(bg_hex)
+
+    # Create image
+
+    if not transparent:
+        image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
+
+        if background_image != None:
+            image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+    else:
+        image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), (0,0,0,0))
+
+
+    top_to_bottom_row_padding = min((deviceScreenHeight*30)/480,(deviceScreenWidth*30)/640) * render_factor  ## CHANGE for adjustment
+    
+
+    exploreLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"),icon_hex)
+    favouriteLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "favourite.png"),icon_hex)
+    historyLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "history.png"),icon_hex)
+    appsLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "apps.png"),icon_hex)
+   
+    top_logo_size = (int((exploreLogoColoured.size[0]*render_factor*min(deviceScreenHeight/480,deviceScreenWidth/640))/5),
+                     int((exploreLogoColoured.size[1]*render_factor*min(deviceScreenHeight/480,deviceScreenWidth/640))/5))
+    
+    exploreLogoColoured = exploreLogoColoured.resize((top_logo_size), Image.LANCZOS)
+    favouriteLogoColoured = favouriteLogoColoured.resize((top_logo_size), Image.LANCZOS)
+    historyLogoColoured = historyLogoColoured.resize((top_logo_size), Image.LANCZOS)
+    appsLogoColoured = appsLogoColoured.resize((top_logo_size), Image.LANCZOS)
+    
+    combined_top_logos_width = exploreLogoColoured.size[0]+favouriteLogoColoured.size[0]+historyLogoColoured.size[0]+appsLogoColoured.size[0]
+
+    icons_to_bubble_padding = min((deviceScreenHeight*0)/480,(deviceScreenWidth*0)/640)*render_factor ## CHANGE for adjustment
+
+    bubble_height = min((deviceScreenHeight*36.3)/480,(deviceScreenWidth*36.3)/640)*render_factor ## CHANGE for adjustment
+
+    screen_y_middle = (deviceScreenHeight*render_factor)/2
+
+    combined_top_row_height = max(exploreLogoColoured.size[1],favouriteLogoColoured.size[1],historyLogoColoured.size[1],appsLogoColoured.size[1])+icons_to_bubble_padding+bubble_height
+
+    top_row_icon_y = int(screen_y_middle-combined_top_row_height-(top_to_bottom_row_padding/2))
+
+    top_row_bubble_middle = int(screen_y_middle-(bubble_height)/2-(top_to_bottom_row_padding/2))
+
+    padding_between_top_logos = (deviceScreenWidth*render_factor-combined_top_logos_width)/(4+1) # 4 logos plus 1
+
+    explore_middle_x = int(padding_between_top_logos+(exploreLogoColoured.size[0])/2)
+    favourite_middle_x = int(padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+(favouriteLogoColoured.size[0])/2)
+    history_middle_x = int(padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+(historyLogoColoured.size[0])/2)
+    apps_middle_x = int(padding_between_top_logos+appsLogoColoured.size[0]+padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+(appsLogoColoured.size[0])/2)
+
+    explore_logo_x = int(explore_middle_x-(exploreLogoColoured.size[0])/2)
+    favourite_logo_x = int(favourite_middle_x-(favouriteLogoColoured.size[0])/2)
+    history_logo_x = int(history_middle_x-(historyLogoColoured.size[0])/2)
+    apps_logo_x = int(apps_middle_x-(appsLogoColoured.size[0])/2)
+
+    image.paste(exploreLogoColoured,(explore_logo_x,top_row_icon_y),exploreLogoColoured)
+    image.paste(favouriteLogoColoured,(favourite_logo_x,top_row_icon_y),favouriteLogoColoured)
+    image.paste(historyLogoColoured,(history_logo_x,top_row_icon_y),historyLogoColoured)
+    image.paste(appsLogoColoured,(apps_logo_x,top_row_icon_y),appsLogoColoured)
+
+    draw = ImageDraw.Draw(image)
+    if transparent_text_var.get():
+        transparent_text_image = Image.new("RGBA", image.size, (255, 255, 255, 0))
+        draw_transparent = ImageDraw.Draw(transparent_text_image)
+        transparency = 0
+
+    if not use_alt_font_var.get():
+        selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
+    else:
+        if os.path.exists(alt_font_path.get()):
+            selected_font_path = alt_font_path.get()
+        else:
+            selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
+    menuHelperGuides = generateMenuHelperGuides("muxlaunch",selected_font_path,bubble_hex,render_factor) 
+    
+
+    font_size = min((deviceScreenHeight*24)/480,(deviceScreenWidth*24)/640) * render_factor  ## CHANGE for adjustment
+    font = ImageFont.truetype(selected_font_path, font_size)
+    if workingIndex == 0:
+        current_x_midpoint = explore_middle_x
+    elif workingIndex == 1:
+        current_x_midpoint = favourite_middle_x
+    elif workingIndex == 2:
+        current_x_midpoint = history_middle_x
+    elif workingIndex == 3:
+        current_x_midpoint = apps_middle_x
+    else:
+        current_x_midpoint = 104+(144*workingIndex)
+
+    
+
+    horizontalBubblePadding = min((deviceScreenHeight*40)/480,(deviceScreenWidth*40)/640)*render_factor  ## CHANGE for adjustment
+    
+    if alternate_menu_names_var.get():
+        textString = bidi_get_display(menuNameMap.get("content explorer", "Content"))
+    else:
+        textString = "Content"
+    text_bbox = font.getbbox(textString)
+    text_width = (text_bbox[2] - text_bbox[0])
+    ascent, descent = font.getmetrics()
+    text_height = ascent + descent
+
+    text_y = top_row_bubble_middle - (text_height / 2)
+
+
+    bubble_center_x =  explore_middle_x
+    textColour = selected_font_hex if workingIndex == 0 else deselected_font_hex
+    text_x = bubble_center_x - (text_width / 2)
+    if workingIndex == 0 :
+        bubbleLength = text_width+horizontalBubblePadding
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 0:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+    
+    if alternate_menu_names_var.get():
+        textString = bidi_get_display(menuNameMap.get("favourites", "Favourites"))
+    else:
+        textString = "Favourites"
+    text_bbox = font.getbbox(textString)
+    text_width = (text_bbox[2] - text_bbox[0])
+    bubble_center_x =  favourite_middle_x
+    textColour = selected_font_hex if workingIndex == 1 else deselected_font_hex
+    text_x = bubble_center_x - (text_width / 2)
+    if workingIndex == 1 :
+        bubbleLength = text_width+horizontalBubblePadding
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 1:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+
+    if alternate_menu_names_var.get():
+        textString = bidi_get_display(menuNameMap.get("history", "History"))
+    else:
+        textString = "History"
+    text_bbox = font.getbbox(textString)
+    text_width = (text_bbox[2] - text_bbox[0])
+    bubble_center_x =  history_middle_x
+    textColour = selected_font_hex if workingIndex == 2 else deselected_font_hex
+    text_x = bubble_center_x - (text_width / 2)
+    if workingIndex == 2 :
+        bubbleLength = text_width+horizontalBubblePadding
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 2:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+    if alternate_menu_names_var.get():
+        textString = bidi_get_display(menuNameMap.get("applications", "Utilities"))
+    else:
+        textString = "Utilities"
+    text_bbox = font.getbbox(textString)
+    text_width = (text_bbox[2] - text_bbox[0])
+    bubble_center_x =  apps_middle_x
+    textColour = selected_font_hex if workingIndex == 3 else deselected_font_hex
+    text_x = bubble_center_x - (text_width / 2)
+    if workingIndex == 3 :
+        bubbleLength = text_width+horizontalBubblePadding
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 3:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+
+    
+
+    infoLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "alt-info.png"),icon_hex)
+    configLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "alt-config.png"),icon_hex)
+    rebootLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "alt-reboot.png"),icon_hex)
+    shutdownLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "alt-shutdown.png"),icon_hex)
+   
+    bottom_logo_size = (int((infoLogoColoured.size[0]*render_factor*min(deviceScreenHeight/480,deviceScreenWidth/640))/5),
+                     int((infoLogoColoured.size[1]*render_factor*min(deviceScreenHeight/480,deviceScreenWidth/640))/5))
+    
+    infoLogoColoured = infoLogoColoured.resize((bottom_logo_size), Image.LANCZOS)
+    configLogoColoured = configLogoColoured.resize((bottom_logo_size), Image.LANCZOS)
+    rebootLogoColoured = rebootLogoColoured.resize((bottom_logo_size), Image.LANCZOS)
+    shutdownLogoColoured = shutdownLogoColoured.resize((bottom_logo_size), Image.LANCZOS)
+    
+    combined_bottom_logos_width = infoLogoColoured.size[0]+configLogoColoured.size[0]+rebootLogoColoured.size[0]+shutdownLogoColoured.size[0]
+
+    combined_bottom_row_height = max(infoLogoColoured.size[1],configLogoColoured.size[1],rebootLogoColoured.size[1],shutdownLogoColoured.size[1])+icons_to_bubble_padding+bubble_height
+
+    bottom_row_icon_y = int(screen_y_middle+(top_to_bottom_row_padding/2))
+
+    bottom_row_bubble_middle = int(screen_y_middle+(combined_bottom_row_height)-(bubble_height)/2+(top_to_bottom_row_padding/2))
+
+    padding_between_bottom_logos = (deviceScreenWidth*render_factor-combined_bottom_logos_width)/(4+1) # 4 logos plus 1
+
+    info_middle_x = int(padding_between_bottom_logos+(infoLogoColoured.size[0])/2)
+    config_middle_x = int(info_middle_x+(infoLogoColoured.size[0])/2+padding_between_bottom_logos+(configLogoColoured.size[0])/2)
+    reboot_middle_x = int(config_middle_x+(configLogoColoured.size[0])/2+padding_between_bottom_logos+(rebootLogoColoured.size[0])/2)
+    shutdown_middle_x = int(reboot_middle_x+(rebootLogoColoured.size[0])/2+padding_between_bottom_logos+(shutdownLogoColoured.size[0])/2)
+
+    info_logo_x = int(info_middle_x-(infoLogoColoured.size[0])/2)
+    config_logo_x = int(config_middle_x-(configLogoColoured.size[0])/2)
+    reboot_logo_x = int(reboot_middle_x-(rebootLogoColoured.size[0])/2)
+    shutdown_logo_x = int(shutdown_middle_x-(shutdownLogoColoured.size[0])/2)
+
+    image.paste(infoLogoColoured,(info_logo_x,bottom_row_icon_y),infoLogoColoured)
+    image.paste(configLogoColoured,(config_logo_x,bottom_row_icon_y),configLogoColoured)
+    image.paste(rebootLogoColoured,(reboot_logo_x,bottom_row_icon_y),rebootLogoColoured)
+    image.paste(shutdownLogoColoured,(shutdown_logo_x,bottom_row_icon_y),shutdownLogoColoured)
+    
+
+    if workingIndex == 4:
+        current_x_midpoint = info_middle_x
+    elif workingIndex == 5:
+        current_x_midpoint = config_middle_x
+    elif workingIndex == 6:
+        current_x_midpoint = reboot_middle_x
+    elif workingIndex == 7:
+        current_x_midpoint = shutdown_middle_x
+    else:
+        current_x_midpoint = 104+(144*workingIndex)
+
+    if alternate_menu_names_var.get():
+        textString = bidi_get_display(menuNameMap.get("information", "Info"))
+    else:
+        textString = "Info"
+    text_bbox = font.getbbox(textString)
+    text_width = (text_bbox[2] - text_bbox[0])
+    ascent, descent = font.getmetrics()
+    text_height = ascent + descent
+
+    text_y = bottom_row_bubble_middle - (text_height / 2)
+
+
+    bubble_center_x =  info_middle_x
+    textColour = selected_font_hex if workingIndex == 4 else deselected_font_hex
+    text_x = bubble_center_x - (text_width / 2)
+    if workingIndex == 4 :
+        bubbleLength = text_width+horizontalBubblePadding
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(bottom_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(bottom_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(bottom_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(bottom_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 4:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+    
+    if alternate_menu_names_var.get():
+        textString = bidi_get_display(menuNameMap.get("configuration", "Config"))
+    else:
+        textString = "Config"
+    text_bbox = font.getbbox(textString)
+    text_width = (text_bbox[2] - text_bbox[0])
+    bubble_center_x =  config_middle_x
+    textColour = selected_font_hex if workingIndex == 5 else deselected_font_hex
+    text_x = bubble_center_x - (text_width / 2)
+    if workingIndex == 5 :
+        bubbleLength = text_width+horizontalBubblePadding
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(bottom_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(bottom_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int(bottom_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(bottom_row_bubble_middle+bubble_height/2))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 5:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+
+
+
+    if alternate_menu_names_var.get():
+        textString = bidi_get_display(menuNameMap.get("reboot device", "Reboot"))
+    else:
+        textString = "Reboot"
+    text_bbox = font.getbbox(textString)
+    text_width = (text_bbox[2] - text_bbox[0])
+    bubble_center_x =  reboot_middle_x
+    textColour = selected_font_hex if workingIndex == 6 else deselected_font_hex
+    text_x = bubble_center_x - (text_width / 2)
+    if workingIndex == 6 :
+        bubbleLength = text_width+horizontalBubblePadding
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((bottom_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((bottom_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((bottom_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((bottom_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 6:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+
+
+
+    if alternate_menu_names_var.get():
+        textString = bidi_get_display(menuNameMap.get("shutdown device", "Shutdown"))
+    else:
+        textString = "Shutdown"
+    text_bbox = font.getbbox(textString)
+    text_width = (text_bbox[2] - text_bbox[0])
+    bubble_center_x =  shutdown_middle_x
+    textColour = selected_font_hex if workingIndex == 7 else deselected_font_hex
+    text_x = bubble_center_x - (text_width / 2)
+    if workingIndex == 7 :
+        bubbleLength = text_width+horizontalBubblePadding
+        if transparent_text_var.get():
+            draw_transparent.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((bottom_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((bottom_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+        else:
+            draw.rounded_rectangle(
+                [((current_x_midpoint-(bubbleLength/2)), int((bottom_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((bottom_row_bubble_middle+bubble_height/2)))],
+                radius=(bubble_height/2),
+                fill=f"#{bubble_hex}"
+            )
+    if transparent_text_var.get() and workingIndex == 7:
+        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+    else:
+        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+
+    if transparent_text_var.get():
+        image = Image.alpha_composite(image, transparent_text_image)
+    image = Image.alpha_composite(image, menuHelperGuides)
+    
+    return(image)
+
+
 def generatePilImageBootLogo(bg_hex,deselected_font_hex,bubble_hex,render_factor):
     bg_rgb = hex_to_rgb(bg_hex)
     image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
@@ -1215,14 +1609,18 @@ def generatePilImageDefaultScreen(bg_hex,render_factor):
         image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
     return (image)
 
-def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex,icon_hex, render_factor, outputDir):
+def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex,icon_hex, render_factor, outputDir,variant):
     startIndex = 0
     endIndex = 8
     for workingIndex in range(startIndex, endIndex):
         workingItem = listItems[workingIndex]
         #image.save(os.path.join(script_dir,"Images for testing horizontal",f"{workingIndex}.png"))
-        image = generatePilImageHorizontal(progress_bar,workingIndex,bg_hex, selected_font_hex,deselected_font_hex,bubble_hex,icon_hex,render_factor)
-
+        if variant == "Horizontal":
+            image = generatePilImageHorizontal(progress_bar,workingIndex,bg_hex, selected_font_hex,deselected_font_hex,bubble_hex,icon_hex,render_factor)
+        elif variant == "Alt-Horizontal":
+           image = generatePilImageAltHorizontal(progress_bar,workingIndex,bg_hex, selected_font_hex,deselected_font_hex,bubble_hex,icon_hex,render_factor)
+        else:
+            raise ValueError("Something went wrong with your Main Menu Style")
         image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
         if workingItem[1] == "File":
             directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[0]}.png")
@@ -1903,10 +2301,14 @@ def generate_theme(progress_bar, loading_window):
     try:
 
         progress_bar['value'] = 0
-        if vertical_var.get():
+        if main_menu_style_var.get() == "Vertical":
             progress_bar['maximum'] = 36
-        else:
+        elif main_menu_style_var.get() == "Horizontal":
             progress_bar['maximum'] = 28
+        elif main_menu_style_var.get() == "Alt-Horizontal":
+            progress_bar['maximum'] = 28
+        else:
+            raise ValueError("Something went wrong with your Main Menu Style")
 
 
         themeName = theme_name_entry.get()
@@ -2025,10 +2427,12 @@ def FillTempThemeFolder(progress_bar):
 
     os.remove(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"))
 
-    if not vertical_var.get():
+    if main_menu_style_var.get() == "Horizontal":
+        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+    elif main_menu_style_var.get() == "Alt-Horizontal":
         replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
 
-    else:
+    elif main_menu_style_var.get() == "Vertical":
         replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     
     
@@ -2105,15 +2509,18 @@ def FillTempThemeFolder(progress_bar):
             else:
                 ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
         elif menu[0] == "muxlaunch":
-            if vertical_var.get():
+            if main_menu_style_var.get() == "Vertical":
                 if page_by_page_var.get():
                     PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
                 else:
                     ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
-            else:
-                HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+            elif main_menu_style_var.get() == "Horizontal":
+                HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"), variant = "Horizontal")
+            elif main_menu_style_var.get() == "Alt-Horizontal":
+                HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"), variant = "Alt-Horizontal")
+
         elif menu[0] == "ThemePreview":
-                if vertical_var.get():
+                if main_menu_style_var.get() == "Vertical": 
                     if page_by_page_var.get():
                         PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
                     else:
@@ -2450,12 +2857,12 @@ version_var = tk.StringVar()
 global_alignment_var = tk.StringVar()
 selected_overlay_var = tk.StringVar()
 theme_alignment_var = tk.StringVar()
+main_menu_style_var = tk.StringVar()
 content_alignment_var = tk.StringVar()
 also_games_var = tk.IntVar()
 show_file_counter_var = tk.IntVar()
 show_console_name_var = tk.IntVar()
 show_hidden_files_var = tk.IntVar()
-vertical_var = tk.IntVar()
 include_overlay_var = tk.IntVar()
 alternate_menu_names_var = tk.IntVar()
 remove_right_menu_guides_var = tk.IntVar()
@@ -2647,6 +3054,10 @@ grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Specific Configurati
 
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Generating for the RG28XX", variable=rg28xxVar), sticky="w",next_row=True)
 
+grid_helper.add(tk.Label(left_scrollable_frame, text="Main Menu Style"), sticky="w")
+MainMenuStyleOptions = ["Horizontal", "Vertical", "Alt-Horizontal"]
+main_menu_style_option_menu = tk.OptionMenu(left_scrollable_frame, main_menu_style_var, *MainMenuStyleOptions)
+grid_helper.add(main_menu_style_option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="[Optional] Custom Application Directory:"), sticky="w")
 grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=application_directory_path, width=50))
@@ -2667,8 +3078,6 @@ grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Text Alignment"), st
 themeAlignmentOptions = ["Global", "Left", "Centre", "Right"]
 theme_alignment_option_menu = tk.OptionMenu(left_scrollable_frame, theme_alignment_var, *themeAlignmentOptions)
 grid_helper.add(theme_alignment_option_menu, colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Vertical Main Menu (Like Original MinUI)", variable=vertical_var), sticky="w",next_row=True)
 
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Include Overlay", variable=include_overlay_var), sticky="w")
 
@@ -3048,7 +3457,7 @@ def on_change(*args):
         preview_size = [int(deviceScreenWidth/2),int(deviceScreenHeight/2)]
     else:
         imagesOnScreen = 5
-        if vertical_var.get():
+        if main_menu_style_var.get() == "Vertical":
             imagesOnScreen = 4
 
         preview_multiplier = (root.winfo_height()/map_value(previewSideSlider.get(),0,100,imagesOnScreen,1))/deviceScreenHeight
@@ -3084,7 +3493,7 @@ def on_change(*args):
             else:
                 previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File', '4-in-1 Fun Pak [Version 1] (USA, Europe)'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File', '4-in-1 Funpak - Volume II (USA, Europe)'], ['A-mazing Tater (USA)', 'File', 'A-mazing Tater (USA)'], ['Addams Family, The (USA)', 'File', 'Addams Family, The (USA)'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File', "Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]"], ['Adventure Island (USA, Europe)', 'File', 'Adventure Island (USA, Europe)'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File', 'Adventure Island II - Aliens in Paradise (USA, Europe)'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File', 'Adventures of Rocky and Bullwinkle and Friends, The (USA)'], ['Adventures of Star Saver, The (USA, Europe)', 'File', 'Adventures of Star Saver, The (USA, Europe)'], ['Aerostar (USA, Europe)', 'File', 'Aerostar (USA, Europe)'], ['Aladdin (USA) (SGB Enhanced)', 'File', 'Aladdin (USA) (SGB Enhanced)'], ['Alfred Chicken (USA)', 'File', 'Alfred Chicken (USA)'], ['Alien 3 (USA, Europe)', 'File', 'Alien 3 (USA, Europe)'], ['Alien vs Predator - The Last of His Clan (USA)', 'File', 'Alien vs Predator - The Last of His Clan (USA)'], ['All-Star Baseball 99 (USA)', 'File', 'All-Star Baseball 99 (USA)'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File', 'Altered Space - A 3-D Alien Adventure (USA)'], ['Amazing Penguin (USA, Europe)', 'File', 'Amazing Penguin (USA, Europe)'], ['Amazing Spider-Man, The (USA, Europe)', 'File', 'Amazing Spider-Man, The (USA, Europe)'], ['Animaniacs (USA) (SGB Enhanced)', 'File', 'Animaniacs (USA) (SGB Enhanced)'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File', 'Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)'], ['Asteroids (USA, Europe)', 'File', 'Asteroids (USA, Europe)'], ['Atomic Punk (USA)', 'File', 'Atomic Punk (USA)'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File', 'Attack of the Killer Tomatoes (USA, Europe)'], ['Avenging Spirit (USA, Europe)', 'File', 'Avenging Spirit (USA, Europe)'], ['Balloon Kid (USA, Europe)', 'File', 'Balloon Kid (USA, Europe)'], ['Barbie - Game Girl (USA, Europe)', 'File', 'Barbie - Game Girl (USA, Europe)'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File', "Bart Simpson's Escape from Camp Deadly (USA, Europe)"], ['Bases Loaded for Game Boy (USA)', 'File', 'Bases Loaded for Game Boy (USA)'], ['Batman - Return of the Joker (USA, Europe)', 'File', 'Batman - Return of the Joker (USA, Europe)'], ['Batman - The Animated Series (USA, Europe)', 'File', 'Batman - The Animated Series (USA, Europe)'], ['Batman Forever (USA, Europe)', 'File', 'Batman Forever (USA, Europe)'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File', 'Battle Arena Toshinden (USA) (SGB Enhanced)'], ['Battle Bull (USA)', 'File', 'Battle Bull (USA)'], ['Battle Unit Zeoth (USA, Europe)', 'File', 'Battle Unit Zeoth (USA, Europe)'], ['Battleship (USA, Europe)', 'File', 'Battleship (USA, Europe)'], ['Battletoads (USA, Europe)', 'File', 'Battletoads (USA, Europe)'], ["Battletoads in Ragnarok's World (USA)", 'File', "Battletoads in Ragnarok's World (USA)"], ['Battletoads-Double Dragon (USA)', 'File', 'Battletoads-Double Dragon (USA)'], ['Beavis and Butt-Head (USA, Europe)', 'File', 'Beavis and Butt-Head (USA, Europe)'], ['Beetlejuice (USA)', 'File', 'Beetlejuice (USA)'], ['Best of the Best - Championship Karate (USA)', 'File', 'Best of the Best - Championship Karate (USA)'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File', "Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)"], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File', "Bill Elliott's NASCAR Fast Tracks (USA)"], ['Bionic Battler (USA)', 'File', 'Bionic Battler (USA)'], ['Bionic Commando (USA)', 'File', 'Bionic Commando (USA)'], ['Black Bass - Lure Fishing (USA)', 'File', 'Black Bass - Lure Fishing (USA)'], ['Blades of Steel (USA)', 'File', 'Blades of Steel (USA)'], ['Blaster Master Boy (USA)', 'File', 'Blaster Master Boy (USA)'], ['Blues Brothers, The (USA, Europe)', 'File', 'Blues Brothers, The (USA, Europe)'], ['Bo Jackson - Two Games in One (USA)', 'File', 'Bo Jackson - Two Games in One (USA)'], ['Boggle Plus (USA)', 'File', 'Boggle Plus (USA)'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File', 'Bomberman GB (USA, Europe) (SGB Enhanced)'], ["Bonk's Adventure (USA)", 'File', "Bonk's Adventure (USA)"], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File', "Bonk's Revenge (USA) (SGB Enhanced)"]]
 
-        if not(vertical_var.get()):
+        if main_menu_style_var.get() == "Horizontal":
             image1 = generatePilImageHorizontal(fakeprogressbar,
                                                 0,
                                                 bgHexVar.get(),
@@ -3094,7 +3503,17 @@ def on_change(*args):
                                                 iconHexVar.get(),
                                                 previewRenderFactor,
                                                 transparent=False).resize(preview_size, Image.LANCZOS)
-        else:
+        elif main_menu_style_var.get() == "Alt-Horizontal":
+            image1 = generatePilImageAltHorizontal(fakeprogressbar,
+                                                0,
+                                                bgHexVar.get(),
+                                                selectedFontHexVar.get(),
+                                                deselectedFontHexVar.get(),
+                                                bubbleHexVar.get(),
+                                                iconHexVar.get(),
+                                                previewRenderFactor,
+                                                transparent=False).resize(preview_size, Image.LANCZOS)
+        elif main_menu_style_var.get() == "Vertical":
             if not page_by_page_var.get():
                 image1 = generatePilImageVertical(fakeprogressbar,0,
                                                 "muxlaunch",
@@ -3223,8 +3642,19 @@ def on_change(*args):
                                             numScreens=math.ceil(len(previewApplicationList)/int(items_per_screen_entry.get())),
                                             screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get(),
                                             transparent=False).resize(preview_size, Image.LANCZOS)
-        if not(vertical_var.get()):
+        if main_menu_style_var.get() == "Horizontal":
             image5 = generatePilImageHorizontal(fakeprogressbar,
+                                                4,
+                                                bgHexVar.get(),
+                                                selectedFontHexVar.get(),
+                                                deselectedFontHexVar.get(),
+                                                bubbleHexVar.get(),
+                                                iconHexVar.get(),
+                                                previewRenderFactor,
+                                                transparent=False).resize(preview_size, Image.LANCZOS)
+        
+        elif main_menu_style_var.get() == "Alt-Horizontal":
+            image5 = generatePilImageAltHorizontal(fakeprogressbar,
                                                 4,
                                                 bgHexVar.get(),
                                                 selectedFontHexVar.get(),
@@ -3240,14 +3670,14 @@ def on_change(*args):
             image2.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
             image3.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
             image4.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
-            if not(vertical_var.get()):
+            if main_menu_style_var.get() != "Vertical":
                 image5.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
 
         update_image_label(image_label1, image1)
         update_image_label(image_label2, image2)
         update_image_label(image_label3, image3)
         update_image_label(image_label4, image4)
-        if not(vertical_var.get()):
+        if main_menu_style_var.get() != "Vertical":
             update_image_label(image_label5, image5)
         else:
             remove_image_from_label(image_label5)
@@ -3259,13 +3689,13 @@ def on_change(*args):
                 redOutlineImage2 = outline_image_with_inner_gap(get_current_image(image_label2)).resize(preview_size, Image.LANCZOS)
                 redOutlineImage3 = outline_image_with_inner_gap(get_current_image(image_label3)).resize(preview_size, Image.LANCZOS)
                 redOutlineImage4 = outline_image_with_inner_gap(get_current_image(image_label4)).resize(preview_size, Image.LANCZOS)
-                if not(vertical_var.get()):
+                if main_menu_style_var.get() != "Vertical":
                     redOutlineImage5 = outline_image_with_inner_gap(get_current_image(image_label5)).resize(preview_size, Image.LANCZOS)
                 update_image_label(image_label1, redOutlineImage1)
                 update_image_label(image_label2, redOutlineImage2)
                 update_image_label(image_label3, redOutlineImage3)
                 update_image_label(image_label4, redOutlineImage4)
-                if not(vertical_var.get()):
+                if main_menu_style_var.get() != "Vertical":
                     update_image_label(image_label5, redOutlineImage5)
                 valid_params = False
     #update_image2()
@@ -3301,7 +3731,6 @@ def save_settings():
     config.application_directory_path = application_directory_path.get()
     config.previewConsoleNameVar = previewConsoleNameVar.get()
     config.show_hidden_files_var = show_hidden_files_var.get()
-    config.vertical_var = vertical_var.get()
     config.override_bubble_cut_var = override_bubble_cut_var.get()
     config.page_by_page_var = page_by_page_var.get()
     config.transparent_text_var = transparent_text_var.get()
@@ -3311,6 +3740,7 @@ def save_settings():
     config.folderBoxArtPaddingVar = folderBoxArtPaddingVar.get()
     config.content_alignment_var = content_alignment_var.get()
     config.theme_alignment_var = theme_alignment_var.get()
+    config.main_menu_style_var = main_menu_style_var.get()
     config.version_var = version_var.get()
     config.global_alignment_var = global_alignment_var.get()
     config.selected_overlay_var = selected_overlay_var.get()
@@ -3364,7 +3794,6 @@ def load_settings():
     application_directory_path.set(config.application_directory_path)
     previewConsoleNameVar.set(config.previewConsoleNameVar)
     show_hidden_files_var.set(config.show_hidden_files_var)
-    vertical_var.set(config.vertical_var)
     override_bubble_cut_var.set(config.override_bubble_cut_var)
     override_folder_box_art_padding_var.set(config.override_folder_box_art_padding_var)
     page_by_page_var.set(config.page_by_page_var)
@@ -3374,6 +3803,7 @@ def load_settings():
     global_alignment_var.set(config.global_alignment_var)
     selected_overlay_var.set(config.selected_overlay_var)
     theme_alignment_var.set(config.theme_alignment_var)
+    main_menu_style_var.set(config.main_menu_style_var)
     content_alignment_var.set(config.content_alignment_var)
     am_theme_directory_path.set(config.am_theme_directory_path)
     theme_directory_path.set(config.theme_directory_path)
@@ -3435,7 +3865,6 @@ roms_directory_path.trace_add("write", on_change)
 application_directory_path.trace_add("write", on_change)
 previewConsoleNameVar.trace_add("write", on_change)
 show_hidden_files_var.trace_add("write", on_change)
-vertical_var.trace_add("write", on_change)
 override_bubble_cut_var.trace_add("write", on_change)
 override_folder_box_art_padding_var.trace_add("write", on_change)
 page_by_page_var.trace_add("write", on_change)
@@ -3446,6 +3875,7 @@ global_alignment_var.trace_add("write", on_change)
 selected_overlay_var.trace_add("write",on_change)
 content_alignment_var.trace_add("write", on_change)
 theme_alignment_var.trace_add("write", on_change)
+main_menu_style_var.trace_add("write",on_change)
 am_theme_directory_path.trace_add("write", on_change)
 theme_directory_path.trace_add("write", on_change)
 catalogue_directory_path.trace_add("write", on_change)
