@@ -1705,13 +1705,11 @@ def saveConsoleAssociationDict():
 
 def getAlternateMenuNameDict():
     if os.path.exists(alt_text_path.get()):
-        print(f"We in {alt_text_path.get()}")
         try:
             
             with open(alt_text_path.get(), 'r', encoding='utf-8') as file:
                 data = json.load(file)
             data = {key.lower(): value for key, value in data.items()}
-            print(data)
             return data
         except:
             return getDefaultAlternateMenuNameData()
