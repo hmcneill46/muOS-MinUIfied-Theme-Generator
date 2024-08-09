@@ -3386,7 +3386,6 @@ def map_value(value, x_min, x_max, y_min, y_max):
 def on_change(*args):
     global menuNameMap
     menuNameMap = getAlternateMenuNameDict()
-    print(getAlternateMenuNameDict())
     try:
         if old_selected_overlay_var != selected_overlay_var.get():
             preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{selected_overlay_var.get()}.png")).convert("RGBA")
