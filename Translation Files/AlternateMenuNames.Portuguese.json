@@ -39,5 +39,7 @@
   "confirm": "Confirmar",
   "launch": "Executar",
   "charging...": "A carregar...",
-  "loading...": "A carregar..."
+  "loading...": "A carregar...",
+  "rebooting...": "REBOOTING...",
+  "shutting down...": "SHUTTING DOWN..."
 }

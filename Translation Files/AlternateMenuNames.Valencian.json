@@ -39,5 +39,7 @@
   "confirm": "CONFIRMAR",
   "launch": "LLANÇAR",
   "charging...": "CARREGANT...",
-  "loading...": "CARREGANT..."
+  "loading...": "CARREGANT...",
+  "rebooting...": "REBOOTING...",
+  "shutting down...": "SHUTTING DOWN..."
 }

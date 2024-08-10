@@ -39,5 +39,7 @@
   "confirm": "CONFIRMER",
   "launch": "LANCER",
   "charging...": "Chargement de la batterie...",
-  "loading...": "Chargement..."
+  "loading...": "Chargement...",
+  "rebooting...": "REBOOTING...",
+  "shutting down...": "SHUTTING DOWN..."
 }

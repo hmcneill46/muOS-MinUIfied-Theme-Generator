@@ -3679,6 +3679,12 @@ def on_change(*args):
             image4.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
             if main_menu_style_var.get() != "Vertical":
                 image5.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
+        
+        image1 = generatePilImageBootScreen(bgHexVar.get(),
+                                               deselectedFontHexVar.get(),
+                                               iconHexVar.get(),
+                                               "CHARGING...",
+                                               render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
 
         update_image_label(image_label1, image1)
         update_image_label(image_label2, image2)
