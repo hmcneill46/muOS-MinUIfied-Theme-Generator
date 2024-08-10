@@ -1728,6 +1728,8 @@ def getDefaultAlternateMenuNameData():
     defaultMenuNameMap["launch"] = "LAUNCH"
     defaultMenuNameMap["charging..."] = "CHARGING..."
     defaultMenuNameMap["loading..."] = "LOADING..."
+    defaultMenuNameMap["rebooting..."] = "REBOOTING..."
+    defaultMenuNameMap["shutting down..."] = "SHUTTING DOWN..."
     return defaultMenuNameMap
 
 def list_directory_contents(directory_path):
@@ -2440,6 +2442,20 @@ def FillTempThemeFolder(progress_bar):
                                                "LOADING...",
                                                render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     loadingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxstart.png"), format='PNG')
+
+    shutdownimage = generatePilImageBootScreen(bgHexVar.get(),
+                                               deselectedFontHexVar.get(),
+                                               iconHexVar.get(),
+                                               "SHUTTING DOWN...",
+                                               render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    shutdownimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","shutdown.png"), format='PNG')
+
+    rebootimage = generatePilImageBootScreen(bgHexVar.get(),
+                                               deselectedFontHexVar.get(),
+                                               iconHexVar.get(),
+                                               "REBOOTING...",
+                                               render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    rebootimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","reboot.png"), format='PNG')
 
     defaultimage = generatePilImageDefaultScreen(bgHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     defaultimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","default.png"), format='PNG')
