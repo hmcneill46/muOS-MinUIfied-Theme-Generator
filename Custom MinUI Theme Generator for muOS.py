@@ -1717,7 +1717,7 @@ def getDefaultAlternateMenuNameData():
                 defaultMenuNameMap[n[0].lower()] = n[0]
     
     defaultMenuNameMap["content explorer"] = "Games"
-    defaultMenuNameMap["applications"] = "Utilites"
+    defaultMenuNameMap["applications"] = "Utilities"
     defaultMenuNameMap["power"] = "POWER"
     defaultMenuNameMap["sleep"] = "SLEEP"
     defaultMenuNameMap["menu"] = "MENU"
