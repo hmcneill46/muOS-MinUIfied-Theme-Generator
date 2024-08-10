@@ -1534,7 +1534,7 @@ def generatePilImageBootLogo(bg_hex,deselected_font_hex,bubble_hex,render_factor
 
     return combined_image
 
-def generatePilImageChargeScreen(bg_hex,deselected_font_hex,icon_hex,render_factor):
+def generatePilImageBootScreen(bg_hex,deselected_font_hex,icon_hex,display_text,render_factor,icon_path=None):
     bg_rgb = hex_to_rgb(bg_hex)
     image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
     if background_image != None:
@@ -1552,54 +1552,39 @@ def generatePilImageChargeScreen(bg_hex,deselected_font_hex,icon_hex,render_fact
     
     screen_x_middle, screen_y_middle = int((deviceScreenWidth/2)*render_factor),int((deviceScreenHeight/2)*render_factor)
 
-    from_middle_padding = 50*render_factor
-
-    chargingLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "ChargingLogo[5x].png"),icon_hex)
-    chargingLogoColoured = chargingLogoColoured.resize((int((chargingLogoColoured.size[0]/5)*render_factor),int((chargingLogoColoured.size[1]/5)*render_factor)), Image.LANCZOS)
+    from_middle_padding = 0
     
-    charging_logo_y_location = int(screen_y_middle-chargingLogoColoured.size[1]/2-from_middle_padding)
-    charging_logo_x_location = int(screen_x_middle-chargingLogoColoured.size[0]/2)
+    if icon_path != None:
+        if os.path.exists(icon_path):
+            from_middle_padding = 50*render_factor
 
-    image.paste(chargingLogoColoured,(charging_logo_x_location,charging_logo_y_location),chargingLogoColoured)
+            logoColoured = change_logo_color(icon_path,icon_hex)
+            logoColoured = logoColoured.resize((int((logoColoured.size[0]/5)*render_factor),int((logoColoured.size[1]/5)*render_factor)), Image.LANCZOS)
+            
+            logo_y_location = int(screen_y_middle-logoColoured.size[1]/2-from_middle_padding)
+            logo_x_location = int(screen_x_middle-logoColoured.size[0]/2)
 
-    charging_font_size = int(57.6 * render_factor)
-    charging_font = ImageFont.truetype(selected_font_path, charging_font_size)
+            image.paste(logoColoured,(logo_x_location,logo_y_location),logoColoured)
+            
+    font_size = int(57.6 * render_factor)
+    font = ImageFont.truetype(selected_font_path, font_size)
 
-    chargingText = "CHARGING..."
+    displayText = display_text
     if alternate_menu_names_var.get():
-        chargingText = bidi_get_display(menuNameMap.get("charging...", "CHARGING..."))
+        displayText = bidi_get_display(menuNameMap.get(display_text.lower(), display_text))
 
     
 
-    chargingTextBbox = charging_font.getbbox(chargingText)
+    textBbox = font.getbbox(displayText)
 
-    chargingTextWidth = int(chargingTextBbox[2] - chargingTextBbox[0])
-    chargingTextHeight = int(chargingTextBbox[3]-chargingTextBbox[1])
-    charging_y_location = int(screen_y_middle-chargingTextHeight/2-chargingTextBbox[1]+from_middle_padding)
-    charging_x_location = int(screen_x_middle - chargingTextWidth/2)
+    textWidth = int(textBbox[2] - textBbox[0])
+    textHeight = int(textBbox[3]-textBbox[1])
+    y_location = int(screen_y_middle-textHeight/2-textBbox[1]+from_middle_padding)
+    x_location = int(screen_x_middle - textWidth/2)
 
-    draw.text((charging_x_location,charging_y_location), chargingText, font=charging_font, fill=f"#{deselected_font_hex}")
+    draw.text((x_location,y_location), displayText, font=font, fill=f"#{deselected_font_hex}")
 
     
-    return (image)
-
-def generatePilImageLoadingScreen(bg_hex,icon_hex,render_factor):
-    bg_rgb = hex_to_rgb(bg_hex)
-    image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
-    if background_image != None:
-        image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
-    
-    draw = ImageDraw.Draw(image)
-    
-    screen_x_middle, screen_y_middle = (deviceScreenWidth/2)*render_factor,(deviceScreenHeight/2)*render_factor
-
-    loadingLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "LoadingLogo[5x].png"),icon_hex)
-    loadingLogoColoured = loadingLogoColoured.resize((int((loadingLogoColoured.size[0]/5)*render_factor),int((loadingLogoColoured.size[1]/5)*render_factor)), Image.LANCZOS)
-    
-    loading_logo_y_location = int(screen_y_middle-loadingLogoColoured.size[1]/2)
-    loading_logo_x_location = int(screen_x_middle-loadingLogoColoured.size[0]/2)
-
-    image.paste(loadingLogoColoured,(loading_logo_x_location,loading_logo_y_location),loadingLogoColoured)
     return (image)
 
 def generatePilImageDefaultScreen(bg_hex,render_factor):
@@ -2441,10 +2426,19 @@ def FillTempThemeFolder(progress_bar):
     rotated_bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS).rotate(90,expand=True)
     rotated_bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","bootlogo-alt.bmp"), format='BMP')
 
-    chargingimage = generatePilImageChargeScreen(bgHexVar.get(),deselectedFontHexVar.get(),iconHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    chargingimage = generatePilImageBootScreen(bgHexVar.get(),
+                                               deselectedFontHexVar.get(),
+                                               iconHexVar.get(),
+                                               "CHARGING...",
+                                               render_factor,
+                                               icon_path=os.path.join(internal_files_dir, "Assets", "ChargingLogo[5x].png")).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     chargingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxcharge.png"), format='PNG')
 
-    loadingimage = generatePilImageLoadingScreen(bgHexVar.get(),iconHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    loadingimage = generatePilImageBootScreen(bgHexVar.get(),
+                                               deselectedFontHexVar.get(),
+                                               iconHexVar.get(),
+                                               "LOADING...",
+                                               render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     loadingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxstart.png"), format='PNG')
 
     defaultimage = generatePilImageDefaultScreen(bgHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
