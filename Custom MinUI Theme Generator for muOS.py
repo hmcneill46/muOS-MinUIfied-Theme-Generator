@@ -2256,8 +2256,7 @@ def replace_in_file(file_path, search_string, replace_string):
         else:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
 
-# Example usage:
-# replace_in_file('path/to/your/file.txt', 'old_string', 'new_string')
+
 def hex_to_rgb(hex_color,alpha = 1.0):
     # Convert hex to RGB
     rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
@@ -2551,7 +2550,6 @@ def select_alternate_menu_names():
 
 def generate_archive_manager(progress_bar, loading_window, input_queue, output_queue):
     try:
-        # Your existing code before the main task loop...
         scrollBarWidth = int(scroll_bar_width_entry.get())
         textPadding = int(text_padding_entry.get())
         rectanglePadding = int(rectangle_padding_entry.get())
@@ -3679,13 +3677,7 @@ def on_change(*args):
             image4.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
             if main_menu_style_var.get() != "Vertical":
                 image5.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
-        
-        image1 = generatePilImageBootScreen(bgHexVar.get(),
-                                               deselectedFontHexVar.get(),
-                                               iconHexVar.get(),
-                                               "CHARGING...",
-                                               render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
-
+    
         update_image_label(image_label1, image1)
         update_image_label(image_label2, image2)
         update_image_label(image_label3, image3)
@@ -3711,8 +3703,6 @@ def on_change(*args):
                 if main_menu_style_var.get() != "Vertical":
                     update_image_label(image_label5, redOutlineImage5)
                 valid_params = False
-    #update_image2()
-    # Add your code here to handle the changes
 
 
 def save_settings():
