@@ -44,6 +44,7 @@ class Config:
         self.itemsPerScreenVar = 9
         self.footerHeightVar = 55
         self.override_font_size_var = False
+        self.legacy_generation_var = False
         self.customFontSizeVar = ""
         self.bgHexVar = "000000"
         self.selectedFontHexVar = "000000"
@@ -630,7 +631,21 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
                 focusIndex= workingIndex
             fileCounter = str(workingIndex + 1) + " / " + str(totalItems)
 
-            image = generatePilImageVertical(progress_bar,focusIndex,muOSSystemName,listItems[startIndex:endIndex],additions,textPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,fileCounter=fileCounter,folderName = folderName)
+            image = generatePilImageVertical(progress_bar,
+                                             focusIndex,
+                                             muOSSystemName,
+                                             listItems[startIndex:endIndex],
+                                             additions,
+                                             textPadding,
+                                             rectanglePadding,
+                                             ItemsPerScreen,
+                                             bg_hex,
+                                             selected_font_hex,
+                                             deselected_font_hex,
+                                             bubble_hex,
+                                             render_factor,
+                                             fileCounter=fileCounter,
+                                             folderName = folderName)
                 
             if muOSSystemName != "ThemePreview":
                 image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
@@ -676,7 +691,24 @@ def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scroll
                     showScrollBar = True
                 fileCounter = str(workingIndex + 1) + " / " + str(totalItems)
 
-                image = generatePilImageVertical(progress_bar,workingIndex%ItemsPerScreen,muOSSystemName,listItems[startIndex:endIndex],additions,textPadding,rectanglePadding,ItemsPerScreen,bg_hex,selected_font_hex,deselected_font_hex,bubble_hex,render_factor,scrollBarWidth=scrollBarWidth,showScrollBar=showScrollBar,numScreens=numScreens,screenIndex=screenIndex,fileCounter=fileCounter,folderName = folderName)
+                image = generatePilImageVertical(progress_bar,
+                                                 workingIndex%ItemsPerScreen,
+                                                 muOSSystemName,
+                                                 listItems[startIndex:endIndex],
+                                                 additions,
+                                                 textPadding,
+                                                 rectanglePadding,
+                                                 ItemsPerScreen,
+                                                 bg_hex,
+                                                 selected_font_hex,
+                                                 deselected_font_hex,
+                                                 bubble_hex,render_factor,
+                                                 scrollBarWidth=scrollBarWidth,
+                                                 showScrollBar=showScrollBar,
+                                                 numScreens=numScreens,
+                                                 screenIndex=screenIndex,
+                                                 fileCounter=fileCounter,
+                                                 folderName = folderName)
                 
                 if muOSSystemName != "ThemePreview":
                     image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
@@ -2234,6 +2266,45 @@ menus2405_2 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["Configuration","config"],
                      ["Reboot Device","reboot"],
                      ["Shutdown Device","shutdown"]]]]
+menus2405_3 = [["muxapp",[["Archive Manager","Archive Manager"],
+                     ["Dingux Commander","Dingux Commander"],
+                     ["Flip Clock","Flip Clock"],
+                     ["GMU Music Player","GMU Music Player"],
+                     ["Moonlight","Moonlight"],
+                     ["PortMaster","PortMaster"],
+                     ["PPSSPP","PPSSPP"],
+                     ["RetroArch","RetroArch"],
+                     ["Simple Terminal","Simple Terminal"],
+                     ["Task Toolkit","Task Toolkit"]]],
+         ["muxconfig",[["General Settings","general"],
+                     ["Theme Picker","theme"],
+                     ["Wi-Fi Settings","network"],
+                     ["Web Services","service"],
+                     ["Date and Time","clock"],
+                     ["Device Type","device"]]],
+         ["muxdevice",[["RG35XX - H","rg35xx-h"],
+                     ["RG35XX - Plus","rg35xx-plus"],
+                     ["RG35XX - SP","rg35xx-sp"],
+                     ["RG35XX - 2024","rg35xx-2024"]]],
+         ["muxinfo",[["Input Tester","tester"],
+                     ["System Details","system"],
+                     ["Supporters","credit"]]],
+         ["muxlaunch",[["Content Explorer","explore"],
+                     ["Favourites","favourite"],
+                     ["History","history"],
+                     ["Applications","apps"],
+                     ["Information","info"],
+                     ["Configuration","config"],
+                     ["Reboot Device","reboot"],
+                     ["Shutdown Device","shutdown"]]],
+         ["ThemePreview",[["Content Explorer","explore"],
+                     ["Favourites","favourite"],
+                     ["History","history"],
+                     ["Applications","apps"],
+                     ["Information","info"],
+                     ["Configuration","config"],
+                     ["Reboot Device","reboot"],
+                     ["Shutdown Device","shutdown"]]]]
 
 def replace_in_file(file_path, search_string, replace_string):
     try:
@@ -2347,6 +2418,14 @@ def generate_theme(progress_bar, loading_window):
             os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
 
 def FillTempThemeFolder(progress_bar):
+    legacyMethod = False
+    if version_var.get() == "muOS 2405 BEANS" or version_var.get() == "muOS 2405.1 REFRIED BEANS" or version_var.get() == "muOS 2405.2 BAKED BEANS":
+        legacyMethod = True
+    else:
+        if legacy_generation_var.get():
+            legacyMethod =True
+    
+
     scrollBarWidth = int(scroll_bar_width_entry.get())
     textPadding = int(text_padding_entry.get())
     rectanglePadding = int(rectangle_padding_entry.get())
@@ -2356,68 +2435,118 @@ def FillTempThemeFolder(progress_bar):
     deselected_font_hex = deselected_font_hex_entry.get()
     bubble_hex = bubble_hex_entry.get()
     icon_hex = icon_hex_entry.get()
-    
+
     copy_contents(os.path.join(internal_files_dir, "Theme Shell"), os.path.join(internal_files_dir, ".TempBuildTheme"))
+
+    newSchemeDir = os.path.join(internal_files_dir,".TempBuildTheme","scheme")
+    os.makedirs(newSchemeDir, exist_ok=True)
     
-    dst_dir = os.path.join(internal_files_dir,".TempBuildTheme","scheme")
-    os.makedirs(dst_dir, exist_ok=True)
-    shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","default.txt"),dst_dir)
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{bg_hex}", str(bg_hex))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{selected_font_hex}", str(bubble_hex))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,selected_font_hex,0.5)))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
-    
-    shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","mux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"), "{bg_hex}", str(bg_hex))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"), "{selected_font_hex}", str(bubble_hex))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,bg_hex,0.5)))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
+    if legacyMethod:
+        shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","defaultlegacy.txt"),os.path.join(newSchemeDir,"default.txt"))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{bg_hex}", str(bg_hex))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{selected_font_hex}", str(bubble_hex))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,selected_font_hex,0.5)))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
+        
+        shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxlegacy.txt"),os.path.join(newSchemeDir,"tempmux.txt"))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{bg_hex}", str(bg_hex))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{selected_font_hex}", str(bubble_hex))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,bg_hex,0.5)))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
 
 
-    shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),"{ScrollDirection}", "0")
-    if version_var.get() == "muOS 2405 BEANS":
-        shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxapps.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxlaunch.txt"))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{ScrollDirection}", "0")
+        if version_var.get() == "muOS 2405 BEANS":
+            shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxapps.txt"))
+        else:
+            shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxapp.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxconfig.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxdevice.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxinfo.txt"))
+
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{imageListAlpha}", str(255))
+        if version_var.get() == "muOS 2405 BEANS":
+            replace_in_file(os.path.join(newSchemeDir,"muxapps.txt"), "{imageListAlpha}", str(255))
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxapp.txt"), "{imageListAlpha}", str(255))
+        replace_in_file(os.path.join(newSchemeDir,"muxconfig.txt"), "{imageListAlpha}", str(255))
+        replace_in_file(os.path.join(newSchemeDir,"muxdevice.txt"), "{imageListAlpha}", str(255))
+        replace_in_file(os.path.join(newSchemeDir,"muxinfo.txt"), "{imageListAlpha}", str(255))
+
+        if also_games_var.get():
+            shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxfavourite.txt"))
+            shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxhistory.txt"))
+
+            replace_in_file(os.path.join(newSchemeDir,"muxfavourite.txt"), "{imageListAlpha}", str(0))
+            replace_in_file(os.path.join(newSchemeDir,"muxhistory.txt"), "{imageListAlpha}", str(0))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{imageListAlpha}", str(255))
+        
+
+        os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
+
+        if include_overlay_var.get():
+            shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{selected_overlay_var.get()}.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
+
+        os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
     else:
-        shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxapp.txt"))
-    shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxconfig.txt"))
-    shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxdevice.txt"))
-    shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxinfo.txt"))
+        shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","default.txt"),os.path.join(newSchemeDir,"default.txt"))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{bg_hex}", str(bg_hex))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{selected_font_hex}", str(bubble_hex))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,selected_font_hex,0.5)))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{imageListAlpha}", "255")
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{ScrollDirection}", "0")
+        
+        shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxlaunch.txt"),os.path.join(newSchemeDir,"muxlaunch.txt"))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{bg_hex}", str(bg_hex))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{selected_font_hex}", str(selected_font_hex))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{deselected_font_hex}", str(deselected_font_hex))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{disabled_font_hex}", str(percentage_color(selected_font_hex,deselected_font_hex,0.25)))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{imageListAlpha}", "255")
 
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{imageListAlpha}", str(255))
-    if version_var.get() == "muOS 2405 BEANS":
-        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxapps.txt"), "{imageListAlpha}", str(255))
-    else:
-        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxapp.txt"), "{imageListAlpha}", str(255))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxconfig.txt"), "{imageListAlpha}", str(255))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxdevice.txt"), "{imageListAlpha}", str(255))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxinfo.txt"), "{imageListAlpha}", str(255))
+        shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxthemed.txt"),os.path.join(newSchemeDir,"tempmux.txt"))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{bg_hex}", str(bg_hex))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{selected_font_hex}", str(bubble_hex))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,selected_font_hex,0.5)))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{ScrollDirection}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{imageListAlpha}", "255")
 
-    if also_games_var.get():
-        shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxfavourite.txt"))
-        shutil.copy2(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"),os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxhistory.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxapp.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxconfig.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxdevice.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxinfo.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxfavourite.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxhistory.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxplore.txt"))
+        
 
-        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxfavourite.txt"), "{imageListAlpha}", str(0))
-        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxhistory.txt"), "{imageListAlpha}", str(0))
-    replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","default.txt"), "{imageListAlpha}", str(255))
-    
+        os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
 
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
+        if include_overlay_var.get():
+            shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{selected_overlay_var.get()}.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
 
-    if include_overlay_var.get():
-        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{selected_overlay_var.get()}.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
+        os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
 
-    os.remove(os.path.join(internal_files_dir,".TempBuildTheme","scheme","tempmux.txt"))
 
     if main_menu_style_var.get() == "Horizontal":
-        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+        if version_var.get() == "muOS 2405 BEANS" or version_var.get() == "muOS 2405.1 REFRIED BEANS" or version_var.get() == "muOS 2405.2 BAKED BEANS":
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     elif main_menu_style_var.get() == "Alt-Horizontal":
-        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
-
+        if version_var.get() == "muOS 2405 BEANS" or version_var.get() == "muOS 2405.1 REFRIED BEANS" or version_var.get() == "muOS 2405.2 BAKED BEANS":
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     elif main_menu_style_var.get() == "Vertical":
-        replace_in_file(os.path.join(internal_files_dir,".TempBuildTheme","scheme","muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     
     
 
@@ -2482,12 +2611,20 @@ def FillTempThemeFolder(progress_bar):
             print(f"An error occurred: {e}")
     
     itemsList = []
+    legacyMethod = False
     if version_var.get() == "muOS 2405 BEANS":
         workingMenus = menus2405
+        legacyMethod = True
     elif version_var.get() == "muOS 2405.1 REFRIED BEANS":
         workingMenus = menus2405_1
+        legacyMethod = True
     elif version_var.get() == "muOS 2405.2 BAKED BEANS":
         workingMenus = menus2405_2
+        legacyMethod = True
+    elif version_var.get() == "muOS 2405.3 COOL BEANS":
+        workingMenus = menus2405_3
+        if legacy_generation_var.get():
+            legacyMethod = True
     else:
         raise ValueError("You Haven't Selected a muOS Version")
     rg28xxWorkingMenus = []
@@ -2503,12 +2640,30 @@ def FillTempThemeFolder(progress_bar):
 
     if rg28xxVar.get():
         workingMenus = rg28xxWorkingMenus
+    
+    if not legacyMethod:
+        workingMenus = [["muxlaunch",[["Content Explorer","explore"],
+                                      ["Favourites","favourite"],
+                                      ["History","history"],
+                                      ["Applications","apps"],
+                                      ["Information","info"],
+                                      ["Configuration","config"],
+                                      ["Reboot Device","reboot"],
+                                      ["Shutdown Device","shutdown"]]],
+                        ["ThemePreview",[["Content Explorer","explore"],
+                                         ["Favourites","favourite"],
+                                         ["History","history"],
+                                         ["Applications","apps"],
+                                         ["Information","info"],
+                                         ["Configuration","config"],
+                                         ["Reboot Device","reboot"],
+                                         ["Shutdown Device","shutdown"]]]]
 
     for index, menu in enumerate(workingMenus):
         itemsList.append([])
         for item in menu[1]:
             itemsList[index].append([item[0],"Menu",item[1]]), 
-    
+
     for index, menu in enumerate(workingMenus):
         if menu[0] == "muxdevice":
             if page_by_page_var.get():
@@ -2877,6 +3032,7 @@ override_bubble_cut_var = tk.IntVar()
 page_by_page_var = tk.IntVar()
 transparent_text_var = tk.IntVar()
 override_font_size_var = tk.IntVar()
+legacy_generation_var = tk.IntVar()
 override_folder_box_art_padding_var = tk.IntVar()
 use_alt_font_var = tk.IntVar()
 use_custom_bootlogo_var = tk.IntVar()
@@ -3052,6 +3208,8 @@ grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="[Optional] Override 
 custom_font_size_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=customFontSizeVar)
 grid_helper.add(custom_font_size_entry, next_row=True)
 
+grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Use Legacy Generation", variable=legacy_generation_var ), sticky="w")
+
 # Spacer row
 grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
@@ -3072,7 +3230,7 @@ grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=selec
 grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\application' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="muOS Version"), sticky="w")
-options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS"]
+options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS", "muOS 2405.3 COOL BEANS"]
 option_menu = tk.OptionMenu(left_scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
@@ -3198,7 +3356,26 @@ grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="Generation", font=title_font), colspan=2, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Combined generation for Archive manager install [Recommended]", font=subtitle_font), colspan=2, sticky="w", next_row=True)
+
+
+grid_helper.add(tk.Label(left_scrollable_frame, text="Theme only generation [Recommended]", font=subtitle_font), colspan=2, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Name:"), sticky="w")
+theme_name_entry = tk.Entry(left_scrollable_frame, width=50)
+grid_helper.add(theme_name_entry, next_row=True)
+
+grid_helper.add(tk.Label(left_scrollable_frame, text="Themes Output Directory:"), sticky="w")
+grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=theme_directory_path, width=50))
+grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_theme_directory), next_row=True)
+
+grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\theme' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
+
+# Generate button
+grid_helper.add(tk.Button(left_scrollable_frame, text="Generate Theme", command=start_theme_task), sticky="w", next_row=True)
+
+# Spacer row
+grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Label(left_scrollable_frame, text="Combined generation for Archive manager install [Legacy]", font=subtitle_font), colspan=2, sticky="w", next_row=True)
 grid_helper.add(tk.Label(left_scrollable_frame, text="Make sure your box art setting is set to Fullscreen+Front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
 
 
@@ -3221,24 +3398,7 @@ grid_helper.add(tk.Button(left_scrollable_frame, text="Generate Archive Manager 
 # Spacer row
 grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Theme only generation", font=subtitle_font), colspan=2, sticky="w", next_row=True)
-grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Name:"), sticky="w")
-theme_name_entry = tk.Entry(left_scrollable_frame, width=50)
-grid_helper.add(theme_name_entry, next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Themes Output Directory:"), sticky="w")
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=theme_directory_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_theme_directory), next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\theme' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
-
-# Generate button
-grid_helper.add(tk.Button(left_scrollable_frame, text="Generate Theme", command=start_theme_task), sticky="w", next_row=True)
-
-# Spacer row
-grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Content explorer only generation", font=subtitle_font), colspan=2, sticky="w", next_row=True)
+grid_helper.add(tk.Label(left_scrollable_frame, text="Content explorer only generation [Legacy]", font=subtitle_font), colspan=2, sticky="w", next_row=True)
 grid_helper.add(tk.Label(left_scrollable_frame, text="Make sure your box art setting is set to Fullscreen+Front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="Catalogue Directory on device:"), sticky="w")
@@ -3418,12 +3578,16 @@ def on_change(*args):
     global menus2405
     global menus2405_1 ## NOT GLOBALS AHH SORRY HACKY SHOULD REMOVE
     global menus2405_2
+    global menus2405_3
 
     menus2405_1_Default_list = [['Archive Manager', 'Archive Manager'], ['Dingux Commander', 'Dingux Commander'], ['GMU Music Player', 'GMU Music Player'], ['PortMaster', 'PortMaster'], ['RetroArch', 'RetroArch'], ['Simple Terminal', 'Simple Terminal'], ['Task Toolkit', 'Task Toolkit']]
     updateMenusList(menus2405_1, menus2405_1_Default_list)
 
     menus2405_2_Default_list = [['Archive Manager', 'Archive Manager'], ['Dingux Commander', 'Dingux Commander'], ['Flip Clock', 'Flip Clock'], ['GMU Music Player', 'GMU Music Player'], ['Moonlight', 'Moonlight'], ['PortMaster', 'PortMaster'], ['PPSSPP', 'PPSSPP'], ['RetroArch', 'RetroArch'], ['Simple Terminal', 'Simple Terminal'], ['Task Toolkit', 'Task Toolkit']]
     updateMenusList(menus2405_2, menus2405_2_Default_list)
+
+    menus2405_3_Default_list = [['Archive Manager', 'Archive Manager'], ['Dingux Commander', 'Dingux Commander'], ['Flip Clock', 'Flip Clock'], ['GMU Music Player', 'GMU Music Player'], ['Moonlight', 'Moonlight'], ['PortMaster', 'PortMaster'], ['PPSSPP', 'PPSSPP'], ['RetroArch', 'RetroArch'], ['Simple Terminal', 'Simple Terminal'], ['Task Toolkit', 'Task Toolkit']]
+    updateMenusList(menus2405_3, menus2405_3_Default_list)
 
     previewApplicationList = []
     if version_var.get() == "muOS 2405 BEANS":
@@ -3450,6 +3614,14 @@ def on_change(*args):
                 break
         if index!=None:
             previewApplicationList = [[x[0],"menu",x[0]] for x in menus2405_2[index][1]]
+    elif version_var.get() == "muOS 2405.3 COOL BEANS":
+        index = None
+        for i, n in enumerate(menus2405_3):
+            if n[0] == "muxapp":
+                index = i
+                break
+        if index!=None:
+            previewApplicationList = [[x[0],"menu",x[0]] for x in menus2405_3[index][1]]
 
     global valid_params
     
@@ -3738,6 +3910,7 @@ def save_settings():
     config.page_by_page_var = page_by_page_var.get()
     config.transparent_text_var = transparent_text_var.get()
     config.override_font_size_var = override_font_size_var.get()
+    config.legacy_generation_var = legacy_generation_var.get()
     config.override_folder_box_art_padding_var = override_folder_box_art_padding_var.get()
     config.boxArtPaddingVar = boxArtPaddingVar.get()
     config.folderBoxArtPaddingVar = folderBoxArtPaddingVar.get()
@@ -3802,6 +3975,7 @@ def load_settings():
     page_by_page_var.set(config.page_by_page_var)
     transparent_text_var.set(config.transparent_text_var)
     override_font_size_var.set(config.override_font_size_var)
+    legacy_generation_var.set(config.legacy_generation_var)
     version_var.set(config.version_var)
     global_alignment_var.set(config.global_alignment_var)
     selected_overlay_var.set(config.selected_overlay_var)
@@ -3873,6 +4047,7 @@ override_folder_box_art_padding_var.trace_add("write", on_change)
 page_by_page_var.trace_add("write", on_change)
 transparent_text_var.trace_add("write", on_change)
 override_font_size_var.trace_add("write", on_change)
+legacy_generation_var.trace_add("write",on_change)
 version_var.trace_add("write", on_change)
 global_alignment_var.trace_add("write", on_change)
 selected_overlay_var.trace_add("write",on_change)
