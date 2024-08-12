@@ -1758,10 +1758,10 @@ def getDefaultAlternateMenuNameData():
     defaultMenuNameMap["okay"] = "OKAY"
     defaultMenuNameMap["confirm"] = "CONFIRM"
     defaultMenuNameMap["launch"] = "LAUNCH"
-    defaultMenuNameMap["charging..."] = "CHARGING..."
-    defaultMenuNameMap["loading..."] = "LOADING..."
-    defaultMenuNameMap["rebooting..."] = "REBOOTING..."
-    defaultMenuNameMap["shutting down..."] = "SHUTTING DOWN..."
+    defaultMenuNameMap["charging..."] = "Charging..."
+    defaultMenuNameMap["loading..."] = "Loading..."
+    defaultMenuNameMap["rebooting..."] = "Rebooting..."
+    defaultMenuNameMap["shutting down..."] = "Shutting Down..."
     return defaultMenuNameMap
 
 def list_directory_contents(directory_path):
@@ -2492,42 +2492,55 @@ def FillTempThemeFolder(progress_bar):
 
         os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
     else:
+        fontSize = 20
+
+        foreground_hex = deselected_font_hex
+        midground_hex = percentage_color(bubble_hex,selected_font_hex,0.5)
+        quarterground_hex = percentage_color(bg_hex,bubble_hex,0.25)
+
         shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","default.txt"),os.path.join(newSchemeDir,"default.txt"))
         replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{bg_hex}", str(bg_hex))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{selected_font_hex}", str(bubble_hex))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,selected_font_hex,0.5)))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{selected_font_hex}", str(foreground_hex))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{deselected_font_hex}", str(midground_hex))
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{disabled_font_hex}", str(quarterground_hex))
         replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
         replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{imageListAlpha}", "255")
         replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{ScrollDirection}", "0")
         
         shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxlaunch.txt"),os.path.join(newSchemeDir,"muxlaunch.txt"))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{bg_hex}", str(bg_hex))
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{selected_font_hex}", str(selected_font_hex))
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{deselected_font_hex}", str(deselected_font_hex))
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{disabled_font_hex}", str(percentage_color(selected_font_hex,deselected_font_hex,0.25)))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{selected_font_hex}", str(foreground_hex))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{deselected_font_hex}", str(midground_hex))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{disabled_font_hex}", str(quarterground_hex))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{imageListAlpha}", "255")
 
         shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxthemed.txt"),os.path.join(newSchemeDir,"tempmux.txt"))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{bg_hex}", str(bg_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{selected_font_hex}", str(selected_font_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{deselected_font_hex}", str(deselected_font_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{disabled_font_hex}", str(percentage_color(selected_font_hex,deselected_font_hex,0.25)))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{foreground_hex}", str(foreground_hex))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{midground_hex}", str(midground_hex))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{quarterground_hex}", str(quarterground_hex))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{ScrollDirection}", "0")
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{imageListAlpha}", "255")
         # NEW ONES:
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_left}",str(textPaddingVar.get()))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_right}", str(textPaddingVar.get()))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_left}",str(bubblePaddingVar.get()))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_right}", str(bubblePaddingVar.get()))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_hex}", str(bubble_hex))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_alpha}", "255")
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_left}", str(textPaddingVar.get()))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_top}", str(headerHeight-44))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_height}",str(deviceScreenHeight-headerHeight-int(footerHeightVar.get())))
+        if "Show Icon In Bubble" == "":
+            replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_icon_pad_top}", str(15))
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_icon_pad_top}", str(1000))
+        content_height = deviceScreenHeight-headerHeight-int(footerHeightVar.get())
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_height}",str(content_height))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_width}", str(deviceScreenWidth-int(textPaddingVar.get())))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_radius}", str(math.ceil((deviceScreenHeight-headerHeight-int(footerHeightVar.get()))/int(itemsPerScreenVar.get()))))
+        bubble_height = (deviceScreenHeight-headerHeight-int(footerHeightVar.get()))/int(itemsPerScreenVar.get())
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_radius}", str(math.ceil(bubble_height/2)))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_top}", str(5))
 
         content_alignment_map = {"Left":0,"Centre":1,"Right":2}
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()]))
@@ -2589,14 +2602,14 @@ def FillTempThemeFolder(progress_bar):
     shutdownimage = generatePilImageBootScreen(bgHexVar.get(),
                                                deselectedFontHexVar.get(),
                                                iconHexVar.get(),
-                                               "SHUTTING DOWN...",
+                                               "Shutting Down...",
                                                render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     shutdownimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","shutdown.png"), format='PNG')
 
     rebootimage = generatePilImageBootScreen(bgHexVar.get(),
                                                deselectedFontHexVar.get(),
                                                iconHexVar.get(),
-                                               "REBOOTING...",
+                                               "Rebooting...",
                                                render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     rebootimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","reboot.png"), format='PNG')
 
