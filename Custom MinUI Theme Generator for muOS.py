@@ -2511,12 +2511,27 @@ def FillTempThemeFolder(progress_bar):
 
         shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxthemed.txt"),os.path.join(newSchemeDir,"tempmux.txt"))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{bg_hex}", str(bg_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{selected_font_hex}", str(bubble_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,selected_font_hex,0.5)))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{selected_font_hex}", str(selected_font_hex))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{deselected_font_hex}", str(deselected_font_hex))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{disabled_font_hex}", str(percentage_color(selected_font_hex,deselected_font_hex,0.25)))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{ScrollDirection}", "0")
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{imageListAlpha}", "255")
+        # NEW ONES:
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_left}",str(textPaddingVar.get()))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_right}", str(textPaddingVar.get()))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_hex}", str(bubble_hex))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_alpha}", "255")
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_left}", str(textPaddingVar.get()))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_top}", str(headerHeight-44))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_height}",str(deviceScreenHeight-headerHeight-int(footerHeightVar.get())))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_width}", str(deviceScreenWidth-int(textPaddingVar.get())))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_radius}", str(math.ceil((deviceScreenHeight-headerHeight-int(footerHeightVar.get()))/int(itemsPerScreenVar.get()))))
+
+        content_alignment_map = {"Left":0,"Centre":1,"Right":2}
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()]))
+
 
         shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxapp.txt"))
         shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxconfig.txt"))
