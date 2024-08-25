@@ -2440,6 +2440,10 @@ def FillTempThemeFolder(progress_bar):
 
     newSchemeDir = os.path.join(internal_files_dir,".TempBuildTheme","scheme")
     os.makedirs(newSchemeDir, exist_ok=True)
+
+    fontSize = 20
+    if override_font_size_var.get():
+        fontSize = int(customFontSizeVar.get())
     
     if legacyMethod:
         shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","defaultlegacy.txt"),os.path.join(newSchemeDir,"default.txt"))
@@ -2492,8 +2496,6 @@ def FillTempThemeFolder(progress_bar):
 
         os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
     else:
-        fontSize = 20
-
         foreground_hex = deselected_font_hex
         midground_hex = percentage_color(bubble_hex,selected_font_hex,0.5)
         quarterground_hex = percentage_color(bg_hex,bubble_hex,0.25)
@@ -2544,7 +2546,11 @@ def FillTempThemeFolder(progress_bar):
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_width}", str(deviceScreenWidth-int(textPaddingVar.get())))
         bubble_height = (deviceScreenHeight-headerHeight-int(footerHeightVar.get()))/int(itemsPerScreenVar.get())
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_radius}", str(math.ceil(bubble_height/2)))
+<<<<<<< HEAD
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_top}", str(0))
+=======
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_top}", "-2") #TODO MAKE SURE TEXT IS VERTICALLY CENTERED
+>>>>>>> 6376a78861c279d3eaf541b376c7730a4f8457cc
 
         content_alignment_map = {"Left":0,"Centre":1,"Right":2}
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()]))
@@ -2566,17 +2572,34 @@ def FillTempThemeFolder(progress_bar):
 
         os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
 
+    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","font","panel"), exist_ok=True) #Font binaries stuff
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries","BPreplayBold-unhinted-20.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","default.bin"))
+    if not legacyMethod:
+        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxapp.bin"))
+        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxconfig.bin"))
+        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxdevice.bin"))
+        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxinfo.bin"))
+        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxfavourite.bin"))
+        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxhistory.bin"))
+        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxplore.bin"))
+
 
     if main_menu_style_var.get() == "Horizontal":
         if version_var.get() == "muOS 2405 BEANS" or version_var.get() == "muOS 2405.1 REFRIED BEANS" or version_var.get() == "muOS 2405.2 BAKED BEANS":
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
         else:
-            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+            if not "wrap":
+                replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+            else:
+                replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "4") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     elif main_menu_style_var.get() == "Alt-Horizontal":
         if version_var.get() == "muOS 2405 BEANS" or version_var.get() == "muOS 2405.1 REFRIED BEANS" or version_var.get() == "muOS 2405.2 BAKED BEANS":
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
         else:
-            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+            if not "wrap":
+                replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+            else:
+                replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "4") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     elif main_menu_style_var.get() == "Vertical":
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     
@@ -2619,6 +2642,8 @@ def FillTempThemeFolder(progress_bar):
 
     defaultimage = generatePilImageDefaultScreen(bgHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     defaultimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","default.png"), format='PNG')
+
+    
     if False: ## Testing converting font in generator
         try:
             # Define the command
