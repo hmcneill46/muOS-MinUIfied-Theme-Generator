@@ -2546,11 +2546,7 @@ def FillTempThemeFolder(progress_bar):
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_width}", str(deviceScreenWidth-int(textPaddingVar.get())))
         bubble_height = (deviceScreenHeight-headerHeight-int(footerHeightVar.get()))/int(itemsPerScreenVar.get())
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_radius}", str(math.ceil(bubble_height/2)))
-<<<<<<< HEAD
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_top}", str(0))
-=======
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_top}", "-2") #TODO MAKE SURE TEXT IS VERTICALLY CENTERED
->>>>>>> 6376a78861c279d3eaf541b376c7730a4f8457cc
 
         content_alignment_map = {"Left":0,"Centre":1,"Right":2}
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()]))
