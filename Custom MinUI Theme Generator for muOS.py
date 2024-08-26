@@ -2508,6 +2508,8 @@ def FillTempThemeFolder(progress_bar):
         replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
         replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{imageListAlpha}", "255")
         replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{ScrollDirection}", "0")
+
+        
         
         shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxlaunch.txt"),os.path.join(newSchemeDir,"muxlaunch.txt"))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{bg_hex}", str(bg_hex))
@@ -2516,6 +2518,15 @@ def FillTempThemeFolder(progress_bar):
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{disabled_font_hex}", str(quarterground_hex))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{imageListAlpha}", "255")
+
+        if "Show icon on muxlaunch" == "":
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{font_list_icon_pad_top}", str(0))
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_default_glyph_alpha}", str(255))
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_focus_glyph_alpha}", str(255))
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{font_list_icon_pad_top}", str(0))
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_default_glyph_alpha}", str(0))
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_focus_glyph_alpha}", str(0))
 
         shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxthemed.txt"),os.path.join(newSchemeDir,"tempmux.txt"))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{bg_hex}", str(bg_hex))
@@ -2533,6 +2544,9 @@ def FillTempThemeFolder(progress_bar):
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_top}", str(headerHeight-44))
+
+
+        
         if "Show Icon In Bubble" == "":
             replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_icon_pad_top}", str(0))
             replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_glyph_alpha}", str(255))
