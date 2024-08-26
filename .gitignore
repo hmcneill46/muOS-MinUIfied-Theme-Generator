@@ -6,6 +6,7 @@ build/
 dist/
 venv/
 .venv/
+.TempBuildTheme/
 
 # Ignore specific files
 PreviousDirectories.txt

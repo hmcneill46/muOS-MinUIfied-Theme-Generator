@@ -38,7 +38,6 @@ else:
 class Config:
     def __init__(self, config_file=os.path.join(script_dir,'MinUIThemeGeneratorConfig.json')):
         self.config_file = config_file
-        self.scrollBarWidthVar = 10
         self.textPaddingVar = 25
         self.bubblePaddingVar = 20
         self.itemsPerScreenVar = 9
@@ -291,7 +290,7 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
     return image
 
 
-def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,additions,textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,scrollBarWidth = 0, showScrollBar=False,numScreens=0,screenIndex=0,fileCounter="",folderName = None,transparent=False):
+def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,additions,textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,numScreens=0,screenIndex=0,fileCounter="",folderName = None,transparent=False):
     progress_bar['value'] +=1
     #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
@@ -416,10 +415,6 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
 
         draw.text(( text_x,0*render_factor), folderName, font=topTextFont, fill=f"#{deselected_font_hex}")
     
-    if muOSSystemName != "Folder" or not override_folder_box_art_padding_var.get():
-        boxArtPadding = int(box_art_padding_entry.get()) * render_factor
-    else:
-        boxArtPadding = int(folder_box_art_padding_entry.get()) * render_factor
 
     textAlignment = None
     if muOSSystemName.startswith("mux"):
@@ -432,36 +427,6 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             textAlignment = global_alignment_var.get()
         else:
             textAlignment = content_alignment_var.get()
-
-    if overlay_box_art_var.get() and textAlignment != "Centre":
-        if listItems[workingIndex][1] == "File":
-            if os.path.exists(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")):
-                originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),muOSSystemName,"box",listItems[workingIndex][2]+".png")).convert("RGBA")
-                boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
-                if textAlignment == "Left":
-                    pasteLocation = (int((deviceScreenWidth*render_factor)-boxArtImage.width)-boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
-                else:
-                    pasteLocation = (boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
-                
-                boxArtWidth = originalBoxArtImage.width
-
-                image.paste(boxArtImage,pasteLocation,boxArtImage)
-                boxArtDrawn = True
-        else:
-            if os.path.exists(os.path.join(box_art_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")):
-                originalBoxArtImage = Image.open(os.path.join(box_art_directory_path.get(),"Folder","box",listItems[workingIndex][2]+".png")).convert("RGBA")
-                boxArtImage = originalBoxArtImage.resize((originalBoxArtImage.width*render_factor, originalBoxArtImage.height*render_factor), Image.LANCZOS)
-                
-                if textAlignment == "Left":
-                    pasteLocation = (int((deviceScreenWidth*render_factor)-boxArtImage.width)-boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
-                else:
-                    pasteLocation = (boxArtPadding,int(((deviceScreenHeight*render_factor)-boxArtImage.height)/2))
-
-                boxArtWidth = originalBoxArtImage.width
-
-
-                image.paste(boxArtImage,pasteLocation,boxArtImage)
-                boxArtDrawn = True
 
     font_size = (((deviceScreenHeight - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
     if override_font_size_var.get():
@@ -485,13 +450,11 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         else:
             text = item[0][:]
         text_color = f"#{selected_font_hex}" if index == workingIndex else f"#{deselected_font_hex}"
-        if boxArtDrawn and override_bubble_cut_var.get():
+        if override_bubble_cut_var.get():
             if muOSSystemName == "Folder":
                 maxBubbleLength = int(maxFoldersBubbleLengthVar.get())
             else:
                 maxBubbleLength = int(maxGamesBubbleLengthVar.get())
-        elif boxArtDrawn:
-            maxBubbleLength = deviceScreenWidth - boxArtWidth - boxArtPadding - 5
         else:
             maxBubbleLength = deviceScreenWidth
         if maxBubbleLength*render_factor < textPadding*render_factor+smallestValidTest_width+rectanglePadding*render_factor+5*render_factor: #Make sure there won't be a bubble error
@@ -574,37 +537,12 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         image = Image.alpha_composite(image, transparent_text_image)
     if (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp"):
         image = Image.alpha_composite(image, menuHelperGuides)
-    if showScrollBar:
-        scrollBarHeight = (deviceScreenHeight - footerHeight - headerHeight) // numScreens
-        rectangle_x0 = (deviceScreenWidth - scrollBarWidth) * render_factor
-        rectangle_y0 = (headerHeight) * render_factor
-        rectangle_x1 = (deviceScreenWidth) * render_factor
-        rectangle_y1 = (deviceScreenHeight - footerHeight) * render_factor
-        corner_radius = (scrollBarWidth // 2) * render_factor 
-
-        draw.rounded_rectangle(
-            [(rectangle_x0, rectangle_y0), (rectangle_x1, rectangle_y1)],
-            radius=corner_radius,
-            fill="darkgrey"
-        )
-
-        rectangle_x0 = (deviceScreenWidth - scrollBarWidth) * render_factor
-        rectangle_y0 = (headerHeight + scrollBarHeight * screenIndex) * render_factor
-        rectangle_x1 = (deviceScreenWidth) * render_factor
-        rectangle_y1 = rectangle_y0 + scrollBarHeight * render_factor
-        corner_radius = (scrollBarWidth // 2) * render_factor
-        draw.rounded_rectangle(
-            [(rectangle_x0, rectangle_y0), (rectangle_x1, rectangle_y1)],
-            radius=corner_radius,
-            fill=f"white"
-        )
            
     return(image)
 
 
-def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir, folderName = None):
+def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir, folderName = None):
     totalItems = len(listItems)
-    scrollBarHeight = (deviceScreenHeight - footerHeight - headerHeight)
 
     
 
@@ -669,69 +607,6 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
                     image = image.resize((288, 216), Image.LANCZOS)
                     if workingItem[1] == "Menu":
                         image.save(os.path.join(internal_files_dir, "TempPreview.png"))
-
-
-def PageFolderImageGen(progress_bar,muOSSystemName, listItems, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir, folderName = None):
-    
-    totalItems = len(listItems)
-    numScreens = math.ceil(totalItems / ItemsPerScreen)
-    
-
-    bg_rgb = tuple(int(bg_hex[i:i+2], 16) for i in (0, 2, 4))
-
-    for screenIndex in range(numScreens):
-        startIndex = screenIndex * ItemsPerScreen
-        endIndex = min(startIndex + ItemsPerScreen, totalItems)
-
-        for workingIndex in range(startIndex, endIndex):
-            workingItem = listItems[workingIndex]
-            if workingItem[1] == "Directory" or also_games_var.get() or workingItem[1] == "Menu" or workingItem[1] == "ThemePreview":
-                showScrollBar = False
-                if numScreens > 1:  # Display Scroll Bar
-                    showScrollBar = True
-                fileCounter = str(workingIndex + 1) + " / " + str(totalItems)
-
-                image = generatePilImageVertical(progress_bar,
-                                                 workingIndex%ItemsPerScreen,
-                                                 muOSSystemName,
-                                                 listItems[startIndex:endIndex],
-                                                 additions,
-                                                 textPadding,
-                                                 rectanglePadding,
-                                                 ItemsPerScreen,
-                                                 bg_hex,
-                                                 selected_font_hex,
-                                                 deselected_font_hex,
-                                                 bubble_hex,render_factor,
-                                                 scrollBarWidth=scrollBarWidth,
-                                                 showScrollBar=showScrollBar,
-                                                 numScreens=numScreens,
-                                                 screenIndex=screenIndex,
-                                                 fileCounter=fileCounter,
-                                                 folderName = folderName)
-                
-                if muOSSystemName != "ThemePreview":
-                    image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
-                    if workingItem[1] == "File":
-                        directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
-                        if not os.path.exists(directory):
-                            os.makedirs(directory)
-                        image.save(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
-                    elif workingItem[1] == "Directory":
-                        directory = os.path.dirname(f"{outputDir}/Folder/box/{workingItem[2]}.png")
-                        if not os.path.exists(directory):
-                            os.makedirs(directory)
-                        image.save(f"{outputDir}/Folder/box/{workingItem[2]}.png")
-                    elif workingItem[1] == "Menu":
-                        directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
-                        if not os.path.exists(directory):
-                            os.makedirs(directory)
-                        image.save(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
-                else:
-                    if workingIndex == 0:
-                        image = image.resize((288, 216), Image.LANCZOS)
-                        if workingItem[1] == "Menu":
-                            image.save(os.path.join(internal_files_dir, "TempPreview.png"))
 
 def cut_out_image(original_image, logo_image, coordinates):
     x, y = coordinates
@@ -1659,67 +1534,6 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
             if workingItem[1] == "Menu":
                 image.save(os.path.join(internal_files_dir, "TempPreview.png"))
 
-def remove_brackets_and_contents(text):
-    # Remove contents within parentheses ()
-    text = re.sub(r'\([^)]*\)', '', text)
-    # Remove extra whitespace left by removal
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
-def remove_square_brackets_and_contents(text):
-    # Remove contents within square brackets []
-    text = re.sub(r'\[[^\]]*\]', '', text)
-    # Remove extra whitespace left by removal
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
-
-def remove_dot_p8(text):
-    if text.endswith('.p8'):
-        return text[:-3]  # Remove the last 3 characters, which are ".p8"
-    return text
-
-
-
-def changeLocationOfThe(name):
-    # Check if the name contains ', The'
-    if ', The' in name:
-        # Split the name into parts
-        name = name.replace(', The', '')
-        # Rearrange the parts with 'The ' at the beginning
-        formatted_name = 'The ' + name
-    else:
-        formatted_name = name
-    return formatted_name
-
-def replace_hyphen_with_colon(text):
-    return text.replace(' - ', ': ')
-
-def getNameConversionList(file_path):
-    if os.path.exists(name_json_path.get()):
-        try:
-            with open(file_path, 'r', encoding='utf-8') as file:
-                data = json.load(file)
-            return data
-        except:
-            return []
-    return []
-
-def getConsoleAssociationList():
-    if os.path.exists(defaultConsoleAssociationsPath) and not os.path.exists(ConsoleAssociationsPath):
-        shutil.copy(defaultConsoleAssociationsPath, ConsoleAssociationsPath)
-    if os.path.exists(ConsoleAssociationsPath):
-        try:
-            with open(ConsoleAssociationsPath, 'r') as file:
-                data = json.load(file)
-            data = {key.lower(): value for key, value in data.items()}
-            return data
-        except:
-            return []
-    return []
-
-def saveConsoleAssociationDict():
-    with open(ConsoleAssociationsPath, 'w', newline='\n',encoding='utf-8') as json_file:
-        json.dump(consoleMap, json_file, indent=2)         
-
 def getAlternateMenuNameDict():
     if os.path.exists(alt_text_path.get()):
         try:
@@ -1764,42 +1578,6 @@ def getDefaultAlternateMenuNameData():
     defaultMenuNameMap["shutting down..."] = "Shutting Down..."
     return defaultMenuNameMap
 
-def list_directory_contents(directory_path):
-    names_data = getNameConversionList(name_json_path.get())
-    fileItemList = []
-    directoryItemList = []
-    itemList = []
-    try:
-        for item in os.listdir(directory_path):
-            item_path = os.path.join(directory_path, item)
-            item_name, item_extension = os.path.splitext(item)
-            item_type = "Directory" if os.path.isdir(item_path) else "File"
-            if item_type == "Directory":
-                if not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get():
-                    directoryItemList.append([item_name, item_type,item_name])
-            else:
-                if not(item_extension.lower() == ".pcm" or item_extension.lower() == ".msu" or item_extension.lower() == ".ips") and (not(item_name[0] == "." or item_name[0] == "_") or show_hidden_files_var.get()):
-                    sort_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name+item_extension
-                    display_name = names_data[item_name.lower()] if item_name.lower() in names_data else item_name
-                    fileItemList.append([item_name, item_type, display_name, sort_name])
-        if len(directoryItemList)+len(fileItemList):
-            directoryItemList.sort(key=lambda x: x[0].lower())
-            fileItemList.sort(key=lambda x: (x[3].lower()))
-
-            for n in directoryItemList:
-                itemList.append(n) # Display Name, File Type, File Name
-            for n in fileItemList:
-                itemList.append([n[2], n[1],n[0]])  # Display Name, File Type, File Name
-            return itemList
-        else:
-            return []
-    except Exception as e:
-        if advanced_error_var.get():
-            tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
-            return f"ERROR: {e}\n{tb_str}"
-        else:
-            return f"ERROR: {e}"
-
 
 def copy_contents(src, dst):
     if not os.path.exists(dst):
@@ -1817,28 +1595,6 @@ def copy_contents(src, dst):
         else:
             shutil.copy2(src_path, dst_path)
 
-def copy_contents_for_boxart_backup(src, dst):
-    if not os.path.exists(dst):
-        os.makedirs(dst)
-    
-    for item in os.listdir(src):
-        src_path = os.path.join(src, item)
-        
-        # Determine the new destination path
-        if os.path.isdir(src_path):
-            dst_path = os.path.join(dst, item)
-            if not os.path.exists(dst_path):
-                os.makedirs(dst_path)
-                copy_contents_for_boxart_backup(src_path, dst_path)
-            else:
-                copy_contents_for_boxart_backup(src_path, dst_path)
-        else:
-            # Prefix "newboxart." to the file name
-            if item[0]!=".":
-                new_file_name = "newboxart." + item
-                dst_path = os.path.join(dst, new_file_name)
-                shutil.copy2(src_path, dst_path)
-
 
 def delete_folder(folder_path):
     if os.path.exists(folder_path):
@@ -1846,191 +1602,9 @@ def delete_folder(folder_path):
     else:
         print(f"The folder {folder_path} does not exist.")
 
-def remove_image_files_in_directory(directory):
-    image_extensions = {'.jpg', '.jpeg', '.png', '.gif'}
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            file_path = os.path.join(root, file)
-            if os.path.splitext(file)[1].lower() in image_extensions:
-                os.remove(file_path)
-
-def get_console_name(file_path, directory_path):
-    with open(file_path, 'r') as file:
-        for line in file:
-            if line.startswith(directory_path + ':='):
-                return line.split('=')[1].strip()
-    return None
-
-def count_files_and_folders(directory):
-    try:
-        total_count = 0
-
-        # Recursively walk through the directory
-        for root, dirs, files in os.walk(directory):
-            if not show_hidden_files_var.get():
-                dirs[:] = [d for d in dirs if not d.startswith('.') and not d.startswith('_')]
-                files = [f for f in files if not f.startswith('.') and not f.startswith('_')]
-            #print(f"show hidden files: {show_hidden_files_var.get()} | Len dirs {len(dirs)} | Len files {len(files)}")
-            total_count += len(dirs) + len(files)
-
-
-        return total_count
-
-    except FileNotFoundError:
-        return "Directory not found."
-    except PermissionError:
-        return "Permission denied."
-    except Exception as e:
-        return f"An error occurred: {e}"
-
-def count_folders(directory):
-    try:
-        total_count = 0
-
-        # Recursively walk through the directory
-        for root, dirs, files in os.walk(directory):
-            if not show_hidden_files_var.get():
-                dirs[:] = [d for d in dirs if not d.startswith('.') and not d.startswith('_')]
-                files = [f for f in files if not f.startswith('.') and not f.startswith('_')]
-            if len(files)==0:
-                total_count += len(dirs)
-
-
-        return total_count
-
-    except FileNotFoundError:
-        return "Directory not found."
-    except PermissionError:
-        return "Permission denied."
-    except Exception as e:
-        return f"An error occurred: {e}"
-
-def traverse_and_generate_images(progress_bar, directory_path, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, input_queue, output_queue):
-    items = list_directory_contents(directory_path)
-    fileFound = False
-
-    displayFolderName = None
-    
-    for item in items:
-        if item[1] == "File":
-            fileFound = True
-            displayFolderName = os.path.basename(directory_path)
-            break
-    consoleName = "Folder"
-    if fileFound and also_games_var.get() == 1: 
-        folderName = os.path.basename(directory_path).lower()
-        consoleName = consoleMap.get(folderName, None)
-        if consoleName is None:
-            input_queue.put(directory_path)
-            consoleName = output_queue.get()
-            consoleMap[folderName] = consoleName
-            saveConsoleAssociationDict()
-
-    if len(items) > 0 and consoleName != "SKIP":
-        if not (fileFound and also_games_var.get() == 0):
-            if page_by_page_var.get():
-                PageFolderImageGen(progress_bar,consoleName, items, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, folderName = displayFolderName)
-            else:
-                ContinuousFolderImageGen(progress_bar, consoleName, items, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, folderName = displayFolderName)
-
-    for item in items:
-        item_name = item[0]
-        item_type = item[1]
-        if item_type == "Directory":
-            new_path = os.path.join(directory_path, item_name)
-            traverse_and_generate_images(progress_bar, new_path, additions, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDirectory, input_queue, output_queue)
-
-def select_console(directory_path):
-    def on_select():
-        selected_console.set(listbox.get(listbox.curselection()))
-        root.quit()
-    def on_skip():
-        selected_console.set("SKIP")
-        root.quit()
-
-    root = tk.Tk()
-    root.geometry("800x400") 
-    root.title("Select Console")
-    consoleOptions = ['Amstrad', 'Arcade', 'Arduboy', 'Atari 2600', 'Atari 5200',
-            'Atari 7800', 'Atari Jaguar', 'Atari Lynx', 'Atari ST-STE-TT-Falcon', 'Bandai WonderSwan-Color', 
-            'Cannonball', 'Cave Story', 'ChaiLove', 'ColecoVision', 'Commodore Amiga', 
-            'Commodore C128', 'Commodore C64', 'Commodore CBM-II', 'Commodore PET', 'Commodore VIC-20', 
-            'Dinothawr', 'Doom', 'DOS', 'External - Ports', 'Fairchild ChannelF', 
-            'Flashback', 'Folder', 'Game Music Emu', 'GCE-Vectrex', 'Handheld Electronic - Game and Watch', 
-            'Lowres NX', 'Mattel - Intellivision', 'Microsoft - MSX', 'Mr', 'MSX-SVI-ColecoVision-SG1000', 
-            'NEC PC Engine', 'NEC PC Engine SuperGrafx', 'NEC PC-8000 - PC-8800 series', 'NEC PC-FX', 'NEC PC98', 
-            'Nintendo DS', 'Nintendo Game Boy', 'Nintendo Game Boy Advance', 'Nintendo Game Boy Color', 'Nintendo N64', 
-            'Nintendo NES-Famicom', 'Nintendo Pokemon Mini', 'Nintendo SNES-SFC', 'Nintendo Virtual Boy', 'Palm OS', 
-            'Philips CDi', 'PICO-8', 'Quake', 'Rick Dangerous', 'RPG Maker 2000 - 2003', 
-            'ScummVM', 'Sega 32X', 'Sega Atomiswave Naomi', 'Sega Dreamcast', 'Sega Game Gear', 
-            'Sega Master System', 'Sega Mega CD - Sega CD', 'Sega Mega Drive - Genesis', 'Sega Saturn', 'Sharp X1', 
-            'Sharp X68000', 'Sinclair ZX 81', 'Sinclair ZX Spectrum', 'SNK Neo Geo', 'SNK Neo Geo CD', 
-            'SNK Neo Geo Pocket - Color', 'Sony PlayStation', 'Sony Playstation Portable', 'Texas Instruments TI-83', 'TIC-80', 
-            'Uzebox', 'VeMUlator', 'Video Player', 'WASM-4', 'Watara Supervision', 'Wolfenstein 3D']
-
-    label = tk.Label(root, text=f"What console on muOS is this folder associated with: [{os.path.basename(directory_path)}]?")
-    label.pack(pady=10)
-
-    frame = tk.Frame(root)
-    frame.pack(pady=10, fill=tk.BOTH, expand=True)
-
-    scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL)
-    listbox = tk.Listbox(frame, selectmode=tk.SINGLE, yscrollcommand=scrollbar.set)
-    scrollbar.config(command=listbox.yview)
-    
-    frame.grid_rowconfigure(0, weight=1)
-    frame.grid_columnconfigure(0, weight=1)
-
-    listbox.grid(row=0, column=0, sticky='nsew')
-    scrollbar.grid(row=0, column=1, sticky='ns')
-
-    for option in consoleOptions:
-        listbox.insert(tk.END, option)
-
-    selected_console = tk.StringVar()
-
-    button_frame = tk.Frame(root)
-    button_frame.pack(pady=10)
-
-    skip_button = tk.Button(button_frame, text="SKIP", command=on_skip)
-    skip_button.pack(side=tk.LEFT, padx=(0, 20))
-    
-    ok_button = tk.Button(button_frame, text="SELECT", command=on_select)
-    ok_button.pack(side=tk.LEFT)
-    
-    root.mainloop()
-    root.destroy()
-    return selected_console.get()
-
-def select_input_directory():
-    roms_directory_path.set(filedialog.askdirectory())
-
-def select_application_directory():
-    application_directory_path.set(filedialog.askdirectory())
-
-def select_box_art_directory():
-    box_art_directory_path.set(filedialog.askdirectory())
-
-def select_output_directory():
-    catalogue_directory_path.set(filedialog.askdirectory())
-
 def select_theme_directory():
     theme_directory_path.set(filedialog.askdirectory())
-def select_am_theme_directory():
-    am_theme_directory_path.set(filedialog.askdirectory())
-def select_name_json_path():
-    # File dialog to select a file, with specific types of files allowed
-    file_path = filedialog.askopenfilename(
-        filetypes=[("JSON files", "*.json")],  # Only show .ini files
-        title="Select name.json file"
-    )
-    
-    # Check if the selected file is name.ini
-    if file_path.endswith("name.json"):
-        name_json_path.set(file_path)
-    else:
-        # Optionally show a warning or take other action if the wrong file is selected
-        tk.messagebox.showerror("Invalid file", "Please select a file named 'name.json'")
+
 def select_background_image_path():
     # File dialog to select a file, with specific types of files allowed
     file_path = filedialog.askopenfilename(
@@ -2062,95 +1636,6 @@ def select_alt_text_path():
     )
     alt_text_path.set(file_path)
 
-
-def remove_images():
-    try:
-        if catalogue_directory_path.get() != "":
-            # Ask for confirmation before proceeding
-            question = f"Are you sure you want to remove all images in this directory?\n{catalogue_directory_path.get()}"
-            confirm = messagebox.askyesno("Confirmation", question)
-            if confirm:
-                remove_image_files_in_directory(catalogue_directory_path.get())
-                messagebox.showinfo("Success", "Images successfully deleted.")
-        else:
-            raise ValueError("You Haven't Selected a Catalogue Folder")
-    except Exception as e:
-        if advanced_error_var.get():
-            tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}\n{tb_str}")
-        else:
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
-
-def backup_boxart():
-    try:
-        if am_theme_directory_path.get() == "":
-            am_theme_dir = os.path.join(script_dir, "Generated Archive Manager Files")
-        else:
-            am_theme_dir = am_theme_directory_path.get()
-
-        tempBackupCatalogueFolder = os.path.join(internal_files_dir,".TempBoxArtBackup","mnt","mmc","MUOS","info","catalogue")
-
-        os.makedirs(os.path.join(internal_files_dir,".TempBoxArtBackup","opt"),exist_ok=True)
-
-        shutil.copy2(os.path.join(internal_files_dir,"Template Box Art Backup","opt","update.sh"), os.path.join(internal_files_dir,".TempBoxArtBackup","opt","update.sh"))
-
-        
-        if os.path.exists(box_art_directory_path.get()):
-            os.makedirs(tempBackupCatalogueFolder,exist_ok=True)
-            copy_contents_for_boxart_backup(box_art_directory_path.get() ,tempBackupCatalogueFolder)
-        
-        shutil.make_archive(os.path.join(am_theme_dir, "Restore Backed Up Artwork"),"zip", os.path.join(internal_files_dir, ".TempBoxArtBackup"))
-        
-        if os.path.exists(os.path.join(internal_files_dir, ".TempBoxArtBackup")):
-            delete_folder(os.path.join(internal_files_dir, ".TempBoxArtBackup"))
-    except Exception as e:
-        if os.path.exists(os.path.join(internal_files_dir, ".TempBoxArtBackup")):
-            delete_folder(os.path.join(internal_files_dir, ".TempBoxArtBackup"))
-
-def generate_images(progress_bar, loading_window, input_queue, output_queue):
-    try:
-        input_directory = roms_directory_path.get()
-        output_directory = catalogue_directory_path.get()
-
-        if not input_directory or not output_directory:
-            raise ValueError("Input and output directory paths cannot be empty.")
-
-        if not os.path.isdir(input_directory):
-            raise ValueError(f"Invalid input directory: {input_directory}")
-        
-        progress_bar['value'] = 0
-        progress_bar_max =0
-        if also_games_var.get():
-            totalRoms = count_files_and_folders(input_directory)
-            progress_bar_max += totalRoms
-        else:
-            totalDirectories = count_folders(input_directory)
-            progress_bar_max += totalDirectories
-        progress_bar['maximum'] = progress_bar_max
-
-        scrollBarWidth = int(scroll_bar_width_entry.get())
-        textPadding = int(text_padding_entry.get())
-        rectanglePadding = int(rectangle_padding_entry.get())
-        bg_hex = background_hex_entry.get()
-        selected_font_hex = selected_font_hex_entry.get()
-        deselected_font_hex = deselected_font_hex_entry.get()
-        bubble_hex = bubble_hex_entry.get()
-        ItemsPerScreen = int(items_per_screen_entry.get())
-        
-        traverse_and_generate_images(progress_bar,input_directory, additions_Blank, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,  output_directory,input_queue,output_queue)
-        messagebox.showinfo("Success", "Images generated successfully.\nMake sure your box art setting is set to Fullscreen+Front!")
-        loading_window.destroy()
-    except ValueError as ve:
-        loading_window.destroy()
-        messagebox.showerror("Error", str(ve))
-
-    except Exception as e:
-        loading_window.destroy()
-        if advanced_error_var.get():
-            tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}\n{tb_str}")
-        else:
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
 
 # INFO FOR BELOW LIST
 #        FOLDER NAME      DISPLAYED NAME     FILE NAME
@@ -2426,7 +1911,6 @@ def FillTempThemeFolder(progress_bar):
             legacyMethod =True
     
 
-    scrollBarWidth = int(scroll_bar_width_entry.get())
     textPadding = int(text_padding_entry.get())
     rectanglePadding = int(rectangle_padding_entry.get())
     ItemsPerScreen = int(items_per_screen_entry.get())
@@ -2733,16 +2217,10 @@ def FillTempThemeFolder(progress_bar):
 
     for index, menu in enumerate(workingMenus):
         if menu[0] == "muxdevice":
-            if page_by_page_var.get():
-                PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
-            else:
-                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+            ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
         elif menu[0] == "muxlaunch":
             if main_menu_style_var.get() == "Vertical":
-                if page_by_page_var.get():
-                    PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
-                else:
-                    ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
             elif main_menu_style_var.get() == "Horizontal":
                 HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"), variant = "Horizontal")
             elif main_menu_style_var.get() == "Alt-Horizontal":
@@ -2750,15 +2228,9 @@ def FillTempThemeFolder(progress_bar):
 
         elif menu[0] == "ThemePreview":
                 if main_menu_style_var.get() == "Vertical": 
-                    if page_by_page_var.get():
-                        PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
-                    else:
-                        ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                    ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
         else:
-            if page_by_page_var.get():
-                PageFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
-            else:
-                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,scrollBarWidth,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+            ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
 
 def select_alternate_menu_names():
     if os.path.exists(alt_text_path.get()):
@@ -2770,108 +2242,6 @@ def select_alternate_menu_names():
     root.wait_window(menu_names_grid)
     on_change()
 
-def generate_archive_manager(progress_bar, loading_window, input_queue, output_queue):
-    try:
-        scrollBarWidth = int(scroll_bar_width_entry.get())
-        textPadding = int(text_padding_entry.get())
-        rectanglePadding = int(rectangle_padding_entry.get())
-        ItemsPerScreen = int(items_per_screen_entry.get())
-        bg_hex = background_hex_entry.get()
-        selected_font_hex = selected_font_hex_entry.get()
-        deselected_font_hex = deselected_font_hex_entry.get()
-        bubble_hex = bubble_hex_entry.get()
-        amThemeName = am_theme_name_entry.get()
-        roms_directory = roms_directory_path.get()
-        
-
-        progress_bar['value'] = 0
-        progress_bar_max = 0
-        if not am_ignore_cd_var.get():
-            if also_games_var.get():
-                totalRoms = count_files_and_folders(roms_directory)
-                progress_bar_max += totalRoms
-            else:
-                totalRoms = count_folders(roms_directory)
-                progress_bar_max += totalRoms
-        
-        if not am_ignore_theme_var.get():
-            progress_bar_max += 28
-        progress_bar['maximum'] = progress_bar_max
-
-        if not am_ignore_cd_var.get():
-            if not roms_directory:
-                raise ValueError("ROMS directory paths cannot be empty.")
-
-            if not os.path.isdir(roms_directory):
-                raise ValueError(f"Invalid ROMS directory: {roms_directory}")
-        
-        if not am_ignore_theme_var.get():
-            FillTempThemeFolder(progress_bar)
-                    
-        if not am_ignore_cd_var.get():
-            if not os.path.exists(os.path.join(internal_files_dir, ".TempBuildAM","mnt","mmc","MUOS","info","catalogue")):
-                os.makedirs(os.path.join(internal_files_dir, ".TempBuildAM","mnt","mmc","MUOS","info","catalogue"))
-            output_directory = os.path.join(internal_files_dir, ".TempBuildAM","mnt","mmc","MUOS","info","catalogue")
-            
-            traverse_and_generate_images(progress_bar, roms_directory, additions_Blank, scrollBarWidth, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,  output_directory, input_queue, output_queue)
-
-        if am_theme_directory_path.get() == "":
-            am_theme_dir = os.path.join(script_dir, "Generated Archive Manager Files")
-        else:
-            am_theme_dir = am_theme_directory_path.get()
-
-        if not am_ignore_theme_var.get():
-            copy_contents(os.path.join(internal_files_dir, ".TempBuildTheme"),os.path.join(internal_files_dir, ".TempBuildAM","mnt","mmc","MUOS","theme","active"))
-
-        os.makedirs(os.path.join(internal_files_dir,".TempBuildAM","mnt","boot"),exist_ok=True)
-        
-        if rg28xxVar.get():
-            bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS).rotate(90,expand=True)
-        else:
-            bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
-        bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildAM","mnt","boot","bootlogo.bmp"), format='BMP')
-
-        
-        
-        if os.path.exists(os.path.join(internal_files_dir, ".TempBuildAM")):
-            shutil.make_archive(os.path.join(am_theme_dir, amThemeName),"zip", os.path.join(internal_files_dir, ".TempBuildAM"))
-
-        if os.path.exists(os.path.join(internal_files_dir, ".TempBuildTheme")):
-            delete_folder(os.path.join(internal_files_dir, ".TempBuildTheme"))
-        if os.path.exists(os.path.join(internal_files_dir, ".TempBuildAM")):
-            delete_folder(os.path.join(internal_files_dir, ".TempBuildAM"))
-        if os.path.exists(os.path.join(internal_files_dir, "TempPreview.png")):
-            os.remove(os.path.join(internal_files_dir, "TempPreview.png"))
-
-        if not am_ignore_cd_var.get() or not am_ignore_theme_var.get():
-            loading_window.destroy()
-            messagebox.showinfo("Success", "Archive Manager File generated successfully.\nYou can now Activate the theme through Archive Manager")
-    except Exception as e:
-        loading_window.destroy()
-        if theme_directory_path.get() == "":
-            theme_dir = os.path.join(script_dir, "Generated Theme")
-        else:
-            theme_dir = theme_directory_path.get()
-        delete_folder(os.path.join(internal_files_dir, ".TempBuildTheme"))
-        delete_folder(os.path.join(internal_files_dir, ".TempBuildAM"))
-        if os.path.exists(os.path.join(internal_files_dir, "TempPreview.png")):
-            os.remove(os.path.join(internal_files_dir, "TempPreview.png"))
-        if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
-            os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
-        if advanced_error_var.get():
-            tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}\n{tb_str}")
-        else:
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
-
-def check_queue(root, input_queue, output_queue):
-    try:
-        directory_path = input_queue.get_nowait()
-        consoleName = select_console(directory_path)
-        output_queue.put(consoleName)
-    except queue.Empty:
-        pass
-    root.after(100, check_queue, root, input_queue, output_queue)
 
 class GridHelper:
     def __init__(self, root):
@@ -2984,43 +2354,6 @@ def on_shiftmousewheel(event, canvas):
 def update_slider_label():
     pass
 
-def start_AM_task():
-    # Create a new Toplevel window for the loading bar
-    loading_window = tk.Toplevel(root)
-    loading_window.title("Loading...")
-    loading_window.geometry("300x100")
-    
-    # Create a Progressbar widget in the loading window
-    progress_bar = ttk.Progressbar(loading_window, orient="horizontal", length=280, mode="determinate")
-    progress_bar.pack(pady=20)
-    
-    input_queue = queue.Queue()
-    output_queue = queue.Queue()
-
-    # Start the long-running task in a separate thread
-    threading.Thread(target=generate_archive_manager, args=(progress_bar, loading_window, input_queue, output_queue)).start()
-
-    # Check the queue periodically
-    root.after(100, check_queue, root, input_queue, output_queue)
-
-def start_images_task():
-        # Create a new Toplevel window for the loading bar
-    loading_window = tk.Toplevel(root)
-    loading_window.title("Loading...")
-    loading_window.geometry("300x100")
-    
-    # Create a Progressbar widget in the loading window
-    progress_bar = ttk.Progressbar(loading_window, orient="horizontal", length=280, mode="determinate")
-    progress_bar.pack(pady=20)
-    
-    input_queue = queue.Queue()
-    output_queue = queue.Queue()
-
-    # Start the long-running task in a separate thread
-    threading.Thread(target=generate_images, args=(progress_bar, loading_window, input_queue, output_queue)).start()
-
-    # Check the queue periodically
-    root.after(100, check_queue, root, input_queue, output_queue)
 
 def start_theme_task():
         # Create a new Toplevel window for the loading bar
@@ -3037,9 +2370,6 @@ def start_theme_task():
 
     # Start the long-running task in a separate thread
     threading.Thread(target=generate_theme, args=(progress_bar, loading_window)).start()
-
-    # Check the queue periodically
-    root.after(100, check_queue, root, input_queue, output_queue)
 
 
 def on_resize(event):
@@ -3180,12 +2510,10 @@ previewSideSlider.bind("<ButtonRelease-1>", on_slider_release)
 
 
 # Create the GUI components
-grid_helper.add(tk.Label(left_scrollable_frame, text="[WARNING] PLEASE BACKUP YOUR WHOLE CATALOGUE FOLDER! CHOOSING SOME OPTIONS WILL OVERRIDE GAME BOX ART", fg='#f00'), colspan=3, sticky="w", next_row=True)
 grid_helper.add(tk.Label(left_scrollable_frame, text="Configurations", font=title_font), colspan=3, sticky="w", next_row=True)
 grid_helper.add(tk.Label(left_scrollable_frame, text="Global Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
 
 # Define the StringVar variables
-scrollBarWidthVar = tk.StringVar()
 textPaddingVar = tk.StringVar()
 bubblePaddingVar = tk.StringVar()
 itemsPerScreenVar = tk.StringVar()
@@ -3201,12 +2529,6 @@ iconHexVar = tk.StringVar()
 maxGamesBubbleLengthVar = tk.StringVar()
 maxFoldersBubbleLengthVar = tk.StringVar()
 previewConsoleNameVar = tk.StringVar()
-
-
-# Option for scrollBarWidth
-grid_helper.add(tk.Label(left_scrollable_frame, text="Scroll Bar Width:"), sticky="w")
-scroll_bar_width_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=scrollBarWidthVar)
-grid_helper.add(scroll_bar_width_entry, next_row=True)
 
 # Option for textPadding
 grid_helper.add(tk.Label(left_scrollable_frame, text="Text Padding:"), sticky="w")
@@ -3260,8 +2582,6 @@ globalAlignmentOptions = ["Left", "Centre", "Right"]
 global_alignment_option_menu = tk.OptionMenu(left_scrollable_frame, global_alignment_var, *globalAlignmentOptions)
 grid_helper.add(global_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Page by Page Scrolling", variable=page_by_page_var), colspan=3, sticky="w", next_row=True)
-
 grid_helper.add(tk.Label(left_scrollable_frame, text="[Optional] Override background colour with image"), sticky="w")
 grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=background_image_path, width=50))
 grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_background_image_path), next_row=True)
@@ -3289,12 +2609,6 @@ grid_helper.add(tk.Label(left_scrollable_frame, text="Main Menu Style"), sticky=
 MainMenuStyleOptions = ["Horizontal", "Vertical", "Alt-Horizontal"]
 main_menu_style_option_menu = tk.OptionMenu(left_scrollable_frame, main_menu_style_var, *MainMenuStyleOptions)
 grid_helper.add(main_menu_style_option_menu, colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="[Optional] Custom Application Directory:"), sticky="w")
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=application_directory_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_application_directory), next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\application' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="muOS Version"), sticky="w")
 options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS", "muOS 2405.3 COOL BEANS"]
@@ -3324,13 +2638,6 @@ overlayOptions = ["muOS Default CRT Overlay",
 overlay_option_menu = tk.OptionMenu(left_scrollable_frame, selected_overlay_var, *overlayOptions)
 grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="[Optional] Use Custom Menu Text JSON File", variable=alternate_menu_names_var), sticky="w")
-
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=alt_text_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_alt_text_path), next_row=True)
-
-grid_helper.add(tk.Button(left_scrollable_frame, text="Edit Menu Names In JSON File", command=select_alternate_menu_names), sticky="w", next_row=True)
-
 
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Left Menu Helper Guides", variable=remove_left_menu_guides_var), sticky="w")
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Right Menu Helper Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
@@ -3339,21 +2646,6 @@ grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Right Menu He
 grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="Box Art Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Catalogue Directory with Box Art:"), sticky="w")
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=box_art_directory_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_box_art_directory), next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text=" - This can be your catalogue folder on your device, but I would recommend copying it off the device so you can use this tool multiple times.",fg="#00f"), colspan=3, sticky="w", next_row=True)
-
-##BoxArtPadding
-grid_helper.add(tk.Label(left_scrollable_frame, text="Box Art Right Padding:"), sticky="w")
-box_art_padding_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=boxArtPaddingVar)
-grid_helper.add(box_art_padding_entry, next_row=True)
-
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="[Optional] Folder Art Specific Padding:", variable=override_folder_box_art_padding_var), sticky="w")
-folder_box_art_padding_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=folderBoxArtPaddingVar)
-grid_helper.add(folder_box_art_padding_entry, next_row=True)
 
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Override Auto Cut Bubble off [Might want to use for fading box art]", variable=override_bubble_cut_var),colspan=3, sticky="w", next_row=True)
 
@@ -3369,63 +2661,23 @@ grid_helper.add(max_folders_bubble_length_entry, next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text=" - This would usually be 640-width of your boxart",fg="#00f"), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Preview muOS Console name [Just for preview on the right]:"), sticky="w")
-preview_console_name_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=previewConsoleNameVar)
-grid_helper.add(preview_console_name_entry, next_row=True)
-grid_helper.add(tk.Button(left_scrollable_frame, text="Backup Box Art into Archive Manager File", command=backup_boxart, fg="#007B33"), sticky="w", next_row=True)
-
 # Spacer row
 grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="Content Explorer Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
-grid_helper.add(tk.Label(left_scrollable_frame, text="Roms Input Directory:"), sticky="w")
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=roms_directory_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_input_directory), next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\ROMS' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="name.json file Directory:"), sticky="w")
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=name_json_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_name_json_path), next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\info\\name.json' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="Content Explorer Text Alignment"), sticky="w")
 contentAlignmentOptions = ["Global", "Left", "Centre", "Right"]
 content_alignment_option_menu = tk.OptionMenu(left_scrollable_frame, content_alignment_var, *contentAlignmentOptions)
 grid_helper.add(content_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Also Generate Theme for Game List *", variable=also_games_var), sticky="w")
-
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="[Experimental] Show hidden Content", variable=show_hidden_files_var), sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Merge with Box Art", variable=overlay_box_art_var), sticky="w")
-
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Replace ' - ' with ': '", variable=replace_hyphen_var), sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove ()", variable=remove_brackets_var), sticky="w")
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove []", variable=remove_square_brackets_var), sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Put 'The' At the start, instead of the end ', The'", variable=move_the_var), sticky="w")
-
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Show File Counter **", variable=show_file_counter_var), sticky="w", next_row=True)
-
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Show Console Name at top", variable=show_console_name_var), sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="* [IMPORTANT] THIS WILL OVERRIDE YOUR GAME BOX ART... MAKE A BACKUP OF THE WHOLE CATALOGUE FOLDER.", fg='#f00'), colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="* Games may also appear in the wrong order", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="** In order for File Counter to be visible box art must be set to 'Fullscreen + Front'", fg='#0000ff'), colspan=3, sticky="w", next_row=True)
 
 # Spacer row
 grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="Generation", font=title_font), colspan=2, sticky="w", next_row=True)
 
-
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Theme only generation [Recommended]", font=subtitle_font), colspan=2, sticky="w", next_row=True)
 grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Name:"), sticky="w")
 theme_name_entry = tk.Entry(left_scrollable_frame, width=50)
 grid_helper.add(theme_name_entry, next_row=True)
@@ -3438,51 +2690,6 @@ grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\
 
 # Generate button
 grid_helper.add(tk.Button(left_scrollable_frame, text="Generate Theme", command=start_theme_task), sticky="w", next_row=True)
-
-# Spacer row
-grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Combined generation for Archive manager install [Legacy]", font=subtitle_font), colspan=2, sticky="w", next_row=True)
-grid_helper.add(tk.Label(left_scrollable_frame, text="Make sure your box art setting is set to Fullscreen+Front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
-
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Archive Manager Theme Name:"), sticky="w")
-am_theme_name_entry = tk.Entry(left_scrollable_frame, width=50)
-grid_helper.add(am_theme_name_entry, next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Archive Manager Output Directory:"), sticky="w")
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=am_theme_directory_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_am_theme_directory), next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\ARCHIVE' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Don't Generate Theme", variable=am_ignore_theme_var), colspan=1, sticky="w", next_row=False)
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Don't Generate Content Explorer Theme", variable=am_ignore_cd_var), colspan=1, sticky="w", next_row=True)
-
-# Generate button
-grid_helper.add(tk.Button(left_scrollable_frame, text="Generate Archive Manager File", command=start_AM_task), sticky="w", next_row=True)
-
-# Spacer row
-grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Content explorer only generation [Legacy]", font=subtitle_font), colspan=2, sticky="w", next_row=True)
-grid_helper.add(tk.Label(left_scrollable_frame, text="Make sure your box art setting is set to Fullscreen+Front for this!", font=subtitle_font,fg="#00f"), colspan=2, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Catalogue Directory on device:"), sticky="w")
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=catalogue_directory_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_output_directory), next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\info\\catalogue' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
-
-# Spacer row
-grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Label(left_scrollable_frame, text="If you choose to generate the Game and Console Image files, to remove them you will need to", fg='#00f'), colspan=3, sticky="w", next_row=True)
-grid_helper.add(tk.Label(left_scrollable_frame, text="remove all the files in your catalogue folder you can do this with the red button below.", fg='#00f'), colspan=2, sticky="w", next_row=True)
-
-# Generate button
-grid_helper.add(tk.Button(left_scrollable_frame, text="Generate Images", command=start_images_task), sticky="w")
-grid_helper.add(tk.Button(left_scrollable_frame, text="Remove all images in Selected Catalogue Folder", command=remove_images, fg="#f00"), sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Show Advanced Errors", variable=advanced_error_var), colspan=3, sticky="w", next_row=True)
 
@@ -3784,8 +2991,6 @@ def on_change(*args):
                                 deselectedFontHexVar.get(),
                                 bubbleHexVar.get()
                                 ,previewRenderFactor,
-                                scrollBarWidth=int(scrollBarWidthVar.get()),
-                                showScrollBar=(len(previewItemList)/int(items_per_screen_entry.get()))>1,
                                 numScreens=math.ceil(len(previewItemList)/int(items_per_screen_entry.get())),
                                 screenIndex=0,transparent=False).resize(preview_size, Image.LANCZOS)
         if not page_by_page_var.get():
@@ -3845,8 +3050,6 @@ def on_change(*args):
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get(),
                                             previewRenderFactor,
-                                            scrollBarWidth=int(scrollBarWidthVar.get()),
-                                            showScrollBar=(len(previewConsolesItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewConsolesItemList)/int(items_per_screen_entry.get())),
                                             screenIndex=0,
                                             fileCounter="1 / " + items_per_screen_entry.get(),
@@ -3863,8 +3066,6 @@ def on_change(*args):
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get(),
                                             previewRenderFactor,
-                                            scrollBarWidth=int(scrollBarWidthVar.get()),
-                                            showScrollBar=(len(previewGameItemList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewGameItemList)/int(items_per_screen_entry.get())),
                                             screenIndex=0,
                                             fileCounter="1 / " + items_per_screen_entry.get(),
@@ -3881,8 +3082,6 @@ def on_change(*args):
                                             deselectedFontHexVar.get(),
                                             bubbleHexVar.get(),
                                             previewRenderFactor,
-                                            scrollBarWidth=int(scrollBarWidthVar.get()),
-                                            showScrollBar=(len(previewApplicationList)/int(items_per_screen_entry.get()))>1,
                                             numScreens=math.ceil(len(previewApplicationList)/int(items_per_screen_entry.get())),
                                             screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get(),
                                             transparent=False).resize(preview_size, Image.LANCZOS)
@@ -3945,7 +3144,6 @@ def on_change(*args):
 
 
 def save_settings():
-    config.scrollBarWidthVar = scrollBarWidthVar.get()
     config.textPaddingVar = textPaddingVar.get()
     config.bubblePaddingVar = bubblePaddingVar.get()
     config.itemsPerScreenVar = itemsPerScreenVar.get()
@@ -3999,7 +3197,6 @@ def save_settings():
     config.use_custom_bootlogo_var = use_custom_bootlogo_var.get()
     config.rg28xxVar = rg28xxVar.get()
     config.themeName = theme_name_entry.get()
-    config.amThemeName = am_theme_name_entry.get()
     config.am_ignore_theme_var = am_ignore_theme_var.get()
     config.am_ignore_cd_var = am_ignore_cd_var.get()
     config.advanced_error_var = advanced_error_var.get()
@@ -4007,7 +3204,6 @@ def save_settings():
     config.show_console_name_var = show_console_name_var.get()
 
 def load_settings():
-    scrollBarWidthVar.set(config.scrollBarWidthVar)
     textPaddingVar.set(config.textPaddingVar)
     bubblePaddingVar.set(config.bubblePaddingVar)
     itemsPerScreenVar.set(config.itemsPerScreenVar)
@@ -4062,8 +3258,6 @@ def load_settings():
     rg28xxVar.set(config.rg28xxVar)
     theme_name_entry.delete(0, tk.END)
     theme_name_entry.insert(0, config.themeName)
-    am_theme_name_entry.delete(0, tk.END)
-    am_theme_name_entry.insert(0, config.amThemeName)
     am_ignore_theme_var.set(config.am_ignore_theme_var)
     am_ignore_cd_var.set(config.am_ignore_cd_var)
     advanced_error_var.set(config.advanced_error_var)
@@ -4077,7 +3271,6 @@ consoleMap = getConsoleAssociationList()
 menuNameMap = getAlternateMenuNameDict()
 
 # Attach trace callbacks to the variables
-scrollBarWidthVar.trace_add("write", on_change)
 textPaddingVar.trace_add("write", on_change)
 bubblePaddingVar.trace_add("write", on_change)
 itemsPerScreenVar.trace_add("write", on_change)
