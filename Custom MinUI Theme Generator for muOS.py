@@ -43,7 +43,6 @@ class Config:
         self.itemsPerScreenVar = 9
         self.footerHeightVar = 55
         self.override_font_size_var = False
-        self.legacy_generation_var = False
         self.customFontSizeVar = ""
         self.bgHexVar = "000000"
         self.selectedFontHexVar = "000000"
@@ -85,7 +84,6 @@ class Config:
         self.name_json_path = ""
         self.background_image_path = ""
         self.bootlogo_image_path = ""
-        self.rg28xxVar = False
         self.alt_font_path = ""
         self.alt_text_path = "AlternativeMenuNames.json"
         self.use_alt_font_var = False
@@ -115,10 +113,6 @@ background_image = None
 
 # Define constants
 render_factor = 5
-
-
-ConsoleAssociationsPath = os.path.join(script_dir,"ConsoleAssociations.json")
-defaultConsoleAssociationsPath = os.path.join(internal_files_dir,"_ConsoleAssociations.json")
 
 headerHeight = 40
 footerHeight = 55
@@ -320,67 +314,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
 
-    
-    if additions != "Blank" and version_var.get() == "muOS 2405 BEANS" and not remove_right_menu_guides_var.get(): ## muOS Beans shit
-        in_smaller_bubble_font_size = 16*render_factor
-        inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
-
-        in_bubble_font_size = 19*render_factor 
-        inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
-
-        single_letter_font_size = 23*render_factor
-        singleLetterFont = ImageFont.truetype(selected_font_path, single_letter_font_size)
-        RHM_Len = 340
-        if additions == "PowerHelpOkay":
-            RHM_Len = 240
-
-        draw.rounded_rectangle(
-                [(5*render_factor, 430*render_factor), (150*render_factor, 475*render_factor)],
-                radius=22.5*render_factor,
-                fill=f"#{percentage_color(bg_hex,bubble_hex,0.133)}"
-            )
-        draw.rounded_rectangle(
-                [((deviceScreenWidth-5-RHM_Len)*render_factor, 430*render_factor), ((deviceScreenWidth-5)*render_factor, 475*render_factor)],
-                radius=22.5*render_factor,
-                fill=f"#{percentage_color(bg_hex,bubble_hex,0.133)}"
-            )
-        draw.rounded_rectangle(
-                [(11.5*render_factor, 436.5*render_factor), (83*render_factor, 468.5*render_factor)],
-                radius=22.5*render_factor,
-                fill=f"#{bubble_hex}"
-            )
-        if additions == "PowerHelpOkay":
-            draw.rounded_rectangle(
-                    [(402.5*render_factor, 436.5*render_factor), (466.5*render_factor, 468.5*render_factor)],
-                    radius=22.5*render_factor,
-                    fill=f"#{bubble_hex}"
-                )
-        else:
-            draw.rounded_rectangle(
-                    [(302.5*render_factor, 436.5*render_factor), (366.5*render_factor, 468.5*render_factor)],
-                    radius=22.5*render_factor,
-                    fill=f"#{bubble_hex}"
-                )
-        draw.ellipse((535*render_factor, 436.5*render_factor,567*render_factor, 468.5*render_factor),fill=f"#{bubble_hex}")
-        draw.ellipse((430.6*render_factor, 436.5*render_factor,462.6*render_factor, 468.5*render_factor),fill=f"#{bubble_hex}")
-
-        draw.text(( 20*render_factor,441*render_factor), "POWER", font=inSmallerBubbleFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
-        draw.text(( 88*render_factor,439*render_factor), "SLEEP", font=inBubbleFont, fill=f"#{bubble_hex}")
-        
-        if additions == "PowerHelpOkay":
-            draw.text(( 411.5*render_factor,441*render_factor), "MENU", font=inSmallerBubbleFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
-            draw.text(( 473*render_factor,439*render_factor), "HELP", font=inBubbleFont, fill=f"#{bubble_hex}")
-        else:
-            draw.text(( 311.5*render_factor,441*render_factor), "MENU", font=inSmallerBubbleFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
-            draw.text(( 373*render_factor,439*render_factor), "HELP", font=inBubbleFont, fill=f"#{bubble_hex}")
-
-            draw.text(( 439.8*render_factor,436.2*render_factor), "B", font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
-            draw.text(( 471.6*render_factor,439*render_factor), "BACK", font=inBubbleFont, fill=f"#{bubble_hex}")
-
-        
-        draw.text(( 543.6*render_factor,435.5*render_factor), "A", font=singleLetterFont, fill=f"#{percentage_color(bg_hex,bubble_hex,0.593)}")
-        draw.text(( 573*render_factor,439*render_factor), "OKAY", font=inBubbleFont, fill=f"#{bubble_hex}")
-    elif (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp"):
+    if (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp"):
         menuHelperGuides = generateMenuHelperGuides(muOSSystemName,selected_font_path,bubble_hex,render_factor)
 
     elif show_file_counter_var.get() == 1:
@@ -392,28 +326,6 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         x = right_aligned_position - text_width
         y = 447 * render_factor
         draw.text(( x, y ), fileCounter, font=inBubbleFont, fill=f"#{bubble_hex}")    
-    if folderName != None:
-        if remove_brackets_var.get():
-            folderName = remove_brackets_and_contents(folderName)
-        if remove_square_brackets_var.get():
-            folderName = remove_square_brackets_and_contents(folderName)
-        if replace_hyphen_var.get():
-            folderName = replace_hyphen_with_colon(folderName)
-        if move_the_var.get():
-            folderName = changeLocationOfThe(folderName)
-        folderName = remove_dot_p8(folderName)
-
-
-    if folderName != None and show_console_name_var.get():
-        
-        topTextFont = ImageFont.truetype(selected_font_path, 27*render_factor)
-
-        bbox = topTextFont.getbbox(folderName)
-        text_width = bbox[2] - bbox[0]
-
-        text_x = (deviceScreenWidth*render_factor - text_width) / 2
-
-        draw.text(( text_x,0*render_factor), folderName, font=topTextFont, fill=f"#{deselected_font_hex}")
     
 
     textAlignment = None
@@ -469,16 +381,6 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
                 text = bidi_get_display(menuNameMap.get(item[0][:].lower(),item[0][:]))
             else:
                 text = item[0][:]
-
-            if remove_brackets_var.get():
-                text = remove_brackets_and_contents(text)
-            if remove_square_brackets_var.get():
-                text = remove_square_brackets_and_contents(text)
-            if replace_hyphen_var.get():
-                text = replace_hyphen_with_colon(text)
-            if move_the_var.get():
-                text = changeLocationOfThe(text)
-            text = remove_dot_p8(text)
             if noLettersCut>0:
                 text = text[:-(noLettersCut+3)]
                 text = text+"..."
@@ -543,9 +445,6 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
 
 def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir, folderName = None):
     totalItems = len(listItems)
-
-    
-
     for workingIndex, workingItem in enumerate(listItems):
         
         if workingItem[1] == "Directory" or also_games_var.get() or workingItem[1] == "Menu" or workingItem[1] == "ThemePreview":
@@ -1903,13 +1802,6 @@ def generate_theme(progress_bar, loading_window):
             os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
 
 def FillTempThemeFolder(progress_bar):
-    legacyMethod = False
-    if version_var.get() == "muOS 2405 BEANS" or version_var.get() == "muOS 2405.1 REFRIED BEANS" or version_var.get() == "muOS 2405.2 BAKED BEANS":
-        legacyMethod = True
-    else:
-        if legacy_generation_var.get():
-            legacyMethod =True
-    
 
     textPadding = int(text_padding_entry.get())
     rectanglePadding = int(rectangle_padding_entry.get())
@@ -1929,153 +1821,102 @@ def FillTempThemeFolder(progress_bar):
     if override_font_size_var.get():
         fontSize = int(customFontSizeVar.get())
     
-    if legacyMethod:
-        shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","defaultlegacy.txt"),os.path.join(newSchemeDir,"default.txt"))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{bg_hex}", str(bg_hex))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{selected_font_hex}", str(bubble_hex))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,selected_font_hex,0.5)))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
-        
-        shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxlegacy.txt"),os.path.join(newSchemeDir,"tempmux.txt"))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{bg_hex}", str(bg_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{selected_font_hex}", str(bubble_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{deselected_font_hex}", str(percentage_color(bubble_hex,bg_hex,0.5)))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{disabled_font_hex}", str(percentage_color(bg_hex,bubble_hex,0.25)))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
+    foreground_hex = deselected_font_hex
+    midground_hex = percentage_color(bubble_hex,selected_font_hex,0.5)
+    quarterground_hex = percentage_color(bg_hex,bubble_hex,0.25)
 
+    shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","default.txt"),os.path.join(newSchemeDir,"default.txt"))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{bg_hex}", str(bg_hex))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{selected_font_hex}", str(foreground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{deselected_font_hex}", str(midground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{disabled_font_hex}", str(quarterground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{imageListAlpha}", "255")
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{ScrollDirection}", "0")
 
-        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxlaunch.txt"))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{ScrollDirection}", "0")
-        if version_var.get() == "muOS 2405 BEANS":
-            shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxapps.txt"))
-        else:
-            shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxapp.txt"))
-        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxconfig.txt"))
-        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxdevice.txt"))
-        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxinfo.txt"))
+    
+    
+    shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxlaunch.txt"),os.path.join(newSchemeDir,"muxlaunch.txt"))
+    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{bg_hex}", str(bg_hex))
+    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{selected_font_hex}", str(foreground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{deselected_font_hex}", str(midground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{disabled_font_hex}", str(quarterground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
+    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{imageListAlpha}", "255")
 
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{imageListAlpha}", str(255))
-        if version_var.get() == "muOS 2405 BEANS":
-            replace_in_file(os.path.join(newSchemeDir,"muxapps.txt"), "{imageListAlpha}", str(255))
-        else:
-            replace_in_file(os.path.join(newSchemeDir,"muxapp.txt"), "{imageListAlpha}", str(255))
-        replace_in_file(os.path.join(newSchemeDir,"muxconfig.txt"), "{imageListAlpha}", str(255))
-        replace_in_file(os.path.join(newSchemeDir,"muxdevice.txt"), "{imageListAlpha}", str(255))
-        replace_in_file(os.path.join(newSchemeDir,"muxinfo.txt"), "{imageListAlpha}", str(255))
-
-        if also_games_var.get():
-            shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxfavourite.txt"))
-            shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxhistory.txt"))
-
-            replace_in_file(os.path.join(newSchemeDir,"muxfavourite.txt"), "{imageListAlpha}", str(0))
-            replace_in_file(os.path.join(newSchemeDir,"muxhistory.txt"), "{imageListAlpha}", str(0))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{imageListAlpha}", str(255))
-        
-
-        os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
-
-        if include_overlay_var.get():
-            shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{selected_overlay_var.get()}.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
-
-        os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
+    if "Show icon on muxlaunch" == "":
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{font_list_icon_pad_top}", str(0))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_default_glyph_alpha}", str(255))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_focus_glyph_alpha}", str(255))
     else:
-        foreground_hex = deselected_font_hex
-        midground_hex = percentage_color(bubble_hex,selected_font_hex,0.5)
-        quarterground_hex = percentage_color(bg_hex,bubble_hex,0.25)
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{font_list_icon_pad_top}", str(0))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_default_glyph_alpha}", str(0))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_focus_glyph_alpha}", str(0))
 
-        shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","default.txt"),os.path.join(newSchemeDir,"default.txt"))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{bg_hex}", str(bg_hex))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{selected_font_hex}", str(foreground_hex))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{deselected_font_hex}", str(midground_hex))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{disabled_font_hex}", str(quarterground_hex))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{imageListAlpha}", "255")
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{ScrollDirection}", "0")
-
-        
-        
-        shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxlaunch.txt"),os.path.join(newSchemeDir,"muxlaunch.txt"))
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{bg_hex}", str(bg_hex))
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{selected_font_hex}", str(foreground_hex))
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{deselected_font_hex}", str(midground_hex))
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{disabled_font_hex}", str(quarterground_hex))
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{imageListAlpha}", "255")
-
-        if "Show icon on muxlaunch" == "":
-            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{font_list_icon_pad_top}", str(0))
-            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_default_glyph_alpha}", str(255))
-            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_focus_glyph_alpha}", str(255))
-        else:
-            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{font_list_icon_pad_top}", str(0))
-            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_default_glyph_alpha}", str(0))
-            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_focus_glyph_alpha}", str(0))
-
-        shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxthemed.txt"),os.path.join(newSchemeDir,"tempmux.txt"))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{bg_hex}", str(bg_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{foreground_hex}", str(foreground_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{midground_hex}", str(midground_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{quarterground_hex}", str(quarterground_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{ScrollDirection}", "0")
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{imageListAlpha}", "255")
-        # NEW ONES:
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_left}",str(bubblePaddingVar.get()))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_right}", str(bubblePaddingVar.get()))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_hex}", str(bubble_hex))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_alpha}", "255")
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_top}", str(headerHeight-44))
+    shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxthemed.txt"),os.path.join(newSchemeDir,"tempmux.txt"))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{bg_hex}", str(bg_hex))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{foreground_hex}", str(foreground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{midground_hex}", str(midground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{quarterground_hex}", str(quarterground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{ScrollDirection}", "0")
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{imageListAlpha}", "255")
+    # NEW ONES:
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_left}",str(bubblePaddingVar.get()))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_right}", str(bubblePaddingVar.get()))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_hex}", str(bubble_hex))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_alpha}", "255")
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_top}", str(headerHeight-44))
 
 
-        
-        if "Show Icon In Bubble" == "":
-            replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_icon_pad_top}", str(0))
-            replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_glyph_alpha}", str(255))
-            replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_focus_glyph_alpha}", str(255))
-        else:
-            replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_icon_pad_top}", str(0))
-            replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_glyph_alpha}", str(0))
-            replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_focus_glyph_alpha}", str(0))
-        content_height = deviceScreenHeight-headerHeight-int(footerHeightVar.get())
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_height}",str(content_height))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_width}", str(deviceScreenWidth-int(textPaddingVar.get())))
-        bubble_height = (deviceScreenHeight-headerHeight-int(footerHeightVar.get()))/int(itemsPerScreenVar.get())
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_radius}", str(math.ceil(bubble_height/2)))
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_top}", str(0))
+    
+    if "Show Icon In Bubble" == "":
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_icon_pad_top}", str(0))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_glyph_alpha}", str(255))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_focus_glyph_alpha}", str(255))
+    else:
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_icon_pad_top}", str(0))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_glyph_alpha}", str(0))
+        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_focus_glyph_alpha}", str(0))
+    content_height = deviceScreenHeight-headerHeight-int(footerHeightVar.get())
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_height}",str(content_height))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_width}", str(deviceScreenWidth-int(textPaddingVar.get())))
+    bubble_height = (deviceScreenHeight-headerHeight-int(footerHeightVar.get()))/int(itemsPerScreenVar.get())
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_radius}", str(math.ceil(bubble_height/2)))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_top}", str(0))
 
-        content_alignment_map = {"Left":0,"Centre":1,"Right":2}
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()]))
+    content_alignment_map = {"Left":0,"Centre":1,"Right":2}
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()]))
 
 
-        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxapp.txt"))
-        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxconfig.txt"))
-        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxdevice.txt"))
-        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxinfo.txt"))
-        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxfavourite.txt"))
-        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxhistory.txt"))
-        shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxplore.txt"))
-        
+    shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxapp.txt"))
+    shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxconfig.txt"))
+    shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxdevice.txt"))
+    shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxinfo.txt"))
+    shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxfavourite.txt"))
+    shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxhistory.txt"))
+    shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxplore.txt"))
+    
 
-        os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
 
-        if include_overlay_var.get():
-            shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{selected_overlay_var.get()}.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
+    if include_overlay_var.get():
+        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{selected_overlay_var.get()}.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
 
-        os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
+    os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
 
     os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","font","panel"), exist_ok=True) #Font binaries stuff
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries","BPreplayBold-unhinted-20.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","default.bin"))
-    if not legacyMethod:
-        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxapp.bin"))
-        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxconfig.bin"))
-        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxdevice.bin"))
-        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxinfo.bin"))
-        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxfavourite.bin"))
-        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxhistory.bin"))
-        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxplore.bin"))
+
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxapp.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxconfig.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxdevice.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxinfo.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxfavourite.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxhistory.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxplore.bin"))
 
 
     if main_menu_style_var.get() == "Horizontal":
@@ -2162,53 +2003,34 @@ def FillTempThemeFolder(progress_bar):
             print(f"An error occurred: {e}")
     
     itemsList = []
-    legacyMethod = False
     if version_var.get() == "muOS 2405 BEANS":
         workingMenus = menus2405
-        legacyMethod = True
     elif version_var.get() == "muOS 2405.1 REFRIED BEANS":
         workingMenus = menus2405_1
-        legacyMethod = True
     elif version_var.get() == "muOS 2405.2 BAKED BEANS":
         workingMenus = menus2405_2
-        legacyMethod = True
     elif version_var.get() == "muOS 2405.3 COOL BEANS":
         workingMenus = menus2405_3
-        if legacy_generation_var.get():
-            legacyMethod = True
+
     else:
         raise ValueError("You Haven't Selected a muOS Version")
-    rg28xxWorkingMenus = []
-    for screen in workingMenus:
-        if screen[0] == "muxconfig":
-            rg28xxWorkingMenus.append(["muxconfig",[]])
-            for item in screen[1]:
-                if not(item[1] == "network" or item[1] == "service"): # Remove wifi related menu items 
-                    rg28xxWorkingMenus[-1][1].append(item)
-        else:
-            rg28xxWorkingMenus.append(screen)
-
-
-    if rg28xxVar.get():
-        workingMenus = rg28xxWorkingMenus
     
-    if not legacyMethod:
-        workingMenus = [["muxlaunch",[["Content Explorer","explore"],
-                                      ["Favourites","favourite"],
-                                      ["History","history"],
-                                      ["Applications","apps"],
-                                      ["Information","info"],
-                                      ["Configuration","config"],
-                                      ["Reboot Device","reboot"],
-                                      ["Shutdown Device","shutdown"]]],
-                        ["ThemePreview",[["Content Explorer","explore"],
-                                         ["Favourites","favourite"],
-                                         ["History","history"],
-                                         ["Applications","apps"],
-                                         ["Information","info"],
-                                         ["Configuration","config"],
-                                         ["Reboot Device","reboot"],
-                                         ["Shutdown Device","shutdown"]]]]
+    workingMenus = [["muxlaunch",[["Content Explorer","explore"],
+                                    ["Favourites","favourite"],
+                                    ["History","history"],
+                                    ["Applications","apps"],
+                                    ["Information","info"],
+                                    ["Configuration","config"],
+                                    ["Reboot Device","reboot"],
+                                    ["Shutdown Device","shutdown"]]],
+                    ["ThemePreview",[["Content Explorer","explore"],
+                                        ["Favourites","favourite"],
+                                        ["History","history"],
+                                        ["Applications","apps"],
+                                        ["Information","info"],
+                                        ["Configuration","config"],
+                                        ["Reboot Device","reboot"],
+                                        ["Shutdown Device","shutdown"]]]]
 
     for index, menu in enumerate(workingMenus):
         itemsList.append([])
@@ -2429,11 +2251,9 @@ override_bubble_cut_var = tk.IntVar()
 page_by_page_var = tk.IntVar()
 transparent_text_var = tk.IntVar()
 override_font_size_var = tk.IntVar()
-legacy_generation_var = tk.IntVar()
 override_folder_box_art_padding_var = tk.IntVar()
 use_alt_font_var = tk.IntVar()
 use_custom_bootlogo_var = tk.IntVar()
-rg28xxVar = tk.IntVar()
 remove_brackets_var = tk.IntVar()
 overlay_box_art_var = tk.IntVar(value=1)
 remove_square_brackets_var = tk.IntVar()
@@ -2595,15 +2415,11 @@ grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="[Optional] Override 
 custom_font_size_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=customFontSizeVar)
 grid_helper.add(custom_font_size_entry, next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Use Legacy Generation", variable=legacy_generation_var ), sticky="w")
-
 # Spacer row
 grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Specific Configurations", font=subtitle_font), sticky="w", next_row=True)
 
-
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Generating for the RG28XX", variable=rg28xxVar), sticky="w",next_row=True)
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="Main Menu Style"), sticky="w")
 MainMenuStyleOptions = ["Horizontal", "Vertical", "Alt-Horizontal"]
@@ -2612,6 +2428,7 @@ grid_helper.add(main_menu_style_option_menu, colspan=3, sticky="w", next_row=Tru
 
 grid_helper.add(tk.Label(left_scrollable_frame, text="muOS Version"), sticky="w")
 options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS", "muOS 2405.3 COOL BEANS"]
+options = ["muOS 2410.1 Banana - Rose Petals Edition"]
 option_menu = tk.OptionMenu(left_scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
@@ -2864,31 +2681,7 @@ def on_change(*args):
     updateMenusList(menus2405_3, menus2405_3_Default_list)
 
     previewApplicationList = []
-    if version_var.get() == "muOS 2405 BEANS":
-        index = None
-        for i, n in enumerate(menus2405):
-            if n[0] == "muxapps":
-                index = i
-                break
-        if index!=None:
-            previewApplicationList = [[x[0],"menu",x[0]] for x in menus2405[index][1]]
-    elif version_var.get() == "muOS 2405.1 REFRIED BEANS":
-        index = None
-        for i, n in enumerate(menus2405_1):
-            if n[0] == "muxapp":
-                index = i
-                break
-        if index!=None:
-            previewApplicationList = [[x[0],"menu",x[0]] for x in menus2405_1[index][1]]
-    elif version_var.get() == "muOS 2405.2 BAKED BEANS":
-        index = None
-        for i, n in enumerate(menus2405_2):
-            if n[0] == "muxapp":
-                index = i
-                break
-        if index!=None:
-            previewApplicationList = [[x[0],"menu",x[0]] for x in menus2405_2[index][1]]
-    elif version_var.get() == "muOS 2405.3 COOL BEANS":
+    if version_var.get() == "muOS 2410.1 Banana - Rose Petals Edition":
         index = None
         for i, n in enumerate(menus2405_3):
             if n[0] == "muxapp":
@@ -2928,22 +2721,8 @@ def on_change(*args):
 
     # This function will run whenever any traced variable changes
     try:
-        consoleName = consoleMap.get(previewConsoleNameVar.get().lower(), previewConsoleNameVar.get())
         previewItemList = [['Content Explorer', 'Menu', 'explore'], ['Favourites', 'Menu', 'favourite'], ['History', 'Menu', 'history'], ['Applications', 'Menu', 'apps'], ['Information', 'Menu', 'info'], ['Configuration', 'Menu', 'config'], ['Reboot Device', 'Menu', 'reboot'], ['Shutdown Device', 'Menu', 'shutdown']]
-        previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File', '4-in-1 Fun Pak [Version 1] (USA, Europe)'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File', '4-in-1 Funpak - Volume II (USA, Europe)'], ['A-mazing Tater (USA)', 'File', 'A-mazing Tater (USA)'], ['Addams Family, The (USA)', 'File', 'Addams Family, The (USA)'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File', "Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]"], ['Adventure Island (USA, Europe)', 'File', 'Adventure Island (USA, Europe)'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File', 'Adventure Island II - Aliens in Paradise (USA, Europe)'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File', 'Adventures of Rocky and Bullwinkle and Friends, The (USA)'], ['Adventures of Star Saver, The (USA, Europe)', 'File', 'Adventures of Star Saver, The (USA, Europe)'], ['Aerostar (USA, Europe)', 'File', 'Aerostar (USA, Europe)'], ['Aladdin (USA) (SGB Enhanced)', 'File', 'Aladdin (USA) (SGB Enhanced)'], ['Alfred Chicken (USA)', 'File', 'Alfred Chicken (USA)'], ['Alien 3 (USA, Europe)', 'File', 'Alien 3 (USA, Europe)'], ['Alien vs Predator - The Last of His Clan (USA)', 'File', 'Alien vs Predator - The Last of His Clan (USA)'], ['All-Star Baseball 99 (USA)', 'File', 'All-Star Baseball 99 (USA)'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File', 'Altered Space - A 3-D Alien Adventure (USA)'], ['Amazing Penguin (USA, Europe)', 'File', 'Amazing Penguin (USA, Europe)'], ['Amazing Spider-Man, The (USA, Europe)', 'File', 'Amazing Spider-Man, The (USA, Europe)'], ['Animaniacs (USA) (SGB Enhanced)', 'File', 'Animaniacs (USA) (SGB Enhanced)'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File', 'Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)'], ['Asteroids (USA, Europe)', 'File', 'Asteroids (USA, Europe)'], ['Atomic Punk (USA)', 'File', 'Atomic Punk (USA)'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File', 'Attack of the Killer Tomatoes (USA, Europe)'], ['Avenging Spirit (USA, Europe)', 'File', 'Avenging Spirit (USA, Europe)'], ['Balloon Kid (USA, Europe)', 'File', 'Balloon Kid (USA, Europe)'], ['Barbie - Game Girl (USA, Europe)', 'File', 'Barbie - Game Girl (USA, Europe)'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File', "Bart Simpson's Escape from Camp Deadly (USA, Europe)"], ['Bases Loaded for Game Boy (USA)', 'File', 'Bases Loaded for Game Boy (USA)'], ['Batman - Return of the Joker (USA, Europe)', 'File', 'Batman - Return of the Joker (USA, Europe)'], ['Batman - The Animated Series (USA, Europe)', 'File', 'Batman - The Animated Series (USA, Europe)'], ['Batman Forever (USA, Europe)', 'File', 'Batman Forever (USA, Europe)'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File', 'Battle Arena Toshinden (USA) (SGB Enhanced)'], ['Battle Bull (USA)', 'File', 'Battle Bull (USA)'], ['Battle Unit Zeoth (USA, Europe)', 'File', 'Battle Unit Zeoth (USA, Europe)'], ['Battleship (USA, Europe)', 'File', 'Battleship (USA, Europe)'], ['Battletoads (USA, Europe)', 'File', 'Battletoads (USA, Europe)'], ["Battletoads in Ragnarok's World (USA)", 'File', "Battletoads in Ragnarok's World (USA)"], ['Battletoads-Double Dragon (USA)', 'File', 'Battletoads-Double Dragon (USA)'], ['Beavis and Butt-Head (USA, Europe)', 'File', 'Beavis and Butt-Head (USA, Europe)'], ['Beetlejuice (USA)', 'File', 'Beetlejuice (USA)'], ['Best of the Best - Championship Karate (USA)', 'File', 'Best of the Best - Championship Karate (USA)'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File', "Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)"], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File', "Bill Elliott's NASCAR Fast Tracks (USA)"], ['Bionic Battler (USA)', 'File', 'Bionic Battler (USA)'], ['Bionic Commando (USA)', 'File', 'Bionic Commando (USA)'], ['Black Bass - Lure Fishing (USA)', 'File', 'Black Bass - Lure Fishing (USA)'], ['Blades of Steel (USA)', 'File', 'Blades of Steel (USA)'], ['Blaster Master Boy (USA)', 'File', 'Blaster Master Boy (USA)'], ['Blues Brothers, The (USA, Europe)', 'File', 'Blues Brothers, The (USA, Europe)'], ['Bo Jackson - Two Games in One (USA)', 'File', 'Bo Jackson - Two Games in One (USA)'], ['Boggle Plus (USA)', 'File', 'Boggle Plus (USA)'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File', 'Bomberman GB (USA, Europe) (SGB Enhanced)'], ["Bonk's Adventure (USA)", 'File', "Bonk's Adventure (USA)"], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File', "Bonk's Revenge (USA) (SGB Enhanced)"]]
-
-        if not os.path.exists(roms_directory_path.get()):
-            previewConsolesItemList = [['Game Boy', 'Directory', 'Game Boy'], ['Game Boy Advance', 'Directory', 'Game Boy Advance'], ['Game Boy Color', 'Directory', 'Game Boy Color'], ['game-boy-romset-ultra-us', 'Directory', 'game-boy-romset-ultra-us'], ['Nintendo 64', 'Directory', 'Nintendo 64'], ['Nintendo DS', 'Directory', 'Nintendo DS'], ['Nintendo Entertainment System', 'Directory', 'Nintendo Entertainment System'], ['PICO-8', 'Directory', 'PICO-8'], ['Ports', 'Directory', 'Ports'], ['SEGA Mega Drive', 'Directory', 'SEGA Mega Drive'], ['Super Nintendo Entertainment System', 'Directory', 'Super Nintendo Entertainment System']]
-        else:
-            previewConsolesItemList = list_directory_contents(roms_directory_path.get())
-            FolderName = os.path.basename(roms_directory_path.get())
-
-            if os.path.exists(os.path.join(roms_directory_path.get(),previewConsolesItemList[0][0])):
-                previewGameItemList = list_directory_contents(os.path.join(roms_directory_path.get(),previewConsolesItemList[0][0]))
-                gameFolderName = os.path.basename(os.path.join(roms_directory_path.get(),previewConsolesItemList[0][0]))
-            else:
-                previewGameItemList = [['4-in-1 Fun Pak [Version 1] (USA, Europe)', 'File', '4-in-1 Fun Pak [Version 1] (USA, Europe)'], ['4-in-1 Funpak - Volume II (USA, Europe)', 'File', '4-in-1 Funpak - Volume II (USA, Europe)'], ['A-mazing Tater (USA)', 'File', 'A-mazing Tater (USA)'], ['Addams Family, The (USA)', 'File', 'Addams Family, The (USA)'], ["Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]", 'File', "Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe) [Revision]"], ['Adventure Island (USA, Europe)', 'File', 'Adventure Island (USA, Europe)'], ['Adventure Island II - Aliens in Paradise (USA, Europe)', 'File', 'Adventure Island II - Aliens in Paradise (USA, Europe)'], ['Adventures of Rocky and Bullwinkle and Friends, The (USA)', 'File', 'Adventures of Rocky and Bullwinkle and Friends, The (USA)'], ['Adventures of Star Saver, The (USA, Europe)', 'File', 'Adventures of Star Saver, The (USA, Europe)'], ['Aerostar (USA, Europe)', 'File', 'Aerostar (USA, Europe)'], ['Aladdin (USA) (SGB Enhanced)', 'File', 'Aladdin (USA) (SGB Enhanced)'], ['Alfred Chicken (USA)', 'File', 'Alfred Chicken (USA)'], ['Alien 3 (USA, Europe)', 'File', 'Alien 3 (USA, Europe)'], ['Alien vs Predator - The Last of His Clan (USA)', 'File', 'Alien vs Predator - The Last of His Clan (USA)'], ['All-Star Baseball 99 (USA)', 'File', 'All-Star Baseball 99 (USA)'], ['Altered Space - A 3-D Alien Adventure (USA)', 'File', 'Altered Space - A 3-D Alien Adventure (USA)'], ['Amazing Penguin (USA, Europe)', 'File', 'Amazing Penguin (USA, Europe)'], ['Amazing Spider-Man, The (USA, Europe)', 'File', 'Amazing Spider-Man, The (USA, Europe)'], ['Animaniacs (USA) (SGB Enhanced)', 'File', 'Animaniacs (USA) (SGB Enhanced)'], ['Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 1 - Asteroids & Missile Command (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 2 - Centipede & Millipede (USA, Europe) (SGB Enhanced)'], ['Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)', 'File', 'Arcade Classic No. 3 - Galaga & Galaxian (USA) (SGB Enhanced)'], ['Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classic No. 4 - Defender & Joust (USA, Europe) (SGB Enhanced)'], ['Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)', 'File', 'Arcade Classics - Super Breakout & Battlezone (USA, Europe) (SGB Enhanced)'], ['Asteroids (USA, Europe)', 'File', 'Asteroids (USA, Europe)'], ['Atomic Punk (USA)', 'File', 'Atomic Punk (USA)'], ['Attack of the Killer Tomatoes (USA, Europe)', 'File', 'Attack of the Killer Tomatoes (USA, Europe)'], ['Avenging Spirit (USA, Europe)', 'File', 'Avenging Spirit (USA, Europe)'], ['Balloon Kid (USA, Europe)', 'File', 'Balloon Kid (USA, Europe)'], ['Barbie - Game Girl (USA, Europe)', 'File', 'Barbie - Game Girl (USA, Europe)'], ["Bart Simpson's Escape from Camp Deadly (USA, Europe)", 'File', "Bart Simpson's Escape from Camp Deadly (USA, Europe)"], ['Bases Loaded for Game Boy (USA)', 'File', 'Bases Loaded for Game Boy (USA)'], ['Batman - Return of the Joker (USA, Europe)', 'File', 'Batman - Return of the Joker (USA, Europe)'], ['Batman - The Animated Series (USA, Europe)', 'File', 'Batman - The Animated Series (USA, Europe)'], ['Batman Forever (USA, Europe)', 'File', 'Batman Forever (USA, Europe)'], ['Battle Arena Toshinden (USA) (SGB Enhanced)', 'File', 'Battle Arena Toshinden (USA) (SGB Enhanced)'], ['Battle Bull (USA)', 'File', 'Battle Bull (USA)'], ['Battle Unit Zeoth (USA, Europe)', 'File', 'Battle Unit Zeoth (USA, Europe)'], ['Battleship (USA, Europe)', 'File', 'Battleship (USA, Europe)'], ['Battletoads (USA, Europe)', 'File', 'Battletoads (USA, Europe)'], ["Battletoads in Ragnarok's World (USA)", 'File', "Battletoads in Ragnarok's World (USA)"], ['Battletoads-Double Dragon (USA)', 'File', 'Battletoads-Double Dragon (USA)'], ['Beavis and Butt-Head (USA, Europe)', 'File', 'Beavis and Butt-Head (USA, Europe)'], ['Beetlejuice (USA)', 'File', 'Beetlejuice (USA)'], ['Best of the Best - Championship Karate (USA)', 'File', 'Best of the Best - Championship Karate (USA)'], ["Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)", 'File', "Bill & Ted's Excellent Game Boy Adventure - A Bogus Journey! (USA, Europe)"], ["Bill Elliott's NASCAR Fast Tracks (USA)", 'File', "Bill Elliott's NASCAR Fast Tracks (USA)"], ['Bionic Battler (USA)', 'File', 'Bionic Battler (USA)'], ['Bionic Commando (USA)', 'File', 'Bionic Commando (USA)'], ['Black Bass - Lure Fishing (USA)', 'File', 'Black Bass - Lure Fishing (USA)'], ['Blades of Steel (USA)', 'File', 'Blades of Steel (USA)'], ['Blaster Master Boy (USA)', 'File', 'Blaster Master Boy (USA)'], ['Blues Brothers, The (USA, Europe)', 'File', 'Blues Brothers, The (USA, Europe)'], ['Bo Jackson - Two Games in One (USA)', 'File', 'Bo Jackson - Two Games in One (USA)'], ['Boggle Plus (USA)', 'File', 'Boggle Plus (USA)'], ['Bomberman GB (USA, Europe) (SGB Enhanced)', 'File', 'Bomberman GB (USA, Europe) (SGB Enhanced)'], ["Bonk's Adventure (USA)", 'File', "Bonk's Adventure (USA)"], ["Bonk's Revenge (USA) (SGB Enhanced)", 'File', "Bonk's Revenge (USA) (SGB Enhanced)"]]
-
+        
         if main_menu_style_var.get() == "Horizontal":
             image1 = generatePilImageHorizontal(fakeprogressbar,
                                                 0,
@@ -2994,35 +2773,6 @@ def on_change(*args):
                                 numScreens=math.ceil(len(previewItemList)/int(items_per_screen_entry.get())),
                                 screenIndex=0,transparent=False).resize(preview_size, Image.LANCZOS)
         if not page_by_page_var.get():
-            image2 = generatePilImageVertical(fakeprogressbar,0,
-                                            "Folder",
-                                            previewConsolesItemList[0:int(items_per_screen_entry.get())],
-                                            additions_Blank,
-                                            int(textPaddingVar.get()),
-                                            int(bubblePaddingVar.get()),
-                                            int(items_per_screen_entry.get()),
-                                            bgHexVar.get(),
-                                            selectedFontHexVar.get(),
-                                            deselectedFontHexVar.get(),
-                                            bubbleHexVar.get(),
-                                            previewRenderFactor,
-                                            fileCounter="1 / " + items_per_screen_entry.get(),
-                                            transparent=False).resize(preview_size, Image.LANCZOS)
-            image3 = generatePilImageVertical(fakeprogressbar,0,
-                                            consoleName, 
-                                            previewGameItemList[0:int(items_per_screen_entry.get())],
-                                            additions_Blank,
-                                            int(textPaddingVar.get()),
-                                            int(bubblePaddingVar.get()),
-                                            int(items_per_screen_entry.get()),
-                                            bgHexVar.get(),
-                                            selectedFontHexVar.get(),
-                                            deselectedFontHexVar.get(),
-                                            bubbleHexVar.get(),
-                                            previewRenderFactor,
-                                            fileCounter="1 / " + items_per_screen_entry.get(),
-                                            folderName=gameFolderName,
-                                            transparent=False).resize(preview_size, Image.LANCZOS)
             image4 = generatePilImageVertical(fakeprogressbar,0,
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
@@ -3037,39 +2787,9 @@ def on_change(*args):
                                             previewRenderFactor,
                                             fileCounter="1 / " + items_per_screen_entry.get(),
                                             transparent=False).resize(preview_size, Image.LANCZOS)
+            image2 = image4
+            image3 = image4
         else:
-            image2 = generatePilImageVertical(fakeprogressbar,0,
-                                            "Folder",
-                                            previewConsolesItemList[0:int(items_per_screen_entry.get())],
-                                            additions_Blank,
-                                            int(textPaddingVar.get()),
-                                            int(bubblePaddingVar.get()),
-                                            int(items_per_screen_entry.get()),
-                                            bgHexVar.get(),
-                                            selectedFontHexVar.get(),
-                                            deselectedFontHexVar.get(),
-                                            bubbleHexVar.get(),
-                                            previewRenderFactor,
-                                            numScreens=math.ceil(len(previewConsolesItemList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,
-                                            fileCounter="1 / " + items_per_screen_entry.get(),
-                                            transparent=False).resize(preview_size, Image.LANCZOS)
-            image3 = generatePilImageVertical(fakeprogressbar,0,
-                                            consoleName,
-                                            previewGameItemList[0:int(items_per_screen_entry.get())],
-                                            additions_Blank,
-                                            int(textPaddingVar.get()),
-                                            int(bubblePaddingVar.get()),
-                                            int(items_per_screen_entry.get()),
-                                            bgHexVar.get(),
-                                            selectedFontHexVar.get(),
-                                            deselectedFontHexVar.get(),
-                                            bubbleHexVar.get(),
-                                            previewRenderFactor,
-                                            numScreens=math.ceil(len(previewGameItemList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,
-                                            fileCounter="1 / " + items_per_screen_entry.get(),
-                                            transparent=False).resize(preview_size, Image.LANCZOS)
             image4 = generatePilImageVertical(fakeprogressbar,0,
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
@@ -3085,6 +2805,8 @@ def on_change(*args):
                                             numScreens=math.ceil(len(previewApplicationList)/int(items_per_screen_entry.get())),
                                             screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get(),
                                             transparent=False).resize(preview_size, Image.LANCZOS)
+            image2 = image4
+            image3 = image4
         if main_menu_style_var.get() == "Horizontal":
             image5 = generatePilImageHorizontal(fakeprogressbar,
                                                 4,
@@ -3175,7 +2897,6 @@ def save_settings():
     config.page_by_page_var = page_by_page_var.get()
     config.transparent_text_var = transparent_text_var.get()
     config.override_font_size_var = override_font_size_var.get()
-    config.legacy_generation_var = legacy_generation_var.get()
     config.override_folder_box_art_padding_var = override_folder_box_art_padding_var.get()
     config.boxArtPaddingVar = boxArtPaddingVar.get()
     config.folderBoxArtPaddingVar = folderBoxArtPaddingVar.get()
@@ -3195,7 +2916,6 @@ def save_settings():
     config.alt_text_path = alt_text_path.get()
     config.use_alt_font_var = use_alt_font_var.get()
     config.use_custom_bootlogo_var = use_custom_bootlogo_var.get()
-    config.rg28xxVar = rg28xxVar.get()
     config.themeName = theme_name_entry.get()
     config.am_ignore_theme_var = am_ignore_theme_var.get()
     config.am_ignore_cd_var = am_ignore_cd_var.get()
@@ -3238,7 +2958,6 @@ def load_settings():
     page_by_page_var.set(config.page_by_page_var)
     transparent_text_var.set(config.transparent_text_var)
     override_font_size_var.set(config.override_font_size_var)
-    legacy_generation_var.set(config.legacy_generation_var)
     version_var.set(config.version_var)
     global_alignment_var.set(config.global_alignment_var)
     selected_overlay_var.set(config.selected_overlay_var)
@@ -3255,7 +2974,6 @@ def load_settings():
     alt_text_path.set(config.alt_text_path)
     use_alt_font_var.set(config.use_alt_font_var)
     use_custom_bootlogo_var.set(config.use_custom_bootlogo_var)
-    rg28xxVar.set(config.rg28xxVar)
     theme_name_entry.delete(0, tk.END)
     theme_name_entry.insert(0, config.themeName)
     am_ignore_theme_var.set(config.am_ignore_theme_var)
@@ -3267,7 +2985,6 @@ def load_settings():
 
 config = Config()
 load_settings()
-consoleMap = getConsoleAssociationList()
 menuNameMap = getAlternateMenuNameDict()
 
 # Attach trace callbacks to the variables
@@ -3307,7 +3024,6 @@ override_folder_box_art_padding_var.trace_add("write", on_change)
 page_by_page_var.trace_add("write", on_change)
 transparent_text_var.trace_add("write", on_change)
 override_font_size_var.trace_add("write", on_change)
-legacy_generation_var.trace_add("write",on_change)
 version_var.trace_add("write", on_change)
 global_alignment_var.trace_add("write", on_change)
 selected_overlay_var.trace_add("write",on_change)
@@ -3325,7 +3041,6 @@ am_ignore_cd_var.trace_add("write", on_change)
 advanced_error_var.trace_add("write", on_change)
 use_alt_font_var.trace_add("write", on_change)
 use_custom_bootlogo_var.trace_add("write", on_change)
-rg28xxVar.trace_add("write",on_change)
 alt_font_path.trace_add("write", on_change)
 alt_text_path.trace_add("write",on_change)
 
