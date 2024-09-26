@@ -35,13 +35,16 @@ else:
 
 #HI
 # Default values for parameters
-class Config:
+class Config: # TODO delete unneeded variables
     def __init__(self, config_file=os.path.join(script_dir,'MinUIThemeGeneratorConfig.json')):
         self.config_file = config_file
         self.textPaddingVar = 25
+        self.VBG_Vertical_Padding_var = 20
+        self.VBG_Horizontal_Padding_var = 20
         self.bubblePaddingVar = 20
         self.itemsPerScreenVar = 9
         self.footerHeightVar = 55
+        self.headerHeightVar = 40
         self.override_font_size_var = False
         self.customFontSizeVar = ""
         self.bgHexVar = "000000"
@@ -87,6 +90,7 @@ class Config:
         self.alt_font_path = ""
         self.alt_text_path = "AlternativeMenuNames.json"
         self.use_alt_font_var = False
+        self.use_custom_background_var = False
         self.use_custom_bootlogo_var = False
         self.themeName = "MinUIfied - Default Theme"
         self.amThemeName = "MinUIfied - Default AM Theme"
@@ -117,10 +121,6 @@ render_factor = 5
 headerHeight = 40
 footerHeight = 55
 textMF = 0.7
-additions_Blank = "Blank"
-additions_PowerHelpBackOkay = "PowerHelpBackOkay"
-additions_powerHelpOkay = "PowerHelpOkay"
-additions_Preview = "Preview"
 
 
 def change_logo_color(input_path, hex_color):
@@ -144,9 +144,19 @@ def change_logo_color(input_path, hex_color):
 def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render_factor):
     image = Image.new("RGBA", (deviceScreenWidth*render_factor, deviceScreenHeight*render_factor), (255, 255, 255, 0))
     draw = ImageDraw.Draw(image)
+
+
+
+    from_sides_padding = int(VBG_Horizontal_Padding_entry.get())
+    from_bottom_padding = int(VBG_Vertical_Padding_entry.get())
+
     
     
-    menu_helper_guide_height = (9/11)*footerHeight
+    menu_helper_guide_height = footerHeight-(from_bottom_padding*2)
+    if muOSSystemName == "muxplore" or muOSSystemName == "muxhistory" or muOSSystemName == "muxfavourite":
+        if menu_helper_guide_height > 36:
+            #from_bottom_padding = int((footerHeight-36)/2)
+            menu_helper_guide_height = 36
         
     in_smaller_bubble_font_size = menu_helper_guide_height*(16/45)*render_factor
     inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
@@ -165,8 +175,16 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
     okayText = "OKAY"
     confirmText = "CONFIRM"
     launchText = "LAUNCH"
+    openText = "OPEN"
+    refreshText = "REFRESH"
+    favouriteText = "FAVOURITE"
+    infoText = "INFO"
+    removeText = "REMOVE"
     aText = "A"
     bText = "B"
+    xText = "X"
+    yText = "Y"
+    menuText = "MENU" ##TODO MAKE THIS MENU
     if alternate_menu_names_var.get():
         powerText = bidi_get_display(menuNameMap.get("power", "POWER"))
         sleepText = bidi_get_display(menuNameMap.get("sleep","SLEEP"))
@@ -176,12 +194,18 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
         okayText = bidi_get_display(menuNameMap.get("okay","OKAY"))
         confirmText = bidi_get_display(menuNameMap.get("confirm","CONFIRM"))
         launchText = bidi_get_display(menuNameMap.get("launch","LAUNCH"))
+        openText = bidi_get_display(menuNameMap.get("open","OPEN"))
+        refreshText = bidi_get_display(menuNameMap.get("refresh","REFRESH"))
+        favouriteText = bidi_get_display(menuNameMap.get("favourite","FAVOURITE"))
+        infoText = bidi_get_display(menuNameMap.get("info","INFO"))
     
+    
+
     horizontal_small_padding = menu_helper_guide_height*(5/45)
     horizontal_padding = menu_helper_guide_height*(6.5/45)
     horizontal_large_padding = menu_helper_guide_height*(8.5/45)
     
-    bottom_guide_middle_y = deviceScreenHeight-horizontal_small_padding-(menu_helper_guide_height/2)
+    bottom_guide_middle_y = deviceScreenHeight-from_bottom_padding-(menu_helper_guide_height/2)
 
     
     #guide_bubble_height = 80
@@ -207,32 +231,62 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
         totalWidth = horizontal_padding+horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(sleepTextWidth/render_factor)+horizontal_large_padding
         smallerBubbleWidth = horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding
         draw.rounded_rectangle( ## Power Behind Bubble
-                [(horizontal_small_padding*render_factor, (bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), ((totalWidth+horizontal_small_padding)*render_factor, (bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)],
+                [(from_sides_padding*render_factor, (bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), ((totalWidth+from_sides_padding)*render_factor, (bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)],
                 radius=(menu_helper_guide_height/2)*render_factor,
                 #fill=f"#{percentage_color(primary_colour_hex,secondary_colour_hex,0.133)}"
                 fill = hex_to_rgb(colour_hex, alpha = 0.133)
             )
+        (totalWidth+from_sides_padding)*render_factor
         draw.rounded_rectangle( # Power infront Bubble
-                [((horizontal_small_padding+horizontal_padding)*render_factor, (bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), ((horizontal_small_padding+horizontal_padding+smallerBubbleWidth)*render_factor, (bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)],
+                [((from_sides_padding+horizontal_padding)*render_factor, (bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), ((from_sides_padding+horizontal_padding+smallerBubbleWidth)*render_factor, (bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)],
                 radius=(guide_small_bubble_height/2)*render_factor,
                 fill=hex_to_rgb(colour_hex, alpha = 1)
             )
-        powerTextX = horizontal_small_padding+horizontal_padding+horizontal_large_padding
-        sleepTextX = horizontal_small_padding+horizontal_padding+horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding
+        powerTextX = from_sides_padding+horizontal_padding+horizontal_large_padding
+        sleepTextX = from_sides_padding+horizontal_padding+horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding
         draw.text(( powerTextX*render_factor,in_smaller_bubble_text_y), powerText, font=inSmallerBubbleFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
         draw.text(( sleepTextX*render_factor,in_bubble_text_y), sleepText, font=inBubbleFont, fill=f"#{colour_hex}")
     if not remove_right_menu_guides_var.get():
         circleWidth = guide_small_bubble_height
+
         confirmTextBbox = inBubbleFont.getbbox(confirmText)
         confirmTextWidth = confirmTextBbox[2] - confirmTextBbox[0]
+
         backTextBbox = inBubbleFont.getbbox(backText)
         backTextWidth = backTextBbox[2] - backTextBbox[0]
+
         launchTextBbox = inBubbleFont.getbbox(launchText)
         launchTextWidth = launchTextBbox[2] - launchTextBbox[0]
+
+        openTextBbox = inBubbleFont.getbbox(openText)
+        openTextWidth = openTextBbox[2] - openTextBbox[0]
+
+        refreshTextBbox = inBubbleFont.getbbox(refreshText)
+        refreshTextWidth = refreshTextBbox[2] - refreshTextBbox[0]
+
+        favouriteTextBbox = inBubbleFont.getbbox(favouriteText)
+        favouriteTextWidth = favouriteTextBbox[2] - favouriteTextBbox[0]
+
+        infoTextBbox = inBubbleFont.getbbox(infoText)
+        infoTextWidth = infoTextBbox[2] - infoTextBbox[0]
+
+        removeTextBbox = inBubbleFont.getbbox(removeText)
+        removeTextWidth = removeTextBbox[2] - removeTextBbox[0]
+
         aTextBbox = singleLetterFont.getbbox(aText)
         aTextWidth = aTextBbox[2] - aTextBbox[0]
+
         bTextBbox = singleLetterFont.getbbox(bText)
         bTextWidth = bTextBbox[2] - bTextBbox[0]
+
+        xTextBbox = singleLetterFont.getbbox(xText)
+        xTextWidth = xTextBbox[2] - xTextBbox[0]
+
+        yTextBbox = singleLetterFont.getbbox(yText)
+        yTextWidth = yTextBbox[2] - yTextBbox[0]
+
+        menuTextBbox = inSmallerBubbleFont.getbbox(menuText)
+        menuTextWidth = menuTextBbox[2] - menuTextBbox[0]
 
         RHM_Len = 0
         if muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch": # Just A and Confirm ( One Circle and confirmText plus padding )
@@ -241,50 +295,217 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
             RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding
         elif muOSSystemName == "muxapp": # B and Back, A and Launch ( Two Circle and launchText and backText plus padding )
             RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding
+        elif muOSSystemName == "muxplore": # A and Open, B and Back, X and Refresh, Y and Favourite, Menu and Info ( Four Circle and Menu and openText, backText, refreshText, Favourite Text, and Info Text plus padding )
+            ##                                                         MENU                                                                            INFO                                                   Y                                    FAVOURITE                                                    X                                     REFRESH                                                 B                                     BACK                                                  A                                    OPEN
+            RHM_Len = horizontal_padding+horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(infoTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(favouriteTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(refreshTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(openTextWidth/render_factor)+horizontal_large_padding
+        elif muOSSystemName == "muxfavourite": # A and Open, B and Back, X and Refresh, Y and Favourite, Menu and Info ( Four Circle and Menu and openText, backText, refreshText, Favourite Text, and Info Text plus padding )
+            ##                                                         MENU                                                                            INFO                                                   X                                     REMOVE                                                 B                                     BACK                                                  A                                    OPEN
+            RHM_Len = horizontal_padding+horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(infoTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(removeTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(openTextWidth/render_factor)+horizontal_large_padding
+        elif muOSSystemName == "muxhistory": # A and Open, B and Back, X and Refresh, Y and Favourite, Menu and Info ( Four Circle and Menu and openText, backText, refreshText, Favourite Text, and Info Text plus padding )
+            ##                                                         MENU                                                                            INFO                                                   Y                                    FAVOURITE                                                    X                                     REMOVE                                                 B                                     BACK                                                  A                                    OPEN
+            RHM_Len = horizontal_padding+horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(infoTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(favouriteTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(removeTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(openTextWidth/render_factor)+horizontal_large_padding
+        
+        print(RHM_Len, muOSSystemName)
 
         draw.rounded_rectangle( ## Left hand behind bubble
-                [((deviceScreenWidth-horizontal_small_padding-RHM_Len)*render_factor, (bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), ((deviceScreenWidth-horizontal_small_padding)*render_factor, (bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)],
+                [((deviceScreenWidth-from_sides_padding-RHM_Len)*render_factor, (bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), ((deviceScreenWidth-from_sides_padding)*render_factor, (bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)],
                 radius=(menu_helper_guide_height/2)*render_factor,
                 fill=hex_to_rgb(colour_hex, alpha = 0.133)
             )
-        if muOSSystemName != "muxapp": ## Draw Confirm
-            aConfirmCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
+        if muOSSystemName != "muxapp" and muOSSystemName != "muxplore" and muOSSystemName != "muxfavourite" and muOSSystemName != "muxhistory": ## Draw Confirm
+            aConfirmCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
             draw.ellipse(((aConfirmCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aConfirmCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # A Bubble
             
             aConfirmTextX = aConfirmCircleCenterX - ((aTextWidth/2)/render_factor)
-            confimTextX = deviceScreenWidth-horizontal_small_padding-((confirmTextWidth/render_factor)+horizontal_large_padding)
+            confimTextX = deviceScreenWidth-from_sides_padding-((confirmTextWidth/render_factor)+horizontal_large_padding)
             draw.text(( aConfirmTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
             draw.text(( confimTextX*render_factor,in_bubble_text_y), confirmText, font=inBubbleFont, fill=f"#{colour_hex}")
             
             if muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo": # Draw Back
-                bBackCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
+                bBackCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
                 draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # B Bubble
 
                 bBackTextX = bBackCircleCenterX - ((bTextWidth/2)/render_factor)
-                backTextX = deviceScreenWidth-horizontal_small_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
+                backTextX = deviceScreenWidth-from_sides_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
                 draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
                 draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
 
         else: # Draw Launch
-            aLaunchCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
-            draw.ellipse(((aLaunchCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aLaunchCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # A Bubble
+            if muOSSystemName == "muxapp":
+                aLaunchCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
+                draw.ellipse(((aLaunchCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aLaunchCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # A Bubble
 
-            aLaunchTextX = aLaunchCircleCenterX - ((aTextWidth/2)/render_factor)
-            launchTextX = deviceScreenWidth-horizontal_small_padding-((launchTextWidth/render_factor)+horizontal_large_padding)
-            draw.text(( aLaunchTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-            draw.text(( launchTextX*render_factor,in_bubble_text_y), launchText, font=inBubbleFont, fill=f"#{colour_hex}")
+                aLaunchTextX = aLaunchCircleCenterX - ((aTextWidth/2)/render_factor)
+                launchTextX = deviceScreenWidth-from_sides_padding-((launchTextWidth/render_factor)+horizontal_large_padding)
+                draw.text(( aLaunchTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+                draw.text(( launchTextX*render_factor,in_bubble_text_y), launchText, font=inBubbleFont, fill=f"#{colour_hex}")
 
-            bBackCircleCenterX = deviceScreenWidth-horizontal_small_padding-((circleWidth/2)+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
-            draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # B Bubble
+                bBackCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
+                draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # B Bubble
 
-            bBackTextX = bBackCircleCenterX - ((bTextWidth/2)/render_factor)
-            backTextX = deviceScreenWidth-horizontal_small_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
-            draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-            draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
-    return image
+                bBackTextX = bBackCircleCenterX - ((bTextWidth/2)/render_factor)
+                backTextX = deviceScreenWidth-from_sides_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
+                draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+                draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
+
+            elif muOSSystemName == "muxplore": ## Should be Easy to Expand 
+                ##   MENU    INFO              Y    FAVOURITE            X    REFRESH             B   BACK           A   OPEN
+
+                menuBubbleWidth = horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding
+                menuBubbleX = deviceScreenWidth - from_sides_padding - RHM_Len + horizontal_padding
+                draw.rounded_rectangle( # Power infront Bubble
+                        [((menuBubbleX)*render_factor, (bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), ((menuBubbleX+menuBubbleWidth)*render_factor, (bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)],
+                        radius=(guide_small_bubble_height/2)*render_factor,
+                        fill=hex_to_rgb(colour_hex, alpha = 1)
+                    )
+
+                menuInfoTextX = menuBubbleX + horizontal_large_padding
+                draw.text(( menuInfoTextX*render_factor,in_smaller_bubble_text_y), menuText, font=inSmallerBubbleFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                infoTextX = menuBubbleX+menuBubbleWidth + horizontal_small_padding
+                draw.text(( infoTextX*render_factor,in_bubble_text_y), infoText, font=inBubbleFont, fill=f"#{colour_hex}")
 
 
-def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,additions,textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,numScreens=0,screenIndex=0,fileCounter="",folderName = None,transparent=False):
+                yFavouriteCircleCenterX = infoTextX + (infoTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
+                draw.ellipse(((yFavouriteCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(yFavouriteCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
+
+                yFavouriteTextX = yFavouriteCircleCenterX- ((yTextWidth/2)/render_factor)
+                draw.text(( yFavouriteTextX*render_factor,single_letter_text_y), yText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                favouriteTextX = yFavouriteCircleCenterX+(circleWidth/2) + horizontal_small_padding
+                draw.text(( favouriteTextX*render_factor,in_bubble_text_y), favouriteText, font=inBubbleFont, fill=f"#{colour_hex}")
+
+
+                xRefreshCircleCenterX = favouriteTextX + (favouriteTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
+                draw.ellipse(((xRefreshCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(xRefreshCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
+
+                xRefreshTextX = xRefreshCircleCenterX- ((xTextWidth/2)/render_factor)
+                draw.text(( xRefreshTextX*render_factor,single_letter_text_y), xText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                refreshTextX = xRefreshCircleCenterX+(circleWidth/2) + horizontal_small_padding
+                draw.text(( refreshTextX*render_factor,in_bubble_text_y), refreshText, font=inBubbleFont, fill=f"#{colour_hex}")
+
+
+                bBackCircleCenterX = refreshTextX + (refreshTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
+                draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
+
+                bBackTextX = bBackCircleCenterX- ((bTextWidth/2)/render_factor)
+                draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                backTextX = bBackCircleCenterX+(circleWidth/2) + horizontal_small_padding
+                draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
+
+                aOpenCircleCenterX = backTextX + (backTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
+                draw.ellipse(((aOpenCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aOpenCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
+
+                aOpenTextX = aOpenCircleCenterX- ((aTextWidth/2)/render_factor)
+                draw.text(( aOpenTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                openTextX = aOpenCircleCenterX+(circleWidth/2) + horizontal_small_padding
+                draw.text(( openTextX*render_factor,in_bubble_text_y), openText, font=inBubbleFont, fill=f"#{colour_hex}")
+            elif muOSSystemName == "muxfavourite": ## Should be Easy to Expand 
+                ##   MENU    INFO           X    REMOVE             B   BACK           A   OPEN
+
+                menuBubbleWidth = horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding
+                menuBubbleX = deviceScreenWidth - from_sides_padding - RHM_Len + horizontal_padding
+                draw.rounded_rectangle( # Power infront Bubble
+                        [((menuBubbleX)*render_factor, (bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), ((menuBubbleX+menuBubbleWidth)*render_factor, (bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)],
+                        radius=(guide_small_bubble_height/2)*render_factor,
+                        fill=hex_to_rgb(colour_hex, alpha = 1)
+                    )
+
+                menuInfoTextX = menuBubbleX + horizontal_large_padding
+                draw.text(( menuInfoTextX*render_factor,in_smaller_bubble_text_y), menuText, font=inSmallerBubbleFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                infoTextX = menuBubbleX+menuBubbleWidth + horizontal_small_padding
+                draw.text(( infoTextX*render_factor,in_bubble_text_y), infoText, font=inBubbleFont, fill=f"#{colour_hex}")
+
+                xRemoveCircleCenterX = infoTextX + (infoTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
+                draw.ellipse(((xRemoveCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(xRemoveCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
+
+                xRemoveTextX = xRemoveCircleCenterX- ((xTextWidth/2)/render_factor)
+                draw.text(( xRemoveTextX*render_factor,single_letter_text_y), xText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                removeTextX = xRemoveCircleCenterX+(circleWidth/2) + horizontal_small_padding
+                draw.text(( removeTextX*render_factor,in_bubble_text_y), removeText, font=inBubbleFont, fill=f"#{colour_hex}")
+
+
+                bBackCircleCenterX = removeTextX + (removeTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
+                draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
+
+                bBackTextX = bBackCircleCenterX- ((bTextWidth/2)/render_factor)
+                draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                backTextX = bBackCircleCenterX+(circleWidth/2) + horizontal_small_padding
+                draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
+
+                aOpenCircleCenterX = backTextX + (backTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
+                draw.ellipse(((aOpenCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aOpenCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
+
+                aOpenTextX = aOpenCircleCenterX- ((aTextWidth/2)/render_factor)
+                draw.text(( aOpenTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                openTextX = aOpenCircleCenterX+(circleWidth/2) + horizontal_small_padding
+                draw.text(( openTextX*render_factor,in_bubble_text_y), openText, font=inBubbleFont, fill=f"#{colour_hex}")
+            elif muOSSystemName == "muxhistory": ## Should be Easy to Expand 
+                ##   MENU    INFO              Y    FAVOURITE            X    REFRESH             B   BACK           A   OPEN
+
+                menuBubbleWidth = horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding
+                menuBubbleX = deviceScreenWidth - from_sides_padding - RHM_Len + horizontal_padding
+                draw.rounded_rectangle( # Power infront Bubble
+                        [((menuBubbleX)*render_factor, (bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), ((menuBubbleX+menuBubbleWidth)*render_factor, (bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)],
+                        radius=(guide_small_bubble_height/2)*render_factor,
+                        fill=hex_to_rgb(colour_hex, alpha = 1)
+                    )
+
+                menuInfoTextX = menuBubbleX + horizontal_large_padding
+                draw.text(( menuInfoTextX*render_factor,in_smaller_bubble_text_y), menuText, font=inSmallerBubbleFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                infoTextX = menuBubbleX+menuBubbleWidth + horizontal_small_padding
+                draw.text(( infoTextX*render_factor,in_bubble_text_y), infoText, font=inBubbleFont, fill=f"#{colour_hex}")
+
+
+                yFavouriteCircleCenterX = infoTextX + (infoTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
+                draw.ellipse(((yFavouriteCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(yFavouriteCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
+
+                yFavouriteTextX = yFavouriteCircleCenterX- ((yTextWidth/2)/render_factor)
+                draw.text(( yFavouriteTextX*render_factor,single_letter_text_y), yText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                favouriteTextX = yFavouriteCircleCenterX+(circleWidth/2) + horizontal_small_padding
+                draw.text(( favouriteTextX*render_factor,in_bubble_text_y), favouriteText, font=inBubbleFont, fill=f"#{colour_hex}")
+
+
+                xRemoveCircleCenterX = favouriteTextX + (favouriteTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
+                draw.ellipse(((xRemoveCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(xRemoveCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
+
+                xRemoveTextX = xRemoveCircleCenterX- ((xTextWidth/2)/render_factor)
+                draw.text(( xRemoveTextX*render_factor,single_letter_text_y), xText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                removeTextX = xRemoveCircleCenterX+(circleWidth/2) + horizontal_small_padding
+                draw.text(( removeTextX*render_factor,in_bubble_text_y), removeText, font=inBubbleFont, fill=f"#{colour_hex}")
+
+
+                bBackCircleCenterX = removeTextX + (removeTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
+                draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
+
+                bBackTextX = bBackCircleCenterX- ((bTextWidth/2)/render_factor)
+                draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                backTextX = bBackCircleCenterX+(circleWidth/2) + horizontal_small_padding
+                draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
+
+                aOpenCircleCenterX = backTextX + (backTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
+                draw.ellipse(((aOpenCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aOpenCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
+
+                aOpenTextX = aOpenCircleCenterX- ((aTextWidth/2)/render_factor)
+                draw.text(( aOpenTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+
+                openTextX = aOpenCircleCenterX+(circleWidth/2) + horizontal_small_padding
+                draw.text(( openTextX*render_factor,in_bubble_text_y), openText, font=inBubbleFont, fill=f"#{colour_hex}")
+        return image
+
+
+def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,numScreens=0,screenIndex=0,fileCounter="",folderName = None,transparent=False):
     progress_bar['value'] +=1
     #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
@@ -297,10 +518,6 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         image = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), (0,0,0,0))
 
     draw = ImageDraw.Draw(image)   
-    if transparent_text_var.get():
-        transparent_text_image = Image.new("RGBA", image.size, (255, 255, 255, 0))
-        draw_transparent = ImageDraw.Draw(transparent_text_image)
-        transparency = 0
 
     boxArtDrawn = False
     boxArtWidth = 0
@@ -314,7 +531,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
 
-    if (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp"):
+    if (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp" or muOSSystemName == "muxplore" or muOSSystemName == "muxfavourite" or muOSSystemName == "muxhistory"):
         menuHelperGuides = generateMenuHelperGuides(muOSSystemName,selected_font_path,bubble_hex,render_factor)
 
     elif show_file_counter_var.get() == 1:
@@ -340,12 +557,10 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         else:
             textAlignment = content_alignment_var.get()
 
-    font_size = (((deviceScreenHeight - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
-    if override_font_size_var.get():
-        try:
-            font_size = int(custom_font_size_entry.get()) * render_factor
-        except:
-            font_size = (((deviceScreenHeight - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
+    try:
+        font_size = int(custom_font_size_entry.get()) * render_factor
+    except:
+        font_size = (((deviceScreenHeight - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
     
     font = ImageFont.truetype(selected_font_path, font_size)
 
@@ -418,32 +633,21 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         corner_radius = availableHeight // 2
 
         if workingIndex == index:
-            if transparent_text_var.get():
-                draw_transparent.rounded_rectangle(
-                    [(rectangle_x0, rectangle_y0), (rectangle_x1, rectangle_y1)],
-                    radius=corner_radius,
-                    fill=f"#{bubble_hex}"
-                )
-            else:
-                draw.rounded_rectangle(
-                    [(rectangle_x0, rectangle_y0), (rectangle_x1, rectangle_y1)],
-                    radius=corner_radius,
-                    fill=f"#{bubble_hex}"
-                )   
-        if transparent_text_var.get() and workingIndex == index:
-            draw_transparent.text((text_x, text_y), text, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
-        else:
-            draw.text((text_x, text_y), text, font=font, fill=text_color)
+            draw.rounded_rectangle(
+                [(rectangle_x0, rectangle_y0), (rectangle_x1, rectangle_y1)],
+                radius=corner_radius,
+                fill=f"#{bubble_hex}"
+            )   
+        draw.text((text_x, text_y), text, font=font, fill=text_color)
             
-    if transparent_text_var.get():
-        image = Image.alpha_composite(image, transparent_text_image)
-    if (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp"):
+    
+    if (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp" or muOSSystemName == "muxplore" or muOSSystemName == "muxfavourite" or muOSSystemName == "muxhistory"):
         image = Image.alpha_composite(image, menuHelperGuides)
            
     return(image)
 
 
-def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir, folderName = None):
+def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir, folderName = None):
     totalItems = len(listItems)
     for workingIndex, workingItem in enumerate(listItems):
         
@@ -472,7 +676,6 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, additions, 
                                              focusIndex,
                                              muOSSystemName,
                                              listItems[startIndex:endIndex],
-                                             additions,
                                              textPadding,
                                              rectanglePadding,
                                              ItemsPerScreen,
@@ -1812,6 +2015,14 @@ def FillTempThemeFolder(progress_bar):
     bubble_hex = bubble_hex_entry.get()
     icon_hex = icon_hex_entry.get()
 
+    if not use_alt_font_var.get():
+        selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
+    else:
+        if os.path.exists(alt_font_path.get()):
+            selected_font_path = alt_font_path.get()
+        else:
+            selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
+
     copy_contents(os.path.join(internal_files_dir, "Theme Shell"), os.path.join(internal_files_dir, ".TempBuildTheme"))
 
     newSchemeDir = os.path.join(internal_files_dir,".TempBuildTheme","scheme")
@@ -1819,7 +2030,7 @@ def FillTempThemeFolder(progress_bar):
 
     fontSize = 20
     if override_font_size_var.get():
-        fontSize = int(customFontSizeVar.get())
+        fontSize = int(font_size_var.get())
     
     foreground_hex = deselected_font_hex
     midground_hex = percentage_color(bubble_hex,selected_font_hex,0.5)
@@ -1920,21 +2131,16 @@ def FillTempThemeFolder(progress_bar):
 
 
     if main_menu_style_var.get() == "Horizontal":
-        if version_var.get() == "muOS 2405 BEANS" or version_var.get() == "muOS 2405.1 REFRIED BEANS" or version_var.get() == "muOS 2405.2 BAKED BEANS":
-            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+        if not "wrap":
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
         else:
-            if not "wrap":
-                replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
-            else:
-                replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "4") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "4") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     elif main_menu_style_var.get() == "Alt-Horizontal":
-        if version_var.get() == "muOS 2405 BEANS" or version_var.get() == "muOS 2405.1 REFRIED BEANS" or version_var.get() == "muOS 2405.2 BAKED BEANS":
-            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "1") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+
+        if not "wrap":
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
         else:
-            if not "wrap":
-                replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
-            else:
-                replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "4") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "4") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     elif main_menu_style_var.get() == "Vertical":
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     
@@ -1978,6 +2184,11 @@ def FillTempThemeFolder(progress_bar):
     defaultimage = generatePilImageDefaultScreen(bgHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     defaultimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","default.png"), format='PNG')
 
+    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxplore"), exist_ok=True)
+
+    visualbuttonoverlaymuxplore = generateMenuHelperGuides("muxplore",selected_font_path,bubble_hex,render_factor)
+    visualbuttonoverlaymuxplore.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxplore","default.png"), format='PNG')
+
     
     if False: ## Testing converting font in generator
         try:
@@ -2003,13 +2214,7 @@ def FillTempThemeFolder(progress_bar):
             print(f"An error occurred: {e}")
     
     itemsList = []
-    if version_var.get() == "muOS 2405 BEANS":
-        workingMenus = menus2405
-    elif version_var.get() == "muOS 2405.1 REFRIED BEANS":
-        workingMenus = menus2405_1
-    elif version_var.get() == "muOS 2405.2 BAKED BEANS":
-        workingMenus = menus2405_2
-    elif version_var.get() == "muOS 2405.3 COOL BEANS":
+    if version_var.get() == "muOS 2410.1 Banana - Rose Petals Edition":
         workingMenus = menus2405_3
 
     else:
@@ -2039,10 +2244,10 @@ def FillTempThemeFolder(progress_bar):
 
     for index, menu in enumerate(workingMenus):
         if menu[0] == "muxdevice":
-            ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_powerHelpOkay,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+            ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
         elif menu[0] == "muxlaunch":
             if main_menu_style_var.get() == "Vertical":
-                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
             elif main_menu_style_var.get() == "Horizontal":
                 HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"), variant = "Horizontal")
             elif main_menu_style_var.get() == "Alt-Horizontal":
@@ -2050,9 +2255,9 @@ def FillTempThemeFolder(progress_bar):
 
         elif menu[0] == "ThemePreview":
                 if main_menu_style_var.get() == "Vertical": 
-                    ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_Preview,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                    ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
         else:
-            ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],additions_PowerHelpBackOkay,textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+            ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
 
 def select_alternate_menu_names():
     if os.path.exists(alt_text_path.get()):
@@ -2210,14 +2415,6 @@ window_height = int(min(screen_height*0.9, 1720))
 
 root.geometry(f"1280x{window_height}")  # Set a default size for the window
 
-# Create the main frame
-main_frame = tk.Frame(root)
-main_frame.pack(fill="both", expand=True)
-
-resize_id = None
-
-root.bind("<Configure>", on_resize)
-
 subtitle_font = font.Font(family="Helvetica", size=10, weight="bold")
 title_font = font.Font(family="Helvetica", size=14, weight="bold")
 
@@ -2253,6 +2450,7 @@ transparent_text_var = tk.IntVar()
 override_font_size_var = tk.IntVar()
 override_folder_box_art_padding_var = tk.IntVar()
 use_alt_font_var = tk.IntVar()
+use_custom_background_var=tk.IntVar()
 use_custom_bootlogo_var = tk.IntVar()
 remove_brackets_var = tk.IntVar()
 overlay_box_art_var = tk.IntVar(value=1)
@@ -2266,38 +2464,35 @@ advanced_error_var = tk.IntVar()
 # Create a canvas and a vertical scrollbar
 
 # Create the left frame with canvas and scrollbars
-left_frame = tk.Frame(main_frame)
-left_frame.pack(side="left", fill="both", expand=True)
+canvas = tk.Canvas(root)
+scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
+scrollable_frame = tk.Frame(canvas)
 
-left_canvas = tk.Canvas(left_frame)
-left_scrollbar_y = tk.Scrollbar(left_frame, orient="vertical", command=left_canvas.yview)
-left_scrollable_frame = tk.Frame(left_canvas)
-
-left_scrollable_frame.bind(
+scrollable_frame.bind(
     "<Configure>",
-    lambda e: left_canvas.configure(
-        scrollregion=left_canvas.bbox("all")
+    lambda e: canvas.configure(
+        scrollregion=canvas.bbox("all")
     )
 )
 
-left_canvas.create_window((0, 0), window=left_scrollable_frame, anchor="nw")
-left_canvas.configure(yscrollcommand=left_scrollbar_y.set)
+canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+canvas.configure(yscrollcommand=scrollbar.set)
 
-left_canvas.pack(side="left", fill="both", expand=True)
-left_scrollbar_y.pack(side="right", fill="y")
+canvas.pack(side="left", fill="both", expand=True)
+scrollbar.pack(side="right", fill="y")
 
 # Bind mouse wheel events based on the platform
 if platform.system() == 'Darwin':
-    left_canvas.bind_all("<MouseWheel>", lambda event: on_mousewheel(event, left_canvas))
-    left_canvas.bind_all("<Shift-MouseWheel>", lambda event: on_shiftmousewheel(event, left_canvas))
+    canvas.bind_all("<MouseWheel>", lambda event: on_mousewheel(event, canvas))
+    canvas.bind_all("<Shift-MouseWheel>", lambda event: on_shiftmousewheel(event, canvas))
 else:
-    left_canvas.bind_all("<MouseWheel>", lambda event: on_mousewheel(event, left_canvas))
-    left_canvas.bind_all("<Shift-MouseWheel>", lambda event: on_shiftmousewheel(event, left_canvas))
-    left_canvas.bind_all("<Button-4>", lambda event: on_mousewheel(event, left_canvas))  # For Linux
-    left_canvas.bind_all("<Button-5>", lambda event: on_mousewheel(event, left_canvas))  # For Linux
+    canvas.bind_all("<MouseWheel>", lambda event: on_mousewheel(event, canvas))
+    canvas.bind_all("<Shift-MouseWheel>", lambda event: on_shiftmousewheel(event, canvas))
+    canvas.bind_all("<Button-4>", lambda event: on_mousewheel(event, canvas))  # For Linux
+    canvas.bind_all("<Button-5>", lambda event: on_mousewheel(event, canvas))  # For Linux
 
 # Create the grid helper
-grid_helper = GridHelper(left_scrollable_frame)
+grid_helper = GridHelper(scrollable_frame)
 
 is_dragging = False
 
@@ -2309,7 +2504,7 @@ def on_slider_change(value):
 
 
 # Create the GUI components
-grid_helper.add(tk.Label(left_scrollable_frame, text="Adjust Preview Image Size:", fg='#00f'), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Adjust Preview Image Size:", fg='#00f'), colspan=3, sticky="w", next_row=True)
 
 
 def on_slider_release(event):
@@ -2320,7 +2515,7 @@ def on_slider_release(event):
 slider_length = 125
 
 slider_length = 125
-previewSideSlider = tk.Scale(left_scrollable_frame, from_=0, to=100, orient="horizontal", 
+previewSideSlider = tk.Scale(scrollable_frame, from_=0, to=100, orient="horizontal", 
                              command=on_slider_change, showvalue=0, tickinterval=0, length=slider_length)
 grid_helper.add(previewSideSlider, colspan=3, sticky="w", next_row=True)
 
@@ -2330,17 +2525,20 @@ previewSideSlider.bind("<ButtonRelease-1>", on_slider_release)
 
 
 # Create the GUI components
-grid_helper.add(tk.Label(left_scrollable_frame, text="Configurations", font=title_font), colspan=3, sticky="w", next_row=True)
-grid_helper.add(tk.Label(left_scrollable_frame, text="Global Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Configurations", font=title_font), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Global Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
 
 # Define the StringVar variables
 textPaddingVar = tk.StringVar()
+VBG_Horizontal_Padding_var = tk.StringVar()
+VBG_Vertical_Padding_var = tk.StringVar()
 bubblePaddingVar = tk.StringVar()
 itemsPerScreenVar = tk.StringVar()
 footerHeightVar = tk.StringVar()
+headerHeightVar = tk.StringVar()
 boxArtPaddingVar = tk.StringVar()
 folderBoxArtPaddingVar = tk.StringVar()
-customFontSizeVar = tk.StringVar()
+font_size_var = tk.StringVar()
 bgHexVar = tk.StringVar()
 selectedFontHexVar = tk.StringVar()
 deselectedFontHexVar = tk.StringVar()
@@ -2351,97 +2549,103 @@ maxFoldersBubbleLengthVar = tk.StringVar()
 previewConsoleNameVar = tk.StringVar()
 
 # Option for textPadding
-grid_helper.add(tk.Label(left_scrollable_frame, text="Text Padding:"), sticky="w")
-text_padding_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=textPaddingVar)
+grid_helper.add(tk.Label(scrollable_frame, text="Text Padding:"), sticky="w")
+text_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=textPaddingVar)
 grid_helper.add(text_padding_entry, next_row=True)
 
 # Option for rectanglePadding
-grid_helper.add(tk.Label(left_scrollable_frame, text="Bubble Padding:"), sticky="w")
-rectangle_padding_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=bubblePaddingVar)
+grid_helper.add(tk.Label(scrollable_frame, text="Bubble Padding:"), sticky="w")
+rectangle_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubblePaddingVar)
 grid_helper.add(rectangle_padding_entry, next_row=True)
 
 # Option for ItemsPerScreen
-grid_helper.add(tk.Label(left_scrollable_frame, text="Items Per Screen:"), sticky="w")
-items_per_screen_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=itemsPerScreenVar)
+grid_helper.add(tk.Label(scrollable_frame, text="Items Per Screen:"), sticky="w")
+items_per_screen_entry = tk.Entry(scrollable_frame, width=50, textvariable=itemsPerScreenVar)
 grid_helper.add(items_per_screen_entry, next_row=True)
 
 # Option for ItemsPerScreen
-grid_helper.add(tk.Label(left_scrollable_frame, text="Footer Height:"), sticky="w")
-footer_height_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=footerHeightVar)
+grid_helper.add(tk.Label(scrollable_frame, text="Header Height:"), sticky="w")
+header_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=headerHeightVar)
+grid_helper.add(header_height_entry, next_row=True)
+
+# Option for ItemsPerScreen
+grid_helper.add(tk.Label(scrollable_frame, text="Footer Height:"), sticky="w")
+footer_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=footerHeightVar)
 grid_helper.add(footer_height_entry, next_row=True)
 
 # Option for Background Colour
-grid_helper.add(tk.Label(left_scrollable_frame, text="Background Hex Colour: #"), sticky="w")
-background_hex_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=bgHexVar)
+grid_helper.add(tk.Label(scrollable_frame, text="Background Hex Colour: #"), sticky="w")
+background_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=bgHexVar)
 grid_helper.add(background_hex_entry, next_row=True)
 
 # Option for Selected Font Hex Colour
-grid_helper.add(tk.Label(left_scrollable_frame, text="Selected Font Hex Colour: #"), sticky="w")
-selected_font_hex_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=selectedFontHexVar)
+grid_helper.add(tk.Label(scrollable_frame, text="Selected Font Hex Colour: #"), sticky="w")
+selected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=selectedFontHexVar)
 grid_helper.add(selected_font_hex_entry, next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Show Background Through Text", variable=transparent_text_var), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="*Show Background Through Text", variable=transparent_text_var), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame,text="*Will Only work on the Main Launch Screen (Not in menus)",fg="#00f"),sticky="w",next_row=True)
 
 # Option for Deselected Font Hex Colour
-grid_helper.add(tk.Label(left_scrollable_frame, text="Deselected Font Hex Colour: #"), sticky="w")
-deselected_font_hex_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=deselectedFontHexVar)
+grid_helper.add(tk.Label(scrollable_frame, text="Deselected Font Hex Colour: #"), sticky="w")
+deselected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=deselectedFontHexVar)
 grid_helper.add(deselected_font_hex_entry, next_row=True)
 
 # Option for Bubble Hex Colour
-grid_helper.add(tk.Label(left_scrollable_frame, text="Bubble Hex Colour: #"), sticky="w")
-bubble_hex_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=bubbleHexVar)
+grid_helper.add(tk.Label(scrollable_frame, text="Bubble Hex Colour: #"), sticky="w")
+bubble_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubbleHexVar)
 grid_helper.add(bubble_hex_entry, next_row=True)
 
 # Option for Icon Hex Colour
-grid_helper.add(tk.Label(left_scrollable_frame, text="Icon Hex Colour: #"), sticky="w")
-icon_hex_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=iconHexVar)
+grid_helper.add(tk.Label(scrollable_frame, text="Icon Hex Colour: #"), sticky="w")
+icon_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=iconHexVar)
 grid_helper.add(icon_hex_entry, next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Global Text Alignment"), sticky="w")
+grid_helper.add(tk.Label(scrollable_frame, text="Global Text Alignment"), sticky="w")
 globalAlignmentOptions = ["Left", "Centre", "Right"]
-global_alignment_option_menu = tk.OptionMenu(left_scrollable_frame, global_alignment_var, *globalAlignmentOptions)
+global_alignment_option_menu = tk.OptionMenu(scrollable_frame, global_alignment_var, *globalAlignmentOptions)
 grid_helper.add(global_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="[Optional] Override background colour with image"), sticky="w")
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=background_image_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_background_image_path), next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Optional] Override background colour with image", variable=use_custom_background_var), sticky="w")
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=background_image_path, width=50))
+grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_background_image_path), next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="*[Optional] Use Custom font:", variable=use_alt_font_var), sticky="w")
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=alt_font_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_alt_font_path), next_row=True)
-grid_helper.add(tk.Label(left_scrollable_frame,text="*Use if text override characters not supported by default font",fg="#00f"),sticky="w",next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="*[Optional] Use Custom font:", variable=use_alt_font_var), sticky="w")
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=alt_font_path, width=50))
+grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_alt_font_path), next_row=True)
+grid_helper.add(tk.Label(scrollable_frame,text="*Use if text override characters not supported by default font\n!!!Currently Wont Work In Menus!!! left in as a reminder",fg="#00f"),sticky="w",next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="[Optional] Override font size:", variable=override_font_size_var), sticky="w")
-custom_font_size_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=customFontSizeVar)
+grid_helper.add(tk.Label(scrollable_frame, text="Font size (10-55 inclusive):"), sticky="w")
+custom_font_size_entry = tk.Entry(scrollable_frame, width=50, textvariable=font_size_var)
 grid_helper.add(custom_font_size_entry, next_row=True)
 
 # Spacer row
-grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Specific Configurations", font=subtitle_font), sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Theme Specific Configurations", font=subtitle_font), sticky="w", next_row=True)
 
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Main Menu Style"), sticky="w")
+grid_helper.add(tk.Label(scrollable_frame, text="Main Menu Style"), sticky="w")
 MainMenuStyleOptions = ["Horizontal", "Vertical", "Alt-Horizontal"]
-main_menu_style_option_menu = tk.OptionMenu(left_scrollable_frame, main_menu_style_var, *MainMenuStyleOptions)
+main_menu_style_option_menu = tk.OptionMenu(scrollable_frame, main_menu_style_var, *MainMenuStyleOptions)
 grid_helper.add(main_menu_style_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="muOS Version"), sticky="w")
-options = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS", "muOS 2405.3 COOL BEANS"]
+grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
+OLDoptions = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS", "muOS 2405.3 COOL BEANS"]
 options = ["muOS 2410.1 Banana - Rose Petals Edition"]
-option_menu = tk.OptionMenu(left_scrollable_frame, version_var, *options)
+option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Use Custom Bootlogo Image:", variable=use_custom_bootlogo_var), sticky="w")
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=bootlogo_image_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_bootlogo_image_path), next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Custom Bootlogo Image:", variable=use_custom_bootlogo_var), sticky="w")
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=bootlogo_image_path, width=50))
+grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_bootlogo_image_path), next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Text Alignment"), sticky="w")
+grid_helper.add(tk.Label(scrollable_frame, text="Theme Text Alignment"), sticky="w")
 themeAlignmentOptions = ["Global", "Left", "Centre", "Right"]
-theme_alignment_option_menu = tk.OptionMenu(left_scrollable_frame, theme_alignment_var, *themeAlignmentOptions)
+theme_alignment_option_menu = tk.OptionMenu(scrollable_frame, theme_alignment_var, *themeAlignmentOptions)
 grid_helper.add(theme_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Include Overlay", variable=include_overlay_var), sticky="w")
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Include Overlay", variable=include_overlay_var), sticky="w")
 
 overlayOptions = ["muOS Default CRT Overlay", 
            "Grid_2px_10",
@@ -2452,111 +2656,95 @@ overlayOptions = ["muOS Default CRT Overlay",
            "Grid_Thin_2px_30", 
            "Perfect_CRT-noframe", 
            "Perfect_CRT"]
-overlay_option_menu = tk.OptionMenu(left_scrollable_frame, selected_overlay_var, *overlayOptions)
+overlay_option_menu = tk.OptionMenu(scrollable_frame, selected_overlay_var, *overlayOptions)
 grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
 
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Left Menu Helper Guides", variable=remove_left_menu_guides_var), sticky="w")
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Remove Right Menu Helper Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Left Visual Button Guides", variable=remove_left_menu_guides_var), sticky="w")
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Right Visual Button Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Padding for Visual Button Guides:"), sticky="w")
+VBG_Horizontal_Padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=VBG_Horizontal_Padding_var)
+grid_helper.add(VBG_Horizontal_Padding_entry, next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Vertical Padding for Visual Button Guides:"), sticky="w")
+VBG_Vertical_Padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=VBG_Vertical_Padding_var)
+grid_helper.add(VBG_Vertical_Padding_entry, next_row=True)
+
+
+
 
 # Spacer row
-grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Box Art Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Box Art Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Override Auto Cut Bubble off [Might want to use for fading box art]", variable=override_bubble_cut_var),colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Override Auto Cut Bubble off [Might want to use for fading box art]", variable=override_bubble_cut_var),colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text=" - [Games] Cut bubble off at (px):"), sticky="w")
+grid_helper.add(tk.Label(scrollable_frame, text=" - [Games] Cut bubble off at (px):"), sticky="w")
 
-max_games_bubble_length_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=maxGamesBubbleLengthVar)
+max_games_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxGamesBubbleLengthVar)
 grid_helper.add(max_games_bubble_length_entry, next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text=" - [Folders] Cut bubble off at (px):"), sticky="w")
+grid_helper.add(tk.Label(scrollable_frame, text=" - [Folders] Cut bubble off at (px):"), sticky="w")
 
-max_folders_bubble_length_entry = tk.Entry(left_scrollable_frame, width=50, textvariable=maxFoldersBubbleLengthVar)
+max_folders_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxFoldersBubbleLengthVar)
 grid_helper.add(max_folders_bubble_length_entry, next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text=" - This would usually be 640-width of your boxart",fg="#00f"), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text=" - This would usually be 640-width of your boxart",fg="#00f"), colspan=3, sticky="w", next_row=True)
 
 # Spacer row
-grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Content Explorer Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Content Explorer Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Content Explorer Text Alignment"), sticky="w")
+grid_helper.add(tk.Label(scrollable_frame, text="Content Explorer Text Alignment"), sticky="w")
 contentAlignmentOptions = ["Global", "Left", "Centre", "Right"]
-content_alignment_option_menu = tk.OptionMenu(left_scrollable_frame, content_alignment_var, *contentAlignmentOptions)
+content_alignment_option_menu = tk.OptionMenu(scrollable_frame, content_alignment_var, *contentAlignmentOptions)
 grid_helper.add(content_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Show Console Name at top", variable=show_console_name_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Console Name at top", variable=show_console_name_var), sticky="w", next_row=True)
 
 # Spacer row
-grid_helper.add(tk.Label(left_scrollable_frame, text=""), next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Generation", font=title_font), colspan=2, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Generation", font=title_font), colspan=2, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Theme Name:"), sticky="w")
-theme_name_entry = tk.Entry(left_scrollable_frame, width=50)
+grid_helper.add(tk.Label(scrollable_frame, text="Theme Name:"), sticky="w")
+theme_name_entry = tk.Entry(scrollable_frame, width=50)
 grid_helper.add(theme_name_entry, next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Themes Output Directory:"), sticky="w")
-grid_helper.add(tk.Entry(left_scrollable_frame, textvariable=theme_directory_path, width=50))
-grid_helper.add(tk.Button(left_scrollable_frame, text="Browse...", command=select_theme_directory), next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Themes Output Directory:"), sticky="w")
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=theme_directory_path, width=50))
+grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_theme_directory), next_row=True)
 
-grid_helper.add(tk.Label(left_scrollable_frame, text="Should be '[root]:\\MUOS\\theme' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\MUOS\\theme' on your muOS SD Card, but it will let you select any folder."), colspan=3, sticky="w", next_row=True)
 
 # Generate button
-grid_helper.add(tk.Button(left_scrollable_frame, text="Generate Theme", command=start_theme_task), sticky="w", next_row=True)
+grid_helper.add(tk.Button(scrollable_frame, text="Generate Theme", command=start_theme_task), sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(left_scrollable_frame, text="Show Advanced Errors", variable=advanced_error_var), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Advanced Errors", variable=advanced_error_var), colspan=3, sticky="w", next_row=True)
 
 
 
 
 # Create the right frame with canvas and scrollbars
-right_frame = tk.Frame(main_frame)
-right_frame.pack(side="left", fill="both", anchor="n")
+image_frame = tk.Frame(root)
+image_frame.pack(side="right", fill="y")
 
-right_canvas = tk.Canvas(right_frame)
-right_scrollbar = tk.Scrollbar(right_frame, orient="vertical", command=right_canvas.yview)
-right_scrollable_frame = tk.Frame(right_canvas)
-
-
-
-right_canvas.create_window((0, 0), window=right_scrollable_frame, anchor="nw")
-right_canvas.configure(yscrollcommand=right_scrollbar.set)
-
-right_canvas.pack(side="left", fill="both", expand=True)
-right_scrollbar.pack(side="right", fill="y")
-
-
-# Ensure the right frame expands only as needed
-
-right_scrollable_frame.bind(
-    "<Configure>",
-    lambda e: right_frame.config(width=(right_canvas.bbox("all")[2] + right_scrollbar.winfo_width()))
-)
-
-right_frame.bind(
-    "<Configure>",
-    lambda e: right_canvas.configure(
-        scrollregion=right_canvas.bbox("all")
-    )
-)
-
-image_label1 = tk.Label(right_scrollable_frame)
+image_label1 = tk.Label(image_frame)
 image_label1.pack()
 
-image_label2 = tk.Label(right_scrollable_frame)
+image_label2 = tk.Label(image_frame)
 image_label2.pack()
 
-image_label3 = tk.Label(right_scrollable_frame)
+image_label3 = tk.Label(image_frame)
 image_label3.pack()
 
-image_label4 = tk.Label(right_scrollable_frame)
+image_label4 = tk.Label(image_frame)
 image_label4.pack()
 
-image_label5 = tk.Label(right_scrollable_frame)
+image_label5 = tk.Label(image_frame)
 image_label5.pack()
 
 def update_image_label(image_label, pil_image):
@@ -2613,26 +2801,6 @@ def outline_image_with_inner_gap(image, outline_color=(255, 0, 0), outline_width
 
 valid_params = True
 
-
-def updateMenusList(menusList, defaultList):
-    if application_directory_path.get()!="" and os.path.exists(application_directory_path.get()): # muOS 2405.2
-        newApplicationList = [[x[0],x[0]] for x in list_directory_contents(application_directory_path.get())]
-        index = None
-        for i, n in enumerate(menusList):
-            if n[0] == "muxapp":
-                index = i
-                break
-        if index!=None:
-            menusList[index][1] = newApplicationList
-    else:
-        index = None
-        for i, n in enumerate(menusList):
-            if n[0] == "muxapp":
-                index = i
-                break
-        if index!=None:
-            menusList[index][1] = defaultList
-
 def map_value(value, x_min, x_max, y_min, y_max):
     # Calculate the proportion of the value within the input range
     proportion = (value - x_min) / (x_max - x_min)
@@ -2653,15 +2821,20 @@ def on_change(*args):
     old_selected_overlay_var = selected_overlay_var.get()
     gameFolderName = "Game Boy"
     global footerHeight
+    global headerHeight
     try:
         footerHeight = int(footer_height_entry.get())
     except:
         footerHeight = 55
+    try:
+        headerHeight = int(header_height_entry.get())
+    except:
+        headerHeight = 40
     save_settings()
     config.save_config()
     global background_image
 
-    if ("" != background_image_path.get()) and os.path.exists(background_image_path.get()):
+    if (use_custom_background_var.get()) and os.path.exists(background_image_path.get()):
         background_image = Image.open(background_image_path.get())
     else:
         background_image = None
@@ -2670,15 +2843,6 @@ def on_change(*args):
     global menus2405_1 ## NOT GLOBALS AHH SORRY HACKY SHOULD REMOVE
     global menus2405_2
     global menus2405_3
-
-    menus2405_1_Default_list = [['Archive Manager', 'Archive Manager'], ['Dingux Commander', 'Dingux Commander'], ['GMU Music Player', 'GMU Music Player'], ['PortMaster', 'PortMaster'], ['RetroArch', 'RetroArch'], ['Simple Terminal', 'Simple Terminal'], ['Task Toolkit', 'Task Toolkit']]
-    updateMenusList(menus2405_1, menus2405_1_Default_list)
-
-    menus2405_2_Default_list = [['Archive Manager', 'Archive Manager'], ['Dingux Commander', 'Dingux Commander'], ['Flip Clock', 'Flip Clock'], ['GMU Music Player', 'GMU Music Player'], ['Moonlight', 'Moonlight'], ['PortMaster', 'PortMaster'], ['PPSSPP', 'PPSSPP'], ['RetroArch', 'RetroArch'], ['Simple Terminal', 'Simple Terminal'], ['Task Toolkit', 'Task Toolkit']]
-    updateMenusList(menus2405_2, menus2405_2_Default_list)
-
-    menus2405_3_Default_list = [['Archive Manager', 'Archive Manager'], ['Dingux Commander', 'Dingux Commander'], ['Flip Clock', 'Flip Clock'], ['GMU Music Player', 'GMU Music Player'], ['Moonlight', 'Moonlight'], ['PortMaster', 'PortMaster'], ['PPSSPP', 'PPSSPP'], ['RetroArch', 'RetroArch'], ['Simple Terminal', 'Simple Terminal'], ['Task Toolkit', 'Task Toolkit']]
-    updateMenusList(menus2405_3, menus2405_3_Default_list)
 
     previewApplicationList = []
     if version_var.get() == "muOS 2410.1 Banana - Rose Petals Edition":
@@ -2718,6 +2882,7 @@ def on_change(*args):
         preview_size[1] -= betweenImagePadding+betweenImagePadding/map_value(previewSideSlider.get(),0,100,imagesOnScreen,1)
         preview_size[0] = (preview_size[0]*preview_size[1])/(oldHeight)
         preview_size[0],preview_size[1] = int(preview_size[0]),int(preview_size[1])
+    #preview_size = [int(640/2),int(480/2)]
 
     # This function will run whenever any traced variable changes
     try:
@@ -2746,9 +2911,8 @@ def on_change(*args):
         elif main_menu_style_var.get() == "Vertical":
             if not page_by_page_var.get():
                 image1 = generatePilImageVertical(fakeprogressbar,0,
-                                                "muxlaunch",
+                                                "muxlaunch", #TODO CHANGE to muxlaunch
                                                 previewItemList[0:int(items_per_screen_entry.get())],
-                                                additions_Blank,
                                                 int(textPaddingVar.get()),
                                                 int(bubblePaddingVar.get()),
                                                 int(items_per_screen_entry.get()),
@@ -2761,7 +2925,6 @@ def on_change(*args):
                 image1 = generatePilImageVertical(fakeprogressbar,0,
                                 "muxlaunch",
                                 previewItemList[0:int(items_per_screen_entry.get())],
-                                additions_Blank,
                                 int(textPaddingVar.get()),
                                 int(bubblePaddingVar.get()),
                                 int(items_per_screen_entry.get()),
@@ -2776,7 +2939,6 @@ def on_change(*args):
             image4 = generatePilImageVertical(fakeprogressbar,0,
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
-                                            additions_Blank,
                                             int(textPaddingVar.get()),
                                             int(bubblePaddingVar.get()),
                                             int(items_per_screen_entry.get()),
@@ -2793,7 +2955,6 @@ def on_change(*args):
             image4 = generatePilImageVertical(fakeprogressbar,0,
                                             "muxapp",
                                             previewApplicationList[0:int(items_per_screen_entry.get())],
-                                            additions_Blank,
                                             int(textPaddingVar.get()),
                                             int(bubblePaddingVar.get()),
                                             int(items_per_screen_entry.get()),
@@ -2867,10 +3028,13 @@ def on_change(*args):
 
 def save_settings():
     config.textPaddingVar = textPaddingVar.get()
+    config.VBG_Horizontal_Padding_var = VBG_Horizontal_Padding_var.get()
+    config.VBG_Vertical_Padding_var = VBG_Vertical_Padding_var.get()
     config.bubblePaddingVar = bubblePaddingVar.get()
     config.itemsPerScreenVar = itemsPerScreenVar.get()
     config.footerHeightVar = footerHeightVar.get()
-    config.customFontSizeVar = customFontSizeVar.get()
+    config.headerHeightVar = headerHeightVar.get()
+    config.customFontSizeVar = font_size_var.get()
     config.bgHexVar = bgHexVar.get()
     config.selectedFontHexVar = selectedFontHexVar.get()
     config.deselectedFontHexVar = deselectedFontHexVar.get()
@@ -2915,6 +3079,7 @@ def save_settings():
     config.alt_font_path = alt_font_path.get()
     config.alt_text_path = alt_text_path.get()
     config.use_alt_font_var = use_alt_font_var.get()
+    config.use_custom_background_var = use_custom_background_var.get()
     config.use_custom_bootlogo_var = use_custom_bootlogo_var.get()
     config.themeName = theme_name_entry.get()
     config.am_ignore_theme_var = am_ignore_theme_var.get()
@@ -2925,12 +3090,15 @@ def save_settings():
 
 def load_settings():
     textPaddingVar.set(config.textPaddingVar)
+    VBG_Horizontal_Padding_var.set(config.VBG_Horizontal_Padding_var)
+    VBG_Vertical_Padding_var.set(config.VBG_Vertical_Padding_var)
     bubblePaddingVar.set(config.bubblePaddingVar)
     itemsPerScreenVar.set(config.itemsPerScreenVar)
     footerHeightVar.set(config.footerHeightVar)
+    headerHeightVar.set(config.headerHeightVar)
     boxArtPaddingVar.set(config.boxArtPaddingVar)
     folderBoxArtPaddingVar.set(config.folderBoxArtPaddingVar)
-    customFontSizeVar.set(config.customFontSizeVar)
+    font_size_var.set(config.customFontSizeVar)
     bgHexVar.set(config.bgHexVar)
     selectedFontHexVar.set(config.selectedFontHexVar)
     deselectedFontHexVar.set(config.deselectedFontHexVar)
@@ -2973,6 +3141,7 @@ def load_settings():
     alt_font_path.set(config.alt_font_path)
     alt_text_path.set(config.alt_text_path)
     use_alt_font_var.set(config.use_alt_font_var)
+    use_custom_background_var.set(config.use_custom_background_var)
     use_custom_bootlogo_var.set(config.use_custom_bootlogo_var)
     theme_name_entry.delete(0, tk.END)
     theme_name_entry.insert(0, config.themeName)
@@ -2989,12 +3158,15 @@ menuNameMap = getAlternateMenuNameDict()
 
 # Attach trace callbacks to the variables
 textPaddingVar.trace_add("write", on_change)
+VBG_Horizontal_Padding_var.trace_add("write",on_change)
+VBG_Vertical_Padding_var.trace_add("write",on_change)
 bubblePaddingVar.trace_add("write", on_change)
 itemsPerScreenVar.trace_add("write", on_change)
 footerHeightVar.trace_add("write", on_change)
+headerHeightVar.trace_add("write",on_change)
 boxArtPaddingVar.trace_add("write", on_change)
 folderBoxArtPaddingVar.trace_add("write", on_change)
-customFontSizeVar.trace_add("write", on_change)
+font_size_var.trace_add("write", on_change)
 bgHexVar.trace_add("write", on_change)
 selectedFontHexVar.trace_add("write", on_change)
 deselectedFontHexVar.trace_add("write", on_change)
@@ -3040,6 +3212,7 @@ am_ignore_theme_var.trace_add("write", on_change)
 am_ignore_cd_var.trace_add("write", on_change)
 advanced_error_var.trace_add("write", on_change)
 use_alt_font_var.trace_add("write", on_change)
+use_custom_background_var.trace_add("write",on_change)
 use_custom_bootlogo_var.trace_add("write", on_change)
 alt_font_path.trace_add("write", on_change)
 alt_text_path.trace_add("write",on_change)
