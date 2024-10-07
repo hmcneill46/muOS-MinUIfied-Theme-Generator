@@ -44,7 +44,7 @@ class Config: # TODO delete unneeded variables
         self.bubblePaddingVar = 20
         self.itemsPerScreenVar = 9
         self.footerHeightVar = 55
-        self.headerHeightVar = 40
+        self.contentPaddingTopVar = 44
         self.override_font_size_var = False
         self.customFontSizeVar = ""
         self.bgHexVar = "000000"
@@ -118,7 +118,7 @@ background_image = None
 # Define constants
 render_factor = 5
 
-headerHeight = 40
+contentPaddingTop = 44
 footerHeight = 55
 textMF = 0.7
 
@@ -560,11 +560,11 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     try:
         font_size = int(custom_font_size_entry.get()) * render_factor
     except:
-        font_size = (((deviceScreenHeight - footerHeight - headerHeight) * render_factor) / ItemsPerScreen) * textMF
+        font_size = (((deviceScreenHeight - footerHeight - contentPaddingTop) * render_factor) / ItemsPerScreen) * textMF
     
     font = ImageFont.truetype(selected_font_path, font_size)
 
-    availableHeight = ((deviceScreenHeight - headerHeight - footerHeight) * render_factor) / ItemsPerScreen
+    availableHeight = ((deviceScreenHeight - contentPaddingTop - footerHeight) * render_factor) / ItemsPerScreen
 
     smallestValidText_bbox = font.getbbox("_...")
     smallestValidTest_width = smallestValidText_bbox[2] - smallestValidText_bbox[0]
@@ -616,13 +616,13 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             text_x = (deviceScreenWidth-textPadding) * render_factor-text_width
         elif textAlignment == "Centre":
             text_x = ((deviceScreenWidth* render_factor-text_width)/2) 
-        #text_y = headerHeight * render_factor + availableHeight * index
+        #text_y = contentPaddingTop * render_factor + availableHeight * index
 
         
         rectangle_x0 = text_x - (rectanglePadding * render_factor)
-        rectangle_y0 = headerHeight * render_factor + availableHeight * index
+        rectangle_y0 = contentPaddingTop * render_factor + availableHeight * index
         rectangle_x1 = rectangle_x0 + rectanglePadding * render_factor + text_width + rectanglePadding * render_factor
-        rectangle_y1 = headerHeight * render_factor + availableHeight * (index+1)
+        rectangle_y1 = contentPaddingTop * render_factor + availableHeight * (index+1)
         middle_y = (rectangle_y0 + rectangle_y1) / 2
         ascent, descent = font.getmetrics()
         text_height = ascent + descent
@@ -2020,7 +2020,7 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_alpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_top}", str(headerHeight-44))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_top}", str(contentPaddingTop-44))
 
 
     
@@ -2032,10 +2032,10 @@ def FillTempThemeFolder(progress_bar):
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_icon_pad_top}", str(0))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_glyph_alpha}", str(0))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_focus_glyph_alpha}", str(0))
-    content_height = deviceScreenHeight-headerHeight-int(footerHeightVar.get())
+    content_height = deviceScreenHeight-contentPaddingTop-int(footerHeightVar.get())
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_height}",str(content_height))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_width}", str(deviceScreenWidth-int(textPaddingVar.get())))
-    bubble_height = (deviceScreenHeight-headerHeight-int(footerHeightVar.get()))/int(itemsPerScreenVar.get())
+    bubble_height = (deviceScreenHeight-contentPaddingTop-int(footerHeightVar.get()))/int(itemsPerScreenVar.get())
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_radius}", str(math.ceil(bubble_height/2)))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_top}", str(0))
 
@@ -2465,7 +2465,7 @@ VBG_Vertical_Padding_var = tk.StringVar()
 bubblePaddingVar = tk.StringVar()
 itemsPerScreenVar = tk.StringVar()
 footerHeightVar = tk.StringVar()
-headerHeightVar = tk.StringVar()
+contentPaddingTopVar = tk.StringVar()
 boxArtPaddingVar = tk.StringVar()
 folderBoxArtPaddingVar = tk.StringVar()
 font_size_var = tk.StringVar()
@@ -2494,9 +2494,9 @@ items_per_screen_entry = tk.Entry(scrollable_frame, width=50, textvariable=items
 grid_helper.add(items_per_screen_entry, next_row=True)
 
 # Option for ItemsPerScreen
-grid_helper.add(tk.Label(scrollable_frame, text="Header Height:"), sticky="w")
-header_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=headerHeightVar)
-grid_helper.add(header_height_entry, next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Padding from top, for list content (Default 44):"), sticky="w")
+content_padding_top_entry = tk.Entry(scrollable_frame, width=50, textvariable=contentPaddingTopVar)
+grid_helper.add(content_padding_top_entry, next_row=True)
 
 # Option for ItemsPerScreen
 grid_helper.add(tk.Label(scrollable_frame, text="Footer Height:"), sticky="w")
@@ -2751,15 +2751,15 @@ def on_change(*args):
     old_selected_overlay_var = selected_overlay_var.get()
     gameFolderName = "Game Boy"
     global footerHeight
-    global headerHeight
+    global contentPaddingTop
     try:
         footerHeight = int(footer_height_entry.get())
     except:
         footerHeight = 55
     try:
-        headerHeight = int(header_height_entry.get())
+        contentPaddingTop = int(content_padding_top_entry.get())
     except:
-        headerHeight = 40
+        contentPaddingTop = 40
     save_settings()
     config.save_config()
     global background_image
@@ -2963,7 +2963,7 @@ def save_settings():
     config.bubblePaddingVar = bubblePaddingVar.get()
     config.itemsPerScreenVar = itemsPerScreenVar.get()
     config.footerHeightVar = footerHeightVar.get()
-    config.headerHeightVar = headerHeightVar.get()
+    config.contentPaddingTopVar = contentPaddingTopVar.get()
     config.customFontSizeVar = font_size_var.get()
     config.bgHexVar = bgHexVar.get()
     config.selectedFontHexVar = selectedFontHexVar.get()
@@ -3025,7 +3025,7 @@ def load_settings():
     bubblePaddingVar.set(config.bubblePaddingVar)
     itemsPerScreenVar.set(config.itemsPerScreenVar)
     footerHeightVar.set(config.footerHeightVar)
-    headerHeightVar.set(config.headerHeightVar)
+    contentPaddingTopVar.set(config.contentPaddingTopVar)
     boxArtPaddingVar.set(config.boxArtPaddingVar)
     folderBoxArtPaddingVar.set(config.folderBoxArtPaddingVar)
     font_size_var.set(config.customFontSizeVar)
@@ -3093,7 +3093,7 @@ VBG_Vertical_Padding_var.trace_add("write",on_change)
 bubblePaddingVar.trace_add("write", on_change)
 itemsPerScreenVar.trace_add("write", on_change)
 footerHeightVar.trace_add("write", on_change)
-headerHeightVar.trace_add("write",on_change)
+contentPaddingTopVar.trace_add("write",on_change)
 boxArtPaddingVar.trace_add("write", on_change)
 folderBoxArtPaddingVar.trace_add("write", on_change)
 font_size_var.trace_add("write", on_change)
