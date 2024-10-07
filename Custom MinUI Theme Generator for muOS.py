@@ -651,7 +651,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
     totalItems = len(listItems)
     for workingIndex, workingItem in enumerate(listItems):
         
-        if workingItem[1] == "Directory" or also_games_var.get() or workingItem[1] == "Menu" or workingItem[1] == "ThemePreview":
+        if workingItem[1] == "Directory" or also_games_var.get() or workingItem[1] == "Menu":
 
             # Load the base image
             midIndexOfList = int((ItemsPerScreen-1)/2)
@@ -686,29 +686,26 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                                              render_factor,
                                              fileCounter=fileCounter,
                                              folderName = folderName)
-                
-            if muOSSystemName != "ThemePreview":
-                image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
-                if workingItem[1] == "File":
-                    directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
-                    if not os.path.exists(directory):
-                        os.makedirs(directory)
-                    image.save(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
-                elif workingItem[1] == "Directory":
-                    directory = os.path.dirname(f"{outputDir}/Folder/box/{workingItem[2]}.png")
-                    if not os.path.exists(directory):
-                        os.makedirs(directory)
-                    image.save(f"{outputDir}/Folder/box/{workingItem[2]}.png")
-                elif workingItem[1] == "Menu":
-                    directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
-                    if not os.path.exists(directory):
-                        os.makedirs(directory)
-                    image.save(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
-            else:
+            image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+            if workingItem[1] == "File":
+                directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
+                if not os.path.exists(directory):
+                    os.makedirs(directory)
+                image.save(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
+            elif workingItem[1] == "Directory":
+                directory = os.path.dirname(f"{outputDir}/Folder/box/{workingItem[2]}.png")
+                if not os.path.exists(directory):
+                    os.makedirs(directory)
+                image.save(f"{outputDir}/Folder/box/{workingItem[2]}.png")
+            elif workingItem[1] == "Menu":
+                directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
+                if not os.path.exists(directory):
+                    os.makedirs(directory)
+                image.save(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
                 if workingIndex == 0:
                     image = image.resize((288, 216), Image.LANCZOS)
-                    if workingItem[1] == "Menu":
-                        image.save(os.path.join(internal_files_dir, "TempPreview.png"))
+                    image.save(os.path.join(internal_files_dir, ".TempBuildTheme","preview.png"))
+                
 
 def cut_out_image(original_image, logo_image, coordinates):
     x, y = coordinates
@@ -1631,10 +1628,9 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
             if not os.path.exists(directory):
                 os.makedirs(directory)
             image.save(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
-        if workingIndex == 0:
-            image = image.resize((288, 216), Image.LANCZOS)
-            if workingItem[1] == "Menu":
-                image.save(os.path.join(internal_files_dir, "TempPreview.png"))
+            if workingIndex == 0:
+                image = image.resize((288, 216), Image.LANCZOS)
+                image.save(os.path.join(internal_files_dir, ".TempBuildTheme", "preview.png"))
 
 def getAlternateMenuNameDict():
     if os.path.exists(alt_text_path.get()):
@@ -1768,14 +1764,6 @@ menus2405 = [["muxapps",[["Archive Manager","archive"],
                      ["Information","info"],
                      ["Configuration","config"],
                      ["Reboot Device","reboot"],
-                     ["Shutdown Device","shutdown"]]],
-         ["ThemePreview",[["Content Explorer","explore"],
-                     ["Favourites","favourite"],
-                     ["History","history"],
-                     ["Applications","apps"],
-                     ["Information","info"],
-                     ["Configuration","config"],
-                     ["Reboot Device","reboot"],
                      ["Shutdown Device","shutdown"]]]]
 
 menus2405_1 = [["muxapp",[["Archive Manager","Archive Manager"],
@@ -1799,14 +1787,6 @@ menus2405_1 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["System Details","system"],
                      ["Supporters","credit"]]],
          ["muxlaunch",[["Content Explorer","explore"],
-                     ["Favourites","favourite"],
-                     ["History","history"],
-                     ["Applications","apps"],
-                     ["Information","info"],
-                     ["Configuration","config"],
-                     ["Reboot Device","reboot"],
-                     ["Shutdown Device","shutdown"]]],
-         ["ThemePreview",[["Content Explorer","explore"],
                      ["Favourites","favourite"],
                      ["History","history"],
                      ["Applications","apps"],
@@ -1844,14 +1824,6 @@ menus2405_2 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["Information","info"],
                      ["Configuration","config"],
                      ["Reboot Device","reboot"],
-                     ["Shutdown Device","shutdown"]]],
-         ["ThemePreview",[["Content Explorer","explore"],
-                     ["Favourites","favourite"],
-                     ["History","history"],
-                     ["Applications","apps"],
-                     ["Information","info"],
-                     ["Configuration","config"],
-                     ["Reboot Device","reboot"],
                      ["Shutdown Device","shutdown"]]]]
 menus2405_3 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["Dingux Commander","Dingux Commander"],
@@ -1877,14 +1849,6 @@ menus2405_3 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["System Details","system"],
                      ["Supporters","credit"]]],
          ["muxlaunch",[["Content Explorer","explore"],
-                     ["Favourites","favourite"],
-                     ["History","history"],
-                     ["Applications","apps"],
-                     ["Information","info"],
-                     ["Configuration","config"],
-                     ["Reboot Device","reboot"],
-                     ["Shutdown Device","shutdown"]]],
-         ["ThemePreview",[["Content Explorer","explore"],
                      ["Favourites","favourite"],
                      ["History","history"],
                      ["Applications","apps"],
@@ -1960,31 +1924,12 @@ def generate_theme(progress_bar, loading_window):
         else:
             theme_dir = theme_directory_path.get()
 
-        preview_dir = os.path.join(theme_dir,"preview")
-
-        os.makedirs(preview_dir,exist_ok=True)
-
         shutil.make_archive(os.path.join(theme_dir, themeName),"zip", os.path.join(internal_files_dir, ".TempBuildTheme"))
-
-        temp_preview_path = os.path.join(preview_dir, "TempPreview.png")
-        if os.path.exists(temp_preview_path):
-            os.remove(temp_preview_path)
-        shutil.move(os.path.join(internal_files_dir, "TempPreview.png"), preview_dir)
-
-        theme_preview_path = os.path.join(preview_dir, f"{themeName}.png")
-        if os.path.exists(theme_preview_path):
-            os.remove(theme_preview_path)
-
-        os.rename(os.path.join(preview_dir,"TempPreview.png"), theme_preview_path)
 
 
         
 
         delete_folder(os.path.join(internal_files_dir, ".TempBuildTheme"))
-        if os.path.exists(os.path.join(internal_files_dir, "TempPreview.png")):
-            os.remove(os.path.join(internal_files_dir, "TempPreview.png"))
-        if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
-            os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
         messagebox.showinfo("Success", "Theme generated successfully.")
         loading_window.destroy()
     except Exception as e:
@@ -1999,10 +1944,6 @@ def generate_theme(progress_bar, loading_window):
         else:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
         delete_folder(os.path.join(internal_files_dir, ".TempBuildTheme"))
-        if os.path.exists(os.path.join(internal_files_dir, "TempPreview.png")):
-            os.remove(os.path.join(internal_files_dir, "TempPreview.png"))
-        if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
-            os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
 
 def FillTempThemeFolder(progress_bar):
 
@@ -2227,15 +2168,7 @@ def FillTempThemeFolder(progress_bar):
                                     ["Information","info"],
                                     ["Configuration","config"],
                                     ["Reboot Device","reboot"],
-                                    ["Shutdown Device","shutdown"]]],
-                    ["ThemePreview",[["Content Explorer","explore"],
-                                        ["Favourites","favourite"],
-                                        ["History","history"],
-                                        ["Applications","apps"],
-                                        ["Information","info"],
-                                        ["Configuration","config"],
-                                        ["Reboot Device","reboot"],
-                                        ["Shutdown Device","shutdown"]]]]
+                                    ["Shutdown Device","shutdown"]]]]
 
     for index, menu in enumerate(workingMenus):
         itemsList.append([])
@@ -2253,9 +2186,6 @@ def FillTempThemeFolder(progress_bar):
             elif main_menu_style_var.get() == "Alt-Horizontal":
                 HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"), variant = "Alt-Horizontal")
 
-        elif menu[0] == "ThemePreview":
-                if main_menu_style_var.get() == "Vertical": 
-                    ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
         else:
             ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
 
@@ -2559,7 +2489,7 @@ rectangle_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubb
 grid_helper.add(rectangle_padding_entry, next_row=True)
 
 # Option for ItemsPerScreen
-grid_helper.add(tk.Label(scrollable_frame, text="Items Per Screen:"), sticky="w")
+grid_helper.add(tk.Label(scrollable_frame, text="Items Per Screen (Better if Odd) [5-13 Inclusive]:"), sticky="w")
 items_per_screen_entry = tk.Entry(scrollable_frame, width=50, textvariable=itemsPerScreenVar)
 grid_helper.add(items_per_screen_entry, next_row=True)
 
