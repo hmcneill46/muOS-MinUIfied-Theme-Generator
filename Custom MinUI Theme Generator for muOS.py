@@ -685,7 +685,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                                              bubble_hex,
                                              render_factor,
                                              fileCounter=fileCounter,
-                                             folderName = folderName)
+                                             folderName = folderName,transparent=True)
             image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
             if workingItem[1] == "File":
                 directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
@@ -703,8 +703,14 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                     os.makedirs(directory)
                 image.save(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
                 if workingIndex == 0:
-                    image = image.resize((288, 216), Image.LANCZOS)
-                    image.save(os.path.join(internal_files_dir, ".TempBuildTheme","preview.png"))
+                    bg_rgb = hex_to_rgb(bg_hex)
+                    background = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
+                    if background_image != None:
+                        background.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+                    background = background.resize(image.size, Image.LANCZOS)
+                    background.paste(image, (0, 0), image)  
+                    background = background.resize((288, 216), Image.LANCZOS)
+                    background.save(os.path.join(internal_files_dir, ".TempBuildTheme","preview.png"))
                 
 
 def cut_out_image(original_image, logo_image, coordinates):
@@ -1607,9 +1613,9 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
         workingItem = listItems[workingIndex]
         #image.save(os.path.join(script_dir,"Images for testing horizontal",f"{workingIndex}.png"))
         if variant == "Horizontal":
-            image = generatePilImageHorizontal(progress_bar,workingIndex,bg_hex, selected_font_hex,deselected_font_hex,bubble_hex,icon_hex,render_factor)
+            image = generatePilImageHorizontal(progress_bar,workingIndex,bg_hex, selected_font_hex,deselected_font_hex,bubble_hex,icon_hex,render_factor,transparent=True)
         elif variant == "Alt-Horizontal":
-           image = generatePilImageAltHorizontal(progress_bar,workingIndex,bg_hex, selected_font_hex,deselected_font_hex,bubble_hex,icon_hex,render_factor)
+           image = generatePilImageAltHorizontal(progress_bar,workingIndex,bg_hex, selected_font_hex,deselected_font_hex,bubble_hex,icon_hex,render_factor,transparent=True)
         else:
             raise ValueError("Something went wrong with your Main Menu Style")
         image = image.resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
@@ -1629,8 +1635,14 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
                 os.makedirs(directory)
             image.save(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
             if workingIndex == 0:
-                image = image.resize((288, 216), Image.LANCZOS)
-                image.save(os.path.join(internal_files_dir, ".TempBuildTheme", "preview.png"))
+                bg_rgb = hex_to_rgb(bg_hex)
+                background = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
+                if background_image != None:
+                    background.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+                background = background.resize(image.size, Image.LANCZOS)
+                background.paste(image, (0, 0), image)  
+                background = background.resize((288, 216), Image.LANCZOS)
+                background.save(os.path.join(internal_files_dir, ".TempBuildTheme","preview.png"))
 
 def getAlternateMenuNameDict():
     if os.path.exists(alt_text_path.get()):
@@ -1908,11 +1920,11 @@ def generate_theme(progress_bar, loading_window):
 
         progress_bar['value'] = 0
         if main_menu_style_var.get() == "Vertical":
-            progress_bar['maximum'] = 36
+            progress_bar['maximum'] = 8
         elif main_menu_style_var.get() == "Horizontal":
-            progress_bar['maximum'] = 28
+            progress_bar['maximum'] = 8
         elif main_menu_style_var.get() == "Alt-Horizontal":
-            progress_bar['maximum'] = 28
+            progress_bar['maximum'] = 8
         else:
             raise ValueError("Something went wrong with your Main Menu Style")
 
