@@ -174,6 +174,7 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
     backText = "BACK"
     okayText = "OKAY"
     confirmText = "CONFIRM"
+    selectText = "SELECT"
     launchText = "LAUNCH"
     openText = "OPEN"
     refreshText = "REFRESH"
@@ -184,7 +185,7 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
     bText = "B"
     xText = "X"
     yText = "Y"
-    menuText = "MENU" ##TODO MAKE THIS MENU
+    menuText = "MENU" 
     if alternate_menu_names_var.get():
         powerText = bidi_get_display(menuNameMap.get("power", "POWER"))
         sleepText = bidi_get_display(menuNameMap.get("sleep","SLEEP"))
@@ -193,6 +194,7 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
         backText = bidi_get_display(menuNameMap.get("back","BACK"))
         okayText = bidi_get_display(menuNameMap.get("okay","OKAY"))
         confirmText = bidi_get_display(menuNameMap.get("confirm","CONFIRM"))
+        selectText = bidi_get_display(menuNameMap.get("select","SELECT"))
         launchText = bidi_get_display(menuNameMap.get("launch","LAUNCH"))
         openText = bidi_get_display(menuNameMap.get("open","OPEN"))
         refreshText = bidi_get_display(menuNameMap.get("refresh","REFRESH"))
@@ -252,6 +254,9 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
         confirmTextBbox = inBubbleFont.getbbox(confirmText)
         confirmTextWidth = confirmTextBbox[2] - confirmTextBbox[0]
 
+        selectTextBbox = inBubbleFont.getbbox(selectText)
+        selectTextWidth = selectTextBbox[2] - selectTextBbox[0]
+
         backTextBbox = inBubbleFont.getbbox(backText)
         backTextWidth = backTextBbox[2] - backTextBbox[0]
 
@@ -289,19 +294,19 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
         menuTextWidth = menuTextBbox[2] - menuTextBbox[0]
 
         RHM_Len = 0
-        if muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch": # Just A and Confirm ( One Circle and confirmText plus padding )
-            RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding
-        elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo": # B and Back, A and Confirm ( Two Circle and confirmText and backText plus padding )
-            RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding
+        if muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch": # Just A and Select ( One Circle and selectText plus padding )
+            RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(selectTextWidth/render_factor)+horizontal_large_padding
+        elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo": # B and Back, A and Select ( Two Circle and selectText and backText plus padding )
+            RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(selectTextWidth/render_factor)+horizontal_large_padding
         elif muOSSystemName == "muxapp": # B and Back, A and Launch ( Two Circle and launchText and backText plus padding )
             RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding
         elif muOSSystemName == "muxplore": # A and Open, B and Back, X and Refresh, Y and Favourite, Menu and Info ( Four Circle and Menu and openText, backText, refreshText, Favourite Text, and Info Text plus padding )
             ##                                                         MENU                                                                            INFO                                                   Y                                    FAVOURITE                                                    X                                     REFRESH                                                 B                                     BACK                                                  A                                    OPEN
             RHM_Len = horizontal_padding+horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(infoTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(favouriteTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(refreshTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(openTextWidth/render_factor)+horizontal_large_padding
-        elif muOSSystemName == "muxfavourite": # A and Open, B and Back, X and Refresh, Y and Favourite, Menu and Info ( Four Circle and Menu and openText, backText, refreshText, Favourite Text, and Info Text plus padding )
+        elif muOSSystemName == "muxfavourite": # A and Open, B and Back, X and Remove, Menu and Info ( Four Circle and Menu and openText, backText, removeText, Favourite Text, and Info Text plus padding )
             ##                                                         MENU                                                                            INFO                                                   X                                     REMOVE                                                 B                                     BACK                                                  A                                    OPEN
             RHM_Len = horizontal_padding+horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(infoTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(removeTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(openTextWidth/render_factor)+horizontal_large_padding
-        elif muOSSystemName == "muxhistory": # A and Open, B and Back, X and Refresh, Y and Favourite, Menu and Info ( Four Circle and Menu and openText, backText, refreshText, Favourite Text, and Info Text plus padding )
+        elif muOSSystemName == "muxhistory": # A and Open, B and Back, X and Remove, Y and Favourite, Menu and Info ( Four Circle and Menu and openText, backText, removeText, Favourite Text, and Info Text plus padding )
             ##                                                         MENU                                                                            INFO                                                   Y                                    FAVOURITE                                                    X                                     REMOVE                                                 B                                     BACK                                                  A                                    OPEN
             RHM_Len = horizontal_padding+horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(infoTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(favouriteTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(removeTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(openTextWidth/render_factor)+horizontal_large_padding
         
@@ -312,21 +317,21 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
                 radius=(menu_helper_guide_height/2)*render_factor,
                 fill=hex_to_rgb(colour_hex, alpha = 0.133)
             )
-        if muOSSystemName != "muxapp" and muOSSystemName != "muxplore" and muOSSystemName != "muxfavourite" and muOSSystemName != "muxhistory": ## Draw Confirm
-            aConfirmCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
-            draw.ellipse(((aConfirmCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aConfirmCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # A Bubble
+        if muOSSystemName != "muxapp" and muOSSystemName != "muxplore" and muOSSystemName != "muxfavourite" and muOSSystemName != "muxhistory": ## Draw Select
+            aSelectCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(selectTextWidth/render_factor)+horizontal_large_padding)
+            draw.ellipse(((aSelectCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aSelectCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # A Bubble
             
-            aConfirmTextX = aConfirmCircleCenterX - ((aTextWidth/2)/render_factor)
-            confimTextX = deviceScreenWidth-from_sides_padding-((confirmTextWidth/render_factor)+horizontal_large_padding)
-            draw.text(( aConfirmTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-            draw.text(( confimTextX*render_factor,in_bubble_text_y), confirmText, font=inBubbleFont, fill=f"#{colour_hex}")
+            aSelectTextX = aSelectCircleCenterX - ((aTextWidth/2)/render_factor)
+            confimTextX = deviceScreenWidth-from_sides_padding-((selectTextWidth/render_factor)+horizontal_large_padding)
+            draw.text(( aSelectTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+            draw.text(( confimTextX*render_factor,in_bubble_text_y), selectText, font=inBubbleFont, fill=f"#{colour_hex}")
             
             if muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo": # Draw Back
-                bBackCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
+                bBackCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(selectTextWidth/render_factor)+horizontal_large_padding)
                 draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # B Bubble
 
                 bBackTextX = bBackCircleCenterX - ((bTextWidth/2)/render_factor)
-                backTextX = deviceScreenWidth-from_sides_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(confirmTextWidth/render_factor)+horizontal_large_padding)
+                backTextX = deviceScreenWidth-from_sides_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(selectTextWidth/render_factor)+horizontal_large_padding)
                 draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
                 draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
 
@@ -2026,8 +2031,8 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{ScrollDirection}", "0")
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{imageListAlpha}", "255")
     # NEW ONES:
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_left}",str(bubblePaddingVar.get()))
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_right}", str(bubblePaddingVar.get()))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_padding}",str(bubblePaddingVar.get()))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_padding}", str(bubblePaddingVar.get()))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_hex}", str(bubble_hex))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_alpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
@@ -2137,10 +2142,45 @@ def FillTempThemeFolder(progress_bar):
     defaultimage = generatePilImageDefaultScreen(bgHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     defaultimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","default.png"), format='PNG')
 
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxplore"), exist_ok=True)
+    #TODO If implimented it would be great to only set these once as a default.png type thing, and then make it work in every menu
+    
+    visualbuttonoverlay_B_BACK_A_SELECT = generateMenuHelperGuides("muxconfig",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    muxconfig_items = ["clock","language","general","network","service","theme"]
+    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxconfig"), exist_ok=True)
+    for item in muxconfig_items:
+        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxconfig",f"{item}.png"), format='PNG')
+    muxinfo_items = ["credit","system","tester"]
+    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxinfo"), exist_ok=True)
+    for item in muxinfo_items:
+        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxinfo",f"{item}.png"), format='PNG')
+    
+    #TODO REMOVE THIS AS IT DOESNT ALLOW BACKGROUND REPLACEMENT (When Alternative is avaliable)
 
-    visualbuttonoverlaymuxplore = generateMenuHelperGuides("muxplore",selected_font_path,bubble_hex,render_factor)
-    visualbuttonoverlaymuxplore.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxplore","default.png"), format='PNG')
+    bg_rgb = hex_to_rgb(bg_hex)
+    background = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
+    if background_image != None:
+        background.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
+    background = background.resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    
+    
+
+    visualbuttonoverlay_muxapp = generateMenuHelperGuides("muxapp",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    altered_background = background.copy()
+    altered_background.paste(visualbuttonoverlay_muxapp, (0, 0), visualbuttonoverlay_muxapp)  
+    altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxapp.png"), format='PNG')
+    visualbuttonoverlay_muxplore = generateMenuHelperGuides("muxplore",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    altered_background = background.copy()
+    altered_background.paste(visualbuttonoverlay_muxplore, (0, 0), visualbuttonoverlay_muxplore)  
+    altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxplore.png"), format='PNG')
+    visualbuttonoverlay_muxfavourite = generateMenuHelperGuides("muxfavourite",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    altered_background = background.copy()
+    altered_background.paste(visualbuttonoverlay_muxfavourite, (0, 0), visualbuttonoverlay_muxfavourite)  
+    altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxfavourite.png"), format='PNG')
+    visualbuttonoverlay_muxhistory = generateMenuHelperGuides("muxhistory",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    altered_background = background.copy()
+    altered_background.paste(visualbuttonoverlay_muxhistory, (0, 0), visualbuttonoverlay_muxhistory)  
+    altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxhistory.png"), format='PNG')
+
 
     
     if False: ## Testing converting font in generator
@@ -2525,8 +2565,7 @@ grid_helper.add(tk.Label(scrollable_frame, text="Selected Font Hex Colour: #"), 
 selected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=selectedFontHexVar)
 grid_helper.add(selected_font_hex_entry, next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="*Show Background Through Text", variable=transparent_text_var), colspan=3, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame,text="*Will Only work on the Main Launch Screen (Not in menus)",fg="#00f"),sticky="w",next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Background Through Text on Launch Menu", variable=transparent_text_var), colspan=3, sticky="w", next_row=True)
 
 # Option for Deselected Font Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Deselected Font Hex Colour: #"), sticky="w")
