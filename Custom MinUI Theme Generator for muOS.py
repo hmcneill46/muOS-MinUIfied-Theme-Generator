@@ -8,7 +8,7 @@ import os
 import sys
 import math
 import tkinter as tk
-from tkinter import font
+from tkinter import font, PanedWindow, Scrollbar
 from tkinter import filedialog, simpledialog, messagebox, ttk
 import shutil
 import re
@@ -2380,12 +2380,9 @@ def start_theme_task():
     # Start the long-running task in a separate thread
     threading.Thread(target=generate_theme, args=(progress_bar, loading_window)).start()
 
-
 def on_resize(event):
-    global resize_id
-    if resize_id is not None:
-        root.after_cancel(resize_id)
-    resize_id = root.after(200, on_change)  # Adjust the delay as needed
+    right_pane_width = right_frame.winfo_width()
+    print(f"Right Pane Width: {right_pane_width}")
 
 root = tk.Tk()
 root.title("MinUI Theme Generator")
@@ -2443,18 +2440,19 @@ am_ignore_theme_var = tk.IntVar()
 am_ignore_cd_var = tk.IntVar()
 advanced_error_var = tk.IntVar()
 
-# Create a canvas and a vertical scrollbar
+# Create a PanedWindow to divide the window into left and right sections
+paned_window = PanedWindow(root, orient=tk.HORIZONTAL, sashwidth=5, sashrelief=tk.RAISED,bg = "#ff0000", bd = 0)
+paned_window.pack(fill=tk.BOTH, expand=True)
 
-# Create the left frame with canvas and scrollbars
-canvas = tk.Canvas(root)
-scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
+# Left side - scrollable section
+left_frame = tk.Frame(paned_window)
+canvas = tk.Canvas(left_frame)
+scrollbar = Scrollbar(left_frame, orient="vertical", command=canvas.yview)
 scrollable_frame = tk.Frame(canvas)
 
 scrollable_frame.bind(
     "<Configure>",
-    lambda e: canvas.configure(
-        scrollregion=canvas.bbox("all")
-    )
+    lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
 )
 
 canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
@@ -2462,6 +2460,9 @@ canvas.configure(yscrollcommand=scrollbar.set)
 
 canvas.pack(side="left", fill="both", expand=True)
 scrollbar.pack(side="right", fill="y")
+
+# Add left_frame to the PanedWindow
+paned_window.add(left_frame)
 
 # Bind mouse wheel events based on the platform
 if platform.system() == 'Darwin':
@@ -2476,34 +2477,7 @@ else:
 # Create the grid helper
 grid_helper = GridHelper(scrollable_frame)
 
-is_dragging = False
 
-def on_slider_change(value):
-    global is_dragging
-    is_dragging = True
-
-    on_change()
-
-
-# Create the GUI components
-grid_helper.add(tk.Label(scrollable_frame, text="Adjust Preview Image Size:", fg='#00f'), colspan=3, sticky="w", next_row=True)
-
-
-def on_slider_release(event):
-    global is_dragging
-    is_dragging = False
-    on_change()
-
-slider_length = 125
-
-slider_length = 125
-previewSideSlider = tk.Scale(scrollable_frame, from_=0, to=100, orient="horizontal", 
-                             command=on_slider_change, showvalue=0, tickinterval=0, length=slider_length)
-grid_helper.add(previewSideSlider, colspan=3, sticky="w", next_row=True)
-
-
-# Bind mouse release event to the slider
-previewSideSlider.bind("<ButtonRelease-1>", on_slider_release)
 
 
 # Create the GUI components
@@ -2708,9 +2682,8 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Advanced Errors", va
 
 
 
-
 # Create the right frame with canvas and scrollbars
-image_frame = tk.Frame(root)
+image_frame = tk.Frame(paned_window, width=200)
 image_frame.pack(side="right", fill="y")
 
 image_label1 = tk.Label(image_frame)
@@ -2727,6 +2700,12 @@ image_label4.pack()
 
 image_label5 = tk.Label(image_frame)
 image_label5.pack()
+
+paned_window.add(image_frame)
+
+paned_window.paneconfig(image_frame, minsize=230)
+
+
 
 def update_image_label(image_label, pil_image):
     tk_image = ImageTk.PhotoImage(pil_image)
@@ -2842,27 +2821,13 @@ def on_change(*args):
 
     previewRenderFactor = 1
 
-    if root.winfo_height() < 100:
+    if image_frame.winfo_width() < 100:
         preview_size = [int(deviceScreenWidth/2),int(deviceScreenHeight/2)]
     else:
-        imagesOnScreen = 5
-        if main_menu_style_var.get() == "Vertical":
-            imagesOnScreen = 4
+        
+        previewRenderFactor = math.ceil(image_frame.winfo_width()/deviceScreenWidth)+1 # Affectively anti aliasing in the preview
 
-        preview_multiplier = (root.winfo_height()/map_value(previewSideSlider.get(),0,100,imagesOnScreen,1))/deviceScreenHeight
-        global is_dragging
-        if is_dragging:
-            previewRenderFactor = 1
-        else:
-            previewRenderFactor = int(preview_multiplier*(1/0.64)+1) # Affectively anti aliasing in the preview
-            
-
-        preview_size = [deviceScreenWidth*preview_multiplier,deviceScreenHeight*preview_multiplier]
-        betweenImagePadding = 4
-        oldHeight = preview_size[1]
-        preview_size[1] -= betweenImagePadding+betweenImagePadding/map_value(previewSideSlider.get(),0,100,imagesOnScreen,1)
-        preview_size[0] = (preview_size[0]*preview_size[1])/(oldHeight)
-        preview_size[0],preview_size[1] = int(preview_size[0]),int(preview_size[1])
+        preview_size = [int(image_frame.winfo_width()),int(image_frame.winfo_width()*(deviceScreenHeight/deviceScreenWidth))]
     #preview_size = [int(640/2),int(480/2)]
 
     # This function will run whenever any traced variable changes
@@ -3197,6 +3162,25 @@ use_custom_background_var.trace_add("write",on_change)
 use_custom_bootlogo_var.trace_add("write", on_change)
 alt_font_path.trace_add("write", on_change)
 alt_text_path.trace_add("write",on_change)
+
+resize_event_id = None
+
+# Function to call after resizing is finished
+def on_resize_complete():
+    on_change()
+
+def on_resize(event):
+    global resize_event_id
+
+    # Cancel the previous event, if any
+    if resize_event_id is not None:
+        root.after_cancel(resize_event_id)
+    
+    # Set a new delayed call to the resize complete function
+    resize_event_id = root.after(200, on_resize_complete)
+
+root.bind("<Configure>", on_resize)       # Bind the window resize event
+paned_window.bind("<Configure>", on_resize)  # Bind the paned window resize event
 
 
 
