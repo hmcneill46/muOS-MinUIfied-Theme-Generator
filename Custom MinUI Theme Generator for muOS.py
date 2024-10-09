@@ -2032,7 +2032,6 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{imageListAlpha}", "255")
     # NEW ONES:
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_padding}",str(bubblePaddingVar.get()))
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_padding}", str(bubblePaddingVar.get()))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_hex}", str(bubble_hex))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_alpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
@@ -2703,7 +2702,7 @@ image_label5.pack()
 
 paned_window.add(image_frame)
 
-paned_window.paneconfig(image_frame, minsize=230)
+paned_window.paneconfig(image_frame,minsize=230)
 
 
 
@@ -3177,7 +3176,7 @@ def on_resize(event):
         root.after_cancel(resize_event_id)
     
     # Set a new delayed call to the resize complete function
-    resize_event_id = root.after(200, on_resize_complete)
+    resize_event_id = root.after(100, on_resize_complete)
 
 root.bind("<Configure>", on_resize)       # Bind the window resize event
 paned_window.bind("<Configure>", on_resize)  # Bind the paned window resize event
