@@ -714,7 +714,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                         background.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
                     background = background.resize(image.size, Image.LANCZOS)
                     background.paste(image, (0, 0), image)  
-                    background = background.resize((288, 216), Image.LANCZOS)
+                    background = background.resize((int(0.45*deviceScreenWidth), int(0.45*deviceScreenHeight)), Image.LANCZOS)
                     background.save(os.path.join(internal_files_dir, ".TempBuildTheme","preview.png"))
                 
 
@@ -1646,7 +1646,7 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
                     background.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
                 background = background.resize(image.size, Image.LANCZOS)
                 background.paste(image, (0, 0), image)  
-                background = background.resize((288, 216), Image.LANCZOS)
+                background = background.resize((int(0.45*deviceScreenWidth), int(0.45*deviceScreenHeight)), Image.LANCZOS)
                 background.save(os.path.join(internal_files_dir, ".TempBuildTheme","preview.png"))
 
 def getAlternateMenuNameDict():
