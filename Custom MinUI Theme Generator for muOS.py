@@ -33,7 +33,6 @@ else:
     internal_files_dir = os.path.dirname(os.path.abspath(__file__))
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-#HI
 # Default values for parameters
 class Config: # TODO delete unneeded variables
     def __init__(self, config_file=os.path.join(script_dir,'MinUIThemeGeneratorConfig.json')):
