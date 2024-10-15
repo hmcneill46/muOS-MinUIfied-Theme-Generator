@@ -32,11 +32,11 @@ def extract_configurations(file_path):
 
                 # Adjust the default value based on the type
                 if value_type == "hex":
-                    config[section][key] = "YOURHEXHERE"
+                    config[section][key] = "YourHexHere"
                 elif value_type == "int":
                     config[section][key] = default_value.strip() if default_value else "0"
                 elif value_type == "string":
-                    config[section][key] = f'{default_value.strip()}' if default_value else ' YOUR STRING HERE '
+                    config[section][key] = f'{default_value.strip()}' if default_value else ' Your String Here '
 
     return config
 
@@ -66,7 +66,7 @@ def main():
     config = extract_configurations(local_file)
     
     # Generate the template file
-    output_file = os.path.join('Generate Scheme File From Source','Default Scheme File.txt')
+    output_file = os.path.join('Helper Scripts','Generate Scheme File From Source','Default Scheme File.txt')
     generate_template(config, output_file)
     print(f"Template generated: {output_file}")
     
