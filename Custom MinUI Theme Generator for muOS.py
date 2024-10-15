@@ -22,6 +22,10 @@ import subprocess
 import shutil
 import numpy as np
 
+## TODO look into font sizes - see if it actually works
+## TODO look into center align and left align
+## TODO make header resizable
+
 deviceScreenWidth, deviceScreenHeight = 640, 480
 
 if getattr(sys, 'frozen', False):
@@ -309,8 +313,6 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
         elif muOSSystemName == "muxhistory": # A and Open, B and Back, X and Remove, Y and Favourite, Menu and Info ( Four Circle and Menu and openText, backText, removeText, Favourite Text, and Info Text plus padding )
             ##                                                         MENU                                                                            INFO                                                   Y                                    FAVOURITE                                                    X                                     REMOVE                                                 B                                     BACK                                                  A                                    OPEN
             RHM_Len = horizontal_padding+horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(infoTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(favouriteTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(removeTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(openTextWidth/render_factor)+horizontal_large_padding
-        
-        print(RHM_Len, muOSSystemName)
 
         draw.rounded_rectangle( ## Left hand behind bubble
                 [((deviceScreenWidth-from_sides_padding-RHM_Len)*render_factor, (bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), ((deviceScreenWidth-from_sides_padding)*render_factor, (bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)],
@@ -1996,9 +1998,9 @@ def FillTempThemeFolder(progress_bar):
 
     shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","default.txt"),os.path.join(newSchemeDir,"default.txt"))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{bg_hex}", str(bg_hex))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{selected_font_hex}", str(foreground_hex))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{deselected_font_hex}", str(midground_hex))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{disabled_font_hex}", str(quarterground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{foreground_hex}", str(foreground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{midground_hex}", str(midground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{quarterground_hex}", str(quarterground_hex))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{imageListAlpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{ScrollDirection}", "0")
@@ -2014,11 +2016,9 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{imageListAlpha}", "255")
 
     if "Show icon on muxlaunch" == "":
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{font_list_icon_pad_top}", str(0))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_default_glyph_alpha}", str(255))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_focus_glyph_alpha}", str(255))
     else:
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{font_list_icon_pad_top}", str(0))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_default_glyph_alpha}", str(0))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_focus_glyph_alpha}", str(0))
 
@@ -2041,11 +2041,9 @@ def FillTempThemeFolder(progress_bar):
 
     
     if "Show Icon In Bubble" == "":
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_icon_pad_top}", str(0))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_glyph_alpha}", str(255))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_focus_glyph_alpha}", str(255))
     else:
-        replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_icon_pad_top}", str(0))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_glyph_alpha}", str(0))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_focus_glyph_alpha}", str(0))
     content_height = deviceScreenHeight-contentPaddingTop-int(footerHeightVar.get())
@@ -2053,7 +2051,6 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_width}", str(deviceScreenWidth-int(textPaddingVar.get())))
     bubble_height = (deviceScreenHeight-contentPaddingTop-int(footerHeightVar.get()))/int(itemsPerScreenVar.get())
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_radius}", str(math.ceil(bubble_height/2)))
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{font_list_pad_top}", str(0))
 
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()]))
@@ -2206,7 +2203,7 @@ def FillTempThemeFolder(progress_bar):
             print(f"An error occurred: {e}")
     
     itemsList = []
-    if version_var.get() == "muOS 2410.1 Banana - Rose Petals Edition":
+    if version_var.get() == "muOS 2410.1 Banana":
         workingMenus = menus2405_3
 
     else:
@@ -2380,8 +2377,7 @@ def start_theme_task():
     threading.Thread(target=generate_theme, args=(progress_bar, loading_window)).start()
 
 def on_resize(event):
-    right_pane_width = right_frame.winfo_width()
-    print(f"Right Pane Width: {right_pane_width}")
+    right_pane_width = image_frame.winfo_width()
 
 root = tk.Tk()
 root.title("MinUI Theme Generator")
@@ -2586,7 +2582,7 @@ grid_helper.add(main_menu_style_option_menu, colspan=3, sticky="w", next_row=Tru
 
 grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
 OLDoptions = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS", "muOS 2405.3 COOL BEANS"]
-options = ["muOS 2410.1 Banana - Rose Petals Edition"]
+options = ["muOS 2410.1 Banana"]
 option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
@@ -2804,7 +2800,7 @@ def on_change(*args):
     global menus2405_3
 
     previewApplicationList = []
-    if version_var.get() == "muOS 2410.1 Banana - Rose Petals Edition":
+    if version_var.get() == "muOS 2410.1 Banana":
         index = None
         for i, n in enumerate(menus2405_3):
             if n[0] == "muxapp":
