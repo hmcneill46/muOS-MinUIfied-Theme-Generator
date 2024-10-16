@@ -705,10 +705,10 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                     os.makedirs(directory)
                 image.save(f"{outputDir}/Folder/box/{workingItem[2]}.png")
             elif workingItem[1] == "Menu":
-                directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
-                if not os.path.exists(directory):
-                    os.makedirs(directory)
-                image.save(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
+                # directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
+                # if not os.path.exists(directory):
+                #     os.makedirs(directory)
+                # image.save(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
                 if workingIndex == 0:
                     bg_rgb = hex_to_rgb(bg_hex)
                     background = Image.new("RGBA", (deviceScreenWidth * render_factor, deviceScreenHeight * render_factor), bg_rgb)
@@ -1988,32 +1988,105 @@ def FillTempThemeFolder(progress_bar):
     newSchemeDir = os.path.join(internal_files_dir,".TempBuildTheme","scheme")
     os.makedirs(newSchemeDir, exist_ok=True)
 
-    fontSize = 20
-    if override_font_size_var.get():
-        fontSize = int(font_size_var.get())
+    fontSize = int(font_size_var.get())
     
-    foreground_hex = deselected_font_hex
-    midground_hex = percentage_color(bubble_hex,selected_font_hex,0.5)
-    quarterground_hex = percentage_color(bg_hex,bubble_hex,0.25)
+    # Theme Variables that wont change
+    accent_hex = deselected_font_hex
+    base_hex = bg_hex
+    blend_hex = percentage_color(bubble_hex,selected_font_hex,0.5)
+    muted_hex = percentage_color(bg_hex,bubble_hex,0.25)
+    counter_alignment = "Right"
+    counter_padding_top = "64"
+    datetime_alignment = "Auto"
+    datetime_padding = "10"
+    status_alignment = "Right"
+    status_padding = "10"
+    default_radius = "10"
+    header_height = "44"
 
-    shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","default.txt"),os.path.join(newSchemeDir,"default.txt"))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{bg_hex}", str(bg_hex))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{foreground_hex}", str(foreground_hex))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{midground_hex}", str(midground_hex))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{quarterground_hex}", str(quarterground_hex))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{imageListAlpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{ScrollDirection}", "0")
+    shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","template.txt"),os.path.join(newSchemeDir,"default.txt"))
+
+    # Set up default colours that should be the same everywhere
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{accent_hex}", str(accent_hex))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{base_hex}", str(base_hex))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{blend_hex}", str(blend_hex))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{muted_hex}", str(muted_hex))
+
+    # More Global Settings
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{image_overlay}", str(include_overlay_var.get()))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{footer_height}", footerHeightVar.get())
+    content_height = deviceScreenHeight-contentPaddingTop-int(footerHeightVar.get())
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_height}",str(content_height))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
+    counter_alignment_map = {"Left":0,"Centre":1,"Right":2}
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{counter_alignment}", str(counter_alignment_map[counter_alignment]))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{counter_padding_top}", counter_padding_top)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{default_radius}", default_radius)
+
+    # Global Header Settings:
+    datetime_alignment_map = {"Auto":0,"Left":1,"Center":2,"Right":3}
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{datetime_align}", str(datetime_alignment_map[datetime_alignment]))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{datetime_padding_left}", datetime_padding)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{datetime_padding_right}", datetime_padding)
+    status_alignment_map = {"Left":0,
+                            "Right":1,
+                            "Center":2,
+                            "Icons spaced evenly across header":3,
+                            "icons evenly distributed with equal space around them":4,
+                            "First icon aligned left last icon aligned right all other icons evenly distributed":5}
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{status_align}", str(status_alignment_map[status_alignment]))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{status_padding_left}", status_padding)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{status_padding_right}", status_padding)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{header_height}", header_height)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_top}", str(contentPaddingTop-44))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_width}", str(deviceScreenWidth-2*(int(textPaddingVar.get())-int(bubblePaddingVar.get()))))
+    if main_menu_style_var.get() != "Vertical":
+    # muxlaunch Specific settings
+        shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxlaunch.txt"))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{background_alpha}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{selected_font_hex}", "ff0000")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{deselected_font_hex}", "ff0000")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{bubble_alpha}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{bubble_padding}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_alignment}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{footer_alpha}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_glyph_alpha}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_text_alpha}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_padding_left}", "0")
+        if "You want to wrap": #TODO Make this an actual option
+            print("DOING THIS")
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{navigation_type}", "4")
+        else:
+            print("DOING THIS")
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{navigation_type}", "2")
+
+    # rest of the default Specific settings
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{background_alpha}", base_hex)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{selected_font_hex}", base_hex)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{deselected_font_hex}", accent_hex)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_alpha}", "255")
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding}", bubblePaddingVar.get())
+    content_alignment_map = {"Left":0,"Centre":1,"Right":2}
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()])) # TODO make this change for the different sections
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{footer_alpha}", "0")
+    if "Not Show GLYPHS":
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{list_glyph_alpha}", "0")
+    else:
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{list_glyph_alpha}", "255")
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{list_text_alpha}", "255")
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{navigation_type}", "0")
 
     
-    
+    # OLD STUFF
+    """
     shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxlaunch.txt"),os.path.join(newSchemeDir,"muxlaunch.txt"))
     replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{bg_hex}", str(bg_hex))
-    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{selected_font_hex}", str(foreground_hex))
-    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{deselected_font_hex}", str(midground_hex))
-    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{disabled_font_hex}", str(quarterground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{selected_font_hex}", str(accent_hex))
+    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{deselected_font_hex}", str(blend_hex))
+    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{disabled_font_hex}", str(muted_hex))
     replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
-    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{imageListAlpha}", "255")
+    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{imageListAlpha}", "255")
 
     if "Show icon on muxlaunch" == "":
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_default_glyph_alpha}", str(255))
@@ -2024,9 +2097,9 @@ def FillTempThemeFolder(progress_bar):
 
     shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","muxthemed.txt"),os.path.join(newSchemeDir,"tempmux.txt"))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{bg_hex}", str(bg_hex))
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{foreground_hex}", str(foreground_hex))
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{midground_hex}", str(midground_hex))
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{quarterground_hex}", str(quarterground_hex))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{foreground_hex}", str(accent_hex))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{midground_hex}", str(blend_hex))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{quarterground_hex}", str(muted_hex))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{ScrollDirection}", "0")
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{imageListAlpha}", "255")
@@ -2034,7 +2107,7 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_padding}",str(bubblePaddingVar.get()))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_hex}", str(bubble_hex))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_alpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
+    
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_top}", str(contentPaddingTop-44))
 
@@ -2046,8 +2119,7 @@ def FillTempThemeFolder(progress_bar):
     else:
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_glyph_alpha}", str(0))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_focus_glyph_alpha}", str(0))
-    content_height = deviceScreenHeight-contentPaddingTop-int(footerHeightVar.get())
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_height}",str(content_height))
+    
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_width}", str(deviceScreenWidth-int(textPaddingVar.get())))
     bubble_height = (deviceScreenHeight-contentPaddingTop-int(footerHeightVar.get()))/int(itemsPerScreenVar.get())
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_radius}", str(math.ceil(bubble_height/2)))
@@ -2064,15 +2136,15 @@ def FillTempThemeFolder(progress_bar):
     shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxhistory.txt"))
     shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxplore.txt"))
     
-
+    """
     os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
 
     if include_overlay_var.get():
         shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{selected_overlay_var.get()}.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
 
-    os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
-
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","font","panel"), exist_ok=True) #Font binaries stuff
+    #os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
+    
+    """os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","font","panel"), exist_ok=True) #Font binaries stuff
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries","BPreplayBold-unhinted-20.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","default.bin"))
 
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxapp.bin"))
@@ -2081,10 +2153,14 @@ def FillTempThemeFolder(progress_bar):
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxinfo.bin"))
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxfavourite.bin"))
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxhistory.bin"))
-    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxplore.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxplore.bin"))"""
+
+    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","font","panel"), exist_ok=True) #Font binaries stuff
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","default.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(20)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","default.bin"))
 
 
-    if main_menu_style_var.get() == "Horizontal":
+    """if main_menu_style_var.get() == "Horizontal":
         if not "wrap":
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
         else:
@@ -2096,7 +2172,7 @@ def FillTempThemeFolder(progress_bar):
         else:
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "4") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
     elif main_menu_style_var.get() == "Vertical":
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH"""
     
     
 
@@ -2149,6 +2225,15 @@ def FillTempThemeFolder(progress_bar):
     os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxinfo"), exist_ok=True)
     for item in muxinfo_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxinfo",f"{item}.png"), format='PNG')
+    visualbuttonoverlay_A_SELECT = generateMenuHelperGuides("muxlaunch",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    muxlaunch_items = ["apps","config","explore","favourite","history","info","reboot","shutdown"]
+    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxlaunch"), exist_ok=True)
+    for item in muxlaunch_items:
+        visualbuttonoverlay_A_SELECT.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxlaunch",f"{item}.png"), format='PNG')
+    ## TODO General Settings is ALL [B SAVE]
+    ## TODO Web Services is ALL [B SAVE]
+    ## TODO Date and time is ALL [B SAVE] - Dont bother with set timezone or wifi
+    ## TODO Languages is all [B BACK      A SELECT]
     
     #TODO REMOVE THIS AS IT DOESNT ALLOW BACKGROUND REPLACEMENT (When Alternative is avaliable)
 
@@ -2176,6 +2261,8 @@ def FillTempThemeFolder(progress_bar):
     altered_background = background.copy()
     altered_background.paste(visualbuttonoverlay_muxhistory, (0, 0), visualbuttonoverlay_muxhistory)  
     altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxhistory.png"), format='PNG')
+    #TODO Theme Picker is all [B BACK   A SELECT]
+    # Cannot do Wi-Fi Network
 
 
     
@@ -2236,6 +2323,7 @@ def FillTempThemeFolder(progress_bar):
 
         else:
             ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+
 
 def select_alternate_menu_names():
     if os.path.exists(alt_text_path.get()):
