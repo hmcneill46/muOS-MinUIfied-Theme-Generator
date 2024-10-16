@@ -145,23 +145,15 @@ def change_logo_color(input_path, hex_color):
     
     return result_image
 
-def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render_factor):
+def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]):
     image = Image.new("RGBA", (deviceScreenWidth*render_factor, deviceScreenHeight*render_factor), (255, 255, 255, 0))
     draw = ImageDraw.Draw(image)
-
-
 
     from_sides_padding = int(VBG_Horizontal_Padding_entry.get())
     from_bottom_padding = int(VBG_Vertical_Padding_entry.get())
 
-    
-    
-    menu_helper_guide_height = footerHeight-(from_bottom_padding*2)
-    if muOSSystemName == "muxplore" or muOSSystemName == "muxhistory" or muOSSystemName == "muxfavourite":
-        if menu_helper_guide_height > 36:
-            #from_bottom_padding = int((footerHeight-36)/2)
-            menu_helper_guide_height = 36
-        
+    menu_helper_guide_height = footerHeight-(from_bottom_padding*2) # Change this if overlayed
+
     in_smaller_bubble_font_size = menu_helper_guide_height*(16/45)*render_factor
     inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
 
@@ -171,50 +163,12 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
     single_letter_font_size = menu_helper_guide_height*(23/45)*render_factor
     singleLetterFont = ImageFont.truetype(selected_font_path, single_letter_font_size)
 
-    powerText = "POWER"
-    sleepText = "SLEEP"
-    menuText = "MENU"
-    helpText = "HELP"
-    backText = "BACK"
-    okayText = "OKAY"
-    confirmText = "CONFIRM"
-    selectText = "SELECT"
-    launchText = "LAUNCH"
-    openText = "OPEN"
-    refreshText = "REFRESH"
-    favouriteText = "FAVOURITE"
-    infoText = "INFO"
-    removeText = "REMOVE"
-    aText = "A"
-    bText = "B"
-    xText = "X"
-    yText = "Y"
-    menuText = "MENU" 
-    if alternate_menu_names_var.get():
-        powerText = bidi_get_display(menuNameMap.get("power", "POWER"))
-        sleepText = bidi_get_display(menuNameMap.get("sleep","SLEEP"))
-        menuText = bidi_get_display(menuNameMap.get("menu","MENU"))
-        helpText = bidi_get_display(menuNameMap.get("help","HELP"))
-        backText = bidi_get_display(menuNameMap.get("back","BACK"))
-        okayText = bidi_get_display(menuNameMap.get("okay","OKAY"))
-        confirmText = bidi_get_display(menuNameMap.get("confirm","CONFIRM"))
-        selectText = bidi_get_display(menuNameMap.get("select","SELECT"))
-        launchText = bidi_get_display(menuNameMap.get("launch","LAUNCH"))
-        openText = bidi_get_display(menuNameMap.get("open","OPEN"))
-        refreshText = bidi_get_display(menuNameMap.get("refresh","REFRESH"))
-        favouriteText = bidi_get_display(menuNameMap.get("favourite","FAVOURITE"))
-        infoText = bidi_get_display(menuNameMap.get("info","INFO"))
-    
-    
-
     horizontal_small_padding = menu_helper_guide_height*(5/45)
     horizontal_padding = menu_helper_guide_height*(6.5/45)
     horizontal_large_padding = menu_helper_guide_height*(8.5/45)
     
     bottom_guide_middle_y = deviceScreenHeight-from_bottom_padding-(menu_helper_guide_height/2)
 
-    
-    #guide_bubble_height = 80
     guide_small_bubble_height = menu_helper_guide_height-(horizontal_padding*2)
 
     isb_ascent, isb_descent = inSmallerBubbleFont.getmetrics()
@@ -225,291 +179,123 @@ def generateMenuHelperGuides(muOSSystemName,selected_font_path,colour_hex,render
     ib_text_height = ib_ascent + ib_descent
     in_bubble_text_y = bottom_guide_middle_y*render_factor - (ib_text_height / 2)
 
-    sl_text_bbox = singleLetterFont.getbbox(aText+bText)
+    sl_text_bbox = singleLetterFont.getbbox("ABXY")
     sl_text_height = sl_text_bbox[3]-sl_text_bbox[1]
     single_letter_text_y = bottom_guide_middle_y*render_factor - (sl_text_height / 2)-sl_text_bbox[1]
 
+    ##TODO convert buttons at this point to lanuage of choice 
+
+    combined_width = 0
+    lhsTotalWidth=0
+    rhsTotalWidth=0
+
     if not remove_left_menu_guides_var.get():
-        powerTextBbox = inSmallerBubbleFont.getbbox(powerText)
-        powerTextWidth = powerTextBbox[2] - powerTextBbox[0]
-        sleepTextBbox = inBubbleFont.getbbox(sleepText)
-        sleepTextWidth = sleepTextBbox[2] - sleepTextBbox[0]
-        totalWidth = horizontal_padding+horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(sleepTextWidth/render_factor)+horizontal_large_padding
-        smallerBubbleWidth = horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding
-        draw.rounded_rectangle( ## Power Behind Bubble
-                [(from_sides_padding*render_factor, (bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), ((totalWidth+from_sides_padding)*render_factor, (bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)],
-                radius=(menu_helper_guide_height/2)*render_factor,
-                #fill=f"#{percentage_color(primary_colour_hex,secondary_colour_hex,0.133)}"
-                fill = hex_to_rgb(colour_hex, alpha = 0.133)
-            )
-        (totalWidth+from_sides_padding)*render_factor
-        draw.rounded_rectangle( # Power infront Bubble
-                [((from_sides_padding+horizontal_padding)*render_factor, (bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), ((from_sides_padding+horizontal_padding+smallerBubbleWidth)*render_factor, (bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)],
-                radius=(guide_small_bubble_height/2)*render_factor,
-                fill=hex_to_rgb(colour_hex, alpha = 1)
-            )
-        powerTextX = from_sides_padding+horizontal_padding+horizontal_large_padding
-        sleepTextX = from_sides_padding+horizontal_padding+horizontal_large_padding+(powerTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding
-        draw.text(( powerTextX*render_factor,in_smaller_bubble_text_y), powerText, font=inSmallerBubbleFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-        draw.text(( sleepTextX*render_factor,in_bubble_text_y), sleepText, font=inBubbleFont, fill=f"#{colour_hex}")
+        lhsTotalWidth += getTotalBubbleWidth(lhsButtons,inSmallerBubbleFont,inBubbleFont,horizontal_padding,horizontal_large_padding,horizontal_small_padding,guide_small_bubble_height,render_factor)
+        combined_width += lhsTotalWidth
+
     if not remove_right_menu_guides_var.get():
-        circleWidth = guide_small_bubble_height
-
-        confirmTextBbox = inBubbleFont.getbbox(confirmText)
-        confirmTextWidth = confirmTextBbox[2] - confirmTextBbox[0]
-
-        selectTextBbox = inBubbleFont.getbbox(selectText)
-        selectTextWidth = selectTextBbox[2] - selectTextBbox[0]
-
-        backTextBbox = inBubbleFont.getbbox(backText)
-        backTextWidth = backTextBbox[2] - backTextBbox[0]
-
-        launchTextBbox = inBubbleFont.getbbox(launchText)
-        launchTextWidth = launchTextBbox[2] - launchTextBbox[0]
-
-        openTextBbox = inBubbleFont.getbbox(openText)
-        openTextWidth = openTextBbox[2] - openTextBbox[0]
-
-        refreshTextBbox = inBubbleFont.getbbox(refreshText)
-        refreshTextWidth = refreshTextBbox[2] - refreshTextBbox[0]
-
-        favouriteTextBbox = inBubbleFont.getbbox(favouriteText)
-        favouriteTextWidth = favouriteTextBbox[2] - favouriteTextBbox[0]
-
-        infoTextBbox = inBubbleFont.getbbox(infoText)
-        infoTextWidth = infoTextBbox[2] - infoTextBbox[0]
-
-        removeTextBbox = inBubbleFont.getbbox(removeText)
-        removeTextWidth = removeTextBbox[2] - removeTextBbox[0]
-
-        aTextBbox = singleLetterFont.getbbox(aText)
-        aTextWidth = aTextBbox[2] - aTextBbox[0]
-
-        bTextBbox = singleLetterFont.getbbox(bText)
-        bTextWidth = bTextBbox[2] - bTextBbox[0]
-
-        xTextBbox = singleLetterFont.getbbox(xText)
-        xTextWidth = xTextBbox[2] - xTextBbox[0]
-
-        yTextBbox = singleLetterFont.getbbox(yText)
-        yTextWidth = yTextBbox[2] - yTextBbox[0]
-
-        menuTextBbox = inSmallerBubbleFont.getbbox(menuText)
-        menuTextWidth = menuTextBbox[2] - menuTextBbox[0]
-
-        RHM_Len = 0
-        if muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch": # Just A and Select ( One Circle and selectText plus padding )
-            RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(selectTextWidth/render_factor)+horizontal_large_padding
-        elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo": # B and Back, A and Select ( Two Circle and selectText and backText plus padding )
-            RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(selectTextWidth/render_factor)+horizontal_large_padding
-        elif muOSSystemName == "muxapp": # B and Back, A and Launch ( Two Circle and launchText and backText plus padding )
-            RHM_Len = horizontal_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding
-        elif muOSSystemName == "muxplore": # A and Open, B and Back, X and Refresh, Y and Favourite, Menu and Info ( Four Circle and Menu and openText, backText, refreshText, Favourite Text, and Info Text plus padding )
-            ##                                                         MENU                                                                            INFO                                                   Y                                    FAVOURITE                                                    X                                     REFRESH                                                 B                                     BACK                                                  A                                    OPEN
-            RHM_Len = horizontal_padding+horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(infoTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(favouriteTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(refreshTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(openTextWidth/render_factor)+horizontal_large_padding
-        elif muOSSystemName == "muxfavourite": # A and Open, B and Back, X and Remove, Menu and Info ( Four Circle and Menu and openText, backText, removeText, Favourite Text, and Info Text plus padding )
-            ##                                                         MENU                                                                            INFO                                                   X                                     REMOVE                                                 B                                     BACK                                                  A                                    OPEN
-            RHM_Len = horizontal_padding+horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(infoTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(removeTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(openTextWidth/render_factor)+horizontal_large_padding
-        elif muOSSystemName == "muxhistory": # A and Open, B and Back, X and Remove, Y and Favourite, Menu and Info ( Four Circle and Menu and openText, backText, removeText, Favourite Text, and Info Text plus padding )
-            ##                                                         MENU                                                                            INFO                                                   Y                                    FAVOURITE                                                    X                                     REMOVE                                                 B                                     BACK                                                  A                                    OPEN
-            RHM_Len = horizontal_padding+horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding+horizontal_small_padding+(infoTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(favouriteTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(removeTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(openTextWidth/render_factor)+horizontal_large_padding
-
-        draw.rounded_rectangle( ## Left hand behind bubble
-                [((deviceScreenWidth-from_sides_padding-RHM_Len)*render_factor, (bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), ((deviceScreenWidth-from_sides_padding)*render_factor, (bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)],
-                radius=(menu_helper_guide_height/2)*render_factor,
-                fill=hex_to_rgb(colour_hex, alpha = 0.133)
-            )
-        if muOSSystemName != "muxapp" and muOSSystemName != "muxplore" and muOSSystemName != "muxfavourite" and muOSSystemName != "muxhistory": ## Draw Select
-            aSelectCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(selectTextWidth/render_factor)+horizontal_large_padding)
-            draw.ellipse(((aSelectCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aSelectCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # A Bubble
-            
-            aSelectTextX = aSelectCircleCenterX - ((aTextWidth/2)/render_factor)
-            confimTextX = deviceScreenWidth-from_sides_padding-((selectTextWidth/render_factor)+horizontal_large_padding)
-            draw.text(( aSelectTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-            draw.text(( confimTextX*render_factor,in_bubble_text_y), selectText, font=inBubbleFont, fill=f"#{colour_hex}")
-            
-            if muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo": # Draw Back
-                bBackCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(selectTextWidth/render_factor)+horizontal_large_padding)
-                draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # B Bubble
-
-                bBackTextX = bBackCircleCenterX - ((bTextWidth/2)/render_factor)
-                backTextX = deviceScreenWidth-from_sides_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(selectTextWidth/render_factor)+horizontal_large_padding)
-                draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-        else: # Draw Launch
-            if muOSSystemName == "muxapp":
-                aLaunchCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
-                draw.ellipse(((aLaunchCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aLaunchCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # A Bubble
-
-                aLaunchTextX = aLaunchCircleCenterX - ((aTextWidth/2)/render_factor)
-                launchTextX = deviceScreenWidth-from_sides_padding-((launchTextWidth/render_factor)+horizontal_large_padding)
-                draw.text(( aLaunchTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                draw.text(( launchTextX*render_factor,in_bubble_text_y), launchText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-                bBackCircleCenterX = deviceScreenWidth-from_sides_padding-((circleWidth/2)+horizontal_small_padding+(backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
-                draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # B Bubble
-
-                bBackTextX = bBackCircleCenterX - ((bTextWidth/2)/render_factor)
-                backTextX = deviceScreenWidth-from_sides_padding-((backTextWidth/render_factor)+horizontal_large_padding+circleWidth+horizontal_small_padding+(launchTextWidth/render_factor)+horizontal_large_padding)
-                draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-            elif muOSSystemName == "muxplore": ## Should be Easy to Expand 
-                ##   MENU    INFO              Y    FAVOURITE            X    REFRESH             B   BACK           A   OPEN
-
-                menuBubbleWidth = horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding
-                menuBubbleX = deviceScreenWidth - from_sides_padding - RHM_Len + horizontal_padding
-                draw.rounded_rectangle( # Power infront Bubble
-                        [((menuBubbleX)*render_factor, (bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), ((menuBubbleX+menuBubbleWidth)*render_factor, (bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)],
-                        radius=(guide_small_bubble_height/2)*render_factor,
-                        fill=hex_to_rgb(colour_hex, alpha = 1)
-                    )
-
-                menuInfoTextX = menuBubbleX + horizontal_large_padding
-                draw.text(( menuInfoTextX*render_factor,in_smaller_bubble_text_y), menuText, font=inSmallerBubbleFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                infoTextX = menuBubbleX+menuBubbleWidth + horizontal_small_padding
-                draw.text(( infoTextX*render_factor,in_bubble_text_y), infoText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-
-                yFavouriteCircleCenterX = infoTextX + (infoTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
-                draw.ellipse(((yFavouriteCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(yFavouriteCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
-
-                yFavouriteTextX = yFavouriteCircleCenterX- ((yTextWidth/2)/render_factor)
-                draw.text(( yFavouriteTextX*render_factor,single_letter_text_y), yText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                favouriteTextX = yFavouriteCircleCenterX+(circleWidth/2) + horizontal_small_padding
-                draw.text(( favouriteTextX*render_factor,in_bubble_text_y), favouriteText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-
-                xRefreshCircleCenterX = favouriteTextX + (favouriteTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
-                draw.ellipse(((xRefreshCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(xRefreshCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
-
-                xRefreshTextX = xRefreshCircleCenterX- ((xTextWidth/2)/render_factor)
-                draw.text(( xRefreshTextX*render_factor,single_letter_text_y), xText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                refreshTextX = xRefreshCircleCenterX+(circleWidth/2) + horizontal_small_padding
-                draw.text(( refreshTextX*render_factor,in_bubble_text_y), refreshText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-
-                bBackCircleCenterX = refreshTextX + (refreshTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
-                draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
-
-                bBackTextX = bBackCircleCenterX- ((bTextWidth/2)/render_factor)
-                draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                backTextX = bBackCircleCenterX+(circleWidth/2) + horizontal_small_padding
-                draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-                aOpenCircleCenterX = backTextX + (backTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
-                draw.ellipse(((aOpenCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aOpenCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
-
-                aOpenTextX = aOpenCircleCenterX- ((aTextWidth/2)/render_factor)
-                draw.text(( aOpenTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                openTextX = aOpenCircleCenterX+(circleWidth/2) + horizontal_small_padding
-                draw.text(( openTextX*render_factor,in_bubble_text_y), openText, font=inBubbleFont, fill=f"#{colour_hex}")
-            elif muOSSystemName == "muxfavourite": ## Should be Easy to Expand 
-                ##   MENU    INFO           X    REMOVE             B   BACK           A   OPEN
-
-                menuBubbleWidth = horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding
-                menuBubbleX = deviceScreenWidth - from_sides_padding - RHM_Len + horizontal_padding
-                draw.rounded_rectangle( # Power infront Bubble
-                        [((menuBubbleX)*render_factor, (bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), ((menuBubbleX+menuBubbleWidth)*render_factor, (bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)],
-                        radius=(guide_small_bubble_height/2)*render_factor,
-                        fill=hex_to_rgb(colour_hex, alpha = 1)
-                    )
-
-                menuInfoTextX = menuBubbleX + horizontal_large_padding
-                draw.text(( menuInfoTextX*render_factor,in_smaller_bubble_text_y), menuText, font=inSmallerBubbleFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                infoTextX = menuBubbleX+menuBubbleWidth + horizontal_small_padding
-                draw.text(( infoTextX*render_factor,in_bubble_text_y), infoText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-                xRemoveCircleCenterX = infoTextX + (infoTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
-                draw.ellipse(((xRemoveCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(xRemoveCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
-
-                xRemoveTextX = xRemoveCircleCenterX- ((xTextWidth/2)/render_factor)
-                draw.text(( xRemoveTextX*render_factor,single_letter_text_y), xText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                removeTextX = xRemoveCircleCenterX+(circleWidth/2) + horizontal_small_padding
-                draw.text(( removeTextX*render_factor,in_bubble_text_y), removeText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-
-                bBackCircleCenterX = removeTextX + (removeTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
-                draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
-
-                bBackTextX = bBackCircleCenterX- ((bTextWidth/2)/render_factor)
-                draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                backTextX = bBackCircleCenterX+(circleWidth/2) + horizontal_small_padding
-                draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-                aOpenCircleCenterX = backTextX + (backTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
-                draw.ellipse(((aOpenCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aOpenCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
-
-                aOpenTextX = aOpenCircleCenterX- ((aTextWidth/2)/render_factor)
-                draw.text(( aOpenTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                openTextX = aOpenCircleCenterX+(circleWidth/2) + horizontal_small_padding
-                draw.text(( openTextX*render_factor,in_bubble_text_y), openText, font=inBubbleFont, fill=f"#{colour_hex}")
-            elif muOSSystemName == "muxhistory": ## Should be Easy to Expand 
-                ##   MENU    INFO              Y    FAVOURITE            X    REFRESH             B   BACK           A   OPEN
-
-                menuBubbleWidth = horizontal_large_padding+(menuTextWidth/render_factor)+horizontal_large_padding
-                menuBubbleX = deviceScreenWidth - from_sides_padding - RHM_Len + horizontal_padding
-                draw.rounded_rectangle( # Power infront Bubble
-                        [((menuBubbleX)*render_factor, (bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), ((menuBubbleX+menuBubbleWidth)*render_factor, (bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)],
-                        radius=(guide_small_bubble_height/2)*render_factor,
-                        fill=hex_to_rgb(colour_hex, alpha = 1)
-                    )
-
-                menuInfoTextX = menuBubbleX + horizontal_large_padding
-                draw.text(( menuInfoTextX*render_factor,in_smaller_bubble_text_y), menuText, font=inSmallerBubbleFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                infoTextX = menuBubbleX+menuBubbleWidth + horizontal_small_padding
-                draw.text(( infoTextX*render_factor,in_bubble_text_y), infoText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-
-                yFavouriteCircleCenterX = infoTextX + (infoTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
-                draw.ellipse(((yFavouriteCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(yFavouriteCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
-
-                yFavouriteTextX = yFavouriteCircleCenterX- ((yTextWidth/2)/render_factor)
-                draw.text(( yFavouriteTextX*render_factor,single_letter_text_y), yText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                favouriteTextX = yFavouriteCircleCenterX+(circleWidth/2) + horizontal_small_padding
-                draw.text(( favouriteTextX*render_factor,in_bubble_text_y), favouriteText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-
-                xRemoveCircleCenterX = favouriteTextX + (favouriteTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
-                draw.ellipse(((xRemoveCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(xRemoveCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
-
-                xRemoveTextX = xRemoveCircleCenterX- ((xTextWidth/2)/render_factor)
-                draw.text(( xRemoveTextX*render_factor,single_letter_text_y), xText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                removeTextX = xRemoveCircleCenterX+(circleWidth/2) + horizontal_small_padding
-                draw.text(( removeTextX*render_factor,in_bubble_text_y), removeText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-
-                bBackCircleCenterX = removeTextX + (removeTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
-                draw.ellipse(((bBackCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(bBackCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
-
-                bBackTextX = bBackCircleCenterX- ((bTextWidth/2)/render_factor)
-                draw.text(( bBackTextX*render_factor,single_letter_text_y), bText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                backTextX = bBackCircleCenterX+(circleWidth/2) + horizontal_small_padding
-                draw.text(( backTextX*render_factor,in_bubble_text_y), backText, font=inBubbleFont, fill=f"#{colour_hex}")
-
-                aOpenCircleCenterX = backTextX + (backTextWidth)/render_factor + horizontal_large_padding+(circleWidth/2)
-                draw.ellipse(((aOpenCircleCenterX-(circleWidth/2))*render_factor, (bottom_guide_middle_y-(circleWidth/2))*render_factor,(aOpenCircleCenterX+(circleWidth/2))*render_factor, (bottom_guide_middle_y+(circleWidth/2))*render_factor),fill=f"#{colour_hex}") # Menu Bubble
-
-                aOpenTextX = aOpenCircleCenterX- ((aTextWidth/2)/render_factor)
-                draw.text(( aOpenTextX*render_factor,single_letter_text_y), aText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-
-                openTextX = aOpenCircleCenterX+(circleWidth/2) + horizontal_small_padding
-                draw.text(( openTextX*render_factor,in_bubble_text_y), openText, font=inBubbleFont, fill=f"#{colour_hex}")
-        return image
+        rhsTotalWidth += getTotalBubbleWidth(rhsButtons,inSmallerBubbleFont,inBubbleFont,horizontal_padding,horizontal_large_padding,horizontal_small_padding,guide_small_bubble_height,render_factor)
+        combined_width += rhsTotalWidth
+
+    if not remove_left_menu_guides_var.get():
+        realLhsPointer = from_sides_padding*render_factor
+        ## Make the main long bubble
+        draw.rounded_rectangle([(realLhsPointer,(bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), #bottom left point
+                                (realLhsPointer+(lhsTotalWidth*render_factor),(bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)], # Top right point
+                                radius=(menu_helper_guide_height/2)*render_factor,
+                                fill = hex_to_rgb(colour_hex,alpha=0.133)
+                                )
+        realLhsPointer+=horizontal_padding*render_factor
+        for pair in lhsButtons:
+            if len(pair[0]) == 1:
+                circleCenterX = realLhsPointer+((guide_small_bubble_height*render_factor)/2)
+                draw.ellipse((circleCenterX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCenterX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
+                smallerTextBbox = singleLetterFont.getbbox(pair[0])
+                smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
+                smallerTextX = circleCenterX-(smallerTextWidth/2)
+                draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+                realLhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
+
+            else:
+                ## Make the smaller bubble
+                smallerTextBbox = inSmallerBubbleFont.getbbox(pair[0])
+                smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
+                smallerBubbleWidth = horizontal_large_padding+smallerTextWidth/render_factor+horizontal_large_padding
+                draw.rounded_rectangle([(realLhsPointer,(bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), #bottom left point
+                                (realLhsPointer+(smallerBubbleWidth*render_factor),(bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)], # Top right point
+                                radius=(guide_small_bubble_height/2)*render_factor,
+                                fill = hex_to_rgb(colour_hex,alpha=1)
+                                )
+                smallerTextX = realLhsPointer + horizontal_large_padding*render_factor
+                draw.text((smallerTextX,in_smaller_bubble_text_y),pair[0],font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+                realLhsPointer+=(smallerBubbleWidth+horizontal_small_padding)*render_factor
+            textBbox = inBubbleFont.getbbox(pair[1])
+            textWidth = textBbox[2]-textBbox[0]
+            draw.text((realLhsPointer,in_bubble_text_y),pair[1],font=inBubbleFont,fill=f"#{colour_hex}")
+            realLhsPointer+=textWidth
+            realLhsPointer += horizontal_large_padding*render_factor
+    if not remove_right_menu_guides_var.get():
+        realRhsPointer = (deviceScreenWidth-from_sides_padding-rhsTotalWidth)*render_factor
+        ## Make the main long bubble
+        draw.rounded_rectangle([(realRhsPointer,(bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), #bottom left point
+                                (realRhsPointer+(rhsTotalWidth*render_factor),(bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)], # Top right point
+                                radius=(menu_helper_guide_height/2)*render_factor,
+                                fill = hex_to_rgb(colour_hex,alpha=0.133)
+                                )
+        realRhsPointer+=horizontal_padding*render_factor
+        for pair in rhsButtons:
+            if len(pair[0]) == 1:
+                circleCenterX = realRhsPointer+((guide_small_bubble_height*render_factor)/2)
+                draw.ellipse((circleCenterX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCenterX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
+                smallerTextBbox = singleLetterFont.getbbox(pair[0])
+                smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
+                smallerTextX = circleCenterX-(smallerTextWidth/2)
+                draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+                realRhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
+
+            else:
+                ## Make the smaller bubble
+                smallerTextBbox = inSmallerBubbleFont.getbbox(pair[0])
+                smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
+                smallerBubbleWidth = horizontal_large_padding+smallerTextWidth/render_factor+horizontal_large_padding
+                draw.rounded_rectangle([(realRhsPointer,(bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), #bottom left point
+                                (realRhsPointer+(smallerBubbleWidth*render_factor),(bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)], # Top right point
+                                radius=(guide_small_bubble_height/2)*render_factor,
+                                fill = hex_to_rgb(colour_hex,alpha=1)
+                                )
+                smallerTextX = realRhsPointer + horizontal_large_padding*render_factor
+                draw.text((smallerTextX,in_smaller_bubble_text_y),pair[0],font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+                realRhsPointer+=(smallerBubbleWidth+horizontal_small_padding)*render_factor
+            textBbox = inBubbleFont.getbbox(pair[1])
+            textWidth = textBbox[2]-textBbox[0]
+            draw.text((realRhsPointer,in_bubble_text_y),pair[1],font=inBubbleFont,fill=f"#{colour_hex}")
+            realRhsPointer+=textWidth
+            realRhsPointer += horizontal_large_padding*render_factor
+    return(image)
+
+def getTotalBubbleWidth(buttons,internalBubbleFont,bubbleFont,initalPadding,largerPadding,smallerPadding,circleWidth,render_factor):
+    totalWidth = initalPadding
+    print(f"buttons:{buttons}")
+    for pair in buttons:
+        print(f"pair: {pair}")
+        print(f"pair[0]: {pair[0]}")
+        print(f"pair[1]: {pair[1]}")
+        #pair[0] might be MENU, POWER, or ABXY
+        if len(pair[0]) == 1:
+            totalWidth+=circleWidth
+        else:
+            totalWidth+=largerPadding
+            smallerTextBbox = internalBubbleFont.getbbox(pair[0])
+            smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
+            totalWidth+=(smallerTextWidth/render_factor)
+            totalWidth+=largerPadding
+        totalWidth+=smallerPadding
+        #pair[1] might be something like INFO, FAVOURITE, REFRESH etc...
+        textBbox = bubbleFont.getbbox(pair[1])
+        textWidth = textBbox[2]-textBbox[0]
+        totalWidth += (textWidth/render_factor)
+        totalWidth+=largerPadding
+    return(totalWidth)
 
 
 def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,numScreens=0,screenIndex=0,fileCounter="",folderName = None,transparent=False):
@@ -538,10 +324,20 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
 
-    if (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp" or muOSSystemName == "muxplore" or muOSSystemName == "muxfavourite" or muOSSystemName == "muxhistory"):
-        menuHelperGuides = generateMenuHelperGuides(muOSSystemName,selected_font_path,bubble_hex,render_factor)
+    if muOSSystemName == "muxlaunch":
+        menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]])
+    elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo":
+        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]])
+    elif muOSSystemName == "muxapp":
+        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]])
+    elif muOSSystemName == "muxplore":
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]])
+    elif muOSSystemName == "muxfavourite":
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]])
+    elif muOSSystemName == "muxhistory":
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]])
 
-    elif show_file_counter_var.get() == 1:
+    if show_file_counter_var.get() == 1:
         in_bubble_font_size = 19*render_factor
         inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
         bbox = inBubbleFont.getbbox(fileCounter)
@@ -832,7 +628,8 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
             selected_font_path = alt_font_path.get()
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
-    menuHelperGuides = generateMenuHelperGuides("muxlaunch",selected_font_path,bubble_hex,render_factor) 
+    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]])
+    
     
 
     font_size = min((deviceScreenHeight*24)/480,(deviceScreenWidth*24)/640) * render_factor  ## CHANGE for adjustment
@@ -1166,7 +963,7 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
             selected_font_path = alt_font_path.get()
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
-    menuHelperGuides = generateMenuHelperGuides("muxlaunch",selected_font_path,bubble_hex,render_factor) 
+    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]])
     
 
     font_size = min((deviceScreenHeight*24)/480,(deviceScreenWidth*24)/640) * render_factor  ## CHANGE for adjustment
@@ -2216,7 +2013,7 @@ def FillTempThemeFolder(progress_bar):
 
     #TODO If implimented it would be great to only set these once as a default.png type thing, and then make it work in every menu
     
-    visualbuttonoverlay_B_BACK_A_SELECT = generateMenuHelperGuides("muxconfig",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_B_BACK_A_SELECT = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     muxconfig_items = ["clock","language","general","network","service","theme"]
     os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxconfig"), exist_ok=True)
     for item in muxconfig_items:
@@ -2225,7 +2022,7 @@ def FillTempThemeFolder(progress_bar):
     os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxinfo"), exist_ok=True)
     for item in muxinfo_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxinfo",f"{item}.png"), format='PNG')
-    visualbuttonoverlay_A_SELECT = generateMenuHelperGuides("muxlaunch",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_A_SELECT = menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     muxlaunch_items = ["apps","config","explore","favourite","history","info","reboot","shutdown"]
     os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxlaunch"), exist_ok=True)
     for item in muxlaunch_items:
@@ -2245,19 +2042,19 @@ def FillTempThemeFolder(progress_bar):
     
     
 
-    visualbuttonoverlay_muxapp = generateMenuHelperGuides("muxapp",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxapp = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = background.copy()
     altered_background.paste(visualbuttonoverlay_muxapp, (0, 0), visualbuttonoverlay_muxapp)  
     altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxapp.png"), format='PNG')
-    visualbuttonoverlay_muxplore = generateMenuHelperGuides("muxplore",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxplore = menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = background.copy()
     altered_background.paste(visualbuttonoverlay_muxplore, (0, 0), visualbuttonoverlay_muxplore)  
     altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxplore.png"), format='PNG')
-    visualbuttonoverlay_muxfavourite = generateMenuHelperGuides("muxfavourite",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxfavourite = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = background.copy()
     altered_background.paste(visualbuttonoverlay_muxfavourite, (0, 0), visualbuttonoverlay_muxfavourite)  
     altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxfavourite.png"), format='PNG')
-    visualbuttonoverlay_muxhistory = generateMenuHelperGuides("muxhistory",selected_font_path,bubble_hex,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxhistory = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = background.copy()
     altered_background.paste(visualbuttonoverlay_muxhistory, (0, 0), visualbuttonoverlay_muxhistory)  
     altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxhistory.png"), format='PNG')
