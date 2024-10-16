@@ -65,7 +65,10 @@ Specify the theme output directory (can be on the SD card, your computer, or **l
 
 Choose a different theme in muOS.
 
-## Build instructions
+# In case of bricked system due to broken theme
+Please go into your MUOS/theme/active folder and remove everything in there, your system should now boot and you can choose a different (not broken) theme
+
+# Build instructions
 
  - Install pyinstaller
 
