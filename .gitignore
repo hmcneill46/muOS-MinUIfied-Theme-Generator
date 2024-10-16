@@ -6,6 +6,7 @@ build/
 dist/
 venv/
 .venv/
+.TempBuildTheme/
 
 # Ignore specific files
 PreviousDirectories.txt
@@ -13,6 +14,7 @@ ConsoleAssociations.txt
 MinUIThemeGeneratorConfig*
 ConsoleAssociations.json
 AlternateMenuNames.json
+Default Scheme File.txt
 
 # macOS specific files
 .DS_Store
@@ -41,4 +43,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-
+Test.py
+Sample Theme/
+Helper Scripts/Curly Bracket Info.txt
+Helper Scripts/Useful Curly Bracket Info.txt

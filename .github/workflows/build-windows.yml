@@ -27,7 +27,7 @@ jobs:
           pyinstaller "Windows Build Settings.spec"
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: windows-binary
           path: "dist/Custom MinUI Theme Generator for muOS.exe"
