@@ -38,12 +38,8 @@ apt install python3-pil.imagetk python3-pil python3-bidi python3-tk python3-nump
 
 
 ## Getting Started
- - Insert your SD card into your computer.
- - If you want to keep the **box art**, copy the **MUOS/info/catalogue** folder from the SD card to your computers local storage
- - To use the tool without the SD card, copy your **ROMS** folder from the card to your computers local storage for future use.
- - **Make sure** your box art on your device is set to **fullscreen+front**, otherwise the content explorer UI can behave strangely
  - To run the program from the prebuilt binaries, go to the latest release and download the program from the assets. [Windows Only]
- - To run the program from source you must download this repo as a zip, unzip it, and then run the .py file with python
+ - To run the program from source you must download this repo as a zip, unzip it, (or clone it), and then run the .py file with python
 
 # Configuration
 
@@ -51,50 +47,23 @@ apt install python3-pil.imagetk python3-pil python3-bidi python3-tk python3-nump
 Customize the overall look and feel of the theme. A visual preview will be available to help you see the changes in real-time.
 
 ## Theme Specific Configurations
-Adjust settings that only affect the theme (excluding the content explorer).
+More Visual changes for the theme.
 
 ## Box Art Specific Configurations
-Specify the box art folder copied from your card.
-
-Adjust text placement to prevent it from overlapping with the box art.
-
-Set the muOS console name to see the box art in the preview.
+This is not implimented yet (16/10/2024) but it will be to set a size of your box art so that the text wont go behind it.
 
 ## Content Explorer Specific Configurations
-Modify settings specific to the content explorer menus (e.g., removing brackets from game names, generating themes for games and folders).
+This is not implimented yet (16/10/2024) but it will be so that you can do something like having your game names show centerally justified, and everything else left.
 
 # Generation
-After configuring your settings, you can generate the theme. There are three methods to do this:
+After configuring your settings, you can generate the theme.
 
-## Archive Manager [Recommended for refried beans or later]
- 1. Set the output directory for the Archive Manager (leave blank to generate files in the script's directory).
- 2. Optionally, choose to generate only the theme or content explorer files.
-
-## Theme Only
 Specify the theme output directory (can be on the SD card, your computer, or **leave blank to generate in the script's directory**).
 
-## Content Explorer Only
-Select the catalogue folder where the image files will be generated (recommended to back up the folder before this step).
+**click "Generate" and the program will handle the rest.**
 
-**For all methods, click "Generate" and the program will handle the rest.**
-
-## Removing MinUI Theming
-To remove all MinUI theming from your system:
 
 Choose a different theme in muOS.
-
-**Then either [Recommended]:**
-
- - Using this tool
- - [Optionally] select your backed up box art directory (As you would for merging)
- - Select your Archive Manager Output Directory
- - Press 'Backup Box Art into Archive Manager File'
- - This will create a file called 'Restore Backed Up Artwork' in your Archive Manager
- - You can use this as an archive restore your content explorer to the state it was before theming
-
-**Or:**
-
- - Disable Box art in your muOS devices settings to remove all content explorer themeing
 
 ## Build instructions
 
@@ -107,11 +76,6 @@ Choose a different theme in muOS.
 
        pyinstaller ".\Custom MinUI Theme Generator for muOS.spec"
 *where the .spec file is the one in the github page, modify the .spec file to work on macOS and Linux if you are able to/want to, and put it on a PR.
-  
-
-## Experimental Settings
- - Show hidden files is experimental as I'm not sure how it should work if you don't select to generate game list as well
- - Also Generate Images for Game List is experimental as it will mess up your favourites and history menus
 
 ## Credits and thanks
  - Thanks to [@JCR64](https://github.com/JCR64) for the inspiration for the theme and horizontal logo
