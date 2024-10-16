@@ -141,138 +141,139 @@ def change_logo_color(input_path, hex_color):
 def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]):
     image = Image.new("RGBA", (deviceScreenWidth*render_factor, deviceScreenHeight*render_factor), (255, 255, 255, 0))
     draw = ImageDraw.Draw(image)
-    required_padding_between_sides=15
-    lhsTotalWidth = deviceScreenWidth
-    rhsTotalWidth = deviceScreenWidth
-    iterations = 0
-    from_sides_padding = int(VBG_Horizontal_Padding_entry.get())
-    while from_sides_padding+lhsTotalWidth+required_padding_between_sides+rhsTotalWidth+from_sides_padding>deviceScreenWidth:
-        if iterations==0:
-            from_sides_padding = int(VBG_Horizontal_Padding_entry.get())
-        elif from_sides_padding>5:
-            from_sides_padding=5
-        from_bottom_padding = int(VBG_Vertical_Padding_entry.get())+iterations
+    if not( remove_left_menu_guides_var.get() and remove_right_menu_guides_var.get()):
+        required_padding_between_sides=15
+        lhsTotalWidth = deviceScreenWidth
+        rhsTotalWidth = deviceScreenWidth
+        iterations = 0
+        from_sides_padding = int(VBG_Horizontal_Padding_entry.get())
+        while from_sides_padding+lhsTotalWidth+required_padding_between_sides+rhsTotalWidth+from_sides_padding>deviceScreenWidth:
+            if iterations==0:
+                from_sides_padding = int(VBG_Horizontal_Padding_entry.get())
+            elif from_sides_padding>5:
+                from_sides_padding=5
+            from_bottom_padding = int(VBG_Vertical_Padding_entry.get())+iterations
 
-        menu_helper_guide_height = footerHeight-(from_bottom_padding*2) # Change this if overlayed
+            menu_helper_guide_height = footerHeight-(from_bottom_padding*2) # Change this if overlayed
 
-        in_smaller_bubble_font_size = menu_helper_guide_height*(16/45)*render_factor
-        inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
+            in_smaller_bubble_font_size = menu_helper_guide_height*(16/45)*render_factor
+            inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
 
-        in_bubble_font_size = menu_helper_guide_height*(19/45)*render_factor
-        inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
+            in_bubble_font_size = menu_helper_guide_height*(19/45)*render_factor
+            inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
 
-        single_letter_font_size = menu_helper_guide_height*(23/45)*render_factor
-        singleLetterFont = ImageFont.truetype(selected_font_path, single_letter_font_size)
+            single_letter_font_size = menu_helper_guide_height*(23/45)*render_factor
+            singleLetterFont = ImageFont.truetype(selected_font_path, single_letter_font_size)
 
-        horizontal_small_padding = menu_helper_guide_height*(5/45)
-        horizontal_padding = menu_helper_guide_height*(6.5/45)
-        horizontal_large_padding = menu_helper_guide_height*(8.5/45)
-        
-        bottom_guide_middle_y = deviceScreenHeight-from_bottom_padding-(menu_helper_guide_height/2)
+            horizontal_small_padding = menu_helper_guide_height*(5/45)
+            horizontal_padding = menu_helper_guide_height*(6.5/45)
+            horizontal_large_padding = menu_helper_guide_height*(8.5/45)
+            
+            bottom_guide_middle_y = deviceScreenHeight-from_bottom_padding-(menu_helper_guide_height/2)
 
-        guide_small_bubble_height = menu_helper_guide_height-(horizontal_padding*2)
+            guide_small_bubble_height = menu_helper_guide_height-(horizontal_padding*2)
 
-        isb_ascent, isb_descent = inSmallerBubbleFont.getmetrics()
-        isb_text_height = isb_ascent + isb_descent
-        in_smaller_bubble_text_y = bottom_guide_middle_y*render_factor - (isb_text_height / 2)
+            isb_ascent, isb_descent = inSmallerBubbleFont.getmetrics()
+            isb_text_height = isb_ascent + isb_descent
+            in_smaller_bubble_text_y = bottom_guide_middle_y*render_factor - (isb_text_height / 2)
 
-        ib_ascent, ib_descent = inBubbleFont.getmetrics()
-        ib_text_height = ib_ascent + ib_descent
-        in_bubble_text_y = bottom_guide_middle_y*render_factor - (ib_text_height / 2)
+            ib_ascent, ib_descent = inBubbleFont.getmetrics()
+            ib_text_height = ib_ascent + ib_descent
+            in_bubble_text_y = bottom_guide_middle_y*render_factor - (ib_text_height / 2)
 
-        sl_text_bbox = singleLetterFont.getbbox("ABXY")
-        sl_text_height = sl_text_bbox[3]-sl_text_bbox[1]
-        single_letter_text_y = bottom_guide_middle_y*render_factor - (sl_text_height / 2)-sl_text_bbox[1]
+            sl_text_bbox = singleLetterFont.getbbox("ABXY")
+            sl_text_height = sl_text_bbox[3]-sl_text_bbox[1]
+            single_letter_text_y = bottom_guide_middle_y*render_factor - (sl_text_height / 2)-sl_text_bbox[1]
 
-        ##TODO convert buttons at this point to lanuage of choice 
+            ##TODO convert buttons at this point to lanuage of choice 
 
-        combined_width = 0
-        lhsTotalWidth=0
-        rhsTotalWidth=0
+            combined_width = 0
+            lhsTotalWidth=0
+            rhsTotalWidth=0
+
+            if not remove_left_menu_guides_var.get():
+                lhsTotalWidth += getTotalBubbleWidth(lhsButtons,inSmallerBubbleFont,inBubbleFont,horizontal_padding,horizontal_large_padding,horizontal_small_padding,guide_small_bubble_height,render_factor)
+                combined_width += lhsTotalWidth
+
+            if not remove_right_menu_guides_var.get():
+                rhsTotalWidth += getTotalBubbleWidth(rhsButtons,inSmallerBubbleFont,inBubbleFont,horizontal_padding,horizontal_large_padding,horizontal_small_padding,guide_small_bubble_height,render_factor)
+                combined_width += rhsTotalWidth
+            iterations +=1
 
         if not remove_left_menu_guides_var.get():
-            lhsTotalWidth += getTotalBubbleWidth(lhsButtons,inSmallerBubbleFont,inBubbleFont,horizontal_padding,horizontal_large_padding,horizontal_small_padding,guide_small_bubble_height,render_factor)
-            combined_width += lhsTotalWidth
+            realLhsPointer = from_sides_padding*render_factor
+            ## Make the main long bubble
+            draw.rounded_rectangle([(realLhsPointer,(bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), #bottom left point
+                                    (realLhsPointer+(lhsTotalWidth*render_factor),(bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)], # Top right point
+                                    radius=(menu_helper_guide_height/2)*render_factor,
+                                    fill = hex_to_rgb(colour_hex,alpha=0.133)
+                                    )
+            realLhsPointer+=horizontal_padding*render_factor
+            for pair in lhsButtons:
+                if len(pair[0]) == 1:
+                    circleCenterX = realLhsPointer+((guide_small_bubble_height*render_factor)/2)
+                    draw.ellipse((circleCenterX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCenterX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
+                    smallerTextBbox = singleLetterFont.getbbox(pair[0])
+                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
+                    smallerTextX = circleCenterX-(smallerTextWidth/2)
+                    draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+                    realLhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
 
+                else:
+                    ## Make the smaller bubble
+                    smallerTextBbox = inSmallerBubbleFont.getbbox(pair[0])
+                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
+                    smallerBubbleWidth = horizontal_large_padding+smallerTextWidth/render_factor+horizontal_large_padding
+                    draw.rounded_rectangle([(realLhsPointer,(bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), #bottom left point
+                                    (realLhsPointer+(smallerBubbleWidth*render_factor),(bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)], # Top right point
+                                    radius=(guide_small_bubble_height/2)*render_factor,
+                                    fill = hex_to_rgb(colour_hex,alpha=1)
+                                    )
+                    smallerTextX = realLhsPointer + horizontal_large_padding*render_factor
+                    draw.text((smallerTextX,in_smaller_bubble_text_y),pair[0],font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+                    realLhsPointer+=(smallerBubbleWidth+horizontal_small_padding)*render_factor
+                textBbox = inBubbleFont.getbbox(pair[1])
+                textWidth = textBbox[2]-textBbox[0]
+                draw.text((realLhsPointer,in_bubble_text_y),pair[1],font=inBubbleFont,fill=f"#{colour_hex}")
+                realLhsPointer+=textWidth
+                realLhsPointer += horizontal_large_padding*render_factor
         if not remove_right_menu_guides_var.get():
-            rhsTotalWidth += getTotalBubbleWidth(rhsButtons,inSmallerBubbleFont,inBubbleFont,horizontal_padding,horizontal_large_padding,horizontal_small_padding,guide_small_bubble_height,render_factor)
-            combined_width += rhsTotalWidth
-        iterations +=1
+            realRhsPointer = (deviceScreenWidth-from_sides_padding-rhsTotalWidth)*render_factor
+            ## Make the main long bubble
+            draw.rounded_rectangle([(realRhsPointer,(bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), #bottom left point
+                                    (realRhsPointer+(rhsTotalWidth*render_factor),(bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)], # Top right point
+                                    radius=(menu_helper_guide_height/2)*render_factor,
+                                    fill = hex_to_rgb(colour_hex,alpha=0.133)
+                                    )
+            realRhsPointer+=horizontal_padding*render_factor
+            for pair in rhsButtons:
+                if len(pair[0]) == 1:
+                    circleCenterX = realRhsPointer+((guide_small_bubble_height*render_factor)/2)
+                    draw.ellipse((circleCenterX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCenterX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
+                    smallerTextBbox = singleLetterFont.getbbox(pair[0])
+                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
+                    smallerTextX = circleCenterX-(smallerTextWidth/2)
+                    draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+                    realRhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
 
-    if not remove_left_menu_guides_var.get():
-        realLhsPointer = from_sides_padding*render_factor
-        ## Make the main long bubble
-        draw.rounded_rectangle([(realLhsPointer,(bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), #bottom left point
-                                (realLhsPointer+(lhsTotalWidth*render_factor),(bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)], # Top right point
-                                radius=(menu_helper_guide_height/2)*render_factor,
-                                fill = hex_to_rgb(colour_hex,alpha=0.133)
-                                )
-        realLhsPointer+=horizontal_padding*render_factor
-        for pair in lhsButtons:
-            if len(pair[0]) == 1:
-                circleCenterX = realLhsPointer+((guide_small_bubble_height*render_factor)/2)
-                draw.ellipse((circleCenterX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCenterX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
-                smallerTextBbox = singleLetterFont.getbbox(pair[0])
-                smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                smallerTextX = circleCenterX-(smallerTextWidth/2)
-                draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                realLhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
-
-            else:
-                ## Make the smaller bubble
-                smallerTextBbox = inSmallerBubbleFont.getbbox(pair[0])
-                smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                smallerBubbleWidth = horizontal_large_padding+smallerTextWidth/render_factor+horizontal_large_padding
-                draw.rounded_rectangle([(realLhsPointer,(bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), #bottom left point
-                                (realLhsPointer+(smallerBubbleWidth*render_factor),(bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)], # Top right point
-                                radius=(guide_small_bubble_height/2)*render_factor,
-                                fill = hex_to_rgb(colour_hex,alpha=1)
-                                )
-                smallerTextX = realLhsPointer + horizontal_large_padding*render_factor
-                draw.text((smallerTextX,in_smaller_bubble_text_y),pair[0],font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                realLhsPointer+=(smallerBubbleWidth+horizontal_small_padding)*render_factor
-            textBbox = inBubbleFont.getbbox(pair[1])
-            textWidth = textBbox[2]-textBbox[0]
-            draw.text((realLhsPointer,in_bubble_text_y),pair[1],font=inBubbleFont,fill=f"#{colour_hex}")
-            realLhsPointer+=textWidth
-            realLhsPointer += horizontal_large_padding*render_factor
-    if not remove_right_menu_guides_var.get():
-        realRhsPointer = (deviceScreenWidth-from_sides_padding-rhsTotalWidth)*render_factor
-        ## Make the main long bubble
-        draw.rounded_rectangle([(realRhsPointer,(bottom_guide_middle_y-menu_helper_guide_height/2)*render_factor), #bottom left point
-                                (realRhsPointer+(rhsTotalWidth*render_factor),(bottom_guide_middle_y+menu_helper_guide_height/2)*render_factor)], # Top right point
-                                radius=(menu_helper_guide_height/2)*render_factor,
-                                fill = hex_to_rgb(colour_hex,alpha=0.133)
-                                )
-        realRhsPointer+=horizontal_padding*render_factor
-        for pair in rhsButtons:
-            if len(pair[0]) == 1:
-                circleCenterX = realRhsPointer+((guide_small_bubble_height*render_factor)/2)
-                draw.ellipse((circleCenterX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCenterX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
-                smallerTextBbox = singleLetterFont.getbbox(pair[0])
-                smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                smallerTextX = circleCenterX-(smallerTextWidth/2)
-                draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                realRhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
-
-            else:
-                ## Make the smaller bubble
-                smallerTextBbox = inSmallerBubbleFont.getbbox(pair[0])
-                smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                smallerBubbleWidth = horizontal_large_padding+smallerTextWidth/render_factor+horizontal_large_padding
-                draw.rounded_rectangle([(realRhsPointer,(bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), #bottom left point
-                                (realRhsPointer+(smallerBubbleWidth*render_factor),(bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)], # Top right point
-                                radius=(guide_small_bubble_height/2)*render_factor,
-                                fill = hex_to_rgb(colour_hex,alpha=1)
-                                )
-                smallerTextX = realRhsPointer + horizontal_large_padding*render_factor
-                draw.text((smallerTextX,in_smaller_bubble_text_y),pair[0],font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                realRhsPointer+=(smallerBubbleWidth+horizontal_small_padding)*render_factor
-            textBbox = inBubbleFont.getbbox(pair[1])
-            textWidth = textBbox[2]-textBbox[0]
-            draw.text((realRhsPointer,in_bubble_text_y),pair[1],font=inBubbleFont,fill=f"#{colour_hex}")
-            realRhsPointer+=textWidth
-            realRhsPointer += horizontal_large_padding*render_factor
+                else:
+                    ## Make the smaller bubble
+                    smallerTextBbox = inSmallerBubbleFont.getbbox(pair[0])
+                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
+                    smallerBubbleWidth = horizontal_large_padding+smallerTextWidth/render_factor+horizontal_large_padding
+                    draw.rounded_rectangle([(realRhsPointer,(bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), #bottom left point
+                                    (realRhsPointer+(smallerBubbleWidth*render_factor),(bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)], # Top right point
+                                    radius=(guide_small_bubble_height/2)*render_factor,
+                                    fill = hex_to_rgb(colour_hex,alpha=1)
+                                    )
+                    smallerTextX = realRhsPointer + horizontal_large_padding*render_factor
+                    draw.text((smallerTextX,in_smaller_bubble_text_y),pair[0],font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
+                    realRhsPointer+=(smallerBubbleWidth+horizontal_small_padding)*render_factor
+                textBbox = inBubbleFont.getbbox(pair[1])
+                textWidth = textBbox[2]-textBbox[0]
+                draw.text((realRhsPointer,in_bubble_text_y),pair[1],font=inBubbleFont,fill=f"#{colour_hex}")
+                realRhsPointer+=textWidth
+                realRhsPointer += horizontal_large_padding*render_factor
     return(image)
 
 def getTotalBubbleWidth(buttons,internalBubbleFont,bubbleFont,initalPadding,largerPadding,smallerPadding,circleWidth,render_factor):
