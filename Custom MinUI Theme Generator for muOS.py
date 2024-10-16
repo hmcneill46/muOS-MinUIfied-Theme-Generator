@@ -2811,67 +2811,34 @@ def on_change(*args):
                                                 previewRenderFactor,
                                                 transparent=False).resize(preview_size, Image.LANCZOS)
         elif main_menu_style_var.get() == "Vertical":
-            if not page_by_page_var.get():
-                image1 = generatePilImageVertical(fakeprogressbar,0,
-                                                "muxlaunch", #TODO CHANGE to muxlaunch
-                                                previewItemList[0:int(items_per_screen_entry.get())],
-                                                int(textPaddingVar.get()),
-                                                int(bubblePaddingVar.get()),
-                                                int(items_per_screen_entry.get()),
-                                                bgHexVar.get(),
-                                                selectedFontHexVar.get(),
-                                                deselectedFontHexVar.get(),
-                                                bubbleHexVar.get()
-                                                ,previewRenderFactor,transparent=False).resize(preview_size, Image.LANCZOS)
-            else:
-                image1 = generatePilImageVertical(fakeprogressbar,0,
-                                "muxlaunch",
-                                previewItemList[0:int(items_per_screen_entry.get())],
-                                int(textPaddingVar.get()),
-                                int(bubblePaddingVar.get()),
-                                int(items_per_screen_entry.get()),
-                                bgHexVar.get(),
-                                selectedFontHexVar.get(),
-                                deselectedFontHexVar.get(),
-                                bubbleHexVar.get()
-                                ,previewRenderFactor,
-                                numScreens=math.ceil(len(previewItemList)/int(items_per_screen_entry.get())),
-                                screenIndex=0,transparent=False).resize(preview_size, Image.LANCZOS)
-        if not page_by_page_var.get():
-            image4 = generatePilImageVertical(fakeprogressbar,0,
-                                            "muxapp",
-                                            previewApplicationList[0:int(items_per_screen_entry.get())],
+            image1 = generatePilImageVertical(fakeprogressbar,0,
+                                            "muxlaunch", #TODO CHANGE to muxlaunch
+                                            previewItemList[0:int(items_per_screen_entry.get())],
                                             int(textPaddingVar.get()),
                                             int(bubblePaddingVar.get()),
                                             int(items_per_screen_entry.get()),
                                             bgHexVar.get(),
                                             selectedFontHexVar.get(),
                                             deselectedFontHexVar.get(),
-                                            bubbleHexVar.get(),
-                                            previewRenderFactor,
-                                            fileCounter="1 / " + items_per_screen_entry.get(),
-                                            transparent=False).resize(preview_size, Image.LANCZOS)
-            image2 = image4
-            image3 = image4
-        else:
-            image4 = generatePilImageVertical(fakeprogressbar,0,
-                                            "muxapp",
-                                            previewApplicationList[0:int(items_per_screen_entry.get())],
-                                            int(textPaddingVar.get()),
-                                            int(bubblePaddingVar.get()),
-                                            int(items_per_screen_entry.get()),
-                                            bgHexVar.get(),
-                                            selectedFontHexVar.get(),
-                                            deselectedFontHexVar.get(),
-                                            bubbleHexVar.get(),
-                                            previewRenderFactor,
-                                            numScreens=math.ceil(len(previewApplicationList)/int(items_per_screen_entry.get())),
-                                            screenIndex=0,fileCounter="1 / " + items_per_screen_entry.get(),
-                                            transparent=False).resize(preview_size, Image.LANCZOS)
-            image2 = image4
-            image3 = image4
+                                            bubbleHexVar.get()
+                                            ,previewRenderFactor,transparent=False).resize(preview_size, Image.LANCZOS)
+
+        image2 = generatePilImageVertical(fakeprogressbar,0,
+                                        "muxapp",
+                                        previewApplicationList[0:int(items_per_screen_entry.get())],
+                                        int(textPaddingVar.get()),
+                                        int(bubblePaddingVar.get()),
+                                        int(items_per_screen_entry.get()),
+                                        bgHexVar.get(),
+                                        selectedFontHexVar.get(),
+                                        deselectedFontHexVar.get(),
+                                        bubbleHexVar.get(),
+                                        previewRenderFactor,
+                                        fileCounter="1 / " + items_per_screen_entry.get(),
+                                        transparent=False).resize(preview_size, Image.LANCZOS)
+
         if main_menu_style_var.get() == "Horizontal":
-            image5 = generatePilImageHorizontal(fakeprogressbar,
+            image3 = generatePilImageHorizontal(fakeprogressbar,
                                                 4,
                                                 bgHexVar.get(),
                                                 selectedFontHexVar.get(),
@@ -2882,7 +2849,7 @@ def on_change(*args):
                                                 transparent=False).resize(preview_size, Image.LANCZOS)
         
         elif main_menu_style_var.get() == "Alt-Horizontal":
-            image5 = generatePilImageAltHorizontal(fakeprogressbar,
+            image3 = generatePilImageAltHorizontal(fakeprogressbar,
                                                 4,
                                                 bgHexVar.get(),
                                                 selectedFontHexVar.get(),
@@ -2896,35 +2863,27 @@ def on_change(*args):
             preview_overlay_resized = preview_overlay_image.resize(image1.size, Image.LANCZOS)
             image1.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
             image2.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
-            image3.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
-            image4.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
             if main_menu_style_var.get() != "Vertical":
-                image5.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
+                image3.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
     
         update_image_label(image_label1, image1)
         update_image_label(image_label2, image2)
-        update_image_label(image_label3, image3)
-        update_image_label(image_label4, image4)
         if main_menu_style_var.get() != "Vertical":
-            update_image_label(image_label5, image5)
+            update_image_label(image_label3, image3)
         else:
-            remove_image_from_label(image_label5)
+            remove_image_from_label(image_label3)
         valid_params = True
     except:
         if get_current_image(image_label1) != None and get_current_image(image_label2) != None and get_current_image(image_label3) != None and get_current_image(image_label4) != None and get_current_image(image_label5) != None:
             if valid_params:
                 redOutlineImage1 = outline_image_with_inner_gap(get_current_image(image_label1)).resize(preview_size, Image.LANCZOS)
                 redOutlineImage2 = outline_image_with_inner_gap(get_current_image(image_label2)).resize(preview_size, Image.LANCZOS)
-                redOutlineImage3 = outline_image_with_inner_gap(get_current_image(image_label3)).resize(preview_size, Image.LANCZOS)
-                redOutlineImage4 = outline_image_with_inner_gap(get_current_image(image_label4)).resize(preview_size, Image.LANCZOS)
                 if main_menu_style_var.get() != "Vertical":
-                    redOutlineImage5 = outline_image_with_inner_gap(get_current_image(image_label5)).resize(preview_size, Image.LANCZOS)
+                    redOutlineImage3 = outline_image_with_inner_gap(get_current_image(image_label3)).resize(preview_size, Image.LANCZOS)
                 update_image_label(image_label1, redOutlineImage1)
                 update_image_label(image_label2, redOutlineImage2)
-                update_image_label(image_label3, redOutlineImage3)
-                update_image_label(image_label4, redOutlineImage4)
                 if main_menu_style_var.get() != "Vertical":
-                    update_image_label(image_label5, redOutlineImage5)
+                    update_image_label(image_label3, redOutlineImage3)
                 valid_params = False
 
 
