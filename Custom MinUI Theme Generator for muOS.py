@@ -42,30 +42,23 @@ else:
 class Config: # TODO delete unneeded variables
     def __init__(self, config_file=os.path.join(script_dir,'MinUIThemeGeneratorConfig.json')):
         self.config_file = config_file
-        self.textPaddingVar = 25
-        self.VBG_Vertical_Padding_var = 20
-        self.VBG_Horizontal_Padding_var = 20
+        self.textPaddingVar = 40
+        self.VBG_Vertical_Padding_var = 15
+        self.VBG_Horizontal_Padding_var = 15
         self.bubblePaddingVar = 20
-        self.itemsPerScreenVar = 9
-        self.footerHeightVar = 55
+        self.itemsPerScreenVar = 7
+        self.footerHeightVar = 75
         self.contentPaddingTopVar = 44
-        self.override_font_size_var = False
-        self.customFontSizeVar = ""
+        self.customFontSizeVar = "24"
         self.bgHexVar = "000000"
         self.selectedFontHexVar = "000000"
         self.deselectedFontHexVar = "ffffff"
         self.bubbleHexVar = "ffffff"
         self.iconHexVar = "ffffff"
-        self.remove_brackets_var = False
-        self.remove_square_brackets_var = False
-        self.replace_hyphen_var = False
-        self.also_games_var = False
-        self.move_the_var = False
         self.include_overlay_var = False
         self.alternate_menu_names_var = False
         self.remove_right_menu_guides_var = False
         self.remove_left_menu_guides_var = False
-        self.overlay_box_art_var = False
         self.boxArtPaddingVar = 0
         self.folderBoxArtPaddingVar = 0
         self.box_art_directory_path = ""
@@ -459,7 +452,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
     totalItems = len(listItems)
     for workingIndex, workingItem in enumerate(listItems):
         
-        if workingItem[1] == "Directory" or also_games_var.get() or workingItem[1] == "Menu":
+        if workingItem[1] == "Directory" or workingItem[1] == "Menu":
 
             # Load the base image
             midIndexOfList = int((ItemsPerScreen-1)/2)
@@ -2381,7 +2374,6 @@ selected_overlay_var = tk.StringVar()
 theme_alignment_var = tk.StringVar()
 main_menu_style_var = tk.StringVar()
 content_alignment_var = tk.StringVar()
-also_games_var = tk.IntVar()
 show_file_counter_var = tk.IntVar()
 show_console_name_var = tk.IntVar()
 show_hidden_files_var = tk.IntVar()
@@ -2392,16 +2384,10 @@ remove_left_menu_guides_var = tk.IntVar()
 override_bubble_cut_var = tk.IntVar()
 page_by_page_var = tk.IntVar()
 transparent_text_var = tk.IntVar()
-override_font_size_var = tk.IntVar()
 override_folder_box_art_padding_var = tk.IntVar()
 use_alt_font_var = tk.IntVar()
 use_custom_background_var=tk.IntVar()
 use_custom_bootlogo_var = tk.IntVar()
-remove_brackets_var = tk.IntVar()
-overlay_box_art_var = tk.IntVar(value=1)
-remove_square_brackets_var = tk.IntVar()
-replace_hyphen_var = tk.IntVar()
-move_the_var = tk.IntVar()
 am_ignore_theme_var = tk.IntVar()
 am_ignore_cd_var = tk.IntVar()
 advanced_error_var = tk.IntVar()
@@ -2956,16 +2942,10 @@ def save_settings():
     config.deselectedFontHexVar = deselectedFontHexVar.get()
     config.bubbleHexVar = bubbleHexVar.get()
     config.iconHexVar = iconHexVar.get()
-    config.remove_brackets_var = remove_brackets_var.get()
-    config.remove_square_brackets_var = remove_square_brackets_var.get()
-    config.replace_hyphen_var = replace_hyphen_var.get()
-    config.also_games_var = also_games_var.get()
-    config.move_the_var = move_the_var.get()
     config.include_overlay_var = include_overlay_var.get()
     config.alternate_menu_names_var = alternate_menu_names_var.get()
     config.remove_right_menu_guides_var = remove_right_menu_guides_var.get()
     config.remove_left_menu_guides_var = remove_left_menu_guides_var.get()
-    config.overlay_box_art_var = overlay_box_art_var.get()
     config.box_art_directory_path = box_art_directory_path.get()
     config.maxGamesBubbleLengthVar = maxGamesBubbleLengthVar.get()
     config.maxFoldersBubbleLengthVar = maxFoldersBubbleLengthVar.get()
@@ -2976,7 +2956,6 @@ def save_settings():
     config.override_bubble_cut_var = override_bubble_cut_var.get()
     config.page_by_page_var = page_by_page_var.get()
     config.transparent_text_var = transparent_text_var.get()
-    config.override_font_size_var = override_font_size_var.get()
     config.override_folder_box_art_padding_var = override_folder_box_art_padding_var.get()
     config.boxArtPaddingVar = boxArtPaddingVar.get()
     config.folderBoxArtPaddingVar = folderBoxArtPaddingVar.get()
@@ -3020,16 +2999,10 @@ def load_settings():
     deselectedFontHexVar.set(config.deselectedFontHexVar)
     bubbleHexVar.set(config.bubbleHexVar)
     iconHexVar.set(config.iconHexVar)
-    remove_brackets_var.set(config.remove_brackets_var)
-    remove_square_brackets_var.set(config.remove_square_brackets_var)
-    replace_hyphen_var.set(config.replace_hyphen_var)
-    also_games_var.set(config.also_games_var)
-    move_the_var.set(config.move_the_var)
     include_overlay_var.set(config.include_overlay_var)
     alternate_menu_names_var.set(config.alternate_menu_names_var)
     remove_right_menu_guides_var.set(config.remove_right_menu_guides_var)
     remove_left_menu_guides_var.set(config.remove_left_menu_guides_var)
-    overlay_box_art_var.set(config.overlay_box_art_var)
     box_art_directory_path.set(config.box_art_directory_path)
     maxGamesBubbleLengthVar.set(config.maxGamesBubbleLengthVar)
     maxFoldersBubbleLengthVar.set(config.maxFoldersBubbleLengthVar)
@@ -3041,7 +3014,6 @@ def load_settings():
     override_folder_box_art_padding_var.set(config.override_folder_box_art_padding_var)
     page_by_page_var.set(config.page_by_page_var)
     transparent_text_var.set(config.transparent_text_var)
-    override_font_size_var.set(config.override_font_size_var)
     version_var.set(config.version_var)
     global_alignment_var.set(config.global_alignment_var)
     selected_overlay_var.set(config.selected_overlay_var)
@@ -3088,18 +3060,12 @@ selectedFontHexVar.trace_add("write", on_change)
 deselectedFontHexVar.trace_add("write", on_change)
 bubbleHexVar.trace_add("write", on_change)
 iconHexVar.trace_add("write", on_change)
-remove_brackets_var.trace_add("write", on_change)
-remove_square_brackets_var.trace_add("write", on_change)
-replace_hyphen_var.trace_add("write", on_change)
-also_games_var.trace_add("write", on_change)
 show_file_counter_var.trace_add("write", on_change)
 show_console_name_var.trace_add("write", on_change)
-move_the_var.trace_add("write", on_change)
 include_overlay_var.trace_add("write", on_change)
 alternate_menu_names_var.trace_add("write", on_change)
 remove_right_menu_guides_var.trace_add("write", on_change)
 remove_left_menu_guides_var.trace_add("write", on_change)
-overlay_box_art_var.trace_add("write", on_change)
 box_art_directory_path.trace_add("write", on_change)
 maxGamesBubbleLengthVar.trace_add("write", on_change)
 maxFoldersBubbleLengthVar.trace_add("write", on_change)
@@ -3111,7 +3077,6 @@ override_bubble_cut_var.trace_add("write", on_change)
 override_folder_box_art_padding_var.trace_add("write", on_change)
 page_by_page_var.trace_add("write", on_change)
 transparent_text_var.trace_add("write", on_change)
-override_font_size_var.trace_add("write", on_change)
 version_var.trace_add("write", on_change)
 global_alignment_var.trace_add("write", on_change)
 selected_overlay_var.trace_add("write",on_change)
