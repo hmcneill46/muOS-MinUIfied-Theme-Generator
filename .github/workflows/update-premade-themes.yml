@@ -1,0 +1,61 @@
+name: Update Premade Themes
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * *'  # Optional: Runs daily to check for new themes automatically
+
+jobs:
+  update-premade-themes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get release assets from GitHub API
+        id: get_themes
+        run: |
+          TAG="themes-muos-v2410.1"  # Use your tag (e.g., 'themes-v1.0' or just 'themes')
+          response=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}")
+          echo "${response}" | jq -r '.assets[] | "\(.name) \(.browser_download_url)"' > theme_assets.txt
+
+      - name: Generate premade-themes.md
+        run: |
+          echo "# Premade Themes" > premade-themes.md
+          echo "Here are the premade themes you can download and use with the theme generator:" >> premade-themes.md
+          echo "" >> premade-themes.md
+          echo "| Preview | Theme Name | Download Link |" >> premade-themes.md
+          echo "|---------|------------|---------------|" >> premade-themes.md
+          
+          # Initialize variables to track theme name, preview, and download link
+          theme_name=""
+          preview_url=""
+          theme_zip=""
+
+          while IFS= read -r line; do
+            filename=$(echo $line | awk '{print $1}')
+            url=$(echo $line | awk '{print $2}')
+            
+            # Process preview image (.png)
+            if [[ "$filename" == *".png" ]]; then
+              theme_name="${filename%.*}"  # Extract theme name without extension
+              preview_url="$url"
+            fi
+
+            # Process theme zip file (.zip)
+            if [[ "$filename" == *".zip" ]]; then
+              theme_zip="$url"
+              # Generate a row for the markdown table
+              echo "| ![$theme_name]($preview_url) | $theme_name | [Download]($theme_zip) |" >> premade-themes.md
+            fi
+          done < theme_assets.txt
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add premade-themes.md
+          git commit -m "Update premade-themes.md with latest themes"
+          git push
