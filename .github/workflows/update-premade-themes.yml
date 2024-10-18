@@ -38,13 +38,13 @@ jobs:
           echo "### Installation Methods:" >> Theme-Gallery/index.md
           echo "" >> Theme-Gallery/index.md
           echo "1. **Drag and Drop**  " >> Theme-Gallery/index.md
-          echo "   - Download the themes you want and place the `.zip` files directly into the `MUOS/theme` folder on your whichever SD Card is used for your themes on your device" >> Theme-Gallery/index.md
-          echo "   - If removed, Re-insert your SD Card into your device" >> Theme-Gallery/index.md
+          echo "   - Download the themes you want and place the `.zip` files directly into the `MUOS/theme` folder on your whichever SD Card is used for your themes on your muOS device" >> Theme-Gallery/index.md
+          echo "   - If removed, Re-insert your SD Card into your muOS device" >> Theme-Gallery/index.md
           echo "   - Open the **Theme Picker** from configuration and select your new theme" >> Theme-Gallery/index.md
           echo "2. **Via Archive Manager**  " >> Theme-Gallery/index.md
-          echo "   - Download the themes you want and place the `.zip` files directly into the `ARCHIVE` folder on your whichever SD Card is used for your themes on your device" >> Theme-Gallery/index.md
-          echo "   - If removed, Re-insert your SD Card into your device" >> Theme-Gallery/index.md
-          echo "   - Open the **Archive Manager** from the Applications menu, on your device and install the theme" >> Theme-Gallery/index.md
+          echo "   - Download the themes you want and place the `.zip` files directly into the `ARCHIVE` folder on your whichever SD Card is used for your themes on your muOS device" >> Theme-Gallery/index.md
+          echo "   - If removed, Re-insert your SD Card into your muOS device" >> Theme-Gallery/index.md
+          echo "   - Open the **Archive Manager** from the Applications menu, on your muOS device and install the theme" >> Theme-Gallery/index.md
           echo "   - Once installed, select it from the **Theme Picker**" >> Theme-Gallery/index.md
           echo "" >> Theme-Gallery/index.md
           echo "| Alt-Horizontal | Horizontal | Vertical |" >> Theme-Gallery/index.md
