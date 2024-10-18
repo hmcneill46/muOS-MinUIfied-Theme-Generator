@@ -32,9 +32,9 @@ jobs:
 
           # Add header for the table (optional)
           echo "# Premade Themes" > premade-themes.md
-          echo "Here are the premade themes you can download and use with the theme generator:" >> premade-themes.md
+          echo "Here are some premade themes that were built for muOS 2410.1 BANANA:" >> premade-themes.md
           echo "" >> premade-themes.md
-          echo "| Thing1 | Thing2 | Thing3 |" >> premade-themes.md
+          echo "| Alt-Horizontal | Horizontal | Vertical |" >> premade-themes.md
           echo "| :---: | :---: | :---: |" >> premade-themes.md
 
           # Start processing each asset from the release
