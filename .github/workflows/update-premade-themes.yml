@@ -25,17 +25,17 @@ jobs:
           response=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}")
           echo "${response}" | jq -r '.assets[] | "\(.name) \(.browser_download_url)"' > theme_assets.txt
 
-      - name: Generate premade-themes.md
+      - name: Generate Themes-Gallery/index.md
         run: |
           # Initialize a counter to track how many themes are in a row
           theme_count=0
 
           # Add header for the table (optional)
-          echo "# Premade Themes" > premade-themes.md
-          echo "Here are some premade themes that were built for muOS 2410.1 BANANA:" >> premade-themes.md
-          echo "" >> premade-themes.md
-          echo "| Alt-Horizontal | Horizontal | Vertical |" >> premade-themes.md
-          echo "| :---: | :---: | :---: |" >> premade-themes.md
+          echo "# Premade Themes" > Themes-Gallery/index.md
+          echo "Here are some premade themes that were built for muOS 2410.1 BANANA:" >> Themes-Gallery/index.md
+          echo "" >> Themes-Gallery/index.md
+          echo "| Alt-Horizontal | Horizontal | Vertical |" >> Themes-Gallery/index.md
+          echo "| :---: | :---: | :---: |" >> Themes-Gallery/index.md
 
           # Start processing each asset from the release
           while IFS= read -r line; do
@@ -55,18 +55,18 @@ jobs:
               # Check if this is the first item in the row
               if [[ $theme_count -eq 0 ]]; then
                 # Start a new row
-                echo -n "| " >> premade-themes.md
+                echo -n "| " >> Themes-Gallery/index.md
               fi
 
               # Add theme preview and download link in the current cell
-              echo -n "![${theme_name}](${preview_url}) <br> [Download](${theme_zip}) | " >> premade-themes.md
+              echo -n "![${theme_name}](${preview_url}) <br> [Download](${theme_zip}) | " >> Themes-Gallery/index.md
 
               # Increment the theme count and check if we need to start a new row
               theme_count=$((theme_count + 1))
 
               if [[ $theme_count -eq 3 ]]; then
                 # If there are three themes in the row, close the row and reset the counter
-                echo "" >> premade-themes.md
+                echo "" >> Themes-Gallery/index.md
                 theme_count=0
               fi
             fi
@@ -74,7 +74,7 @@ jobs:
 
           # If the last row has fewer than 3 themes, close the row
           if [[ $theme_count -ne 0 ]]; then
-            echo "" >> premade-themes.md
+            echo "" >> Themes-Gallery/index.md
           fi
 
 
@@ -82,6 +82,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add premade-themes.md
-          git commit -m "Update premade-themes.md with latest themes"
+          git add Themes-Gallery/index.md
+          git commit -m "Update Themes-Gallery/index.md with latest themes"
           git push
