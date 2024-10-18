@@ -1770,7 +1770,7 @@ def generate_theme(progress_bar, loading_window, threadNumber):
             raise ValueError("Something went wrong with your Main Menu Style")
 
         if threadNumber != -1:
-            themeName = config.theme_name_entry + f"({config.main_menu_style_var})"
+            themeName = config.theme_name_entry + f" {config.main_menu_style_var}"
         else:
             themeName = config.theme_name_entry
         FillTempThemeFolder(progress_bar, threadNumber)
@@ -1947,7 +1947,7 @@ def FillTempThemeFolder(progress_bar, threadNumber):
     shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxnetwork.txt"))
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_height}",str(int((content_height/int(config.itemsPerScreenVar))*(int(config.itemsPerScreenVar)-2))))
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_item_count}", str(int(config.itemsPerScreenVar)-2))
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{background_alpha}", base_hex)
+    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{background_alpha}", "0")
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{selected_font_hex}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{deselected_font_hex}", accent_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_alpha}", "255")
@@ -1969,7 +1969,7 @@ def FillTempThemeFolder(progress_bar, threadNumber):
         shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxtheme.txt"))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_height}",str(content_height))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_item_count}", str(config.itemsPerScreenVar))
-        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{background_alpha}", base_hex)
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{background_alpha}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{selected_font_hex}", base_hex)
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{deselected_font_hex}", accent_hex)
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_alpha}", "255")
@@ -1990,7 +1990,7 @@ def FillTempThemeFolder(progress_bar, threadNumber):
     # rest of the default Specific settings
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_height}",str(content_height))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_item_count}", str(config.itemsPerScreenVar))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{background_alpha}", base_hex)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{background_alpha}", "0")
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{selected_font_hex}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{deselected_font_hex}", accent_hex)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_alpha}", "255")
