@@ -132,7 +132,6 @@ class Config: # TODO delete unneeded variables
     def apply_theme(self, theme):
         # Update the Config object with all key-value pairs from the theme
         self.__dict__.update(theme)
-        print(self.theme_name_entry)
         self.save_config()
     
     def loop_through_themes(self, themes_file='PremadeThemes.json', action=None):
