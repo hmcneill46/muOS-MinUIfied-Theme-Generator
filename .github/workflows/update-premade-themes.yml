@@ -34,6 +34,8 @@ jobs:
           echo "# Premade Themes" > premade-themes.md
           echo "Here are the premade themes you can download and use with the theme generator:" >> premade-themes.md
           echo "" >> premade-themes.md
+          echo -n "| Thing1 | Thing2 | Thing3 |" >> premade-themes.md
+          echo -n "| :---: | :---: | :---: |" >> premade-themes.md
 
           # Start processing each asset from the release
           while IFS= read -r line; do
