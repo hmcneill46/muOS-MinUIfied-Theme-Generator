@@ -484,7 +484,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     return(image)
 
 
-def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir, folderName = None):
+def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, outputDir, folderName = None, threadNumber = 0):
     totalItems = len(listItems)
     for workingIndex, workingItem in enumerate(listItems):
         
@@ -547,9 +547,9 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                     background = background.resize(image.size, Image.LANCZOS)
                     background.paste(image, (0, 0), image)
                     if config.developer_preview_var:
-                        background.save(os.path.join(internal_files_dir,"TempPreview.png"))
+                        background.save(os.path.join(internal_files_dir,f"TempPreview{threadNumber}.png"))
                     background = background.resize((int(0.45*deviceScreenWidth), int(0.45*deviceScreenHeight)), Image.LANCZOS)
-                    background.save(os.path.join(internal_files_dir, ".TempBuildTheme","preview.png"))
+                    background.save(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","preview.png"))
                 
 
 def cut_out_image(original_image, logo_image, coordinates):
@@ -1446,7 +1446,7 @@ def generatePilImageDefaultScreen(bg_hex,render_factor):
         image.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
     return (image)
 
-def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex,icon_hex, render_factor, outputDir,variant):
+def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex,icon_hex, render_factor, outputDir,variant, threadNumber = 0):
     startIndex = 0
     endIndex = 8
     for workingIndex in range(startIndex, endIndex):
@@ -1482,9 +1482,9 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
                 background = background.resize(image.size, Image.LANCZOS)
                 background.paste(image, (0, 0), image)  
                 if config.developer_preview_var: 
-                    background.save(os.path.join(internal_files_dir,"TempPreview.png"))
+                    background.save(os.path.join(internal_files_dir,f"TempPreview{threadNumber}.png"))
                 background = background.resize((int(0.45*deviceScreenWidth), int(0.45*deviceScreenHeight)), Image.LANCZOS)
-                background.save(os.path.join(internal_files_dir, ".TempBuildTheme","preview.png"))
+                background.save(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","preview.png"))
 
 def getAlternateMenuNameDict():
     if os.path.exists(config.alt_text_path):
@@ -1757,7 +1757,7 @@ def percentage_color(hex1, hex2, percentage):
     # Convert interpolated RGB back to hex
     return rgb_to_hex(interp_rgb)
 
-def generate_theme(progress_bar, loading_window):
+def generate_theme(progress_bar, loading_window, threadNumber):
     try:
 
         progress_bar['value'] = 0
@@ -1770,40 +1770,43 @@ def generate_theme(progress_bar, loading_window):
         else:
             raise ValueError("Something went wrong with your Main Menu Style")
 
-
-        themeName = config.theme_name_entry
-        FillTempThemeFolder(progress_bar)
+        if threadNumber != -1:
+            themeName = config.theme_name_entry + f"({config.main_menu_style_var})"
+        else:
+            themeName = config.theme_name_entry
+        FillTempThemeFolder(progress_bar, threadNumber)
         if config.theme_directory_path == "":
             theme_dir = os.path.join(script_dir, "Generated Theme")
         else:
             theme_dir = config.theme_directory_path
 
-        shutil.make_archive(os.path.join(theme_dir, themeName),"zip", os.path.join(internal_files_dir, ".TempBuildTheme"))
+        shutil.make_archive(os.path.join(theme_dir, themeName),"zip", os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}"))
 
         if config.developer_preview_var:
             preview_dir = os.path.join(theme_dir,"Developer Previews")
 
             os.makedirs(preview_dir,exist_ok=True)
 
-            temp_preview_path = os.path.join(preview_dir, "TempPreview.png")
+            temp_preview_path = os.path.join(preview_dir, f"TempPreview{threadNumber}.png")
             if os.path.exists(temp_preview_path):
                 os.remove(temp_preview_path)
-            shutil.move(os.path.join(internal_files_dir, "TempPreview.png"), preview_dir)
+            shutil.move(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png"), preview_dir)
 
             theme_preview_path = os.path.join(preview_dir, f"{themeName}[Preview].png")
             if os.path.exists(theme_preview_path):
                 os.remove(theme_preview_path)
 
-            os.rename(os.path.join(preview_dir,"TempPreview.png"), theme_preview_path)
+            os.rename(os.path.join(preview_dir,f"TempPreview{threadNumber}.png"), theme_preview_path)
 
-            if os.path.exists(os.path.join(internal_files_dir, "TempPreview.png")):
-                os.remove(os.path.join(internal_files_dir, "TempPreview.png"))
-            if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
-                os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
+            if os.path.exists(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png")):
+                os.remove(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png"))
+            if os.path.exists(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}.png")):
+                os.remove(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}.png"))
         
 
-        delete_folder(os.path.join(internal_files_dir, ".TempBuildTheme"))
-        messagebox.showinfo("Success", "Theme generated successfully.")
+        delete_folder(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}"))
+        if threadNumber == -1:
+            messagebox.showinfo("Success", "Theme generated successfully.")
         loading_window.destroy()
     except Exception as e:
         loading_window.destroy()
@@ -1816,15 +1819,16 @@ def generate_theme(progress_bar, loading_window):
             messagebox.showerror("Error", f"An unexpected error occurred: {e}\n{tb_str}")
         else:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
-        delete_folder(os.path.join(internal_files_dir, ".TempBuildTheme"))
+        delete_folder(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}"))
         if config.developer_preview_var:
-            if os.path.exists(os.path.join(internal_files_dir, "TempPreview.png")):
-                os.remove(os.path.join(internal_files_dir, "TempPreview.png"))
-            if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
-                os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
+            if os.path.exists(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png")):
+                os.remove(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png"))
+            if os.path.exists(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}.png")):
+                os.remove(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}.png"))
 
 def generate_themes(themes):
     if themes:
+        threadNumber =0
         for theme in themes:
             config.apply_theme(theme)
             loading_window = tk.Toplevel(root)
@@ -1837,11 +1841,14 @@ def generate_themes(themes):
 
             input_queue = queue.Queue()
             output_queue = queue.Queue()
-
             # Start the long-running task in a separate thread
-            generate_theme(progress_bar, loading_window)
+            generate_theme(progress_bar,loading_window,threadNumber)
+            #threading.Thread(target=generate_theme, args=(progress_bar, loading_window,threadNumber)).start() # TODO Fix this, doesnt work because config doesn't support multithreading
+            threadNumber +=1
+        messagebox.showinfo("Success", "Themes generated successfully.")
 
-def FillTempThemeFolder(progress_bar):
+
+def FillTempThemeFolder(progress_bar, threadNumber):
 
     textPadding = int(config.text_padding_entry)
     rectanglePadding = int(config.rectangle_padding_entry)
@@ -1860,9 +1867,9 @@ def FillTempThemeFolder(progress_bar):
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
 
-    copy_contents(os.path.join(internal_files_dir, "Theme Shell"), os.path.join(internal_files_dir, ".TempBuildTheme"))
+    copy_contents(os.path.join(internal_files_dir, "Theme Shell"), os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}"))
 
-    newSchemeDir = os.path.join(internal_files_dir,".TempBuildTheme","scheme")
+    newSchemeDir = os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","scheme")
     os.makedirs(newSchemeDir, exist_ok=True)
 
     fontSize = int(config.font_size_var)
@@ -2061,27 +2068,27 @@ def FillTempThemeFolder(progress_bar):
     shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxplore.txt"))
     
     """
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall"), exist_ok=True)
 
     if config.include_overlay_var:
-        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{config.selected_overlay_var}.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
+        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{config.selected_overlay_var}.png"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","overlay.png"))
 
     #os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
     
-    """os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","font","panel"), exist_ok=True) #Font binaries stuff
-    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries","BPreplayBold-unhinted-20.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","default.bin"))
+    """os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel"), exist_ok=True) #Font binaries stuff
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries","BPreplayBold-unhinted-20.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","default.bin"))
 
-    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxapp.bin"))
-    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxconfig.bin"))
-    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxdevice.bin"))
-    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxinfo.bin"))
-    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxfavourite.bin"))
-    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxhistory.bin"))
-    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","muxplore.bin"))"""
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxapp.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxconfig.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxdevice.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxinfo.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxfavourite.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxhistory.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxplore.bin"))"""
 
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","font","panel"), exist_ok=True) #Font binaries stuff
-    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","panel","default.bin"))
-    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(20)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","default.bin"))
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel"), exist_ok=True) #Font binaries stuff
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","default.bin"))
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(20)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","default.bin"))
 
 
     """if config.main_menu_style_var == "Horizontal":
@@ -2101,10 +2108,10 @@ def FillTempThemeFolder(progress_bar):
     
 
     bootlogoimage = generatePilImageBootLogo(config.bgHexVar,config.deselectedFontHexVar,config.bubbleHexVar,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
-    bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","bootlogo.bmp"), format='BMP')
+    bootlogoimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","bootlogo.bmp"), format='BMP')
 
     rotated_bootlogoimage = generatePilImageBootLogo(config.bgHexVar,config.deselectedFontHexVar,config.bubbleHexVar,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS).rotate(90,expand=True)
-    rotated_bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","bootlogo-alt.bmp"), format='BMP')
+    rotated_bootlogoimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","bootlogo-alt.bmp"), format='BMP')
 
     chargingimage = generatePilImageBootScreen(config.bgHexVar,
                                                config.deselectedFontHexVar,
@@ -2112,92 +2119,92 @@ def FillTempThemeFolder(progress_bar):
                                                "CHARGING...",
                                                render_factor,
                                                icon_path=os.path.join(internal_files_dir, "Assets", "ChargingLogo[5x].png")).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
-    chargingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxcharge.png"), format='PNG')
+    chargingimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxcharge.png"), format='PNG')
 
     loadingimage = generatePilImageBootScreen(config.bgHexVar,
                                                config.deselectedFontHexVar,
                                                config.iconHexVar,
                                                "LOADING...",
                                                render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
-    loadingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxstart.png"), format='PNG')
+    loadingimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxstart.png"), format='PNG')
 
     shutdownimage = generatePilImageBootScreen(config.bgHexVar,
                                                config.deselectedFontHexVar,
                                                config.iconHexVar,
                                                "Shutting Down...",
                                                render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
-    shutdownimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","shutdown.png"), format='PNG')
+    shutdownimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","shutdown.png"), format='PNG')
 
     rebootimage = generatePilImageBootScreen(config.bgHexVar,
                                                config.deselectedFontHexVar,
                                                config.iconHexVar,
                                                "Rebooting...",
                                                render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
-    rebootimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","reboot.png"), format='PNG')
+    rebootimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","reboot.png"), format='PNG')
 
     defaultimage = generatePilImageDefaultScreen(config.bgHexVar,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
-    defaultimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","default.png"), format='PNG')
+    defaultimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","default.png"), format='PNG')
 
     #TODO If implimented it would be great to only set these once as a default.png type thing, and then make it work in every menu
     
     visualbuttonoverlay_B_BACK_A_SELECT = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     
     muxconfig_items = ["clock","language","general","network","service","theme"]
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxconfig"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxconfig"), exist_ok=True)
     for item in muxconfig_items:
-        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxconfig",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxconfig",f"{item}.png"), format='PNG')
 
     muxinfo_items = ["credit","system","tester"]
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxinfo"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxinfo"), exist_ok=True)
     for item in muxinfo_items:
-        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxinfo",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxinfo",f"{item}.png"), format='PNG')
 
 
     
     visualbuttonoverlay_A_SELECT = menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
 
     muxlaunch_items = ["apps","config","explore","favourite","history","info","reboot","shutdown"]
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxlaunch"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch"), exist_ok=True)
     for item in muxlaunch_items:
-        visualbuttonoverlay_A_SELECT.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxlaunch",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch",f"{item}.png"), format='PNG')
     
 
     visualbuttonoverlay_B_BACK = menuHelperGuides = generateMenuHelperGuides([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
 
     muxtweakgen_items = ["hidden","bgm","sound","startup","colour","brightness","hdmi","power","shutdown","battery","sleep","interface","storage","advanced"]
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxtweakgen"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakgen"), exist_ok=True)
     for item in muxtweakgen_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxtweakgen",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakgen",f"{item}.png"), format='PNG')
 
     muxpower_items = ["shutdown","battery","idle_display","idle_sleep"]
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxpower"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxpower"), exist_ok=True)
     for item in muxpower_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxpower",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxpower",f"{item}.png"), format='PNG')
 
     muxvisual_items = ["battery","network","bluetooth","clock","boxart","boxartalign","name","dash","friendlyfolder","thetitleformat","titleincluderootdrive","folderitemcount","counterfolder","counterfile","backgroundanimation"]
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxvisual"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxvisual"), exist_ok=True)
     for item in muxvisual_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxvisual",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxvisual",f"{item}.png"), format='PNG')
     
     muxtweakadv_items = ["accelerate","swap","thermal","font","volume","brightness","offset","lock","led","theme","retrowait","usbfunction","state","verbose","rumble","hdmi","storage"]
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxtweakadv"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv"), exist_ok=True)
     for item in muxtweakadv_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxtweakadv",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv",f"{item}.png"), format='PNG')
     
     muxstorage_items = ["bios","catalogue","name","retroarch","config","core","favourite","history","music","save","screenshot","theme","language","network","syncthing","content"]
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxstorage"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxstorage"), exist_ok=True)
     for item in muxstorage_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxstorage",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxstorage",f"{item}.png"), format='PNG')
 
     muxwebserv_items = ["shell","browser","terminal","sync","resilio","ntp"]
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxwebserv"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv"), exist_ok=True)
     for item in muxwebserv_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxwebserv",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv",f"{item}.png"), format='PNG')
     
     muxrtc_items = ["year","month","day","hour","minute","notation","timezone"]
-    os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxrtc"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxrtc"), exist_ok=True)
     for item in muxrtc_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,".TempBuildTheme","image","static","muxrtc",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxrtc",f"{item}.png"), format='PNG')
 
     ## TODO General Settings is ALL [B SAVE]
     ## TODO Web Services is ALL [B SAVE]
@@ -2217,33 +2224,33 @@ def FillTempThemeFolder(progress_bar):
     visualbuttonoverlay_muxapp = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = background.copy()
     altered_background.paste(visualbuttonoverlay_muxapp, (0, 0), visualbuttonoverlay_muxapp)  
-    altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxapp.png"), format='PNG')
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxapp.png"), format='PNG')
 
     visualbuttonoverlay_muxplore = menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = background.copy()
     altered_background.paste(visualbuttonoverlay_muxplore, (0, 0), visualbuttonoverlay_muxplore)  
-    altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxplore.png"), format='PNG')
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxplore.png"), format='PNG')
 
     visualbuttonoverlay_muxfavourite = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = background.copy()
     altered_background.paste(visualbuttonoverlay_muxfavourite, (0, 0), visualbuttonoverlay_muxfavourite)  
-    altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxfavourite.png"), format='PNG')
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxfavourite.png"), format='PNG')
 
     visualbuttonoverlay_muxhistory = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = background.copy()
     altered_background.paste(visualbuttonoverlay_muxhistory, (0, 0), visualbuttonoverlay_muxhistory)  
-    altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxhistory.png"), format='PNG')
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxhistory.png"), format='PNG')
 
     visualbuttonoverlay_muxtimezone = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = background.copy()
     altered_background.paste(visualbuttonoverlay_muxtimezone, (0, 0), visualbuttonoverlay_muxtimezone)  
-    altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxtimezone.png"), format='PNG')
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtimezone.png"), format='PNG')
 
     visualbuttonoverlay_muxtheme_muxlanguage = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = background.copy()
     altered_background.paste(visualbuttonoverlay_muxtheme_muxlanguage, (0, 0), visualbuttonoverlay_muxtheme_muxlanguage)  
-    altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxtheme.png"), format='PNG')
-    altered_background.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxlanguage.png"), format='PNG')
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtheme.png"), format='PNG')
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxlanguage.png"), format='PNG')
     #TODO Theme Picker is all [B BACK   A SELECT]
     # Cannot do Wi-Fi Network
 
@@ -2261,7 +2268,7 @@ def FillTempThemeFolder(progress_bar):
                 '--format', 'bin',
                 '--no-compress',
                 '--no-prefilter',
-                '-o', os.path.join(internal_files_dir, ".TempBuildTheme", "Assets", "font","default.bin")
+                '-o', os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "Assets", "font","default.bin")
             ]
 
             # Execute the command
@@ -2295,17 +2302,17 @@ def FillTempThemeFolder(progress_bar):
 
     for index, menu in enumerate(workingMenus):
         if menu[0] == "muxdevice":
-            ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+            ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","image","static"), threadNumber=threadNumber)
         elif menu[0] == "muxlaunch":
             if config.main_menu_style_var == "Vertical":
-                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","image","static"), threadNumber=threadNumber)
             elif config.main_menu_style_var == "Horizontal":
-                HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"), variant = "Horizontal")
+                HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","image","static"), variant = "Horizontal", threadNumber=threadNumber)
             elif config.main_menu_style_var == "Alt-Horizontal":
-                HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"), variant = "Alt-Horizontal")
+                HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","image","static"), variant = "Alt-Horizontal", threadNumber=threadNumber)
 
         else:
-            ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
+            ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","image","static"), threadNumber=threadNumber)
 
 
 def select_alternate_menu_names():
@@ -2446,7 +2453,7 @@ def start_theme_task():
     output_queue = queue.Queue()
 
     # Start the long-running task in a separate thread
-    threading.Thread(target=generate_theme, args=(progress_bar, loading_window)).start()
+    threading.Thread(target=generate_theme, args=(progress_bar, loading_window,-1)).start()
 
 def start_bulk_theme_task():
     save_settings()
