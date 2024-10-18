@@ -43,18 +43,29 @@ class Config: # TODO delete unneeded variables
     def __init__(self, config_file=os.path.join(script_dir,'MinUIThemeGeneratorConfig.json')):
         self.config_file = config_file
         self.textPaddingVar = 40
+        self.text_padding_entry = 40
         self.VBG_Vertical_Padding_entry = 15
         self.VBG_Horizontal_Padding_entry = 15
         self.bubblePaddingVar = 20
+        self.rectangle_padding_entry = 20
         self.itemsPerScreenVar = 7
+        self.items_per_screen_entry = 7
         self.footerHeightVar = 75
+        self.footer_height_entry = 75
         self.contentPaddingTopVar = 44
+        self.content_padding_top_entry = 44
+        self.font_size_var = 24
         self.custom_font_size_entry = "24"
         self.bgHexVar = "000000"
+        self.background_hex_entry = "000000"
         self.selectedFontHexVar = "000000"
+        self.selected_font_hex_entry = "000000"
         self.deselectedFontHexVar = "ffffff"
+        self.deselected_font_hex_entry = "ffffff"
         self.bubbleHexVar = "ffffff"
+        self.bubble_hex_entry = "ffffff"
         self.iconHexVar = "ffffff"
+        self.icon_hex_entry = "ffffff"
         self.include_overlay_var = False
         self.alternate_menu_names_var = False
         self.remove_right_menu_guides_var = False
@@ -1753,22 +1764,22 @@ def generate_theme(progress_bar, loading_window):
             progress_bar['maximum'] = 8
         elif config.main_menu_style_var == "Horizontal":
             progress_bar['maximum'] = 8
-        elif main_menu_style_var.get() == "Alt-Horizontal":
+        elif config.main_menu_style_var == "Alt-Horizontal":
             progress_bar['maximum'] = 8
         else:
             raise ValueError("Something went wrong with your Main Menu Style")
 
 
-        themeName = theme_name_entry.get()
+        themeName = config.theme_name_entry
         FillTempThemeFolder(progress_bar)
-        if theme_directory_path.get() == "":
+        if config.theme_directory_path == "":
             theme_dir = os.path.join(script_dir, "Generated Theme")
         else:
-            theme_dir = theme_directory_path.get()
+            theme_dir = config.theme_directory_path
 
         shutil.make_archive(os.path.join(theme_dir, themeName),"zip", os.path.join(internal_files_dir, ".TempBuildTheme"))
 
-        if developer_preview_var.get():
+        if config.developer_preview_var:
             preview_dir = os.path.join(theme_dir,"Developer Previews")
 
             os.makedirs(preview_dir,exist_ok=True)
@@ -1795,17 +1806,17 @@ def generate_theme(progress_bar, loading_window):
         loading_window.destroy()
     except Exception as e:
         loading_window.destroy()
-        if theme_directory_path.get() == "":
+        if config.theme_directory_path == "":
             theme_dir = os.path.join(script_dir, "Generated Theme")
         else:
-            theme_dir = theme_directory_path.get()
-        if advanced_error_var.get():
+            theme_dir = config.theme_directory_path
+        if config.advanced_error_var:
             tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
             messagebox.showerror("Error", f"An unexpected error occurred: {e}\n{tb_str}")
         else:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
         delete_folder(os.path.join(internal_files_dir, ".TempBuildTheme"))
-        if developer_preview_var.get():
+        if config.developer_preview_var:
             if os.path.exists(os.path.join(internal_files_dir, "TempPreview.png")):
                 os.remove(os.path.join(internal_files_dir, "TempPreview.png"))
             if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
@@ -1831,20 +1842,20 @@ def generate_themes(themes):
 
 def FillTempThemeFolder(progress_bar):
 
-    textPadding = int(text_padding_entry.get())
-    rectanglePadding = int(rectangle_padding_entry.get())
-    ItemsPerScreen = int(items_per_screen_entry.get())
-    bg_hex = background_hex_entry.get()
-    selected_font_hex = selected_font_hex_entry.get()
-    deselected_font_hex = deselected_font_hex_entry.get()
-    bubble_hex = bubble_hex_entry.get()
-    icon_hex = icon_hex_entry.get()
+    textPadding = int(config.text_padding_entry)
+    rectanglePadding = int(config.rectangle_padding_entry)
+    ItemsPerScreen = int(config.items_per_screen_entry)
+    bg_hex = config.background_hex_entry
+    selected_font_hex = config.selected_font_hex_entry
+    deselected_font_hex = config.deselected_font_hex_entry
+    bubble_hex = config.bubble_hex_entry
+    icon_hex = config.icon_hex_entry
 
-    if not use_alt_font_var.get():
+    if not config.use_alt_font_var:
         selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
     else:
-        if os.path.exists(alt_font_path.get()):
-            selected_font_path = alt_font_path.get()
+        if os.path.exists(config.alt_font_path):
+            selected_font_path = config.alt_font_path
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
 
@@ -1853,7 +1864,7 @@ def FillTempThemeFolder(progress_bar):
     newSchemeDir = os.path.join(internal_files_dir,".TempBuildTheme","scheme")
     os.makedirs(newSchemeDir, exist_ok=True)
 
-    fontSize = int(font_size_var.get())
+    fontSize = int(config.font_size_var)
     
     # Theme Variables that wont change
     accent_hex = deselected_font_hex
@@ -1878,9 +1889,9 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{muted_hex}", str(muted_hex))
 
     # More Global Settings
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{image_overlay}", str(include_overlay_var.get()))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{footer_height}", footerHeightVar.get())
-    content_height = deviceScreenHeight-contentPaddingTop-int(footerHeightVar.get())
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{image_overlay}", str(config.include_overlay_var))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{footer_height}", config.footerHeightVar)
+    content_height = deviceScreenHeight-contentPaddingTop-int(config.footerHeightVar)
     
     counter_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{counter_alignment}", str(counter_alignment_map[counter_alignment]))
@@ -1904,11 +1915,11 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{header_height}", header_height)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_top}", str(contentPaddingTop-44))
 
-    if main_menu_style_var.get() != "Vertical":
+    if config.main_menu_style_var != "Vertical":
     # muxlaunch Specific settings
         shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxlaunch.txt"))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_height}",str(content_height))
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_item_count}", str(config.itemsPerScreenVar))
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{background_alpha}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{selected_font_hex}", "ff0000")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{deselected_font_hex}", "ff0000")
@@ -1919,7 +1930,7 @@ def FillTempThemeFolder(progress_bar):
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_glyph_alpha}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_text_alpha}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_padding_left}", "0")
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(textPaddingVar.get())-int(bubblePaddingVar.get()))))
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
         if "You want to wrap": #TODO Make this an actual option
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{navigation_type}", "4")
         else:
@@ -1927,17 +1938,17 @@ def FillTempThemeFolder(progress_bar):
     
     # muxnetwork Specific settings
     shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxnetwork.txt"))
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_height}",str(int((content_height/int(itemsPerScreenVar.get()))*(int(itemsPerScreenVar.get())-2))))
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_item_count}", str(int(itemsPerScreenVar.get())-2))
+    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_height}",str(int((content_height/int(config.itemsPerScreenVar))*(int(config.itemsPerScreenVar)-2))))
+    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_item_count}", str(int(config.itemsPerScreenVar)-2))
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{background_alpha}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{selected_font_hex}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{deselected_font_hex}", accent_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_alpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding}", bubblePaddingVar.get())
+    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding}", config.bubblePaddingVar)
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()])) # TODO make this change for the different sections
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(textPaddingVar.get())-int(bubblePaddingVar.get()))))
+    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
+    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
+    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{footer_alpha}", "255")
     if "Not Show GLYPHS":
         replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "0")
@@ -1950,17 +1961,17 @@ def FillTempThemeFolder(progress_bar):
     if False: # TODO Look into this later to see if muOS added support for ...
         shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxtheme.txt"))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_height}",str(content_height))
-        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_item_count}", str(config.itemsPerScreenVar))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{background_alpha}", base_hex)
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{selected_font_hex}", base_hex)
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{deselected_font_hex}", accent_hex)
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_alpha}", "255")
-        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding}", bubblePaddingVar.get())
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding}", config.bubblePaddingVar)
         content_alignment_map = {"Left":0,"Centre":1,"Right":2}
-        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()])) # TODO make this change for the different sections
-        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
         previewArtWidth = 288
-        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_width}", str(deviceScreenWidth-10-previewArtWidth-5-(int(textPaddingVar.get())-int(bubblePaddingVar.get()))))
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_width}", str(deviceScreenWidth-10-previewArtWidth-5-(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{footer_alpha}", "0")
         if "Not Show GLYPHS":
             replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{list_glyph_alpha}", "0")
@@ -1971,16 +1982,16 @@ def FillTempThemeFolder(progress_bar):
 
     # rest of the default Specific settings
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_height}",str(content_height))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_item_count}", str(config.itemsPerScreenVar))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{background_alpha}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{selected_font_hex}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{deselected_font_hex}", accent_hex)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_alpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding}", bubblePaddingVar.get())
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding}", config.bubblePaddingVar)
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()])) # TODO make this change for the different sections
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(textPaddingVar.get())-int(bubblePaddingVar.get()))))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{footer_alpha}", "0")
     if "Not Show GLYPHS":
         replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{list_glyph_alpha}", "0")
@@ -1997,7 +2008,7 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{selected_font_hex}", str(accent_hex))
     replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{deselected_font_hex}", str(blend_hex))
     replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{disabled_font_hex}", str(muted_hex))
-    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
+    replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ImageOverlay}", str(config.include_overlay_var))
     replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{imageListAlpha}", "255")
 
     if "Show icon on muxlaunch" == "":
@@ -2012,15 +2023,15 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{foreground_hex}", str(accent_hex))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{midground_hex}", str(blend_hex))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{quarterground_hex}", str(muted_hex))
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{ImageOverlay}", str(include_overlay_var.get()))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"), "{ImageOverlay}", str(config.include_overlay_var))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{ScrollDirection}", "0")
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{imageListAlpha}", "255")
     # NEW ONES:
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_padding}",str(bubblePaddingVar.get()))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_padding}",str(config.bubblePaddingVar))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_hex}", str(bubble_hex))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{bubble_alpha}", "255")
     
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_padding_top}", str(contentPaddingTop-44))
 
 
@@ -2032,12 +2043,12 @@ def FillTempThemeFolder(progress_bar):
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_glyph_alpha}", str(0))
         replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_focus_glyph_alpha}", str(0))
     
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_width}", str(deviceScreenWidth-int(textPaddingVar.get())))
-    bubble_height = (deviceScreenHeight-contentPaddingTop-int(footerHeightVar.get()))/int(itemsPerScreenVar.get())
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_width}", str(deviceScreenWidth-int(config.textPaddingVar)))
+    bubble_height = (deviceScreenHeight-contentPaddingTop-int(config.footerHeightVar))/int(config.itemsPerScreenVar)
     replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{list_default_radius}", str(math.ceil(bubble_height/2)))
 
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
-    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()]))
+    replace_in_file(os.path.join(newSchemeDir,"tempmux.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var]))
 
 
     shutil.copy2(os.path.join(newSchemeDir,"tempmux.txt"),os.path.join(newSchemeDir,"muxapp.txt"))
@@ -2051,8 +2062,8 @@ def FillTempThemeFolder(progress_bar):
     """
     os.makedirs(os.path.join(internal_files_dir,".TempBuildTheme","image","wall"), exist_ok=True)
 
-    if include_overlay_var.get():
-        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{selected_overlay_var.get()}.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
+    if config.include_overlay_var:
+        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{config.selected_overlay_var}.png"),os.path.join(internal_files_dir,".TempBuildTheme","image","overlay.png"))
 
     #os.remove(os.path.join(newSchemeDir,"tempmux.txt"))
     
@@ -2072,58 +2083,58 @@ def FillTempThemeFolder(progress_bar):
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(20)}.bin"),os.path.join(internal_files_dir,".TempBuildTheme","font","default.bin"))
 
 
-    """if main_menu_style_var.get() == "Horizontal":
+    """if config.main_menu_style_var == "Horizontal":
         if not "wrap":
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
         else:
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "4") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
-    elif main_menu_style_var.get() == "Alt-Horizontal":
+    elif config.main_menu_style_var == "Alt-Horizontal":
 
         if not "wrap":
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "2") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
         else:
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "4") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH
-    elif main_menu_style_var.get() == "Vertical":
+    elif config.main_menu_style_var == "Vertical":
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"), "{ScrollDirection}", "0") ## ONLY DIFFERENCE BETWEEN THEMES IS MUXLAUNCH"""
     
     
 
-    bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    bootlogoimage = generatePilImageBootLogo(config.bgHexVar,config.deselectedFontHexVar,config.bubbleHexVar,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","bootlogo.bmp"), format='BMP')
 
-    rotated_bootlogoimage = generatePilImageBootLogo(bgHexVar.get(),deselectedFontHexVar.get(),bubbleHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS).rotate(90,expand=True)
+    rotated_bootlogoimage = generatePilImageBootLogo(config.bgHexVar,config.deselectedFontHexVar,config.bubbleHexVar,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS).rotate(90,expand=True)
     rotated_bootlogoimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","bootlogo-alt.bmp"), format='BMP')
 
-    chargingimage = generatePilImageBootScreen(bgHexVar.get(),
-                                               deselectedFontHexVar.get(),
-                                               iconHexVar.get(),
+    chargingimage = generatePilImageBootScreen(config.bgHexVar,
+                                               config.deselectedFontHexVar,
+                                               config.iconHexVar,
                                                "CHARGING...",
                                                render_factor,
                                                icon_path=os.path.join(internal_files_dir, "Assets", "ChargingLogo[5x].png")).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     chargingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxcharge.png"), format='PNG')
 
-    loadingimage = generatePilImageBootScreen(bgHexVar.get(),
-                                               deselectedFontHexVar.get(),
-                                               iconHexVar.get(),
+    loadingimage = generatePilImageBootScreen(config.bgHexVar,
+                                               config.deselectedFontHexVar,
+                                               config.iconHexVar,
                                                "LOADING...",
                                                render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     loadingimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","muxstart.png"), format='PNG')
 
-    shutdownimage = generatePilImageBootScreen(bgHexVar.get(),
-                                               deselectedFontHexVar.get(),
-                                               iconHexVar.get(),
+    shutdownimage = generatePilImageBootScreen(config.bgHexVar,
+                                               config.deselectedFontHexVar,
+                                               config.iconHexVar,
                                                "Shutting Down...",
                                                render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     shutdownimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","shutdown.png"), format='PNG')
 
-    rebootimage = generatePilImageBootScreen(bgHexVar.get(),
-                                               deselectedFontHexVar.get(),
-                                               iconHexVar.get(),
+    rebootimage = generatePilImageBootScreen(config.bgHexVar,
+                                               config.deselectedFontHexVar,
+                                               config.iconHexVar,
                                                "Rebooting...",
                                                render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     rebootimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","reboot.png"), format='PNG')
 
-    defaultimage = generatePilImageDefaultScreen(bgHexVar.get(),render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
+    defaultimage = generatePilImageDefaultScreen(config.bgHexVar,render_factor).resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     defaultimage.save(os.path.join(internal_files_dir,".TempBuildTheme","image","wall","default.png"), format='PNG')
 
     #TODO If implimented it would be great to only set these once as a default.png type thing, and then make it work in every menu
@@ -2261,7 +2272,7 @@ def FillTempThemeFolder(progress_bar):
             print(f"An error occurred: {e}")
     
     itemsList = []
-    if version_var.get() == "muOS 2410.1 Banana":
+    if config.version_var == "muOS 2410.1 Banana":
         workingMenus = menus2405_3
 
     else:
@@ -2285,11 +2296,11 @@ def FillTempThemeFolder(progress_bar):
         if menu[0] == "muxdevice":
             ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
         elif menu[0] == "muxlaunch":
-            if main_menu_style_var.get() == "Vertical":
+            if config.main_menu_style_var == "Vertical":
                 ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"))
-            elif main_menu_style_var.get() == "Horizontal":
+            elif config.main_menu_style_var == "Horizontal":
                 HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"), variant = "Horizontal")
-            elif main_menu_style_var.get() == "Alt-Horizontal":
+            elif config.main_menu_style_var == "Alt-Horizontal":
                 HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, ".TempBuildTheme","image","static"), variant = "Alt-Horizontal")
 
         else:
@@ -2297,10 +2308,10 @@ def FillTempThemeFolder(progress_bar):
 
 
 def select_alternate_menu_names():
-    if os.path.exists(alt_text_path.get()):
-        menu_names_grid = MenuNamesGrid(root, menuNameMap, alt_text_path.get())
-    elif os.path.exists(os.path.join(script_dir,alt_text_path.get())):
-        menu_names_grid = MenuNamesGrid(root, menuNameMap, os.path.join(script_dir,alt_text_path.get()))
+    if os.path.exists(config.alt_text_path):
+        menu_names_grid = MenuNamesGrid(root, menuNameMap, config.alt_text_path)
+    elif os.path.exists(os.path.join(script_dir,config.alt_text_path)):
+        menu_names_grid = MenuNamesGrid(root, menuNameMap, os.path.join(script_dir,config.alt_text_path))
     else:
         menu_names_grid = MenuNamesGrid(root, menuNameMap, os.path.join(script_dir,"AlternateMenuNames.json"))
     root.wait_window(menu_names_grid)
@@ -2843,27 +2854,27 @@ def on_change(*args):
     global menuNameMap
     menuNameMap = getAlternateMenuNameDict()
     try:
-        if old_selected_overlay_var != selected_overlay_var.get():
-            preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{selected_overlay_var.get()}.png")).convert("RGBA")
+        if old_selected_overlay_var != config.selected_overlay_var:
+            preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{config.selected_overlay_var}.png")).convert("RGBA")
     except:
-        preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{selected_overlay_var.get()}.png")).convert("RGBA")
-    old_selected_overlay_var = selected_overlay_var.get()
+        preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{config.selected_overlay_var}.png")).convert("RGBA")
+    old_selected_overlay_var = config.selected_overlay_var
     gameFolderName = "Game Boy"
     global footerHeight
     global contentPaddingTop
     try:
-        footerHeight = int(footer_height_entry.get())
+        footerHeight = int(config.footer_height_entry)
     except:
         footerHeight = 55
     try:
-        contentPaddingTop = int(content_padding_top_entry.get())
+        contentPaddingTop = int(config.content_padding_top_entry)
     except:
         contentPaddingTop = 40
     
     global background_image
 
-    if (use_custom_background_var.get()) and os.path.exists(background_image_path.get()):
-        background_image = Image.open(background_image_path.get())
+    if (config.use_custom_background_var) and os.path.exists(config.background_image_path):
+        background_image = Image.open(config.background_image_path)
     else:
         background_image = None
 
@@ -2873,7 +2884,7 @@ def on_change(*args):
     global menus2405_3
 
     previewApplicationList = []
-    if version_var.get() == "muOS 2410.1 Banana":
+    if config.version_var == "muOS 2410.1 Banana":
         index = None
         for i, n in enumerate(menus2405_3):
             if n[0] == "muxapp":
@@ -2902,85 +2913,85 @@ def on_change(*args):
     try:
         previewItemList = [['Content Explorer', 'Menu', 'explore'], ['Favourites', 'Menu', 'favourite'], ['History', 'Menu', 'history'], ['Applications', 'Menu', 'apps'], ['Information', 'Menu', 'info'], ['Configuration', 'Menu', 'config'], ['Reboot Device', 'Menu', 'reboot'], ['Shutdown Device', 'Menu', 'shutdown']]
         
-        if main_menu_style_var.get() == "Horizontal":
+        if config.main_menu_style_var == "Horizontal":
             image1 = generatePilImageHorizontal(fakeprogressbar,
                                                 0,
-                                                bgHexVar.get(),
-                                                selectedFontHexVar.get(),
-                                                deselectedFontHexVar.get(),
-                                                bubbleHexVar.get(),
-                                                iconHexVar.get(),
+                                                config.bgHexVar,
+                                                config.selectedFontHexVar,
+                                                config.deselectedFontHexVar,
+                                                config.bubbleHexVar,
+                                                config.iconHexVar,
                                                 previewRenderFactor,
                                                 transparent=False).resize(preview_size, Image.LANCZOS)
-        elif main_menu_style_var.get() == "Alt-Horizontal":
+        elif config.main_menu_style_var == "Alt-Horizontal":
             image1 = generatePilImageAltHorizontal(fakeprogressbar,
                                                 0,
-                                                bgHexVar.get(),
-                                                selectedFontHexVar.get(),
-                                                deselectedFontHexVar.get(),
-                                                bubbleHexVar.get(),
-                                                iconHexVar.get(),
+                                                config.bgHexVar,
+                                                config.selectedFontHexVar,
+                                                config.deselectedFontHexVar,
+                                                config.bubbleHexVar,
+                                                config.iconHexVar,
                                                 previewRenderFactor,
                                                 transparent=False).resize(preview_size, Image.LANCZOS)
-        elif main_menu_style_var.get() == "Vertical":
+        elif config.main_menu_style_var == "Vertical":
             image1 = generatePilImageVertical(fakeprogressbar,0,
                                             "muxlaunch", #TODO CHANGE to muxlaunch
-                                            previewItemList[0:int(items_per_screen_entry.get())],
-                                            int(textPaddingVar.get()),
-                                            int(bubblePaddingVar.get()),
-                                            int(items_per_screen_entry.get()),
-                                            bgHexVar.get(),
-                                            selectedFontHexVar.get(),
-                                            deselectedFontHexVar.get(),
-                                            bubbleHexVar.get()
+                                            previewItemList[0:int(config.items_per_screen_entry)],
+                                            int(config.textPaddingVar),
+                                            int(config.bubblePaddingVar),
+                                            int(config.items_per_screen_entry),
+                                            config.bgHexVar,
+                                            config.selectedFontHexVar,
+                                            config.deselectedFontHexVar,
+                                            config.bubbleHexVar
                                             ,previewRenderFactor,transparent=False).resize(preview_size, Image.LANCZOS)
 
         image2 = generatePilImageVertical(fakeprogressbar,0,
                                         "muxapp",
-                                        previewApplicationList[0:int(items_per_screen_entry.get())],
-                                        int(textPaddingVar.get()),
-                                        int(bubblePaddingVar.get()),
-                                        int(items_per_screen_entry.get()),
-                                        bgHexVar.get(),
-                                        selectedFontHexVar.get(),
-                                        deselectedFontHexVar.get(),
-                                        bubbleHexVar.get(),
+                                        previewApplicationList[0:int(config.items_per_screen_entry)],
+                                        int(config.textPaddingVar),
+                                        int(config.bubblePaddingVar),
+                                        int(config.items_per_screen_entry),
+                                        config.bgHexVar,
+                                        config.selectedFontHexVar,
+                                        config.deselectedFontHexVar,
+                                        config.bubbleHexVar,
                                         previewRenderFactor,
-                                        fileCounter="1 / " + items_per_screen_entry.get(),
+                                        fileCounter="1 / " + config.items_per_screen_entry,
                                         transparent=False).resize(preview_size, Image.LANCZOS)
 
-        if main_menu_style_var.get() == "Horizontal":
+        if config.main_menu_style_var == "Horizontal":
             image3 = generatePilImageHorizontal(fakeprogressbar,
                                                 4,
-                                                bgHexVar.get(),
-                                                selectedFontHexVar.get(),
-                                                deselectedFontHexVar.get(),
-                                                bubbleHexVar.get(),
-                                                iconHexVar.get(),
+                                                config.bgHexVar,
+                                                config.selectedFontHexVar,
+                                                config.deselectedFontHexVar,
+                                                config.bubbleHexVar,
+                                                config.iconHexVar,
                                                 previewRenderFactor,
                                                 transparent=False).resize(preview_size, Image.LANCZOS)
         
-        elif main_menu_style_var.get() == "Alt-Horizontal":
+        elif config.main_menu_style_var == "Alt-Horizontal":
             image3 = generatePilImageAltHorizontal(fakeprogressbar,
                                                 4,
-                                                bgHexVar.get(),
-                                                selectedFontHexVar.get(),
-                                                deselectedFontHexVar.get(),
-                                                bubbleHexVar.get(),
-                                                iconHexVar.get(),
+                                                config.bgHexVar,
+                                                config.selectedFontHexVar,
+                                                config.deselectedFontHexVar,
+                                                config.bubbleHexVar,
+                                                config.iconHexVar,
                                                 previewRenderFactor,
                                                 transparent=False).resize(preview_size, Image.LANCZOS)
 
-        if include_overlay_var.get() and selected_overlay_var.get() != "":
+        if config.include_overlay_var and config.selected_overlay_var != "":
             preview_overlay_resized = preview_overlay_image.resize(image1.size, Image.LANCZOS)
             image1.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
             image2.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
-            if main_menu_style_var.get() != "Vertical":
+            if config.main_menu_style_var != "Vertical":
                 image3.paste(preview_overlay_resized,(0,0),preview_overlay_resized)
     
         update_image_label(image_label1, image1)
         update_image_label(image_label2, image2)
-        if main_menu_style_var.get() != "Vertical":
+        if config.main_menu_style_var != "Vertical":
             update_image_label(image_label3, image3)
         else:
             remove_image_from_label(image_label3)
@@ -2990,29 +3001,40 @@ def on_change(*args):
             if valid_params:
                 redOutlineImage1 = outline_image_with_inner_gap(get_current_image(image_label1)).resize(preview_size, Image.LANCZOS)
                 redOutlineImage2 = outline_image_with_inner_gap(get_current_image(image_label2)).resize(preview_size, Image.LANCZOS)
-                if main_menu_style_var.get() != "Vertical":
+                if config.main_menu_style_var != "Vertical":
                     redOutlineImage3 = outline_image_with_inner_gap(get_current_image(image_label3)).resize(preview_size, Image.LANCZOS)
                 update_image_label(image_label1, redOutlineImage1)
                 update_image_label(image_label2, redOutlineImage2)
-                if main_menu_style_var.get() != "Vertical":
+                if config.main_menu_style_var != "Vertical":
                     update_image_label(image_label3, redOutlineImage3)
                 valid_params = False
 
 
 def save_settings(*args):
     config.textPaddingVar = textPaddingVar.get()
+    config.text_padding_entry = text_padding_entry.get()
     config.VBG_Horizontal_Padding_entry = VBG_Horizontal_Padding_entry.get()
     config.VBG_Vertical_Padding_entry = VBG_Vertical_Padding_entry.get()
     config.bubblePaddingVar = bubblePaddingVar.get()
+    config.rectangle_padding_entry = rectangle_padding_entry.get()
     config.itemsPerScreenVar = itemsPerScreenVar.get()
+    config.items_per_screen_entry = items_per_screen_entry.get()
     config.footerHeightVar = footerHeightVar.get()
+    config.content_padding_top_entry = content_padding_top_entry.get()
     config.contentPaddingTopVar = contentPaddingTopVar.get()
     config.custom_font_size_entry = custom_font_size_entry.get()
+    config.font_size_var = font_size_var.get()
+    config.footer_height_entry = footer_height_entry.get()
     config.bgHexVar = bgHexVar.get()
+    config.background_hex_entry = background_hex_entry.get()
     config.selectedFontHexVar = selectedFontHexVar.get()
+    config.selected_font_hex_entry = selected_font_hex_entry.get()
     config.deselectedFontHexVar = deselectedFontHexVar.get()
+    config.deselected_font_hex_entry = deselected_font_hex_entry.get()
     config.bubbleHexVar = bubbleHexVar.get()
+    config.bubble_hex_entry = bubble_hex_entry.get()
     config.iconHexVar = iconHexVar.get()
+    config.icon_hex_entry = icon_hex_entry.get()
     config.include_overlay_var = include_overlay_var.get()
     config.alternate_menu_names_var = alternate_menu_names_var.get()
     config.remove_right_menu_guides_var = remove_right_menu_guides_var.get()
@@ -3063,12 +3085,33 @@ def load_settings():
     VBG_Horizontal_Padding_entry.insert(0, config.VBG_Horizontal_Padding_entry)
     VBG_Vertical_Padding_entry.delete(0, tk.END)
     VBG_Vertical_Padding_entry.insert(0, config.VBG_Vertical_Padding_entry)
+    text_padding_entry.delete(0, tk.END)
+    text_padding_entry.insert(0, config.text_padding_entry)
+    rectangle_padding_entry.delete(0, tk.END)
+    rectangle_padding_entry.insert(0, config.rectangle_padding_entry)
+    items_per_screen_entry.delete(0, tk.END)
+    items_per_screen_entry.insert(0, config.items_per_screen_entry)
+    background_hex_entry.delete(0, tk.END)
+    background_hex_entry.insert(0, config.background_hex_entry)
+    selected_font_hex_entry.delete(0, tk.END)
+    selected_font_hex_entry.insert(0, config.selected_font_hex_entry)
+    deselected_font_hex_entry.delete(0, tk.END)
+    deselected_font_hex_entry.insert(0, config.deselected_font_hex_entry)
+    bubble_hex_entry.delete(0, tk.END)
+    bubble_hex_entry.insert(0, config.bubble_hex_entry)
+    icon_hex_entry.delete(0, tk.END)
+    icon_hex_entry.insert(0, config.icon_hex_entry)
+    footer_height_entry.delete(0, tk.END)
+    footer_height_entry.insert(0, config.footer_height_entry)
+    content_padding_top_entry.delete(0, tk.END)
+    content_padding_top_entry.insert(0, config.content_padding_top_entry)
     bubblePaddingVar.set(config.bubblePaddingVar)
     itemsPerScreenVar.set(config.itemsPerScreenVar)
     footerHeightVar.set(config.footerHeightVar)
     contentPaddingTopVar.set(config.contentPaddingTopVar)
     boxArtPaddingVar.set(config.boxArtPaddingVar)
     folderBoxArtPaddingVar.set(config.folderBoxArtPaddingVar)
+    font_size_var.set(config.font_size_var)
     custom_font_size_entry.delete(0, tk.END)
     custom_font_size_entry.insert(0, config.custom_font_size_entry)
     bgHexVar.set(config.bgHexVar)
@@ -3198,7 +3241,7 @@ paned_window.bind("<Configure>", on_resize)  # Bind the paned window resize even
 
 
 
-on_change()
+save_settings()
 
 # Run the main loop
 root.mainloop()
