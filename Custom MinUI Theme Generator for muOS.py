@@ -1792,7 +1792,7 @@ def generate_theme(progress_bar, loading_window, threadNumber):
                 os.remove(temp_preview_path)
             shutil.move(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png"), preview_dir)
 
-            theme_preview_path = os.path.join(preview_dir, f"{themeName}[Preview].png")
+            theme_preview_path = os.path.join(preview_dir, f"{themeName}.png")
             if os.path.exists(theme_preview_path):
                 os.remove(theme_preview_path)
 

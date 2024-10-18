@@ -6,6 +6,7 @@ on:
       - main
   schedule:
     - cron: '0 0 * * *'  # Optional: Runs daily to check for new themes automatically
+  workflow_dispatch:
 
 jobs:
   update-premade-themes:
