@@ -8,6 +8,9 @@ on:
     - cron: '0 0 * * *'  # Optional: Runs daily to check for new themes automatically
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   update-premade-themes:
     runs-on: ubuntu-latest
