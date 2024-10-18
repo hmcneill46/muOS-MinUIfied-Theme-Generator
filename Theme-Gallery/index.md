@@ -1,5 +1,19 @@
-# Premade Themes
-Here are some premade themes that were built for muOS 2410.1 BANANA:
+# Pre-made MinUIfied Theme Gallery
+## Theme Installation Instructions for muOS 2410.1 BANANA
+These themes were built using my custom theme generator, specifically for **muOS 2410.1 BANANA**
+
+### Installation Methods:
+
+1. **Drag and Drop**  
+   - Download the themes you want and place the `.zip` files directly into the `MUOS/theme` folder on your whichever SD Card is used for your themes on your device
+   - If removed, Re-insert your SD Card into your device
+   - Open the **Theme Picker** from configuration and select your new theme
+
+2. **Via Archive Manager**  
+   - Download the themes you want and place the `.zip` files directly into the `ARCHIVE` folder on your whichever SD Card is used for your themes on your device
+   - If removed, Re-insert your SD Card into your device
+   - Open the **Archive Manager** from the Applications menu, on your device and install the theme
+   - Once installed, select it from the **Theme Picker**
 
 | Alt-Horizontal | Horizontal | Vertical |
 | :---: | :---: | :---: |

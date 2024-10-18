@@ -25,17 +25,30 @@ jobs:
           response=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}")
           echo "${response}" | jq -r '.assets[] | "\(.name) \(.browser_download_url)"' > theme_assets.txt
 
-      - name: Generate Themes-Gallery/index.md
+      - name: Generate Theme-Gallery/index.md
         run: |
           # Initialize a counter to track how many themes are in a row
           theme_count=0
 
           # Add header for the table (optional)
-          echo "# Premade Themes" > Themes-Gallery/index.md
-          echo "Here are some premade themes that were built for muOS 2410.1 BANANA:" >> Themes-Gallery/index.md
-          echo "" >> Themes-Gallery/index.md
-          echo "| Alt-Horizontal | Horizontal | Vertical |" >> Themes-Gallery/index.md
-          echo "| :---: | :---: | :---: |" >> Themes-Gallery/index.md
+          echo "# Pre-made MinUIfied Theme Gallery" > Theme-Gallery/index.md
+          echo "## Theme Installation Instructions for muOS 2410.1 BANANA" >> Theme-Gallery/index.md
+          echo "These themes were built using my custom theme generator, specifically for **muOS 2410.1 BANANA**" >> Theme-Gallery/index.md
+          echo "" >> Theme-Gallery/index.md
+          echo "### Installation Methods:" >> Theme-Gallery/index.md
+          echo "" >> Theme-Gallery/index.md
+          echo "1. **Drag and Drop**  " >> Theme-Gallery/index.md
+          echo "   - Download the themes you want and place the `.zip` files directly into the `MUOS/theme` folder on your whichever SD Card is used for your themes on your device" >> Theme-Gallery/index.md
+          echo "   - If removed, Re-insert your SD Card into your device" >> Theme-Gallery/index.md
+          echo "   - Open the **Theme Picker** from configuration and select your new theme" >> Theme-Gallery/index.md
+          echo "2. **Via Archive Manager**  " >> Theme-Gallery/index.md
+          echo "   - Download the themes you want and place the `.zip` files directly into the `ARCHIVE` folder on your whichever SD Card is used for your themes on your device" >> Theme-Gallery/index.md
+          echo "   - If removed, Re-insert your SD Card into your device" >> Theme-Gallery/index.md
+          echo "   - Open the **Archive Manager** from the Applications menu, on your device and install the theme" >> Theme-Gallery/index.md
+          echo "   - Once installed, select it from the **Theme Picker**" >> Theme-Gallery/index.md
+          echo "" >> Theme-Gallery/index.md
+          echo "| Alt-Horizontal | Horizontal | Vertical |" >> Theme-Gallery/index.md
+          echo "| :---: | :---: | :---: |" >> Theme-Gallery/index.md
 
           # Start processing each asset from the release
           while IFS= read -r line; do
@@ -55,18 +68,18 @@ jobs:
               # Check if this is the first item in the row
               if [[ $theme_count -eq 0 ]]; then
                 # Start a new row
-                echo -n "| " >> Themes-Gallery/index.md
+                echo -n "| " >> Theme-Gallery/index.md
               fi
 
               # Add theme preview and download link in the current cell
-              echo -n "![${theme_name}](${preview_url}) <br> [Download](${theme_zip}) | " >> Themes-Gallery/index.md
+              echo -n "![${theme_name}](${preview_url}) <br> [Download](${theme_zip}) | " >> Theme-Gallery/index.md
 
               # Increment the theme count and check if we need to start a new row
               theme_count=$((theme_count + 1))
 
               if [[ $theme_count -eq 3 ]]; then
                 # If there are three themes in the row, close the row and reset the counter
-                echo "" >> Themes-Gallery/index.md
+                echo "" >> Theme-Gallery/index.md
                 theme_count=0
               fi
             fi
@@ -74,7 +87,7 @@ jobs:
 
           # If the last row has fewer than 3 themes, close the row
           if [[ $theme_count -ne 0 ]]; then
-            echo "" >> Themes-Gallery/index.md
+            echo "" >> Theme-Gallery/index.md
           fi
 
 
@@ -82,6 +95,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add Themes-Gallery/index.md
-          git commit -m "Update Themes-Gallery/index.md with latest themes"
+          git add Theme-Gallery/index.md
+          git commit -m "Update Theme-Gallery/index.md with latest themes"
           git push
