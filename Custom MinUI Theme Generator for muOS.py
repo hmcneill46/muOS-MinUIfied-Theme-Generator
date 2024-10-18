@@ -132,6 +132,7 @@ class Config: # TODO delete unneeded variables
     def apply_theme(self, theme):
         # Update the Config object with all key-value pairs from the theme
         self.__dict__.update(theme)
+        print(self.theme_name_entry)
         self.save_config()
     
     def loop_through_themes(self, themes_file='PremadeThemes.json', action=None):
@@ -1828,7 +1829,7 @@ def generate_themes(themes):
             config.apply_theme(theme)
             loading_window = tk.Toplevel(root)
             loading_window.title(f"Generating {config.theme_name_entry}...")
-            loading_window.geometry("300x100")
+            loading_window.geometry("600x100")
             
             # Create a Progressbar widget in the loading window
             progress_bar = ttk.Progressbar(loading_window, orient="horizontal", length=280, mode="determinate")
