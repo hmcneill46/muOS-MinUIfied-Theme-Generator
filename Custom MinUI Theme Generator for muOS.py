@@ -1783,7 +1783,7 @@ def generate_theme(progress_bar, loading_window, threadNumber):
         shutil.make_archive(os.path.join(theme_dir, themeName),"zip", os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}"))
 
         if config.developer_preview_var:
-            preview_dir = os.path.join(theme_dir,"Developer Previews")
+            preview_dir = os.path.join(theme_dir)
 
             os.makedirs(preview_dir,exist_ok=True)
 

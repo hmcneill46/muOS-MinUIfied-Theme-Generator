@@ -53,11 +53,11 @@ jobs:
               # Check if this is the first item in the row
               if [[ $theme_count -eq 0 ]]; then
                 # Start a new row
-                echo "| " >> premade-themes.md
+                echo -n "| " >> premade-themes.md
               fi
 
               # Add theme preview and download link in the current cell
-              echo "![${theme_name}](${preview_url}) <br> [Download](${theme_zip}) | " >> premade-themes.md
+              echo -n "![${theme_name}](${preview_url}) <br> [Download](${theme_zip}) | " >> premade-themes.md
 
               # Increment the theme count and check if we need to start a new row
               theme_count=$((theme_count + 1))
