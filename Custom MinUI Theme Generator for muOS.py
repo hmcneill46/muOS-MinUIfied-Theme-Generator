@@ -49,7 +49,7 @@ class Config: # TODO delete unneeded variables
         self.itemsPerScreenVar = 7
         self.footerHeightVar = 75
         self.contentPaddingTopVar = 44
-        self.customFontSizeVar = "24"
+        self.font_size_var = "24"
         self.bgHexVar = "000000"
         self.selectedFontHexVar = "000000"
         self.deselectedFontHexVar = "ffffff"
@@ -89,7 +89,7 @@ class Config: # TODO delete unneeded variables
         self.use_alt_font_var = False
         self.use_custom_background_var = False
         self.use_custom_bootlogo_var = False
-        self.themeName = "MinUIfied - Default Theme"
+        self.theme_name_entry = "MinUIfied - Default Theme"
         self.amThemeName = "MinUIfied - Default AM Theme"
         self.am_ignore_theme_var = False
         self.am_ignore_cd_var = False
