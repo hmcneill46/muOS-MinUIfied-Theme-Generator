@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 0 * * *'  # Optional: Runs daily to check for new themes automatically
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 permissions:
@@ -21,14 +21,14 @@ jobs:
       - name: Get release assets from GitHub API
         id: get_themes
         run: |
-          TAG="themes-muos-v2410.1"  # Use your tag (e.g., 'themes-v1.0' or just 'themes')
+          TAG="themes-muos-v2410.1"
           response=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}")
           echo "${response}" | jq -r '.assets[] | "\(.name) \(.browser_download_url)"' > theme_assets.txt
 
       - name: Generate premade-themes.md
         run: |
           echo "# Premade Themes" > premade-themes.md
-          echo "Here are the premade themes you can download and use with the theme generator:" >> premade-themes.md
+          echo "Here are the premade themes you can download and use on :" >> premade-themes.md
           echo "" >> premade-themes.md
           echo "| Preview | Theme Name | Download Link |" >> premade-themes.md
           echo "|---------|------------|---------------|" >> premade-themes.md
@@ -51,8 +51,24 @@ jobs:
             # Process theme zip file (.zip)
             if [[ "$filename" == *".zip" ]]; then
               theme_zip="$url"
-              # Generate a row for the markdown table
-              echo "| ![$theme_name]($preview_url) | $theme_name | [Download]($theme_zip) |" >> premade-themes.md
+              
+              # Check if this is the first item in the row
+              if [[ $theme_count -eq 0 ]]; then
+                # Start a new row
+                echo "| " >> premade-themes.md
+              fi
+
+              # Add theme preview and download link in the current cell
+              echo "![${theme_name}](${preview_url}) <br> [Download](${theme_zip}) | " >> premade-themes.md
+
+              # Increment the theme count and check if we need to start a new row
+              theme_count=$((theme_count + 1))
+
+              if [[ $theme_count -eq 3 ]]; then
+                # If there are three themes in the row, close the row and reset the counter
+                echo "" >> premade-themes.md
+                theme_count=0
+              fi
             fi
           done < theme_assets.txt
 
