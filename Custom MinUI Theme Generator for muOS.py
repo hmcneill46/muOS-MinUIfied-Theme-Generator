@@ -94,6 +94,7 @@ class Config: # TODO delete unneeded variables
         self.am_ignore_theme_var = False
         self.am_ignore_cd_var = False
         self.advanced_error_var = False
+        self.developer_preview_var = False
         self.show_file_counter_var = False
         self.show_console_name_var = False
         self.load_config()
@@ -109,6 +110,26 @@ class Config: # TODO delete unneeded variables
     def save_config(self):
         with open(self.config_file, 'w') as file:
             json.dump(self.__dict__, file, indent=4)
+    
+    def load_premade_themes(self, themes_file='PremadeThemes.json'):
+        if os.path.exists(themes_file):
+            with open(themes_file, 'r') as file:
+                themes_data = json.load(file)
+                return themes_data['themes']
+        return []
+
+    def apply_theme(self, theme):
+        # Update the Config object with all key-value pairs from the theme
+        self.__dict__.update(theme)
+        self.save_config()
+    
+    def loop_through_themes(self, themes_file='PremadeThemes.json', action=None):
+        themes = self.load_premade_themes(themes_file)
+        if themes:
+            for theme in themes:
+                self.apply_theme(theme)
+                if action:
+                    action(self)  # Perform the action using the current config
 
 background_image = None
 
@@ -510,7 +531,9 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                     if background_image != None:
                         background.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
                     background = background.resize(image.size, Image.LANCZOS)
-                    background.paste(image, (0, 0), image)  
+                    background.paste(image, (0, 0), image)
+                    if developer_preview_var.get():
+                        background.save(os.path.join(internal_files_dir,"TempPreview.png"))
                     background = background.resize((int(0.45*deviceScreenWidth), int(0.45*deviceScreenHeight)), Image.LANCZOS)
                     background.save(os.path.join(internal_files_dir, ".TempBuildTheme","preview.png"))
                 
@@ -1444,6 +1467,8 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
                     background.paste(background_image.resize((deviceScreenWidth * render_factor, deviceScreenHeight * render_factor)), (0,0))
                 background = background.resize(image.size, Image.LANCZOS)
                 background.paste(image, (0, 0), image)  
+                if developer_preview_var.get(): 
+                    background.save(os.path.join(internal_files_dir,"TempPreview.png"))
                 background = background.resize((int(0.45*deviceScreenWidth), int(0.45*deviceScreenHeight)), Image.LANCZOS)
                 background.save(os.path.join(internal_files_dir, ".TempBuildTheme","preview.png"))
 
@@ -1741,7 +1766,26 @@ def generate_theme(progress_bar, loading_window):
 
         shutil.make_archive(os.path.join(theme_dir, themeName),"zip", os.path.join(internal_files_dir, ".TempBuildTheme"))
 
+        if developer_preview_var.get():
+            preview_dir = os.path.join(theme_dir,"Developer Previews")
 
+            os.makedirs(preview_dir,exist_ok=True)
+
+            temp_preview_path = os.path.join(preview_dir, "TempPreview.png")
+            if os.path.exists(temp_preview_path):
+                os.remove(temp_preview_path)
+            shutil.move(os.path.join(internal_files_dir, "TempPreview.png"), preview_dir)
+
+            theme_preview_path = os.path.join(preview_dir, f"{themeName}[Preview].png")
+            if os.path.exists(theme_preview_path):
+                os.remove(theme_preview_path)
+
+            os.rename(os.path.join(preview_dir,"TempPreview.png"), theme_preview_path)
+
+            if os.path.exists(os.path.join(internal_files_dir, "TempPreview.png")):
+                os.remove(os.path.join(internal_files_dir, "TempPreview.png"))
+            if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
+                os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
         
 
         delete_folder(os.path.join(internal_files_dir, ".TempBuildTheme"))
@@ -1759,6 +1803,11 @@ def generate_theme(progress_bar, loading_window):
         else:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
         delete_folder(os.path.join(internal_files_dir, ".TempBuildTheme"))
+        if developer_preview_var.get():
+            if os.path.exists(os.path.join(internal_files_dir, "TempPreview.png")):
+                os.remove(os.path.join(internal_files_dir, "TempPreview.png"))
+            if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
+                os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
 
 def FillTempThemeFolder(progress_bar):
 
@@ -1834,7 +1883,6 @@ def FillTempThemeFolder(progress_bar):
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{status_padding_right}", status_padding)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{header_height}", header_height)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_top}", str(contentPaddingTop-44))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(textPaddingVar.get())-int(bubblePaddingVar.get()))))
 
     if main_menu_style_var.get() != "Vertical":
     # muxlaunch Specific settings
@@ -1851,6 +1899,7 @@ def FillTempThemeFolder(progress_bar):
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_glyph_alpha}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_text_alpha}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_padding_left}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(textPaddingVar.get())-int(bubblePaddingVar.get()))))
         if "You want to wrap": #TODO Make this an actual option
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{navigation_type}", "4")
         else:
@@ -1868,6 +1917,7 @@ def FillTempThemeFolder(progress_bar):
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()])) # TODO make this change for the different sections
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
+    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(textPaddingVar.get())-int(bubblePaddingVar.get()))))
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{footer_alpha}", "255")
     if "Not Show GLYPHS":
         replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "0")
@@ -1875,6 +1925,29 @@ def FillTempThemeFolder(progress_bar):
         replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_text_alpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{navigation_type}", "0")
+
+    # muxtheme Specific settings
+    if False: # TODO Look into this later to see if muOS added support for ...
+        shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxtheme.txt"))
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_height}",str(content_height))
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_item_count}", str(itemsPerScreenVar.get()))
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{background_alpha}", base_hex)
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{selected_font_hex}", base_hex)
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{deselected_font_hex}", accent_hex)
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_alpha}", "255")
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding}", bubblePaddingVar.get())
+        content_alignment_map = {"Left":0,"Centre":1,"Right":2}
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()])) # TODO make this change for the different sections
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
+        previewArtWidth = 288
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_width}", str(deviceScreenWidth-10-previewArtWidth-5-(int(textPaddingVar.get())-int(bubblePaddingVar.get()))))
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{footer_alpha}", "0")
+        if "Not Show GLYPHS":
+            replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{list_glyph_alpha}", "0")
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{list_glyph_alpha}", "255")
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{list_text_alpha}", "255")
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{navigation_type}", "0")
 
     # rest of the default Specific settings
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_height}",str(content_height))
@@ -1887,6 +1960,7 @@ def FillTempThemeFolder(progress_bar):
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_alignment}", str(content_alignment_map[global_alignment_var.get()])) # TODO make this change for the different sections
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_left}", str(int(textPaddingVar.get())-int(bubblePaddingVar.get())))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(textPaddingVar.get())-int(bubblePaddingVar.get()))))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{footer_alpha}", "0")
     if "Not Show GLYPHS":
         replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{list_glyph_alpha}", "0")
@@ -2326,6 +2400,7 @@ def update_slider_label():
 
 
 def start_theme_task():
+    on_change()
         # Create a new Toplevel window for the loading bar
     loading_window = tk.Toplevel(root)
     loading_window.title("Loading...")
@@ -2392,6 +2467,7 @@ use_custom_bootlogo_var = tk.IntVar()
 am_ignore_theme_var = tk.IntVar()
 am_ignore_cd_var = tk.IntVar()
 advanced_error_var = tk.IntVar()
+developer_preview_var = tk.IntVar()
 
 # Create a PanedWindow to divide the window into left and right sections
 paned_window = PanedWindow(root, orient=tk.HORIZONTAL, sashwidth=5, sashrelief=tk.RAISED,bg = "#ff0000", bd = 0)
@@ -2636,6 +2712,8 @@ grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\MUOS\\theme
 grid_helper.add(tk.Button(scrollable_frame, text="Generate Theme", command=start_theme_task), sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Advanced Errors", variable=advanced_error_var), colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Developer Preview Image Generation [Optional]", variable=developer_preview_var), colspan=3, sticky="w", next_row=True)
 
 
 
@@ -2940,6 +3018,7 @@ def save_settings():
     config.am_ignore_theme_var = am_ignore_theme_var.get()
     config.am_ignore_cd_var = am_ignore_cd_var.get()
     config.advanced_error_var = advanced_error_var.get()
+    config.developer_preview_var = developer_preview_var.get()
     config.show_file_counter_var = show_file_counter_var.get()
     config.show_console_name_var = show_console_name_var.get()
 
@@ -2996,6 +3075,7 @@ def load_settings():
     am_ignore_theme_var.set(config.am_ignore_theme_var)
     am_ignore_cd_var.set(config.am_ignore_cd_var)
     advanced_error_var.set(config.advanced_error_var)
+    developer_preview_var.set(config.developer_preview_var)
     show_file_counter_var.set(config.show_file_counter_var)
     show_console_name_var.set(config.show_console_name_var)
 
@@ -3052,6 +3132,7 @@ bootlogo_image_path.trace_add("write", on_change)
 am_ignore_theme_var.trace_add("write", on_change)
 am_ignore_cd_var.trace_add("write", on_change)
 advanced_error_var.trace_add("write", on_change)
+developer_preview_var.trace_add("write", on_change)
 use_alt_font_var.trace_add("write", on_change)
 use_custom_background_var.trace_add("write",on_change)
 use_custom_bootlogo_var.trace_add("write", on_change)

@@ -1,0 +1,28 @@
+{
+    "themes": [
+        {
+            "themeName": "MinUIfied - Default Theme",
+            "bgHexVar": "000000",
+            "selectedFontHexVar": "000000",
+            "deselectedFontHexVar": "ffffff",
+            "bubbleHexVar": "ffffff",
+            "iconHexVar": "ffffff"
+        },
+        {
+            "themeName": "MinUIfied - Red and White",
+            "bgHexVar": "ff0000",
+            "selectedFontHexVar": "ff0000",
+            "deselectedFontHexVar": "ffffff",
+            "bubbleHexVar": "ffffff",
+            "iconHexVar": "ffffff"
+        },
+        {
+            "themeName": "MinUIfied - Blue and White",
+            "bgHexVar": "0000ff",
+            "selectedFontHexVar": "0000ff",
+            "deselectedFontHexVar": "ffffff",
+            "bubbleHexVar": "ffffff",
+            "iconHexVar": "ffffff"
+        }
+    ]
+}
