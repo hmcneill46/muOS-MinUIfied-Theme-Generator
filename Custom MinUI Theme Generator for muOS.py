@@ -2955,7 +2955,7 @@ def on_change(*args):
             remove_image_from_label(image_label3)
         valid_params = True
     except:
-        if get_current_image(image_label1) != None and get_current_image(image_label2) != None and get_current_image(image_label3) != None and get_current_image(image_label4) != None and get_current_image(image_label5) != None:
+        if get_current_image(image_label1) != None and get_current_image(image_label2) != None and get_current_image(image_label3):
             if valid_params:
                 redOutlineImage1 = outline_image_with_inner_gap(get_current_image(image_label1)).resize(preview_size, Image.LANCZOS)
                 redOutlineImage2 = outline_image_with_inner_gap(get_current_image(image_label2)).resize(preview_size, Image.LANCZOS)
