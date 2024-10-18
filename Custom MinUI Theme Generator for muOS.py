@@ -131,6 +131,8 @@ class Config: # TODO delete unneeded variables
                 if action:
                     action(self)  # Perform the action using the current config
 
+
+
 background_image = None
 
 # Define constants
@@ -2974,7 +2976,7 @@ def save_settings():
     config.itemsPerScreenVar = itemsPerScreenVar.get()
     config.footerHeightVar = footerHeightVar.get()
     config.contentPaddingTopVar = contentPaddingTopVar.get()
-    config.customFontSizeVar = font_size_var.get()
+    config.font_size_var = font_size_var.get()
     config.bgHexVar = bgHexVar.get()
     config.selectedFontHexVar = selectedFontHexVar.get()
     config.deselectedFontHexVar = deselectedFontHexVar.get()
@@ -3014,7 +3016,7 @@ def save_settings():
     config.use_alt_font_var = use_alt_font_var.get()
     config.use_custom_background_var = use_custom_background_var.get()
     config.use_custom_bootlogo_var = use_custom_bootlogo_var.get()
-    config.themeName = theme_name_entry.get()
+    config.theme_name_entry = theme_name_entry.get()
     config.am_ignore_theme_var = am_ignore_theme_var.get()
     config.am_ignore_cd_var = am_ignore_cd_var.get()
     config.advanced_error_var = advanced_error_var.get()
@@ -3032,7 +3034,7 @@ def load_settings():
     contentPaddingTopVar.set(config.contentPaddingTopVar)
     boxArtPaddingVar.set(config.boxArtPaddingVar)
     folderBoxArtPaddingVar.set(config.folderBoxArtPaddingVar)
-    font_size_var.set(config.customFontSizeVar)
+    font_size_var.set(config.font_size_var)
     bgHexVar.set(config.bgHexVar)
     selectedFontHexVar.set(config.selectedFontHexVar)
     deselectedFontHexVar.set(config.deselectedFontHexVar)
@@ -3071,7 +3073,7 @@ def load_settings():
     use_custom_background_var.set(config.use_custom_background_var)
     use_custom_bootlogo_var.set(config.use_custom_bootlogo_var)
     theme_name_entry.delete(0, tk.END)
-    theme_name_entry.insert(0, config.themeName)
+    theme_name_entry.insert(0, config.theme_name_entry)
     am_ignore_theme_var.set(config.am_ignore_theme_var)
     am_ignore_cd_var.set(config.am_ignore_cd_var)
     advanced_error_var.set(config.advanced_error_var)
@@ -3080,7 +3082,7 @@ def load_settings():
     show_console_name_var.set(config.show_console_name_var)
 
 
-config = Config()
+
 load_settings()
 menuNameMap = getAlternateMenuNameDict()
 
