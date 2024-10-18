@@ -1811,6 +1811,24 @@ def generate_theme(progress_bar, loading_window):
             if os.path.exists(os.path.join(theme_dir, "preview","TempPreview.png")):
                 os.remove(os.path.join(theme_dir, "preview","TempPreview.png"))
 
+def generate_themes(themes):
+    if themes:
+        for theme in themes:
+            config.apply_theme(theme)
+            loading_window = tk.Toplevel(root)
+            loading_window.title(f"Generating {config.theme_name_entry}...")
+            loading_window.geometry("300x100")
+            
+            # Create a Progressbar widget in the loading window
+            progress_bar = ttk.Progressbar(loading_window, orient="horizontal", length=280, mode="determinate")
+            progress_bar.pack(pady=20)
+
+            input_queue = queue.Queue()
+            output_queue = queue.Queue()
+
+            # Start the long-running task in a separate thread
+            generate_theme(progress_bar, loading_window)
+
 def FillTempThemeFolder(progress_bar):
 
     textPadding = int(text_padding_entry.get())
@@ -2402,7 +2420,7 @@ def update_slider_label():
 
 
 def start_theme_task():
-    on_change()
+    save_settings()
         # Create a new Toplevel window for the loading bar
     loading_window = tk.Toplevel(root)
     loading_window.title("Loading...")
@@ -2417,6 +2435,14 @@ def start_theme_task():
 
     # Start the long-running task in a separate thread
     threading.Thread(target=generate_theme, args=(progress_bar, loading_window)).start()
+
+def start_bulk_theme_task():
+    save_settings()
+        # Create a new Toplevel window for the loading bar
+    themes = config.load_premade_themes(os.path.join(script_dir,"PremadeThemes.json"))
+
+    threading.Thread(target=generate_themes, args=(themes,)).start()
+
 
 def on_resize(event):
     right_pane_width = image_frame.winfo_width()
@@ -2716,6 +2742,11 @@ grid_helper.add(tk.Button(scrollable_frame, text="Generate Theme", command=start
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Advanced Errors", variable=advanced_error_var), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Developer Preview Image Generation [Optional]", variable=developer_preview_var), colspan=3, sticky="w", next_row=True)
+
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+# Generate button
+grid_helper.add(tk.Button(scrollable_frame, text="Bulk generate themes in predetermined colours", command=start_bulk_theme_task), sticky="w", next_row=True)
 
 
 
