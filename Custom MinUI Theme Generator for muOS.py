@@ -131,7 +131,7 @@ class Config: # TODO delete unneeded variables
                 if action:
                     action(self)  # Perform the action using the current config
 
-
+config = Config()
 
 background_image = None
 
