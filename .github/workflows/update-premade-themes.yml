@@ -27,17 +27,15 @@ jobs:
 
       - name: Generate premade-themes.md
         run: |
-          echo "# Premade Themes" > premade-themes.md
-          echo "Here are the premade themes you can download and use on :" >> premade-themes.md
-          echo "" >> premade-themes.md
-          echo "| Preview | Theme Name | Download Link |" >> premade-themes.md
-          echo "|---------|------------|---------------|" >> premade-themes.md
-          
-          # Initialize variables to track theme name, preview, and download link
-          theme_name=""
-          preview_url=""
-          theme_zip=""
+          # Initialize a counter to track how many themes are in a row
+          theme_count=0
 
+          # Add header for the table (optional)
+          echo "# Premade Themes" > premade-themes.md
+          echo "Here are the premade themes you can download and use with the theme generator:" >> premade-themes.md
+          echo "" >> premade-themes.md
+
+          # Start processing each asset from the release
           while IFS= read -r line; do
             filename=$(echo $line | awk '{print $1}')
             url=$(echo $line | awk '{print $2}')
@@ -71,6 +69,12 @@ jobs:
               fi
             fi
           done < theme_assets.txt
+
+          # If the last row has fewer than 3 themes, close the row
+          if [[ $theme_count -ne 0 ]]; then
+            echo "" >> premade-themes.md
+          fi
+
 
       - name: Commit and push changes
         run: |
