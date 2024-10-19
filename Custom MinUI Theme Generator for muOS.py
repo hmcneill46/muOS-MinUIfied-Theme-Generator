@@ -22,7 +22,6 @@ import subprocess
 import shutil
 import numpy as np
 
-## TODO look into font sizes - see if it actually works
 ## TODO look into center align and left align
 ## TODO make header resizable
 
@@ -219,7 +218,7 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
             sl_text_height = sl_text_bbox[3]-sl_text_bbox[1]
             single_letter_text_y = bottom_guide_middle_y*render_factor - (sl_text_height / 2)-sl_text_bbox[1]
 
-            ##TODO convert buttons at this point to lanuage of choice 
+            ##TODO convert buttons at this point to lanuage of choice in their respective arrays
 
             combined_width = 0
             lhsTotalWidth=0
@@ -2850,7 +2849,7 @@ def on_change(*args):
                                                 transparent=False).resize(preview_size, Image.LANCZOS)
         elif config.main_menu_style_var == "Vertical":
             image1 = generatePilImageVertical(fakeprogressbar,0,
-                                            "muxlaunch", #TODO CHANGE to muxlaunch
+                                            "muxlaunch",
                                             previewItemList[0:int(config.items_per_screen_entry)],
                                             int(config.textPaddingVar),
                                             int(config.bubblePaddingVar),
