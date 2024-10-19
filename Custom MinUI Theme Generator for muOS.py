@@ -1895,6 +1895,9 @@ def FillTempThemeFolder(progress_bar, threadNumber):
     replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{muted_hex}", str(muted_hex))
 
     # More Global Settings
+    glyph_width = 20
+    glyph_to_text_pad = int(config.bubblePaddingVar)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{glyph_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2))))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{image_overlay}", str(config.include_overlay_var))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{footer_height}", config.footerHeightVar)
     content_height = deviceScreenHeight-contentPaddingTop-int(config.footerHeightVar)
@@ -1930,7 +1933,8 @@ def FillTempThemeFolder(progress_bar, threadNumber):
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{selected_font_hex}", "ff0000")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{deselected_font_hex}", "ff0000")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{bubble_alpha}", "0")
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{bubble_padding}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{bubble_padding_left}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{bubble_padding_right}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_alignment}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{footer_alpha}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_glyph_alpha}", "0")
@@ -1950,7 +1954,8 @@ def FillTempThemeFolder(progress_bar, threadNumber):
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{selected_font_hex}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{deselected_font_hex}", accent_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_alpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding}", config.bubblePaddingVar)
+    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
+    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
@@ -1971,19 +1976,19 @@ def FillTempThemeFolder(progress_bar, threadNumber):
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{selected_font_hex}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{deselected_font_hex}", accent_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_alpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_padding}", config.bubblePaddingVar)
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
-    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{footer_alpha}", "255")
-    if "Not Show GLYPHS":
-        replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{list_glyph_alpha}", "0")
-    else:
-        replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{list_glyph_alpha}", "255")
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{list_glyph_alpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{list_text_alpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{navigation_type}", "0")
     shutil.copy2(os.path.join(newSchemeDir,"muxassign.txt"),os.path.join(newSchemeDir,"muxgov.txt"))
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{footer_alpha}", "255") ## Show footer in muxassign as can't generate custom one
+    replace_in_file(os.path.join(newSchemeDir,"muxgov.txt"),"{footer_alpha}", "0") ## Don't in muxassign as can generate custom one
+
 
 
     # muxtheme Specific settings
@@ -1995,7 +2000,8 @@ def FillTempThemeFolder(progress_bar, threadNumber):
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{selected_font_hex}", base_hex)
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{deselected_font_hex}", accent_hex)
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_alpha}", "255")
-        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding}", config.bubblePaddingVar)
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
         content_alignment_map = {"Left":0,"Centre":1,"Right":2}
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
@@ -2016,7 +2022,8 @@ def FillTempThemeFolder(progress_bar, threadNumber):
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{selected_font_hex}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{deselected_font_hex}", accent_hex)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_alpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding}", config.bubblePaddingVar)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
@@ -2194,6 +2201,10 @@ def FillTempThemeFolder(progress_bar, threadNumber):
     visualbuttonoverlay_muxnetscan = generateMenuHelperGuides([["X", "RESCAN"],["B", "BACK"],["A", "USE"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetscan)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxnetscan.png"), format='PNG')
+
+    visualbuttonoverlay_muxgov = generateMenuHelperGuides([["Y", "RECURSIVE"],["X", "DIRECTORY"],["A", "INDIVIDUAL"],["B", "BACK"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxgov)
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxgov.png"), format='PNG')
 
     
     if False: ## Testing converting font in generator
