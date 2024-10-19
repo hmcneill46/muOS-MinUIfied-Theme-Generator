@@ -1941,7 +1941,7 @@ def FillTempThemeFolder(progress_bar, threadNumber):
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{navigation_type}", "4")
         else:
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{navigation_type}", "2")
-    
+
     # muxnetwork Specific settings
     shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxnetwork.txt"))
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_height}",str(int((content_height/int(config.itemsPerScreenVar))*(int(config.itemsPerScreenVar)-2))))
@@ -1963,8 +1963,31 @@ def FillTempThemeFolder(progress_bar, threadNumber):
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_text_alpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{navigation_type}", "0")
 
+    # muxassign, muxgov Specific settings -  Content options, System govenor
+    shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxassign.txt"))
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_height}",str(content_height))
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_item_count}", str(config.itemsPerScreenVar))
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{background_alpha}", "0")
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{selected_font_hex}", base_hex)
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{deselected_font_hex}", accent_hex)
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_alpha}", "255")
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_padding}", config.bubblePaddingVar)
+    content_alignment_map = {"Left":0,"Centre":1,"Right":2}
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{footer_alpha}", "255")
+    if "Not Show GLYPHS":
+        replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{list_glyph_alpha}", "0")
+    else:
+        replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{list_glyph_alpha}", "255")
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{list_text_alpha}", "255")
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{navigation_type}", "0")
+    shutil.copy2(os.path.join(newSchemeDir,"muxassign.txt"),os.path.join(newSchemeDir,"muxgov.txt"))
+
+
     # muxtheme Specific settings
-    if False: # TODO Look into this later to see if muOS added support for ...
+    if False: # TODO Look into this later to see if muOS added support for "..."
         shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxtheme.txt"))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_height}",str(content_height))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_item_count}", str(config.itemsPerScreenVar))
@@ -2067,9 +2090,14 @@ def FillTempThemeFolder(progress_bar, threadNumber):
     for item in muxinfo_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxinfo",f"{item}.png"), format='PNG')
 
+    muxoption_items = ["core","governor"]
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxoption"), exist_ok=True)
+    for item in muxoption_items:
+        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxoption",f"{item}.png"), format='PNG')
+
 
     
-    visualbuttonoverlay_A_SELECT = menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_A_SELECT = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
 
     muxlaunch_items = ["apps","config","explore","favourite","history","info","reboot","shutdown"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch"), exist_ok=True)
@@ -2077,7 +2105,7 @@ def FillTempThemeFolder(progress_bar, threadNumber):
         visualbuttonoverlay_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch",f"{item}.png"), format='PNG')
     
 
-    visualbuttonoverlay_B_BACK = menuHelperGuides = generateMenuHelperGuides([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_B_BACK = generateMenuHelperGuides([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
 
     muxtweakgen_items = ["hidden","bgm","sound","startup","colour","brightness","hdmi","power","shutdown","battery","sleep","interface","storage","advanced"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakgen"), exist_ok=True)
@@ -2114,6 +2142,11 @@ def FillTempThemeFolder(progress_bar, threadNumber):
     for item in muxrtc_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxrtc",f"{item}.png"), format='PNG')
     
+    muxsysinfo_items = ["version","device","kernel","uptime","cpu","speed","governor","memory","temp","service","capacity","voltage"]
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxsysinfo"), exist_ok=True)
+    for item in muxsysinfo_items:
+        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxsysinfo",f"{item}.png"), format='PNG')
+    
     #TODO REMOVE THIS AS IT DOESNT ALLOW BACKGROUND REPLACEMENT (When Alternative is avaliable)
     #TODO wifi would be cool to have footers for once its possible
 
@@ -2125,41 +2158,42 @@ def FillTempThemeFolder(progress_bar, threadNumber):
     
 
     visualbuttonoverlay_muxapp = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
-    #altered_background = background.copy()
-    #altered_background.paste(visualbuttonoverlay_muxapp, (0, 0), visualbuttonoverlay_muxapp)  
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxapp)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxapp.png"), format='PNG')
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtask.png"), format='PNG')
 
     visualbuttonoverlay_muxplore = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
-    #altered_background = background.copy()
-    #altered_background.paste(visualbuttonoverlay_muxplore, (0, 0), visualbuttonoverlay_muxplore)  
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxplore)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxplore.png"), format='PNG')
 
     visualbuttonoverlay_muxfavourite = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
-    #altered_background = background.copy()
-    #altered_background.paste(visualbuttonoverlay_muxfavourite, (0, 0), visualbuttonoverlay_muxfavourite)  
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxfavourite)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxfavourite.png"), format='PNG')
 
     visualbuttonoverlay_muxhistory = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
-    #altered_background = background.copy()
-    #altered_background.paste(visualbuttonoverlay_muxhistory, (0, 0), visualbuttonoverlay_muxhistory)  
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxhistory)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxhistory.png"), format='PNG')
 
     visualbuttonoverlay_muxtimezone = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
-    #altered_background = background.copy()
-    #altered_background.paste(visualbuttonoverlay_muxtimezone, (0, 0), visualbuttonoverlay_muxtimezone)  
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxtimezone)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtimezone.png"), format='PNG')
 
     visualbuttonoverlay_muxtheme_muxlanguage = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
-    #altered_background = background.copy()
-    #altered_background.paste(visualbuttonoverlay_muxtheme_muxlanguage, (0, 0), visualbuttonoverlay_muxtheme_muxlanguage)  
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxtheme_muxlanguage)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtheme.png"), format='PNG')
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxlanguage.png"), format='PNG')
+
+    visualbuttonoverlay_muxarchive = generateMenuHelperGuides([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxarchive)
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxarchive.png"), format='PNG')
+
+    visualbuttonoverlay_muxnetprofile = generateMenuHelperGuides([["Y", "REMOVE"],["X", "SAVE"],["B", "BACK"],["A", "LOAD"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetprofile)
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxnetprofile.png"), format='PNG')
+
+    visualbuttonoverlay_muxnetscan = generateMenuHelperGuides([["X", "RESCAN"],["B", "BACK"],["A", "USE"]],selected_font_path,bubble_hex,render_factor,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetscan)
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxnetscan.png"), format='PNG')
 
     
     if False: ## Testing converting font in generator
