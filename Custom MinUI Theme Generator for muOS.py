@@ -2663,15 +2663,23 @@ grid_helper.add(tk.Label(scrollable_frame, text="Should be '[root]:\\MUOS\\theme
 
 # Generate button
 grid_helper.add(tk.Button(scrollable_frame, text="Generate Theme", command=start_theme_task), sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Advanced Errors", variable=advanced_error_var), colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Developer Preview Image Generation [Optional]", variable=developer_preview_var), colspan=3, sticky="w", next_row=True)
-
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+
+grid_helper.add(tk.Label(scrollable_frame, text="Developer Options", font=subtitle_font), colspan=2, sticky="w", next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Developer Preview Image Generation [Optional]", variable=developer_preview_var), colspan=3, sticky="w", next_row=True)
 # Generate button
 grid_helper.add(tk.Button(scrollable_frame, text="Bulk generate themes in predetermined colours", command=start_bulk_theme_task), sticky="w", next_row=True)
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Advanced Errors", variable=advanced_error_var), colspan=3, sticky="w", next_row=True)
 
 
 
