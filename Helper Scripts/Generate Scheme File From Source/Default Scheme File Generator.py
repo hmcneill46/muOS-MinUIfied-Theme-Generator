@@ -19,7 +19,7 @@ def download_theme_file(url, local_filename):
 def extract_configurations(file_path):
     """Extract configurations from the theme.c file."""
     # Regular expression to match get_ini_hex, get_ini_int, and get_ini_string patterns
-    ini_pattern = re.compile(r'get_ini_(hex|int|string)\(.*?,\s*"(\w+)",\s*"(\w+)"(?:,|\s*\)).*?(?:,\s*(.*?)[\),])?')
+    ini_pattern = re.compile(r'get_ini_(hex|int|string)\(\s*(\w+),\s*"(\w+)",\s*"(\w+)"(?:,\s*(\d+))?\s*\)')
     
     # Dictionary to store sections and their keys/values
     config = defaultdict(dict)
@@ -28,7 +28,7 @@ def extract_configurations(file_path):
         for line in file:
             match = ini_pattern.search(line)
             if match:
-                value_type, section, key, default_value = match.groups()
+                value_type, muos_theme, section, key, default_value = match.groups()
 
                 # Adjust the default value based on the type
                 if value_type == "hex":
