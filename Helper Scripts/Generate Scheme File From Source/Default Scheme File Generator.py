@@ -31,6 +31,8 @@ def extract_configurations(file_path):
                 value_type, muos_theme, section, key, default_value = match.groups()
 
                 # Adjust the default value based on the type
+                if muos_theme != "muos_theme":
+                    print(f"Weird {muos_theme} != muos_theme")
                 if value_type == "hex":
                     config[section][key] = "YourHexHere"
                 elif value_type == "int":
