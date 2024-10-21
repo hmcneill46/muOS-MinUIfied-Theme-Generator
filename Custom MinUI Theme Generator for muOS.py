@@ -68,6 +68,7 @@ class Config: # TODO delete unneeded variables
         self.iconHexVar = "ffffff"
         self.icon_hex_entry = "ffffff"
         self.include_overlay_var = False
+        self.show_glyphs_var = False
         self.alternate_menu_names_var = False
         self.remove_right_menu_guides_var = False
         self.remove_left_menu_guides_var = False
@@ -1953,17 +1954,18 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{selected_font_hex}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{deselected_font_hex}", accent_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_alpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{footer_alpha}", "255")
-    if "Not Show GLYPHS":
-        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "0")
-    else:
+    if config.show_glyphs_var:
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
         replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "255")
+    else:
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "0")
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_text_alpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{navigation_type}", "0")
 
@@ -1975,13 +1977,15 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{selected_font_hex}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{deselected_font_hex}", accent_hex)
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_alpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
-    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{list_glyph_alpha}", "255")
+
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad))) # for glyph support
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{list_glyph_alpha}", "255") # for glyph support
+
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{list_text_alpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{navigation_type}", "0")
     shutil.copy2(os.path.join(newSchemeDir,"muxassign.txt"),os.path.join(newSchemeDir,"muxgov.txt"))
@@ -1999,7 +2003,6 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{selected_font_hex}", base_hex)
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{deselected_font_hex}", accent_hex)
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_alpha}", "255")
-        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
         content_alignment_map = {"Left":0,"Centre":1,"Right":2}
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
@@ -2007,10 +2010,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         previewArtWidth = 288
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_width}", str(deviceScreenWidth-10-previewArtWidth-5-(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{footer_alpha}", "0")
-        if "Not Show GLYPHS":
-            replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{list_glyph_alpha}", "0")
-        else:
+        if config.show_glyphs_var:
+            replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
             replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{list_glyph_alpha}", "255")
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
+            replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{list_glyph_alpha}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{list_text_alpha}", "255")
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{navigation_type}", "0")
 
@@ -2021,17 +2026,18 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{selected_font_hex}", base_hex)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{deselected_font_hex}", accent_hex)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_alpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_width}", str(deviceScreenWidth-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{footer_alpha}", "0")
-    if "Not Show GLYPHS":
-        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{list_glyph_alpha}", "0")
-    else:
+    if config.show_glyphs_var:
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
         replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{list_glyph_alpha}", "255")
+    else:
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{list_glyph_alpha}", "0")
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{list_text_alpha}", "255")
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{navigation_type}", "0")
 
@@ -2453,6 +2459,7 @@ show_file_counter_var = tk.IntVar()
 show_console_name_var = tk.IntVar()
 show_hidden_files_var = tk.IntVar()
 include_overlay_var = tk.IntVar()
+show_glyphs_var = tk.IntVar()
 alternate_menu_names_var = tk.IntVar()
 remove_right_menu_guides_var = tk.IntVar()
 remove_left_menu_guides_var = tk.IntVar()
@@ -2628,6 +2635,9 @@ grid_helper.add(tk.Label(scrollable_frame, text="Theme Text Alignment - Not sepe
 themeAlignmentOptions = ["Global", "Left", "Centre", "Right"]
 theme_alignment_option_menu = tk.OptionMenu(scrollable_frame, theme_alignment_var, *themeAlignmentOptions)
 grid_helper.add(theme_alignment_option_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Glyphs", variable=show_glyphs_var), sticky="w",next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Will not show up in preview yet",fg="#00f"), sticky="w",next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Include Overlay", variable=include_overlay_var), sticky="w")
 
@@ -3008,6 +3018,7 @@ def save_settings(config: Config):
     config.iconHexVar = iconHexVar.get()
     config.icon_hex_entry = icon_hex_entry.get()
     config.include_overlay_var = include_overlay_var.get()
+    config.show_glyphs_var = show_glyphs_var.get()
     config.alternate_menu_names_var = alternate_menu_names_var.get()
     config.remove_right_menu_guides_var = remove_right_menu_guides_var.get()
     config.remove_left_menu_guides_var = remove_left_menu_guides_var.get()
@@ -3092,6 +3103,7 @@ def load_settings(config: Config):
     bubbleHexVar.set(config.bubbleHexVar)
     iconHexVar.set(config.iconHexVar)
     include_overlay_var.set(config.include_overlay_var)
+    show_glyphs_var.set(config.show_glyphs_var)
     alternate_menu_names_var.set(config.alternate_menu_names_var)
     remove_right_menu_guides_var.set(config.remove_right_menu_guides_var)
     remove_left_menu_guides_var.set(config.remove_left_menu_guides_var)
@@ -3156,6 +3168,7 @@ iconHexVar.trace_add("write", lambda *args: save_settings(global_config))
 show_file_counter_var.trace_add("write", lambda *args: save_settings(global_config))
 show_console_name_var.trace_add("write", lambda *args: save_settings(global_config))
 include_overlay_var.trace_add("write", lambda *args: save_settings(global_config))
+show_glyphs_var.trace_add("write", lambda *args: save_settings(global_config))
 alternate_menu_names_var.trace_add("write", lambda *args: save_settings(global_config))
 remove_right_menu_guides_var.trace_add("write", lambda *args: save_settings(global_config))
 remove_left_menu_guides_var.trace_add("write", lambda *args: save_settings(global_config))
