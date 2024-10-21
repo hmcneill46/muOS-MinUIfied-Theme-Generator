@@ -40,7 +40,7 @@ apt install python3-pil.imagetk python3-pil python3-bidi python3-tk python3-nump
 
 
 ## Getting Started
- - To run the program from the prebuilt binaries, go to the latest release and download the program from the assets. [Windows Only]
+ - To run the program from the prebuilt binaries, go to the [latest release](https://github.com/hmcneill46/muOS-MinUIfied-Theme-Generator/releases/latest) and download the program from the assets. [Windows Only]
  - To run the program from source you must download this repo as a zip, unzip it, (or clone it), and then run the .py file with python
 
 # Configuration
