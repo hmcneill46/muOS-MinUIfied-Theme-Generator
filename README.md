@@ -1,9 +1,15 @@
 # MinUIfied Theme Generator for muOS Systems
 This script helps you create and customize themes for your muOS system, creating a consistent look and feel across your system. This tool should work on Windows, MacOS and Linux.
 
-![Themes Example Image](https://github.com/user-attachments/assets/68cfb45d-b260-4fa0-bab1-b13a6d7d282a)
+<div style="display: flex; justify-content: space-between; gap: 0%; width: 100%;">
+  <img src="https://github.com/user-attachments/assets/68cfb45d-b260-4fa0-bab1-b13a6d7d282a" alt="Themes Example Image" style="width: 61%; object-fit: contain;"/>
+  <img src="https://github.com/user-attachments/assets/e3c42ffc-cba3-4898-bc8e-86fe90e24204" alt="Program Example Image" style="width: 38%; object-fit: contain;"/>
+</div>
 
-![Program Example Image](https://github.com/user-attachments/assets/e3c42ffc-cba3-4898-bc8e-86fe90e24204)
+
+
+
+
 ## If you just want a Pre-made Theme and don't want to customise it with the script:
 [Follow this link](https://hmcneill46.github.io/muOS-MinUIfied-Theme-Generator/Theme-Gallery/)
 
@@ -40,7 +46,7 @@ apt install python3-pil.imagetk python3-pil python3-bidi python3-tk python3-nump
 
 
 ## Getting Started
- - To run the program from the prebuilt binaries, go to the latest release and download the program from the assets. [Windows Only]
+ - To run the program from the prebuilt binaries, go to the [latest release](https://github.com/hmcneill46/muOS-MinUIfied-Theme-Generator/releases/latest) and download the program from the assets. [Windows Only]
  - To run the program from source you must download this repo as a zip, unzip it, (or clone it), and then run the .py file with python
 
 # Configuration
