@@ -64,26 +64,34 @@ jobs:
 
             # Process theme zip file (.zip)
             if [[ "$filename" == *".zip" ]]; then
-              theme_zip="$url"
-              
-              # Check if this is the first item in the row
-              if [[ $theme_count -eq 0 ]]; then
-                # Start a new row
-                echo -n "| " >> Theme-Gallery/index.md
-              fi
-
-              # Add theme preview, name, and download count in the current cell
-              echo -n "![${theme_name}](${preview_url}) <br> [${theme_name}](${theme_zip}) <br> *${downloads} downloads* | " >> Theme-Gallery/index.md
-
-              # Increment the theme count and check if we need to start a new row
-              theme_count=$((theme_count + 1))
-
-              if [[ $theme_count -eq 3 ]]; then
-                # If there are three themes in the row, close the row and reset the counter
-                echo "" >> Theme-Gallery/index.md
-                theme_count=0
-              fi
+            theme_zip="$url"
+            
+            # Check if this is the first item in the row
+            if [[ $theme_count -eq 0 ]]; then
+              # Start a new row
+              echo -n "| " >> Theme-Gallery/index.md
             fi
+
+            # Set the appropriate text for "download" vs "downloads"
+            if [[ $downloads -eq 1 ]]; then
+              download_text="1 download"
+            else
+              download_text="${downloads} downloads"
+            fi
+
+            # Add theme preview, name, and download count in the current cell
+            echo -n "![${theme_name}](${preview_url}) <br> [${theme_name}](${theme_zip}) <br> <sub><small>${download_text}</small></sub> | " >> Theme-Gallery/index.md
+
+            # Increment the theme count and check if we need to start a new row
+            theme_count=$((theme_count + 1))
+
+            if [[ $theme_count -eq 3 ]]; then
+              # If there are three themes in the row, close the row and reset the counter
+              echo "" >> Theme-Gallery/index.md
+              theme_count=0
+            fi
+          fi
+
           done < theme_assets.txt
 
           # If the last row has fewer than 3 themes, close the row
