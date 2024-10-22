@@ -23,7 +23,7 @@ jobs:
         run: |
           TAG="themes-muos-v2410.1"
           response=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}")
-          echo "${response}" | jq -r '.assets[] | "\(.name) \(.browser_download_url)"' > theme_assets.txt
+          echo "${response}" | jq -r '.assets[] | "\(.name) \(.browser_download_url) \(.download_count)"' > theme_assets.txt
 
       - name: Generate Theme-Gallery/index.md
         run: |
@@ -54,6 +54,7 @@ jobs:
           while IFS= read -r line; do
             filename=$(echo $line | awk '{print $1}')
             url=$(echo $line | awk '{print $2}')
+            downloads=$(echo $line | awk '{print $3}')
             
             # Process preview image (.png)
             if [[ "$filename" == *".png" ]]; then
@@ -71,8 +72,8 @@ jobs:
                 echo -n "| " >> Theme-Gallery/index.md
               fi
 
-              # Add theme preview and download link in the current cell
-              echo -n "![${theme_name}](${preview_url}) <br> [Download](${theme_zip}) | " >> Theme-Gallery/index.md
+              # Add theme preview, name, and download count in the current cell
+              echo -n "![${theme_name}](${preview_url}) <br> ${theme_name} - [${downloads} downloads](${theme_zip}) | " >> Theme-Gallery/index.md
 
               # Increment the theme count and check if we need to start a new row
               theme_count=$((theme_count + 1))
