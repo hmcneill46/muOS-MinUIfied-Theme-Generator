@@ -80,7 +80,7 @@ jobs:
             fi
 
             # Add theme preview, name, and download count in the current cell
-            echo -n "![${theme_name}](${preview_url}) <br> [${theme_name}](${theme_zip}) <br> ${download_text} | " >> Theme-Gallery/index.md
+            echo -n "![${theme_name}](${preview_url}) <br> [${theme_name}](${theme_zip})| " >> Theme-Gallery/index.md
 
             # Increment the theme count and check if we need to start a new row
             theme_count=$((theme_count + 1))
