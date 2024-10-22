@@ -2622,7 +2622,6 @@ main_menu_style_option_menu = tk.OptionMenu(scrollable_frame, main_menu_style_va
 grid_helper.add(main_menu_style_option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
-OLDoptions = ["muOS 2405 BEANS", "muOS 2405.1 REFRIED BEANS", "muOS 2405.2 BAKED BEANS", "muOS 2405.3 COOL BEANS"]
 options = ["muOS 2410.1 Banana"]
 option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
