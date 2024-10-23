@@ -167,7 +167,7 @@ def change_logo_color(input_path, hex_color):
     
     return result_image
 
-def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_factor,config:Config,lhsButtons=[["POWER","SLEEP"]]):
+def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_factor,config:Config, language,lhsButtons=[["POWER","SLEEP"]]):
     image = Image.new("RGBA", (deviceScreenWidth*render_factor, deviceScreenHeight*render_factor), (255, 255, 255, 0))
     draw = ImageDraw.Draw(image)
     if not( config.remove_left_menu_guides_var and config.remove_right_menu_guides_var):
@@ -216,7 +216,27 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
             sl_text_height = sl_text_bbox[3]-sl_text_bbox[1]
             single_letter_text_y = bottom_guide_middle_y*render_factor - (sl_text_height / 2)-sl_text_bbox[1]
 
-            ##TODO convert buttons at this point to lanuage of choice in their respective arrays
+            # Loop through rhsButtons to perform text replacement
+            for pairIndex, pair in enumerate(rhsButtons):
+                if config.generate_all_languages_var and language.get('content'):
+
+                    # Create the capitalized version of the button text for dictionary lookup
+                    capitalized_key = rhsButtons[pairIndex][1].capitalize()
+
+                    # First, attempt lookup in 'generic'
+                    rhsButtons[pairIndex][1] = bidi_get_display(
+                        language['content']['generic'].get(capitalized_key, rhsButtons[pairIndex][1])
+                    )
+            for pairIndex, pair in enumerate(lhsButtons):
+                if config.generate_all_languages_var and language.get('content'):
+
+                    # Create the capitalized version of the button text for dictionary lookup
+                    capitalized_key = lhsButtons[pairIndex][1].capitalize()
+
+                    # First, attempt lookup in 'generic'
+                    lhsButtons[pairIndex][1] = bidi_get_display(
+                        language['content']['muxtweakadv'].get(capitalized_key, lhsButtons[pairIndex][1])
+                    )
 
             combined_width = 0
             lhsTotalWidth=0
@@ -355,17 +375,17 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
 
     if muOSSystemName == "muxlaunch":
-        menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo":
-        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxapp":
-        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxplore":
-        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxfavourite":
-        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxhistory":
-        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]])
 
     if config.show_file_counter_var == 1:
         in_bubble_font_size = 19*render_factor
@@ -406,7 +426,6 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         noLettersCut = 0
         text_width = float('inf')
         if config.generate_all_languages_var and language['content'] != None and muOSSystemName.startswith("mux"):
-            print(f"language['content'][muOSSystemName] = {language['content'][muOSSystemName]}")
             text = bidi_get_display(language['content'][muOSSystemName].get(item[0][:],item[0][:]))
         else:
             text = item[0][:]
@@ -663,7 +682,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
             selected_font_path = config.alt_font_path
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
-    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]])
     
     
 
@@ -998,7 +1017,7 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
             selected_font_path = config.alt_font_path
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
-    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]])
     
 
     font_size = min((deviceScreenHeight*24)/480,(deviceScreenWidth*24)/640) * render_factor  ## CHANGE for adjustment
@@ -1763,7 +1782,7 @@ def generate_theme(progress_bar, loading_window, threadNumber,config: Config, la
         
 
         delete_folder(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}{language["name"]}"))
-        if threadNumber == -1:
+        if threadNumber == -1 and language['content'] == None:
             messagebox.showinfo("Success", "Theme generated successfully.")
         loading_window.destroy()
         barrier.wait()
@@ -2082,7 +2101,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config, language):
 
     #TODO If implimented it would be great to only set these once as a default.png type thing, and then make it work in every menu
     
-    visualbuttonoverlay_B_BACK_A_SELECT = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_B_BACK_A_SELECT = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     
     muxconfig_items = ["clock","language","general","network","service","theme"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","static","muxconfig"), exist_ok=True)
@@ -2101,7 +2120,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config, language):
 
 
     
-    visualbuttonoverlay_A_SELECT = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_A_SELECT = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
 
     muxlaunch_items = ["apps","config","explore","favourite","history","info","reboot","shutdown"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","static","muxlaunch"), exist_ok=True)
@@ -2109,7 +2128,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config, language):
         visualbuttonoverlay_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","static","muxlaunch",f"{item}.png"), format='PNG')
     
 
-    visualbuttonoverlay_B_BACK = generateMenuHelperGuides([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_B_BACK = generateMenuHelperGuides([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
 
     muxtweakgen_items = ["hidden","bgm","sound","startup","colour","brightness","hdmi","power","shutdown","battery","sleep","interface","storage","advanced"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","static","muxtweakgen"), exist_ok=True)
@@ -2161,45 +2180,45 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config, language):
     background = background.resize((deviceScreenWidth,deviceScreenHeight), Image.LANCZOS)
     
 
-    visualbuttonoverlay_muxapp = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxapp = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxapp)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxapp.png"), format='PNG')
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxtask.png"), format='PNG')
 
-    visualbuttonoverlay_muxplore = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxplore = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxplore)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxplore.png"), format='PNG')
 
-    visualbuttonoverlay_muxfavourite = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxfavourite = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxfavourite)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxfavourite.png"), format='PNG')
 
-    visualbuttonoverlay_muxhistory = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxhistory = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxhistory)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxhistory.png"), format='PNG')
 
-    visualbuttonoverlay_muxtimezone = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxtimezone = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxtimezone)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxtimezone.png"), format='PNG')
 
-    visualbuttonoverlay_muxtheme_muxlanguage = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxtheme_muxlanguage = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxtheme_muxlanguage)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxtheme.png"), format='PNG')
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxlanguage.png"), format='PNG')
 
-    visualbuttonoverlay_muxarchive = generateMenuHelperGuides([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxarchive = generateMenuHelperGuides([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxarchive)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxarchive.png"), format='PNG')
 
-    visualbuttonoverlay_muxnetprofile = generateMenuHelperGuides([["Y", "REMOVE"],["X", "SAVE"],["B", "BACK"],["A", "LOAD"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxnetprofile = generateMenuHelperGuides([["Y", "REMOVE"],["X", "SAVE"],["B", "BACK"],["A", "LOAD"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetprofile)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxnetprofile.png"), format='PNG')
 
-    visualbuttonoverlay_muxnetscan = generateMenuHelperGuides([["X", "RESCAN"],["B", "BACK"],["A", "USE"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxnetscan = generateMenuHelperGuides([["X", "RESCAN"],["B", "BACK"],["A", "USE"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetscan)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxnetscan.png"), format='PNG')
 
-    visualbuttonoverlay_muxgov = generateMenuHelperGuides([["Y", "RECURSIVE"],["X", "DIRECTORY"],["A", "INDIVIDUAL"],["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
+    visualbuttonoverlay_muxgov = generateMenuHelperGuides([["Y", "RECURSIVE"],["X", "DIRECTORY"],["A", "INDIVIDUAL"],["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config, language,lhsButtons=[["POWER","SLEEP"]]).resize((deviceScreenWidth, deviceScreenHeight), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxgov)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}{language["name"]}","image","wall","muxgov.png"), format='PNG')
 
@@ -2350,31 +2369,54 @@ def get_language_text_replacement(BASE_URL):
     
     return language_text_replacement
 
+def load_local_backup(backup_file_path):
+    """Load language text replacements from a local backup file if it exists."""
+    try:
+        with open(backup_file_path, 'r') as file:
+            return json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+def save_local_backup(backup_file_path, data):
+    """Save language text replacements to a local backup file."""
+    try:
+        with open(backup_file_path, 'w') as file:
+            json.dump(data, file)
+    except IOError as e:
+        raise RuntimeError(f"Failed to save local backup to {backup_file_path}") from e
+
+
 
 def start_theme_task():
     save_settings(global_config)
     barrier = threading.Barrier(2)
-        # Create a new Toplevel window for the loading bar
 
     # GitHub API base URL for the repository
     REPO_OWNER = "MustardOS"
     REPO_NAME = "internal"
     BRANCH = "main"
     FOLDER_PATH = "init/MUOS/language"
-
-    # GitHub API URL for listing contents of the 'language' folder
     BASE_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{FOLDER_PATH}?ref={BRANCH}"
 
+    # Path to the local backup file
+    backup_file_name = f"{global_config.version_var}.json"
+    backup_file_path = os.path.join(script_dir,"Language-Text-Replacement-Files", backup_file_name)  # Save in the current working directory
+
     if global_config.generate_all_languages_var:
-        language_text_replacements = get_language_text_replacement(BASE_URL)
+        # Try to load from local backup first
+        language_text_replacements = load_local_backup(backup_file_path)
+        
+        if language_text_replacements is None:
+            # If no local backup exists, fetch from GitHub
+            language_text_replacements = get_language_text_replacement(BASE_URL)
+            # Save the fetched data as a local backup
+            os.makedirs(os.path.join(script_dir,"Language-Text-Replacement-Files"),exist_ok=True)
+            save_local_backup(backup_file_path, language_text_replacements)
     else:
-        language_text_replacements = [{"name":"Default", "content":None}]
-    
+        language_text_replacements = [{"name": "Default", "content": None}]
 
     for language in language_text_replacements:
         # Start the long-running task in a separate thread
-        
-
         loading_window = tk.Toplevel(root)
         loading_window.title("Loading...")
         loading_window.geometry("300x100")
@@ -2385,11 +2427,8 @@ def start_theme_task():
 
         input_queue = queue.Queue()
         output_queue = queue.Queue()
-        print(f"language = {language}")
-        #generate_theme(progress_bar, loading_window,-1,global_config,language,barrier)
 
-        threading.Thread(target=generate_theme, args=(progress_bar, loading_window,-1,global_config,language,barrier)).start()
-
+        threading.Thread(target=generate_theme, args=(progress_bar, loading_window, -1, global_config, language, barrier)).start()
 
 def start_bulk_theme_task():
     save_settings(global_config)
