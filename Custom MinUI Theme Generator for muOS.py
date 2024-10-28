@@ -2092,7 +2092,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
                                                config).resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
     rebootimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","reboot.png"), format='PNG')
 
-    defaultimage = generatePilImageDefaultScreen(config.bgHexVar,render_factor).resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    defaultimage = generatePilImageDefaultScreen(config.bgHexVar,render_factor,config).resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
     defaultimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","default.png"), format='PNG')
 
     #TODO If implimented it would be great to only set these once as a default.png type thing, and then make it work in every menu
@@ -3015,6 +3015,8 @@ def on_change(*args):
                 if global_config.main_menu_style_var != "Vertical":
                     update_image_label(image_label3, redOutlineImage3)
                 valid_params = False
+        else:
+            raise
 
 
 def save_settings(config: Config):
