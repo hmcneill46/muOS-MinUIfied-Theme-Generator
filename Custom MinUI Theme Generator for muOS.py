@@ -51,7 +51,7 @@ class Config: # TODO delete unneeded variables
         self.rectangle_padding_entry = 20
         self.itemsPerScreenVar = 7
         self.items_per_screen_entry = 7
-        self.individualItemHeightVar = 51
+        self.approxFooterHeightVar = 100
         self.contentPaddingTopVar = 44
         self.headerHeightVar = 44
         self.content_padding_top_entry = 44
@@ -181,7 +181,9 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
                 from_sides_padding=5
             from_bottom_padding = int(config.VBG_Vertical_Padding_entry)+iterations
 
-            footerHeight = int(config.deviceScreenHeightVar)-(int(config.individualItemHeightVar)*int(config.itemsPerScreenVar))-int(config.contentPaddingTopVar)
+            individualItemHeight = round((int(config.deviceScreenHeightVar)-int(config.approxFooterHeightVar)-int(config.contentPaddingTopVar))/int(config.itemsPerScreenVar))
+
+            footerHeight = int(config.deviceScreenHeightVar)-(individualItemHeight*int(config.itemsPerScreenVar))-int(config.contentPaddingTopVar)
 
             menu_helper_guide_height = footerHeight-(from_bottom_padding*2) # Change this if overlayed
 
@@ -377,6 +379,8 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     
 
     textAlignment = None
+    individualItemHeight = round((int(config.deviceScreenHeightVar)-int(config.approxFooterHeightVar)-int(config.contentPaddingTopVar))/int(config.itemsPerScreenVar))
+
     if muOSSystemName.startswith("mux"):
         if config.theme_alignment_var == "Global":
             textAlignment = config.global_alignment_var
@@ -391,11 +395,12 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     try:
         font_size = int(config.custom_font_size_entry) * render_factor
     except:
-        font_size = int(int(config.individualItemHeightVar) * render_factor * textMF)
+        font_size = int(individualItemHeight * render_factor * textMF)
     
     font = ImageFont.truetype(selected_font_path, font_size)
+    
 
-    availableHeight = ((int(config.individualItemHeightVar)*int(config.itemsPerScreenVar)) * render_factor) / ItemsPerScreen
+    availableHeight = ((individualItemHeight*int(config.itemsPerScreenVar)) * render_factor) / ItemsPerScreen
 
     smallestValidText_bbox = font.getbbox("_...")
     smallestValidTest_width = smallestValidText_bbox[2] - smallestValidText_bbox[0]
@@ -1886,7 +1891,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     default_radius = "10"
     header_height = str(config.headerHeightVar)
     counter_padding_top = str(config.contentPaddingTopVar)
-    footerHeight = int(config.deviceScreenHeightVar)-(int(config.individualItemHeightVar)*int(config.itemsPerScreenVar))-int(header_height)
+    individualItemHeight = round((int(config.deviceScreenHeightVar)-int(config.approxFooterHeightVar)-int(config.contentPaddingTopVar))/int(config.itemsPerScreenVar))
+    footerHeight = int(config.deviceScreenHeightVar)-(individualItemHeight*int(config.itemsPerScreenVar))-int(header_height)
 
     shutil.copy2(os.path.join(internal_files_dir,"Template Scheme","template.txt"),os.path.join(newSchemeDir,"default.txt"))
 
@@ -1906,7 +1912,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{header_text_alpha}", "255")
     else:
         replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{header_text_alpha}", "0")
-    content_height = int(config.individualItemHeightVar)*int(config.itemsPerScreenVar)
+    content_height = individualItemHeight*int(config.itemsPerScreenVar)
     
     counter_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{counter_alignment}", str(counter_alignment_map[counter_alignment]))
@@ -2549,7 +2555,7 @@ VBG_Horizontal_Padding_var = tk.StringVar()
 VBG_Vertical_Padding_var = tk.StringVar()
 bubblePaddingVar = tk.StringVar()
 itemsPerScreenVar = tk.StringVar()
-individualItemHeightVar = tk.StringVar()
+approxFooterHeightVar = tk.StringVar()
 contentPaddingTopVar = tk.StringVar()
 headerHeightVar = tk.StringVar()
 boxArtPaddingVar = tk.StringVar()
@@ -2580,8 +2586,8 @@ items_per_screen_entry = tk.Entry(scrollable_frame, width=50, textvariable=items
 grid_helper.add(items_per_screen_entry, next_row=True)
 
 # Option for individualItemHeight
-grid_helper.add(tk.Label(scrollable_frame, text="individual Item Height:"), sticky="w")
-individual_item_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=individualItemHeightVar)
+grid_helper.add(tk.Label(scrollable_frame, text="Approximate Footer Height:"), sticky="w")
+individual_item_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=approxFooterHeightVar)
 grid_helper.add(individual_item_height_entry, next_row=True)
 
 # Option for ItemsPerScreen
@@ -3029,7 +3035,7 @@ def save_settings(config: Config):
     config.bubblePaddingVar = bubblePaddingVar.get()
     config.rectangle_padding_entry = rectangle_padding_entry.get()
     config.itemsPerScreenVar = itemsPerScreenVar.get()
-    config.individualItemHeightVar = individualItemHeightVar.get()
+    config.approxFooterHeightVar = approxFooterHeightVar.get()
     config.items_per_screen_entry = items_per_screen_entry.get()
     config.content_padding_top_entry = content_padding_top_entry.get()
     config.contentPaddingTopVar = contentPaddingTopVar.get()
@@ -3119,7 +3125,7 @@ def load_settings(config: Config):
     content_padding_top_entry.insert(0, config.content_padding_top_entry)
     bubblePaddingVar.set(config.bubblePaddingVar)
     itemsPerScreenVar.set(config.itemsPerScreenVar)
-    individualItemHeightVar.set(config.individualItemHeightVar)
+    approxFooterHeightVar.set(config.approxFooterHeightVar)
     contentPaddingTopVar.set(config.contentPaddingTopVar)
     headerHeightVar.set(config.headerHeightVar)
     boxArtPaddingVar.set(config.boxArtPaddingVar)
@@ -3187,7 +3193,7 @@ VBG_Horizontal_Padding_var.trace_add("write",lambda *args: save_settings(global_
 VBG_Vertical_Padding_var.trace_add("write",lambda *args: save_settings(global_config))
 bubblePaddingVar.trace_add("write", lambda *args: save_settings(global_config))
 itemsPerScreenVar.trace_add("write", lambda *args: save_settings(global_config))
-individualItemHeightVar.trace_add("write", lambda *args: save_settings(global_config))
+approxFooterHeightVar.trace_add("write", lambda *args: save_settings(global_config))
 contentPaddingTopVar.trace_add("write",lambda *args: save_settings(global_config))
 headerHeightVar.trace_add("write",lambda *args: save_settings(global_config))
 boxArtPaddingVar.trace_add("write", lambda *args: save_settings(global_config))
