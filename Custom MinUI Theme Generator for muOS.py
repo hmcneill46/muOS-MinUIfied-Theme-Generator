@@ -2869,10 +2869,9 @@ def on_change(*args):
     global menuNameMap
     menuNameMap = getAlternateMenuNameDict()
     try:
-        if old_selected_overlay_var != global_config.selected_overlay_var:
-            preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{global_config.selected_overlay_var}.png")).convert("RGBA")
-    except:
         preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{global_config.selected_overlay_var}.png")).convert("RGBA")
+    except:
+        pass
     global contentPaddingTop
     try:
         contentPaddingTop = int(global_config.content_padding_top_entry)
@@ -2907,18 +2906,31 @@ def on_change(*args):
     fakeprogressbar['maximum']=1
 
     previewRenderFactor = 1
+    current_image_size = [640,480]
+    if get_current_image(image_label1) is not None:
+        current_image_size = get_current_image(image_label1).size
+    preview_size = [current_image_size[0]/2,current_image_size[1]/2]
+    if image_frame.winfo_width() > 100:
+        previewRenderFactor = math.ceil(image_frame.winfo_width()/current_image_size[1])+1 # Affectively anti aliasing in the preview
 
-    if image_frame.winfo_width() < 100:
-        preview_size = [int(int(global_config.deviceScreenWidthVar)/2),int(int(global_config.deviceScreenHeightVar)/2)]
-    else:
-        
-        previewRenderFactor = math.ceil(image_frame.winfo_width()/int(global_config.deviceScreenWidthVar))+1 # Affectively anti aliasing in the preview
-
-        preview_size = [int(image_frame.winfo_width()),int(image_frame.winfo_width()*(int(global_config.deviceScreenHeightVar)/int(global_config.deviceScreenWidthVar)))]
-    #preview_size = [int(640/2),int(480/2)]
-
-    # This function will run whenever any traced variable changes
+        preview_size = [int(image_frame.winfo_width()),int(image_frame.winfo_width()*(current_image_size[1]/current_image_size[0]))]
     try:
+        if int(global_config.deviceScreenHeightVar) < 240:
+            raise ValueError("Device Screen Height must be at least 240")
+        if int(global_config.deviceScreenWidthVar) < 320:
+            raise ValueError("Device Screen Width must be at least 320")
+
+        if image_frame.winfo_width() < 100:
+            preview_size = [int(int(global_config.deviceScreenWidthVar)/2),int(int(global_config.deviceScreenHeightVar)/2)]
+        else:
+            
+            previewRenderFactor = math.ceil(image_frame.winfo_width()/int(global_config.deviceScreenWidthVar))+1 # Affectively anti aliasing in the preview
+
+            preview_size = [int(image_frame.winfo_width()),int(image_frame.winfo_width()*(int(global_config.deviceScreenHeightVar)/int(global_config.deviceScreenWidthVar)))]
+        #preview_size = [int(640/2),int(480/2)]
+
+        # This function will run whenever any traced variable changes
+    
         previewItemList = [['Content Explorer', 'Menu', 'explore'], ['Favourites', 'Menu', 'favourite'], ['History', 'Menu', 'history'], ['Applications', 'Menu', 'apps'], ['Information', 'Menu', 'info'], ['Configuration', 'Menu', 'config'], ['Reboot Device', 'Menu', 'reboot'], ['Shutdown Device', 'Menu', 'shutdown']]
         
         if global_config.main_menu_style_var == "Horizontal":
