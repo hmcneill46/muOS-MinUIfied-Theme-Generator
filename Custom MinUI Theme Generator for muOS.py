@@ -51,7 +51,7 @@ class Config: # TODO delete unneeded variables
         self.rectangle_padding_entry = 20
         self.itemsPerScreenVar = 7
         self.items_per_screen_entry = 7
-        self.approxFooterHeightVar = 100
+        self.approxFooterHeightVar = 80
         self.contentPaddingTopVar = 44
         self.headerHeightVar = 44
         self.content_padding_top_entry = 44
