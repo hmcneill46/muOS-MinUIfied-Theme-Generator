@@ -169,7 +169,7 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
     image = Image.new("RGBA", (int(config.deviceScreenWidthVar)*render_factor, int(config.deviceScreenHeightVar)*render_factor), (255, 255, 255, 0))
     draw = ImageDraw.Draw(image)
     if not( config.remove_left_menu_guides_var and config.remove_right_menu_guides_var):
-        required_padding_between_sides=15
+        required_padding_between_sides=15 # This is the maximum space between the two sides of the menu helper guides
         lhsTotalWidth = int(config.deviceScreenWidthVar)
         rhsTotalWidth = int(config.deviceScreenWidthVar)
         iterations = 0
@@ -2919,6 +2919,10 @@ def on_change(*args):
             raise ValueError("Device Screen Height must be at least 240")
         if int(global_config.deviceScreenWidthVar) < 320:
             raise ValueError("Device Screen Width must be at least 320")
+        if int(global_config.deviceScreenHeightVar) > 4320:
+            raise ValueError("Device Screen Height must be at most 4320")
+        if int(global_config.deviceScreenWidthVar) > 7680:
+            raise ValueError("Device Screen Width must be at most 7680")
 
         if image_frame.winfo_width() < 100:
             preview_size = [int(int(global_config.deviceScreenWidthVar)/2),int(int(global_config.deviceScreenHeightVar)/2)]
