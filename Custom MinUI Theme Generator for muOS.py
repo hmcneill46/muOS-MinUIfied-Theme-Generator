@@ -84,6 +84,7 @@ class Config: # TODO delete unneeded variables
         self.page_by_page_var = False
         self.transparent_text_var = False
         self.version_var = "muOS 2410.1 Banana"
+        self.device_type_var = "Other [640x480]"
         self.global_alignment_var = "Left"
         self.selected_overlay_var = "muOS Default CRT Overlay"
         self.main_menu_style_var = "Horizontal"
@@ -1743,16 +1744,20 @@ def percentage_color(hex1, hex2, percentage):
     # Convert interpolated RGB back to hex
     return rgb_to_hex(interp_rgb)
 
-def generate_theme(progress_bar, loading_window, threadNumber,config: Config,barrier):
-    try:
+def round_to_nearest_odd(number):
+    high_odd = (number // 2) * 2 + 1
+    low_odd = high_odd - 2
+    return int(high_odd) if abs(number - high_odd) < abs(number-low_odd) else int(low_odd)
 
+def generate_theme(progress_bar, loading_window, threadNumber, config: Config,barrier, resolutions, assumed_res):
+    try:
         progress_bar['value'] = 0
         if config.main_menu_style_var == "Vertical":
-            progress_bar['maximum'] = 8
+            progress_bar['maximum'] = 8*len(resolutions)
         elif config.main_menu_style_var == "Horizontal":
-            progress_bar['maximum'] = 8
+            progress_bar['maximum'] = 8*len(resolutions)
         elif config.main_menu_style_var == "Alt-Horizontal":
-            progress_bar['maximum'] = 8
+            progress_bar['maximum'] = 8*len(resolutions)
         else:
             raise ValueError("Something went wrong with your Main Menu Style")
 
@@ -1760,7 +1765,32 @@ def generate_theme(progress_bar, loading_window, threadNumber,config: Config,bar
             themeName = config.theme_name_entry + f" {config.main_menu_style_var}"
         else:
             themeName = config.theme_name_entry
-        FillTempThemeFolder(progress_bar, threadNumber,config=config)
+
+        assumed_items_per_screen = int(config.items_per_screen_entry)
+        height_items_per_screen_map = {}
+        for width, height in resolutions:
+            height_items_per_screen_map[height] = round_to_nearest_odd(assumed_items_per_screen * (height / assumed_res[1]))
+
+
+        for width, height in resolutions:
+            res_config = copy.deepcopy(Config())
+            res_config.deviceScreenWidthVar = width
+            res_config.deviceScreenHeightVar = height
+            if height != assumed_res[1]:
+                res_config.items_per_screen_entry = height_items_per_screen_map[height]
+                res_config.itemsPerScreenVar = height_items_per_screen_map[height]
+            FillTempThemeFolder(progress_bar, threadNumber,config=res_config)
+            shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"),
+                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "scheme"))
+            shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "image"),
+                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "image"))
+        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "scheme"),
+                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"))
+        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "image"),
+                    os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "image"))
+        if os.path.exists(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}")):
+                os.rmdir(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}"))
+
         if config.theme_directory_path == "":
             theme_dir = os.path.join(script_dir, "Generated Theme")
         else:
@@ -1832,7 +1862,19 @@ def generate_themes(themes):
             progress_bar.pack(pady=20)
 
             # Start a thread for each theme generation
-            threading.Thread(target=generate_theme, args=(progress_bar, loading_window, threadNumber, thread_config, barrier)).start()
+            match = re.search(r"\[(\d+)x(\d+)\]", thread_config.device_type_var)
+            assumed_res = [640, 480]
+            if match:
+                assumed_res = [int(match.group(1)), int(match.group(2))]
+            else:
+                print("No resolution found in the string.")
+            all_resolutions = []
+            for device_type in deviceTypeOptions:
+                match = re.search(r"\[(\d+)x(\d+)\]", device_type)
+                if match:
+                    all_resolutions.append([int(match.group(1)), int(match.group(2))])
+            print("All resolutions: ", all_resolutions)
+            threading.Thread(target=generate_theme, args=(progress_bar, loading_window, threadNumber, thread_config, barrier,all_resolutions,assumed_res)).start()
 
         # Wait for all threads to finish
         barrier.wait()
@@ -1892,6 +1934,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     # More Global Settings
     glyph_width = 20
     glyph_to_text_pad = int(config.bubblePaddingVar)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{boot_text_y_pos}", str(int(int(config.deviceScreenHeightVar)*(165/480))))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{glyph_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2))))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{image_overlay}", str(config.include_overlay_var))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{footer_height}", str(footerHeight))
@@ -1900,6 +1943,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     else:
         replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{header_text_alpha}", "0")
     content_height = individualItemHeight*int(config.itemsPerScreenVar)
+
     
     counter_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{counter_alignment}", str(counter_alignment_map[counter_alignment]))
@@ -1939,7 +1983,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_glyph_alpha}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{list_text_alpha}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_padding_left}", "0")
-        replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+        if config.version_var == "muOS 2410.1 Banana":
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
         if "You want to wrap": #TODO Make this an actual option
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{navigation_type}", "4")
         else:
@@ -1962,7 +2009,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     elif config.global_alignment_var == "Right":
         content_padding_left = -content_padding_left
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_padding_left}", str(content_padding_left))
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+    if config.version_var == "muOS 2410.1 Banana":
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+    else:
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{footer_alpha}", "255")
     if config.show_glyphs_var:
         replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
@@ -1990,7 +2040,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     elif config.global_alignment_var == "Right":
         content_padding_left = -content_padding_left
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_padding_left}", str(content_padding_left))
-    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+    if config.version_var == "muOS 2410.1 Banana":
+        replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+    else:
+        replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
 
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad))) # for glyph support
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{list_glyph_alpha}", "255") # for glyph support
@@ -2022,7 +2075,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
             content_padding_left = -(int(config.textPaddingVar)-int(config.bubblePaddingVar))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_padding_left}", str(content_padding_left))
         previewArtWidth = 288
-        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-previewArtWidth-5-(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+        if config.version_var == "muOS 2410.1 Banana":
+            replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{footer_alpha}", "0")
         if config.show_glyphs_var:
             replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
@@ -2080,7 +2136,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     elif config.global_alignment_var == "Right":
         content_padding_left = -content_padding_left
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_left}", str(content_padding_left))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+    if config.version_var == "muOS 2410.1 Banana":
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+    else:
+        replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{footer_alpha}", "0")
     if config.show_glyphs_var:
         replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
@@ -2287,7 +2346,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
             print(f"An error occurred: {e}")
     
     itemsList = []
-    if config.version_var == "muOS 2410.1 Banana":
+    if config.version_var[0:9] == "muOS 2410":
         workingMenus = menus2405_3
 
     else:
@@ -2457,11 +2516,24 @@ def start_theme_task():
     progress_bar = ttk.Progressbar(loading_window, orient="horizontal", length=280, mode="determinate")
     progress_bar.pack(pady=20)
 
+    match = re.search(r"\[(\d+)x(\d+)\]", global_config.device_type_var)
+    assumed_res = [640, 480]
+    if match:
+        assumed_res = [int(match.group(1)), int(match.group(2))]
+    else:
+        print("No resolution found in the string.")
+    all_resolutions = []
+    for device_type in deviceTypeOptions:
+        match = re.search(r"\[(\d+)x(\d+)\]", device_type)
+        if match:
+            all_resolutions.append([int(match.group(1)), int(match.group(2))])
+    print("All resolutions: ", all_resolutions)
+
     input_queue = queue.Queue()
     output_queue = queue.Queue()
 
     # Start the long-running task in a separate thread
-    threading.Thread(target=generate_theme, args=(progress_bar, loading_window,-1,global_config,barrier)).start()
+    threading.Thread(target=generate_theme, args=(progress_bar, loading_window,-1,global_config,barrier,all_resolutions,assumed_res)).start()
 
 def start_bulk_theme_task():
     save_settings(global_config)
@@ -2501,6 +2573,7 @@ catalogue_directory_path = tk.StringVar()
 theme_directory_path = tk.StringVar()
 am_theme_directory_path = tk.StringVar()
 version_var = tk.StringVar()
+device_type_var = tk.StringVar()
 global_alignment_var = tk.StringVar()
 selected_overlay_var = tk.StringVar()
 main_menu_style_var = tk.StringVar()
@@ -2569,20 +2642,14 @@ grid_helper.add(tk.Label(scrollable_frame, text="Device Configurations", font=su
 deviceScreenWidthVar = tk.StringVar()
 deviceScreenHeightVar = tk.StringVar()
 
-
-# Option for textPadding
-grid_helper.add(tk.Label(scrollable_frame, text="Device Screen Width:"), sticky="w")
-device_screen_width_entry = tk.Entry(scrollable_frame, width=50, textvariable=deviceScreenWidthVar)
-
-grid_helper.add(device_screen_width_entry, next_row=True)
-# Option for textPadding
-grid_helper.add(tk.Label(scrollable_frame, text="Device Screen Height:"), sticky="w")
-device_screen_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=deviceScreenHeightVar)
-grid_helper.add(device_screen_height_entry, next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Device Type"), sticky="w")
+deviceTypeOptions = ["Other [640x480]","RG CubeXX [720x720]"]
+device_type_option_menu = tk.OptionMenu(scrollable_frame, device_type_var, *deviceTypeOptions)
+grid_helper.add(device_type_option_menu, colspan=3, sticky="w", next_row=True)
 
 
 grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
-options = ["muOS 2410.1 Banana"]
+options = ["muOS 2410.1 Banana", "muOS 2410.2 Test Build [for future]"]
 option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
@@ -2918,7 +2985,7 @@ def on_change(*args):
     global menus2405_3
 
     previewApplicationList = []
-    if global_config.version_var == "muOS 2410.1 Banana":
+    if global_config.version_var[0:9] == "muOS 2410":
         index = None
         for i, n in enumerate(menus2405_3):
             if n[0] == "muxapp":
@@ -3069,8 +3136,13 @@ def on_change(*args):
 
 
 def save_settings(config: Config):
-    config.deviceScreenHeightVar = deviceScreenHeightVar.get()
-    config.deviceScreenWidthVar = deviceScreenWidthVar.get()
+    config.device_type_var = device_type_var.get()
+    match = re.search(r"\[(\d+)x(\d+)\]", config.device_type_var)
+    if match:
+        config.deviceScreenWidthVar = int(match.group(1))
+        config.deviceScreenHeightVar = int(match.group(2))
+    else:
+        raise ValueError("Invalid device type format, cannot find screen dimensions")
     config.textPaddingVar = textPaddingVar.get()
     config.text_padding_entry = text_padding_entry.get()
     config.VBG_Horizontal_Padding_entry = VBG_Horizontal_Padding_entry.get()
@@ -3137,6 +3209,7 @@ def save_settings(config: Config):
     on_change()
 
 def load_settings(config: Config):
+    device_type_var.set(config.device_type_var)
     deviceScreenHeightVar.set(config.deviceScreenHeightVar)
     deviceScreenWidthVar.set(config.deviceScreenWidthVar)
     textPaddingVar.set(config.textPaddingVar)
@@ -3256,6 +3329,7 @@ override_folder_box_art_padding_var.trace_add("write", lambda *args: save_settin
 page_by_page_var.trace_add("write", lambda *args: save_settings(global_config))
 transparent_text_var.trace_add("write", lambda *args: save_settings(global_config))
 version_var.trace_add("write", lambda *args: save_settings(global_config))
+device_type_var.trace_add("write", lambda *args: save_settings(global_config))
 global_alignment_var.trace_add("write", lambda *args: save_settings(global_config))
 selected_overlay_var.trace_add("write",lambda *args: save_settings(global_config))
 main_menu_style_var.trace_add("write",lambda *args: save_settings(global_config))
