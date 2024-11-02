@@ -83,7 +83,7 @@ class Config: # TODO delete unneeded variables
         self.override_folder_box_art_padding_var = False
         self.page_by_page_var = False
         self.transparent_text_var = False
-        self.version_var = "Select a version"
+        self.version_var = "muOS 2410.1 Banana"
         self.global_alignment_var = "Left"
         self.selected_overlay_var = "muOS Default CRT Overlay"
         self.main_menu_style_var = "Horizontal"
