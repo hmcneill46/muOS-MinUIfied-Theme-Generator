@@ -1954,7 +1954,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
+    content_padding_left = int(config.textPaddingVar)-int(config.bubblePaddingVar)
+    if config.global_alignment_var == "Centre":
+        content_padding_left = 0
+    elif config.global_alignment_var == "Right":
+        content_padding_left = -content_padding_left
+    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_padding_left}", str(content_padding_left))
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
     replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{footer_alpha}", "255")
     if config.show_glyphs_var:
@@ -1977,7 +1982,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
-    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
+    content_padding_left = int(config.textPaddingVar)-int(config.bubblePaddingVar)
+    if config.global_alignment_var == "Centre":
+        content_padding_left = 0
+    elif config.global_alignment_var == "Right":
+        content_padding_left = -content_padding_left
+    replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_padding_left}", str(content_padding_left))
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
 
     replace_in_file(os.path.join(newSchemeDir,"muxassign.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad))) # for glyph support
@@ -2003,7 +2013,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
         content_alignment_map = {"Left":0,"Centre":1,"Right":2}
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
-        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
+        content_padding_left = int(config.textPaddingVar)-int(config.bubblePaddingVar)
+        if config.global_alignment_var == "Centre":
+            content_padding_left = 0
+        elif config.global_alignment_var == "Right":
+            content_padding_left = -(int(config.textPaddingVar)-int(config.bubblePaddingVar))
+        replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_padding_left}", str(content_padding_left))
         previewArtWidth = 288
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-previewArtWidth-5-(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{footer_alpha}", "0")
@@ -2028,7 +2043,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
         content_alignment_map = {"Left":0,"Centre":1,"Right":2}
         replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
-        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
+        content_padding_left = int(config.textPaddingVar)-int(config.bubblePaddingVar)
+        if config.global_alignment_var == "Centre":
+            content_padding_left = 0
+        elif config.global_alignment_var == "Right":
+            content_padding_left = -content_padding_left
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{content_padding_left}", str(content_padding_left))
         replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-int(config.maxBoxArtWidth)-(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
         replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{footer_alpha}", "0")
         if config.show_glyphs_var:
@@ -2052,7 +2072,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
+    content_padding_left = int(config.textPaddingVar)-int(config.bubblePaddingVar)
+    if config.global_alignment_var == "Centre":
+        content_padding_left = 0
+    elif config.global_alignment_var == "Right":
+        content_padding_left = -content_padding_left
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_left}", str(content_padding_left))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{footer_alpha}", "0")
     if config.show_glyphs_var:
@@ -2444,6 +2469,7 @@ def start_bulk_theme_task():
     threading.Thread(target=generate_themes, args=(themes,)).start()
 
 
+
 def on_resize(event):
     right_pane_width = image_frame.winfo_width()
 
@@ -2665,7 +2691,6 @@ grid_helper.add(tk.Label(scrollable_frame, text="Global Text Alignment"), sticky
 globalAlignmentOptions = ["Left", "Centre", "Right"]
 global_alignment_option_menu = tk.OptionMenu(scrollable_frame, global_alignment_var, *globalAlignmentOptions)
 grid_helper.add(global_alignment_option_menu, colspan=3, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="Text alignment might be a bit buggy, not recommended to change off Left yet",fg="#f00"), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Font size (10-55 inclusive):"), sticky="w")
 custom_font_size_entry = tk.Entry(scrollable_frame, width=50, textvariable=font_size_var)
