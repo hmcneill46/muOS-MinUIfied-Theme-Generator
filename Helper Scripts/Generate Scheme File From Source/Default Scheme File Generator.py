@@ -19,7 +19,7 @@ def download_theme_file(url, local_filename):
 def extract_configurations(file_path):
     """Extract configurations from the theme.c file."""
     # Regular expression to match get_ini_hex, get_ini_int, and get_ini_string patterns
-    ini_pattern = re.compile(r'get_ini_(hex|int|string)\(\s*(\w+),\s*"(\w+)",\s*"(\w+)"(?:,\s*(\d+))?\s*\)')
+    ini_pattern = re.compile(r'get_ini_(hex|int|string)\(\s*(\w+),\s*"(\w+)",\s*"(\w+)"(?:,\s*(.+?))?\s*\)')
     
     # Dictionary to store sections and their keys/values
     config = defaultdict(dict)
@@ -34,11 +34,14 @@ def extract_configurations(file_path):
                 if muos_theme != "muos_theme":
                     print(f"Weird {muos_theme} != muos_theme")
                 if value_type == "hex":
-                    config[section][key] = "YourHexHere"
+                    config[section][key] = "UNKNOWN_HEX"
                 elif value_type == "int":
-                    config[section][key] = default_value.strip() if default_value else "0"
+                    if default_value.isdigit():
+                        config[section][key] = default_value.strip()
+                    else:
+                        config[section][key] = "UNKNOWN_INT"
                 elif value_type == "string":
-                    config[section][key] = f'{default_value.strip()}' if default_value else ' Your String Here '
+                    config[section][key] = f'{default_value.strip()}' if default_value else 'UNKNOWN_STRING'
 
     return config
 
