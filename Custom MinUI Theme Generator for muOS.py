@@ -75,22 +75,18 @@ class Config: # TODO delete unneeded variables
         self.boxArtPaddingVar = 0
         self.folderBoxArtPaddingVar = 0
         self.box_art_directory_path = ""
-        self.maxGamesBubbleLengthVar = self.deviceScreenWidthVar
-        self.maxFoldersBubbleLengthVar = self.deviceScreenWidthVar
+        self.maxBoxArtWidth = 0
         self.roms_directory_path = ""
         self.application_directory_path = ""
         self.previewConsoleNameVar = "Nintendo Game Boy"
         self.show_hidden_files_var = False
-        self.override_bubble_cut_var = False
         self.override_folder_box_art_padding_var = False
         self.page_by_page_var = False
         self.transparent_text_var = False
         self.version_var = "Select a version"
         self.global_alignment_var = "Left"
         self.selected_overlay_var = "muOS Default CRT Overlay"
-        self.theme_alignment_var = "Global"
         self.main_menu_style_var = "Horizontal"
-        self.content_alignment_var = "Global"
         self.am_theme_directory_path = ""
         self.theme_directory_path = ""
         self.catalogue_directory_path = ""
@@ -382,15 +378,9 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     individualItemHeight = round((int(config.deviceScreenHeightVar)-int(config.approxFooterHeightVar)-int(config.contentPaddingTopVar))/int(config.itemsPerScreenVar))
 
     if muOSSystemName.startswith("mux"):
-        if config.theme_alignment_var == "Global":
-            textAlignment = config.global_alignment_var
-        else:
-            textAlignment = config.theme_alignment_var
+        textAlignment = config.global_alignment_var
     else:
-        if config.content_alignment_var == "Global":
-            textAlignment = config.global_alignment_var
-        else:
-            textAlignment = config.content_alignment_var
+        textAlignment = config.global_alignment_var
 
     try:
         font_size = int(config.custom_font_size_entry) * render_factor
@@ -413,13 +403,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         else:
             text = item[0][:]
         text_color = f"#{selected_font_hex}" if index == workingIndex else f"#{deselected_font_hex}"
-        if config.override_bubble_cut_var:
-            if muOSSystemName == "Folder":
-                maxBubbleLength = int(config.maxFoldersBubbleLengthVar)
-            else:
-                maxBubbleLength = int(config.maxGamesBubbleLengthVar)
-        else:
-            maxBubbleLength = int(config.deviceScreenWidthVar)
+        maxBubbleLength = int(config.deviceScreenWidthVar)-int(config.maxBoxArtWidth)
         if maxBubbleLength*render_factor < textPadding*render_factor+smallestValidTest_width+rectanglePadding*render_factor+5*render_factor: #Make sure there won't be a bubble error
             maxBubbleLength = int(config.deviceScreenWidthVar)
 
@@ -1811,16 +1795,17 @@ def generate_theme(progress_bar, loading_window, threadNumber,config: Config,bar
         barrier.wait()
     except Exception as e:
         loading_window.destroy()
-        barrier.wait()
         if config.theme_directory_path == "":
             theme_dir = os.path.join(script_dir, "Generated Theme")
         else:
             theme_dir = config.theme_directory_path
+
         if config.advanced_error_var:
             tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
             messagebox.showerror("Error", f"An unexpected error occurred: {e}\n{tb_str}")
         else:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+
         delete_folder(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}"))
         if config.developer_preview_var:
             if os.path.exists(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png")):
@@ -2007,7 +1992,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
 
     # muxtheme Specific settings
-    if False: # TODO Look into this later to see if muOS added support for "..."
+    if False: # TODO Look into this later to see if muOS added support for "..." for the theme screen
         shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxtheme.txt"))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_height}",str(content_height))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_item_count}", str(config.itemsPerScreenVar))
@@ -2030,6 +2015,32 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
             replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{list_glyph_alpha}", "0")
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{list_text_alpha}", "255")
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{navigation_type}", "0")
+
+    # rest of the default Specific settings
+    if int(config.maxBoxArtWidth) > 0:
+        shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxplore.txt"))
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{content_height}",str(content_height))
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{content_item_count}", str(config.itemsPerScreenVar))
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{background_alpha}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{selected_font_hex}", base_hex)
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{deselected_font_hex}", accent_hex)
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{bubble_alpha}", "255")
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
+        content_alignment_map = {"Left":0,"Centre":1,"Right":2}
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{content_padding_left}", str(int(config.textPaddingVar)-int(config.bubblePaddingVar)))
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-int(config.maxBoxArtWidth)-(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{footer_alpha}", "0")
+        if config.show_glyphs_var:
+            replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
+            replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{list_glyph_alpha}", "255")
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
+            replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{list_glyph_alpha}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{list_text_alpha}", "255")
+        replace_in_file(os.path.join(newSchemeDir,"muxplore.txt"),"{navigation_type}", "0")
+        shutil.copy2(os.path.join(newSchemeDir,"muxplore.txt"),os.path.join(newSchemeDir,"muxfavourite.txt"))
+        shutil.copy2(os.path.join(newSchemeDir,"muxplore.txt"),os.path.join(newSchemeDir,"muxhistory.txt"))
 
     # rest of the default Specific settings
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_height}",str(content_height))
@@ -2464,9 +2475,7 @@ am_theme_directory_path = tk.StringVar()
 version_var = tk.StringVar()
 global_alignment_var = tk.StringVar()
 selected_overlay_var = tk.StringVar()
-theme_alignment_var = tk.StringVar()
 main_menu_style_var = tk.StringVar()
-content_alignment_var = tk.StringVar()
 show_file_counter_var = tk.IntVar()
 show_console_name_var = tk.IntVar()
 show_hidden_files_var = tk.IntVar()
@@ -2475,7 +2484,6 @@ show_glyphs_var = tk.IntVar()
 alternate_menu_names_var = tk.IntVar()
 remove_right_menu_guides_var = tk.IntVar()
 remove_left_menu_guides_var = tk.IntVar()
-override_bubble_cut_var = tk.IntVar()
 page_by_page_var = tk.IntVar()
 transparent_text_var = tk.IntVar()
 override_folder_box_art_padding_var = tk.IntVar()
@@ -2544,10 +2552,12 @@ grid_helper.add(tk.Label(scrollable_frame, text="Device Screen Height:"), sticky
 device_screen_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=deviceScreenHeightVar)
 grid_helper.add(device_screen_height_entry, next_row=True)
 
-# Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Global Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
+options = ["muOS 2410.1 Banana"]
+option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
+grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
+
 
 # Define the StringVar variables
 textPaddingVar = tk.StringVar()
@@ -2566,40 +2576,51 @@ selectedFontHexVar = tk.StringVar()
 deselectedFontHexVar = tk.StringVar()
 bubbleHexVar = tk.StringVar()
 iconHexVar = tk.StringVar()
-maxGamesBubbleLengthVar = tk.StringVar()
-maxFoldersBubbleLengthVar = tk.StringVar()
+maxBoxArtWidth = tk.StringVar()
 previewConsoleNameVar = tk.StringVar()
 
-# Option for textPadding
-grid_helper.add(tk.Label(scrollable_frame, text="Text Padding:"), sticky="w")
-text_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=textPaddingVar)
-grid_helper.add(text_padding_entry, next_row=True)
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-# Option for rectanglePadding
-grid_helper.add(tk.Label(scrollable_frame, text="Bubble Padding:"), sticky="w")
-rectangle_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubblePaddingVar)
-grid_helper.add(rectangle_padding_entry, next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="General Configurations", font=subtitle_font), sticky="w", next_row=True)
 
-# Option for ItemsPerScreen
-grid_helper.add(tk.Label(scrollable_frame, text="Items Per Screen (Better if Odd) [5-13 Inclusive]:"), sticky="w")
-items_per_screen_entry = tk.Entry(scrollable_frame, width=50, textvariable=itemsPerScreenVar)
-grid_helper.add(items_per_screen_entry, next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Main Menu Style"), sticky="w")
+MainMenuStyleOptions = ["Horizontal", "Vertical", "Alt-Horizontal"]
+main_menu_style_option_menu = tk.OptionMenu(scrollable_frame, main_menu_style_var, *MainMenuStyleOptions)
+grid_helper.add(main_menu_style_option_menu, colspan=3, sticky="w", next_row=True)
 
-# Option for individualItemHeight
-grid_helper.add(tk.Label(scrollable_frame, text="Approximate Footer Height:"), sticky="w")
-individual_item_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=approxFooterHeightVar)
-grid_helper.add(individual_item_height_entry, next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Include Overlay", variable=include_overlay_var), sticky="w")
+overlayOptions = ["muOS Default CRT Overlay", 
+           "Grid_2px_10",
+           "Grid_2px_20", 
+           "Grid_2px_30", 
+           "Grid_Thin_2px_10", 
+           "Grid_Thin_2px_20", 
+           "Grid_Thin_2px_30", 
+           "Perfect_CRT-noframe", 
+           "Perfect_CRT"]
+overlay_option_menu = tk.OptionMenu(scrollable_frame, selected_overlay_var, *overlayOptions)
+grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
 
-# Option for ItemsPerScreen
-grid_helper.add(tk.Label(scrollable_frame, text="Padding from top, for list content (Default 44):"), sticky="w")
-content_padding_top_entry = tk.Entry(scrollable_frame, width=50, textvariable=contentPaddingTopVar)
-grid_helper.add(content_padding_top_entry, next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Glyphs*", variable=show_glyphs_var), sticky="w",next_row=True)
 
-# Option for headerHeight
-grid_helper.add(tk.Label(scrollable_frame, text="Header Height (Usually same as padding from top):"), sticky="w")
-header_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=headerHeightVar)
-grid_helper.add(header_height_entry, next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Title of page in header*", variable=show_console_name_var), sticky="w", next_row=True)
 
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Custom Bootlogo Image*:", variable=use_custom_bootlogo_var), sticky="w")
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=bootlogo_image_path, width=50))
+grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_bootlogo_image_path), next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="*Will not show up in this programs preview yet",fg="#00f"), sticky="w",next_row=True)
+
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Left Visual Button Guides", variable=remove_left_menu_guides_var), sticky="w")
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Right Visual Button Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
+
+
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Colour Configuration", font=subtitle_font), colspan=3, sticky="w", next_row=True)
 
 
 # Option for Background Colour
@@ -2611,8 +2632,6 @@ grid_helper.add(background_hex_entry, next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Selected Font Hex Colour: #"), sticky="w")
 selected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=selectedFontHexVar)
 grid_helper.add(selected_font_hex_entry, next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Background Through Text on Launch Menu", variable=transparent_text_var), colspan=3, sticky="w", next_row=True)
 
 # Option for Deselected Font Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Deselected Font Hex Colour: #"), sticky="w")
@@ -2629,70 +2648,76 @@ grid_helper.add(tk.Label(scrollable_frame, text="Icon Hex Colour: #"), sticky="w
 icon_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=iconHexVar)
 grid_helper.add(icon_hex_entry, next_row=True)
 
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Optional] Override background colour with image", variable=use_custom_background_var), sticky="w")
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=background_image_path, width=50))
+grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_background_image_path), next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Background Through Text on Launch Menu", variable=transparent_text_var), colspan=3, sticky="w", next_row=True)
+
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Text Configuration", font=subtitle_font), colspan=3, sticky="w", next_row=True)
+
+
 grid_helper.add(tk.Label(scrollable_frame, text="Global Text Alignment"), sticky="w")
 globalAlignmentOptions = ["Left", "Centre", "Right"]
 global_alignment_option_menu = tk.OptionMenu(scrollable_frame, global_alignment_var, *globalAlignmentOptions)
 grid_helper.add(global_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Text alignment might be a bit buggy, not recommended to change off Left yet",fg="#f00"), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Optional] Override background colour with image", variable=use_custom_background_var), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=background_image_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_background_image_path), next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Font size (10-55 inclusive):"), sticky="w")
+custom_font_size_entry = tk.Entry(scrollable_frame, width=50, textvariable=font_size_var)
+grid_helper.add(custom_font_size_entry, next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="*[Optional] Use Custom font:", variable=use_alt_font_var), sticky="w")
 grid_helper.add(tk.Entry(scrollable_frame, textvariable=alt_font_path, width=50))
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_alt_font_path), next_row=True)
 grid_helper.add(tk.Label(scrollable_frame,text="*Use if text override characters not supported by default font\n!!!Currently Wont Work In Menus!!! left in as a reminder",fg="#00f"),sticky="w",next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Font size (10-55 inclusive):"), sticky="w")
-custom_font_size_entry = tk.Entry(scrollable_frame, width=50, textvariable=font_size_var)
-grid_helper.add(custom_font_size_entry, next_row=True)
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Size Configuration", font=subtitle_font), colspan=3, sticky="w", next_row=True)
+
+# Option for ItemsPerScreen
+grid_helper.add(tk.Label(scrollable_frame, text="Items Per Screen (Better if Odd) [5-13 Inclusive]:"), sticky="w")
+items_per_screen_entry = tk.Entry(scrollable_frame, width=50, textvariable=itemsPerScreenVar)
+grid_helper.add(items_per_screen_entry, next_row=True)
+
+
+# Option for ItemsPerScreen
+grid_helper.add(tk.Label(scrollable_frame, text="Padding from top, for list content (Default 44):"), sticky="w")
+content_padding_top_entry = tk.Entry(scrollable_frame, width=50, textvariable=contentPaddingTopVar)
+grid_helper.add(content_padding_top_entry, next_row=True)
+
+# Option for headerHeight
+grid_helper.add(tk.Label(scrollable_frame, text="Header Height (Usually same as padding from top):"), sticky="w")
+header_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=headerHeightVar)
+grid_helper.add(header_height_entry, next_row=True)
+
+# Option for individualItemHeight
+grid_helper.add(tk.Label(scrollable_frame, text="Approximate Footer Height:"), sticky="w")
+individual_item_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=approxFooterHeightVar)
+grid_helper.add(individual_item_height_entry, next_row=True)
+
 
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Theme Specific Configurations", font=subtitle_font), sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Padding Configuration", font=subtitle_font), colspan=3, sticky="w", next_row=True)
 
+# Option for textPadding
+grid_helper.add(tk.Label(scrollable_frame, text="Text Padding:"), sticky="w")
+text_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=textPaddingVar)
+grid_helper.add(text_padding_entry, next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Main Menu Style"), sticky="w")
-MainMenuStyleOptions = ["Horizontal", "Vertical", "Alt-Horizontal"]
-main_menu_style_option_menu = tk.OptionMenu(scrollable_frame, main_menu_style_var, *MainMenuStyleOptions)
-grid_helper.add(main_menu_style_option_menu, colspan=3, sticky="w", next_row=True)
+# Option for rectanglePadding
+grid_helper.add(tk.Label(scrollable_frame, text="Bubble Padding:"), sticky="w")
+rectangle_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubblePaddingVar)
+grid_helper.add(rectangle_padding_entry, next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
-options = ["muOS 2410.1 Banana"]
-option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
-grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Custom Bootlogo Image:", variable=use_custom_bootlogo_var), sticky="w")
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=bootlogo_image_path, width=50))
-grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_bootlogo_image_path), next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Theme Text Alignment - Not seperated from global yet"), sticky="w")
-themeAlignmentOptions = ["Global", "Left", "Centre", "Right"]
-theme_alignment_option_menu = tk.OptionMenu(scrollable_frame, theme_alignment_var, *themeAlignmentOptions)
-grid_helper.add(theme_alignment_option_menu, colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Glyphs", variable=show_glyphs_var), sticky="w",next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="Will not show up in preview yet",fg="#00f"), sticky="w",next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Include Overlay", variable=include_overlay_var), sticky="w")
-
-overlayOptions = ["muOS Default CRT Overlay", 
-           "Grid_2px_10",
-           "Grid_2px_20", 
-           "Grid_2px_30", 
-           "Grid_Thin_2px_10", 
-           "Grid_Thin_2px_20", 
-           "Grid_Thin_2px_30", 
-           "Perfect_CRT-noframe", 
-           "Perfect_CRT"]
-overlay_option_menu = tk.OptionMenu(scrollable_frame, selected_overlay_var, *overlayOptions)
-grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
-
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Left Visual Button Guides", variable=remove_left_menu_guides_var), sticky="w")
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Right Visual Button Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Padding for Visual Button Guides:"), sticky="w")
 VBG_Horizontal_Padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=VBG_Horizontal_Padding_var)
@@ -2704,40 +2729,18 @@ grid_helper.add(VBG_Vertical_Padding_entry, next_row=True)
 
 
 
-
-# Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Box Art Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="SECTION NOT IMPLIMENTED YET",fg="#f00"), colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Override Auto Cut Bubble off [Might want to use for fading box art]", variable=override_bubble_cut_var),colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text=" - [Games] Cut bubble off at (px):"), sticky="w")
-
-max_games_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxGamesBubbleLengthVar)
-grid_helper.add(max_games_bubble_length_entry, next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text=" - [Folders] Cut bubble off at (px):"), sticky="w")
-
-max_folders_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxFoldersBubbleLengthVar)
-grid_helper.add(max_folders_bubble_length_entry, next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text=" - This would usually be 640-width of your boxart",fg="#00f"), colspan=3, sticky="w", next_row=True)
-
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Content Explorer Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="SECTION NOT IMPLIMENTED YET",fg="#f00"), colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Box Art Max Width (px):"), sticky="w")
+max_games_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxBoxArtWidth)
+grid_helper.add(max_games_bubble_length_entry, next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Content Explorer Text Alignment"), sticky="w")
-contentAlignmentOptions = ["Global", "Left", "Centre", "Right"]
-content_alignment_option_menu = tk.OptionMenu(scrollable_frame, content_alignment_var, *contentAlignmentOptions)
-grid_helper.add(content_alignment_option_menu, colspan=3, sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text=" - This is used to make text not go over your Box Art",fg="#00f"), colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Console Name at top", variable=show_console_name_var), sticky="w", next_row=True)
+
 
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
@@ -2768,9 +2771,6 @@ grid_helper.add(tk.Button(scrollable_frame, text="Bulk generate themes in predet
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 # Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
-# Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Advanced Errors", variable=advanced_error_var), colspan=3, sticky="w", next_row=True)
 
@@ -3074,20 +3074,16 @@ def save_settings(config: Config):
     config.remove_right_menu_guides_var = remove_right_menu_guides_var.get()
     config.remove_left_menu_guides_var = remove_left_menu_guides_var.get()
     config.box_art_directory_path = box_art_directory_path.get()
-    config.maxGamesBubbleLengthVar = maxGamesBubbleLengthVar.get()
-    config.maxFoldersBubbleLengthVar = maxFoldersBubbleLengthVar.get()
+    config.maxBoxArtWidth = maxBoxArtWidth.get()
     config.roms_directory_path = roms_directory_path.get()
     config.application_directory_path = application_directory_path.get()
     config.previewConsoleNameVar = previewConsoleNameVar.get()
     config.show_hidden_files_var = show_hidden_files_var.get()
-    config.override_bubble_cut_var = override_bubble_cut_var.get()
     config.page_by_page_var = page_by_page_var.get()
     config.transparent_text_var = transparent_text_var.get()
     config.override_folder_box_art_padding_var = override_folder_box_art_padding_var.get()
     config.boxArtPaddingVar = boxArtPaddingVar.get()
     config.folderBoxArtPaddingVar = folderBoxArtPaddingVar.get()
-    config.content_alignment_var = content_alignment_var.get()
-    config.theme_alignment_var = theme_alignment_var.get()
     config.main_menu_style_var = main_menu_style_var.get()
     config.version_var = version_var.get()
     config.global_alignment_var = global_alignment_var.get()
@@ -3160,22 +3156,18 @@ def load_settings(config: Config):
     remove_right_menu_guides_var.set(config.remove_right_menu_guides_var)
     remove_left_menu_guides_var.set(config.remove_left_menu_guides_var)
     box_art_directory_path.set(config.box_art_directory_path)
-    maxGamesBubbleLengthVar.set(config.maxGamesBubbleLengthVar)
-    maxFoldersBubbleLengthVar.set(config.maxFoldersBubbleLengthVar)
+    maxBoxArtWidth.set(config.maxBoxArtWidth)
     roms_directory_path.set(config.roms_directory_path)
     application_directory_path.set(config.application_directory_path)
     previewConsoleNameVar.set(config.previewConsoleNameVar)
     show_hidden_files_var.set(config.show_hidden_files_var)
-    override_bubble_cut_var.set(config.override_bubble_cut_var)
     override_folder_box_art_padding_var.set(config.override_folder_box_art_padding_var)
     page_by_page_var.set(config.page_by_page_var)
     transparent_text_var.set(config.transparent_text_var)
     version_var.set(config.version_var)
     global_alignment_var.set(config.global_alignment_var)
     selected_overlay_var.set(config.selected_overlay_var)
-    theme_alignment_var.set(config.theme_alignment_var)
     main_menu_style_var.set(config.main_menu_style_var)
-    content_alignment_var.set(config.content_alignment_var)
     am_theme_directory_path.set(config.am_theme_directory_path)
     theme_directory_path.set(config.theme_directory_path)
     catalogue_directory_path.set(config.catalogue_directory_path)
@@ -3228,21 +3220,17 @@ alternate_menu_names_var.trace_add("write", lambda *args: save_settings(global_c
 remove_right_menu_guides_var.trace_add("write", lambda *args: save_settings(global_config))
 remove_left_menu_guides_var.trace_add("write", lambda *args: save_settings(global_config))
 box_art_directory_path.trace_add("write", lambda *args: save_settings(global_config))
-maxGamesBubbleLengthVar.trace_add("write", lambda *args: save_settings(global_config))
-maxFoldersBubbleLengthVar.trace_add("write", lambda *args: save_settings(global_config))
+maxBoxArtWidth.trace_add("write", lambda *args: save_settings(global_config))
 roms_directory_path.trace_add("write", lambda *args: save_settings(global_config))
 application_directory_path.trace_add("write", lambda *args: save_settings(global_config))
 previewConsoleNameVar.trace_add("write", lambda *args: save_settings(global_config))
 show_hidden_files_var.trace_add("write", lambda *args: save_settings(global_config))
-override_bubble_cut_var.trace_add("write", lambda *args: save_settings(global_config))
 override_folder_box_art_padding_var.trace_add("write", lambda *args: save_settings(global_config))
 page_by_page_var.trace_add("write", lambda *args: save_settings(global_config))
 transparent_text_var.trace_add("write", lambda *args: save_settings(global_config))
 version_var.trace_add("write", lambda *args: save_settings(global_config))
 global_alignment_var.trace_add("write", lambda *args: save_settings(global_config))
 selected_overlay_var.trace_add("write",lambda *args: save_settings(global_config))
-content_alignment_var.trace_add("write", lambda *args: save_settings(global_config))
-theme_alignment_var.trace_add("write", lambda *args: save_settings(global_config))
 main_menu_style_var.trace_add("write",lambda *args: save_settings(global_config))
 am_theme_directory_path.trace_add("write", lambda *args: save_settings(global_config))
 theme_directory_path.trace_add("write", lambda *args: save_settings(global_config))
