@@ -179,7 +179,9 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
 
             individualItemHeight = round((int(config.deviceScreenHeightVar)-int(config.approxFooterHeightVar)-int(config.contentPaddingTopVar))/int(config.itemsPerScreenVar))
 
-            footerHeight = int(config.deviceScreenHeightVar)-(individualItemHeight*int(config.itemsPerScreenVar))-int(config.contentPaddingTopVar)
+            muosSpaceBetweenItems = 2
+
+            footerHeight = int(config.deviceScreenHeightVar)-(individualItemHeight*int(config.itemsPerScreenVar))-int(config.contentPaddingTopVar)+muosSpaceBetweenItems
 
             menu_helper_guide_height = footerHeight-(from_bottom_padding*2) # Change this if overlayed
 
