@@ -534,7 +534,7 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                     background = background.resize(image.size, Image.LANCZOS)
                     background = Image.alpha_composite(background,image)
                     if config.developer_preview_var:
-                        background.save(os.path.join(internal_files_dir,f"TempPreview{threadNumber}.png"))
+                        background.save(os.path.join(internal_files_dir,f"TempPreview{threadNumber}[{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}].png"))
                     background = background.resize((int(0.45*int(config.deviceScreenWidthVar)), int(0.45*int(config.deviceScreenHeightVar))), Image.LANCZOS)
                     background.save(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","preview.png"))
                 
@@ -1469,7 +1469,7 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
                 background = background.resize(image.size, Image.LANCZOS)
                 background = Image.alpha_composite(background,image)
                 if config.developer_preview_var: 
-                    background.save(os.path.join(internal_files_dir,f"TempPreview{threadNumber}.png"))
+                    background.save(os.path.join(internal_files_dir,f"TempPreview{threadNumber}[{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}].png"))
                 background = background.resize((int(0.45*int(config.deviceScreenWidthVar)), int(0.45*int(config.deviceScreenHeightVar))), Image.LANCZOS)
                 background.save(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","preview.png"))
 
@@ -1773,7 +1773,7 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
 
 
         for width, height in resolutions:
-            res_config = copy.deepcopy(Config())
+            res_config = copy.deepcopy(config)
             res_config.deviceScreenWidthVar = width
             res_config.deviceScreenHeightVar = height
             if height != assumed_res[1]:
@@ -1784,10 +1784,14 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
                         os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "scheme"))
             shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "image"),
                         os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "image"))
+            shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "preview.png"),
+                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "preview.png"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "scheme"),
                         os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "image"),
                     os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "image"))
+        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "preview.png"),
+                    os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "preview.png"))
         if os.path.exists(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}")):
                 os.rmdir(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}"))
 
@@ -1802,22 +1806,22 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
             preview_dir = os.path.join(theme_dir)
 
             os.makedirs(preview_dir,exist_ok=True)
+            for width,height in resolutions:
+                temp_preview_path = os.path.join(preview_dir, f"TempPreview{threadNumber}[{width}x{height}].png")
+                if os.path.exists(temp_preview_path):
+                    os.remove(temp_preview_path)
+                shutil.move(os.path.join(internal_files_dir, f"TempPreview{threadNumber}[{width}x{height}].png"), preview_dir)
 
-            temp_preview_path = os.path.join(preview_dir, f"TempPreview{threadNumber}.png")
-            if os.path.exists(temp_preview_path):
-                os.remove(temp_preview_path)
-            shutil.move(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png"), preview_dir)
+                theme_preview_path = os.path.join(preview_dir, f"{themeName}[{width}x{height}].png")
+                if os.path.exists(theme_preview_path):
+                    os.remove(theme_preview_path)
 
-            theme_preview_path = os.path.join(preview_dir, f"{themeName}.png")
-            if os.path.exists(theme_preview_path):
-                os.remove(theme_preview_path)
+                os.rename(os.path.join(preview_dir,f"TempPreview{threadNumber}[{width}x{height}].png"), theme_preview_path)
 
-            os.rename(os.path.join(preview_dir,f"TempPreview{threadNumber}.png"), theme_preview_path)
-
-            if os.path.exists(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png")):
-                os.remove(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png"))
-            if os.path.exists(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}.png")):
-                os.remove(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}.png"))
+                if os.path.exists(os.path.join(internal_files_dir, f"TempPreview{threadNumber}[{width}x{height}].png")):
+                    os.remove(os.path.join(internal_files_dir, f"TempPreview{threadNumber}[{width}x{height}].png"))
+                if os.path.exists(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}[{width}x{height}].png")):
+                    os.remove(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}[{width}x{height}].png"))
         
 
         delete_folder(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}"))
@@ -1840,10 +1844,10 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
 
         delete_folder(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}"))
         if config.developer_preview_var:
-            if os.path.exists(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png")):
-                os.remove(os.path.join(internal_files_dir, f"TempPreview{threadNumber}.png"))
-            if os.path.exists(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}.png")):
-                os.remove(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}.png"))
+            if os.path.exists(os.path.join(internal_files_dir, f"TempPreview{threadNumber}[{width}x{height}].png")):
+                os.remove(os.path.join(internal_files_dir, f"TempPreview{threadNumber}[{width}x{height}].png"))
+            if os.path.exists(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}[{width}x{height}].png")):
+                os.remove(os.path.join(theme_dir, "preview",f"TempPreview{threadNumber}[{width}x{height}].png"))
 
 def generate_themes(themes):
     if themes:
@@ -1867,13 +1871,12 @@ def generate_themes(themes):
             if match:
                 assumed_res = [int(match.group(1)), int(match.group(2))]
             else:
-                print("No resolution found in the string.")
+                raise ValueError("Invalid device type format, cannot find screen dimensions")
             all_resolutions = []
             for device_type in deviceTypeOptions:
                 match = re.search(r"\[(\d+)x(\d+)\]", device_type)
                 if match:
                     all_resolutions.append([int(match.group(1)), int(match.group(2))])
-            print("All resolutions: ", all_resolutions)
             threading.Thread(target=generate_theme, args=(progress_bar, loading_window, threadNumber, thread_config, barrier,all_resolutions,assumed_res)).start()
 
         # Wait for all threads to finish
@@ -2521,13 +2524,12 @@ def start_theme_task():
     if match:
         assumed_res = [int(match.group(1)), int(match.group(2))]
     else:
-        print("No resolution found in the string.")
+        raise ValueError("Invalid device type format, cannot find screen dimensions")
     all_resolutions = []
     for device_type in deviceTypeOptions:
         match = re.search(r"\[(\d+)x(\d+)\]", device_type)
         if match:
             all_resolutions.append([int(match.group(1)), int(match.group(2))])
-    print("All resolutions: ", all_resolutions)
 
     input_queue = queue.Queue()
     output_queue = queue.Queue()
