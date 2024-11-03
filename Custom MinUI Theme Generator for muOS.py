@@ -1758,12 +1758,8 @@ def round_to_nearest_odd(number):
 def generate_theme(progress_bar, loading_window, threadNumber, config: Config,barrier, resolutions, assumed_res):
     try:
         progress_bar['value'] = 0
-        if config.main_menu_style_var == "Vertical":
-            progress_bar['maximum'] = 8*len(resolutions)
-        elif config.main_menu_style_var == "Horizontal":
-            progress_bar['maximum'] = 8*len(resolutions)
-        elif config.main_menu_style_var == "Alt-Horizontal":
-            progress_bar['maximum'] = 8*len(resolutions)
+        if config.main_menu_style_var == "Vertical" or config.main_menu_style_var == "Alt-Horizontal" or config.main_menu_style_var == "Horizontal":
+            progress_bar['maximum'] = 27*len(resolutions)
         else:
             raise ValueError("Something went wrong with your Main Menu Style")
 
@@ -2172,6 +2168,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
     bootlogoimage = generatePilImageBootLogo(config.bgHexVar,config.deselectedFontHexVar,config.bubbleHexVar,render_factor,config).resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
     bootlogoimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","bootlogo.bmp"), format='BMP')
+    progress_bar['value'] +=1
 
     chargingimage = generatePilImageBootScreen(config.bgHexVar,
                                                config.deselectedFontHexVar,
@@ -2181,6 +2178,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
                                                config,
                                                icon_path=os.path.join(internal_files_dir, "Assets", "ChargingLogo[5x].png")).resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
     chargingimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxcharge.png"), format='PNG')
+    progress_bar['value'] +=1
 
     loadingimage = generatePilImageBootScreen(config.bgHexVar,
                                                config.deselectedFontHexVar,
@@ -2189,6 +2187,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
                                                render_factor,
                                                config).resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
     loadingimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxstart.png"), format='PNG')
+    progress_bar['value'] +=1
 
     shutdownimage = generatePilImageBootScreen(config.bgHexVar,
                                                config.deselectedFontHexVar,
@@ -2197,6 +2196,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
                                                render_factor,
                                                config).resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
     shutdownimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","shutdown.png"), format='PNG')
+    progress_bar['value'] +=1
 
     rebootimage = generatePilImageBootScreen(config.bgHexVar,
                                                config.deselectedFontHexVar,
@@ -2205,9 +2205,11 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
                                                render_factor,
                                                config).resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
     rebootimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","reboot.png"), format='PNG')
+    progress_bar['value'] +=1
 
     defaultimage = generatePilImageDefaultScreen(config.bgHexVar,render_factor,config).resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
     defaultimage.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","default.png"), format='PNG')
+    progress_bar['value'] +=1
 
     #TODO If implimented it would be great to only set these once as a default.png type thing, and then make it work in every menu
     
@@ -2227,6 +2229,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxoption"), exist_ok=True)
     for item in muxoption_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxoption",f"{item}.png"), format='PNG')
+    progress_bar['value'] +=1
 
 
     
@@ -2236,6 +2239,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch"), exist_ok=True)
     for item in muxlaunch_items:
         visualbuttonoverlay_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch",f"{item}.png"), format='PNG')
+    progress_bar['value'] +=1
     
 
     visualbuttonoverlay_B_BACK = generateMenuHelperGuides([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
@@ -2279,6 +2283,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxsysinfo"), exist_ok=True)
     for item in muxsysinfo_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxsysinfo",f"{item}.png"), format='PNG')
+    progress_bar['value'] +=1
     
     #TODO REMOVE THIS AS IT DOESNT ALLOW BACKGROUND REPLACEMENT (When Alternative is avaliable)
     #TODO wifi would be cool to have footers for once its possible
@@ -2294,43 +2299,53 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxapp)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxapp.png"), format='PNG')
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtask.png"), format='PNG')
+    progress_bar['value'] +=1
 
     visualbuttonoverlay_muxplore = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxplore)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxplore.png"), format='PNG')
+    progress_bar['value'] +=1
 
     visualbuttonoverlay_muxfavourite = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxfavourite)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxfavourite.png"), format='PNG')
+    progress_bar['value'] +=1
 
     visualbuttonoverlay_muxhistory = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxhistory)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxhistory.png"), format='PNG')
+    progress_bar['value'] +=1
 
     visualbuttonoverlay_muxtimezone = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxtimezone)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtimezone.png"), format='PNG')
+    progress_bar['value'] +=1
 
     visualbuttonoverlay_muxtheme_muxlanguage = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxtheme_muxlanguage)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtheme.png"), format='PNG')
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxlanguage.png"), format='PNG')
+    progress_bar['value'] +=1
 
     visualbuttonoverlay_muxarchive = generateMenuHelperGuides([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxarchive)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxarchive.png"), format='PNG')
+    progress_bar['value'] +=1
 
     visualbuttonoverlay_muxnetprofile = generateMenuHelperGuides([["Y", "REMOVE"],["X", "SAVE"],["B", "BACK"],["A", "LOAD"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetprofile)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxnetprofile.png"), format='PNG')
+    progress_bar['value'] +=1
 
     visualbuttonoverlay_muxnetscan = generateMenuHelperGuides([["X", "RESCAN"],["B", "BACK"],["A", "USE"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetscan)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxnetscan.png"), format='PNG')
+    progress_bar['value'] +=1
 
     visualbuttonoverlay_muxgov = generateMenuHelperGuides([["Y", "RECURSIVE"],["X", "DIRECTORY"],["A", "INDIVIDUAL"],["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxgov)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxgov.png"), format='PNG')
+    progress_bar['value'] +=1
 
     
     if False: ## Testing converting font in generator
