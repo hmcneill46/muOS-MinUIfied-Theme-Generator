@@ -535,7 +535,10 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                     background = Image.alpha_composite(background,image)
                     if config.developer_preview_var:
                         background.save(os.path.join(internal_files_dir,f"TempPreview{threadNumber}[{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}].png"))
-                    background = background.resize((int(0.45*int(config.deviceScreenWidthVar)), int(0.45*int(config.deviceScreenHeightVar))), Image.LANCZOS)
+                    preview_size = (int(0.45*int(config.deviceScreenWidthVar)), int(0.45*int(config.deviceScreenHeightVar)))
+                    if int(config.deviceScreenWidthVar) == 720 and int(config.deviceScreenHeightVar) == 720:
+                        preview_size = (340,340)
+                    background = background.resize(preview_size, Image.LANCZOS)
                     background.save(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","preview.png"))
                 
 
@@ -1470,7 +1473,10 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
                 background = Image.alpha_composite(background,image)
                 if config.developer_preview_var: 
                     background.save(os.path.join(internal_files_dir,f"TempPreview{threadNumber}[{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}].png"))
-                background = background.resize((int(0.45*int(config.deviceScreenWidthVar)), int(0.45*int(config.deviceScreenHeightVar))), Image.LANCZOS)
+                preview_size = (int(0.45*int(config.deviceScreenWidthVar)), int(0.45*int(config.deviceScreenHeightVar)))
+                if int(config.deviceScreenWidthVar) == 720 and int(config.deviceScreenHeightVar) == 720:
+                    preview_size = (340,340)
+                background = background.resize(preview_size, Image.LANCZOS)
                 background.save(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","preview.png"))
 
 def getAlternateMenuNameDict():
@@ -2060,7 +2066,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
 
     # muxtheme Specific settings
-    if False: # TODO Look into this later to see if muOS added support for "..." for the theme screen
+    if config.version_var != "muOS 2410.1 Banana": 
         shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxtheme.txt"))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_height}",str(content_height))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_item_count}", str(config.itemsPerScreenVar))
@@ -2075,13 +2081,15 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         if config.global_alignment_var == "Centre":
             content_padding_left = 0
         elif config.global_alignment_var == "Right":
-            content_padding_left = -(int(config.textPaddingVar)-int(config.bubblePaddingVar))
+            content_padding_left = -content_padding_left
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_padding_left}", str(content_padding_left))
-        previewArtWidth = 288
         if config.version_var == "muOS 2410.1 Banana":
             replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
         else:
-            replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+            max_preview_size = int(int(config.deviceScreenWidthVar)*0.45)
+            if int(config.deviceScreenWidthVar) == 720:
+                max_preview_size = 340
+            replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-max_preview_size-(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
         replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{footer_alpha}", "0")
         if config.show_glyphs_var:
             replace_in_file(os.path.join(newSchemeDir,"muxtheme.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
