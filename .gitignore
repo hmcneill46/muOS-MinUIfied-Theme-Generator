@@ -48,3 +48,6 @@ Test.py
 Sample Theme/
 Helper Scripts/Curly Bracket Info.txt
 Helper Scripts/Useful Curly Bracket Info.txt
+__pycache__/
+githubToken.py
+screen_items_output.txt
