@@ -58,15 +58,18 @@ def main():
                     # Process main.c and find regex matches
                     matches = process_main_c(main_c_file["download_url"])
 
-                    if matches:
-                        # Write the screen name and matched groups to the output file
-                        print(f"Writing matches for {folder_name} to output file.")
-                        output_file.write(f"Screen: {folder_name}\n")
-                        output_file.write("Items:\n")
-                        for match in matches:
-                            output_file.write(f"  - {match}\n")
-                        output_file.write("\n")
-                    else:
+                    # Write the screen name and matched groups to the output file
+                    print(f"Writing matches for {folder_name} to output file.")
+                    output_file.write(f"Screen: {folder_name}\n")
+                    output_file.write("Items:\n")
+                    output_file.write("[")
+                    for match in matches:
+                        output_file.write(f'"{match}"')
+                        if match != matches[-1]:
+                            output_file.write(", ")
+                    output_file.write("]\n")
+                    output_file.write("\n")
+                    if not matches:
                         print(f"No matches found in main.c for {folder_name}.")
                 else:
                     print(f"No main.c file found in folder: {folder_name}")
