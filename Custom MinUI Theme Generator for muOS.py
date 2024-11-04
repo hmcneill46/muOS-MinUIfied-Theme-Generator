@@ -2100,35 +2100,66 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
             replace_in_file(os.path.join(newSchemeDir,"muxlaunch.txt"),"{navigation_type}", "2")
 
     # muxnetwork Specific settings
-    shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxnetwork.txt"))
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_height}",str(int((content_height/int(config.itemsPerScreenVar))*(int(config.itemsPerScreenVar)-2))))
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_item_count}", str(int(config.itemsPerScreenVar)-2))
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{background_alpha}", "0")
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{selected_font_hex}", base_hex)
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{deselected_font_hex}", accent_hex)
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_alpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
-    content_alignment_map = {"Left":0,"Centre":1,"Right":2}
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
-    content_padding_left = int(config.textPaddingVar)-int(config.bubblePaddingVar)
-    if config.global_alignment_var == "Centre":
-        content_padding_left = 0
-    elif config.global_alignment_var == "Right":
-        content_padding_left = -content_padding_left
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_padding_left}", str(content_padding_left))
     if config.version_var == "muOS 2410.1 Banana":
-        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
-    else:
-        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{footer_alpha}", "255")
-    if config.show_glyphs_var:
-        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
-        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "255")
-    else:
-        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
-        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "0")
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_text_alpha}", "255")
-    replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{navigation_type}", "0")
+        shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxnetwork.txt"))
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_height}",str(int((content_height/int(config.itemsPerScreenVar))*(int(config.itemsPerScreenVar)-2))))
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_item_count}", str(int(config.itemsPerScreenVar)-2))
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{background_alpha}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{selected_font_hex}", base_hex)
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{deselected_font_hex}", accent_hex)
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_alpha}", "255")
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
+        content_alignment_map = {"Left":0,"Centre":1,"Right":2}
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
+        content_padding_left = int(config.textPaddingVar)-int(config.bubblePaddingVar)
+        if config.global_alignment_var == "Centre":
+            content_padding_left = 0
+        elif config.global_alignment_var == "Right":
+            content_padding_left = -content_padding_left
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_padding_left}", str(content_padding_left))
+        if config.version_var == "muOS 2410.1 Banana":
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{footer_alpha}", "255")
+        if config.show_glyphs_var:
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "255")
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_text_alpha}", "255")
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{navigation_type}", "0")
+    else: ## 2405.2 removed the status being fixed to the bottom
+        shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxnetwork.txt"))
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_height}",str(content_height))
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_item_count}", str(config.itemsPerScreenVar))
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{background_alpha}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{selected_font_hex}", base_hex)
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{deselected_font_hex}", accent_hex)
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_alpha}", "255")
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_right}", config.bubblePaddingVar)
+        content_alignment_map = {"Left":0,"Centre":1,"Right":2}
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_alignment}", str(content_alignment_map[config.global_alignment_var])) # TODO make this change for the different sections
+        content_padding_left = int(config.textPaddingVar)-int(config.bubblePaddingVar)
+        if config.global_alignment_var == "Centre":
+            content_padding_left = 0
+        elif config.global_alignment_var == "Right":
+            content_padding_left = -content_padding_left
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_padding_left}", str(content_padding_left))
+        if config.version_var == "muOS 2410.1 Banana":
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-10-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{content_width}", str(int(config.deviceScreenWidthVar)-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))))
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{footer_alpha}", "255")
+        if config.show_glyphs_var:
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_left}", str(int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)))
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "255")
+        else:
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{bubble_padding_left}", config.bubblePaddingVar)
+            replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_glyph_alpha}", "0")
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{list_text_alpha}", "255")
+        replace_in_file(os.path.join(newSchemeDir,"muxnetwork.txt"),"{navigation_type}", "0")
 
     # muxassign, muxgov Specific settings -  Content options, System govenor
     shutil.copy2(os.path.join(newSchemeDir,"default.txt"),os.path.join(newSchemeDir,"muxassign.txt"))
