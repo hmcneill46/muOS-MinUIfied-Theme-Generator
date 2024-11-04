@@ -16,6 +16,7 @@ MinUIThemeGeneratorConfig*
 ConsoleAssociations.json
 AlternateMenuNames.json
 Default Scheme File.txt
+*.afphoto~lock~
 
 # macOS specific files
 .DS_Store
@@ -51,3 +52,4 @@ Helper Scripts/Useful Curly Bracket Info.txt
 __pycache__/
 githubToken.py
 screen_items_output.txt
+Real MinUI Example Photos/
