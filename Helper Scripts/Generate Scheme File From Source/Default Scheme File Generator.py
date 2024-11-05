@@ -25,23 +25,31 @@ def extract_configurations(file_path):
     config = defaultdict(dict)
 
     with open(file_path, 'r') as file:
-        for line in file:
-            match = ini_pattern.search(line)
-            if match:
-                value_type, muos_theme, section, key, default_value = match.groups()
+        # Read the entire content of the file
+        content = file.read()
 
-                # Adjust the default value based on the type
-                if muos_theme != "muos_theme":
-                    print(f"Weird {muos_theme} != muos_theme")
-                if value_type == "hex":
-                    config[section][key] = "UNKNOWN_HEX"
-                elif value_type == "int":
-                    if default_value.isdigit():
-                        config[section][key] = default_value.strip()
-                    else:
-                        config[section][key] = "UNKNOWN_INT"
-                elif value_type == "string":
-                    config[section][key] = f'{default_value.strip()}' if default_value else 'UNKNOWN_STRING'
+    # Remove all whitespace (spaces, newlines, tabs) from the content
+    content_no_whitespace = re.sub(r'\s+', '', content)
+
+    # Now apply the regex pattern to the whitespace-free content
+    matches = ini_pattern.findall(content_no_whitespace)
+
+    for match in matches:
+        value_type, muos_theme, section, key, default_value = match
+
+        # Adjust the default value based on the type
+        if muos_theme != "muos_theme":
+            print(f"Weird {muos_theme} != muos_theme")
+        if muos_theme != "muos_theme_overrides":
+            if value_type == "hex":
+                config[section][key] = "UNKNOWN_HEX"
+            elif value_type == "int":
+                if default_value and default_value.isdigit():
+                    config[section][key] = default_value.strip()
+                else:
+                    config[section][key] = "UNKNOWN_INT"
+            elif value_type == "string":
+                config[section][key] = f'{default_value.strip()}' if default_value else 'UNKNOWN_STRING'
 
     return config
 
