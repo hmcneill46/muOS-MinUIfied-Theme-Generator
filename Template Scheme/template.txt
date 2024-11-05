@@ -70,9 +70,9 @@ HEADER_BACKGROUND={base_hex}
 HEADER_BACKGROUND_ALPHA=0
 HEADER_TEXT={accent_hex}
 HEADER_TEXT_ALPHA={header_text_alpha}
-HEADER_TEXT_ALIGN=2
-PADDING_LEFT=0
-PADDING_RIGHT=0
+HEADER_TEXT_ALIGN={page_title_text_align}
+PADDING_LEFT={page_title_padding}
+PADDING_RIGHT={page_title_padding}
 
 [help]
 HELP_BACKGROUND={muted_hex}

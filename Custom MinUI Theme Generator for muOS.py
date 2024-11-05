@@ -48,6 +48,7 @@ class Config: # TODO delete unneeded variables
         self.header_glyph_horizontal_padding_var = 10
         self.header_glyph_vertical_padding_var = 12.5
         self.clockHorizontalPaddingVar = 10
+        self.pageTitlePaddingVar = 10
         self.text_padding_entry = 40
         self.VBG_Vertical_Padding_entry = 15
         self.VBG_Horizontal_Padding_entry = 15
@@ -96,6 +97,7 @@ class Config: # TODO delete unneeded variables
         self.battery_charging_style_var = "Default"
         self.clock_format_var = "24 Hour"
         self.clock_alignment_var = "Left"
+        self.page_title_alignment_var = "Centre"
         self.am_theme_directory_path = ""
         self.theme_directory_path = ""
         self.catalogue_directory_path = ""
@@ -528,7 +530,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         image = Image.alpha_composite(image, menuHelperGuides)
         
     if forPreview:
-        muOSOverlay = generatePilImageMuOSOverlay(config,render_factor)
+        muOSOverlay = generatePilImageMuOSOverlay(config,muOSSystemName,render_factor)
         image = Image.alpha_composite(image, muOSOverlay)
     return(image)
 
@@ -957,13 +959,21 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
 
     ## Show what header items will actually look like
     if forPreview:
-        muOSOverlay = generatePilImageMuOSOverlay(config,render_factor)
+        muOSOverlay = generatePilImageMuOSOverlay(config,"muxlaunch",render_factor)
         image = Image.alpha_composite(image, muOSOverlay)
     return(image)
 
-def generatePilImageMuOSOverlay(config:Config,render_factor):
+def generatePilImageMuOSOverlay(config:Config,muOSpageName,render_factor):
+    muOSpageNameDict = {"muxlaunch":"MAIN MENU",
+                        "muxconfig":"CONFIGURATION",
+                        "muxinfo":"INFORMATION",
+                        "muxapp":"APPLICATIONS",
+                        "muxplore":"ROMS",
+                        "muxfavourite":"FAVOURITES",
+                        "muxhistory":"HISTORY"}
     current_time = datetime.now()
     image = Image.new("RGBA", (int(config.deviceScreenWidthVar)*render_factor, int(config.deviceScreenHeightVar)*render_factor), (255, 255, 255, 0))
+    draw = ImageDraw.Draw(image)
     if float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var)) >=10:
         heightOfStuffInHeader = int((float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var)))*render_factor)
     else:
@@ -1000,7 +1010,8 @@ def generatePilImageMuOSOverlay(config:Config,render_factor):
         current_x_pos = int(current_x_pos - (glyph_between_padding*render_factor + network_image_coloured.size[0]))
         image.paste(network_image_coloured,(current_x_pos,glyphYPos),network_image_coloured)
 
-        
+    fontSize = int(int((heightOfStuffInHeader*(4/3))/render_factor)*render_factor) ## TODO Make this not specific to BPreplay
+    headerFont = ImageFont.truetype(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),fontSize)
     if "showing time":
         clock_padding = int(config.clockHorizontalPaddingVar)
         
@@ -1008,9 +1019,8 @@ def generatePilImageMuOSOverlay(config:Config,render_factor):
             timeText = current_time.strftime("%I:%M %p")
         else:
             timeText = current_time.strftime("%H:%M")
-        fontSize = int(int((heightOfStuffInHeader*(4/3))/render_factor)*render_factor) ## TODO Make this not specific to BPreplay
-        clockFont = ImageFont.truetype(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),fontSize)
-        timeTextBbox = clockFont.getbbox(timeText)
+        
+        timeTextBbox = headerFont.getbbox(timeText)
         timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
         if config.clock_alignment_var == "Left":
             timeText_X = clock_padding*render_factor
@@ -1021,8 +1031,23 @@ def generatePilImageMuOSOverlay(config:Config,render_factor):
         else:
             raise ValueError("Invalid clock alignment")
         timeText_Y = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfStuffInHeader/2))-timeTextBbox[1]
-        draw = ImageDraw.Draw(image)
-        draw.text((timeText_X,timeText_Y),timeText,font=clockFont,fill=(*ImageColor.getrgb(f"#{accent_colour}"), 255))
+        draw.text((timeText_X,timeText_Y),timeText,font=headerFont,fill=(*ImageColor.getrgb(f"#{accent_colour}"), 255))
+    if config.show_console_name_var:
+        page_title_padding = int(config.pageTitlePaddingVar)
+        pageTitle = muOSpageNameDict.get(muOSpageName, "UNKNOWN")
+        pageTitleBbox = headerFont.getbbox(pageTitle)
+        pageTitleWidth = pageTitleBbox[2] - pageTitleBbox[0]
+        if config.page_title_alignment_var == "Left":
+            pageTitle_X = page_title_padding*render_factor
+        elif config.page_title_alignment_var == "Centre":
+            pageTitle_X = int((int(config.deviceScreenWidthVar)*render_factor)/2-(pageTitleWidth/2))
+        elif config.page_title_alignment_var == "Right":
+            pageTitle_X = int(int(config.deviceScreenWidthVar)*render_factor) - (pageTitleWidth + page_title_padding*render_factor)
+        else:
+            raise ValueError("Invalid page title alignment")
+        pageTitle_Y = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfStuffInHeader/2))-pageTitleBbox[1]
+        draw.text((pageTitle_X,pageTitle_Y),pageTitle,font=headerFont,fill=(*ImageColor.getrgb(f"#{accent_colour}"), 255))
+
     return(image)
 
 def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor,config:Config,transparent=False,forPreview=False):
@@ -1417,7 +1442,7 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
     image = Image.alpha_composite(image, menuHelperGuides)
 
     if forPreview:
-        muOSOverlay = generatePilImageMuOSOverlay(config,render_factor)
+        muOSOverlay = generatePilImageMuOSOverlay(config,"muxlaunch",render_factor)
         image = Image.alpha_composite(image, muOSOverlay)
     
     return(image)
@@ -2052,6 +2077,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{header_text_alpha}", "255")
     else:
         replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{header_text_alpha}", "0")
+    page_title_alignment_map = {"Auto":0,"Left":1,"Centre":2,"Right":3}
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{page_title_text_align}", str(page_title_alignment_map[config.page_title_alignment_var]))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{page_title_padding}", str(int(config.pageTitlePaddingVar)))
+
     content_height = individualItemHeight*int(config.itemsPerScreenVar)
 
     
@@ -2862,6 +2891,7 @@ main_menu_style_var = tk.StringVar()
 battery_charging_style_var = tk.StringVar()
 clock_format_var = tk.StringVar()
 clock_alignment_var = tk.StringVar()
+page_title_alignment_var = tk.StringVar()
 show_file_counter_var = tk.IntVar()
 show_console_name_var = tk.IntVar()
 show_charging_battery_var = tk.IntVar()
@@ -2946,6 +2976,7 @@ VBG_Horizontal_Padding_var = tk.StringVar()
 header_glyph_horizontal_padding_var = tk.StringVar()
 header_glyph_vertical_padding_var = tk.StringVar()
 clockHorizontalPaddingVar = tk.StringVar()
+pageTitlePaddingVar = tk.StringVar()
 VBG_Vertical_Padding_var = tk.StringVar()
 bubblePaddingVar = tk.StringVar()
 itemsPerScreenVar = tk.StringVar()
@@ -2989,8 +3020,6 @@ grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Glyphs*", variable=show_glyphs_var), sticky="w",next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Title of page in header*", variable=show_console_name_var), sticky="w", next_row=True)
-
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Custom Bootlogo Image*:", variable=use_custom_bootlogo_var), sticky="w")
 grid_helper.add(tk.Entry(scrollable_frame, textvariable=bootlogo_image_path, width=50))
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_bootlogo_image_path), next_row=True)
@@ -3019,13 +3048,29 @@ clock_format_option_menu = tk.OptionMenu(scrollable_frame, clock_format_var, *cl
 grid_helper.add(clock_format_option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Clock Alignment:"), sticky="w")
-clockAlignmentOptions = ["Left", "Centre", "Right"]
-clock_alignment_option_menu = tk.OptionMenu(scrollable_frame, clock_alignment_var, *clockAlignmentOptions)
+alignmentOptions = ["Left", "Centre", "Right"]
+clock_alignment_option_menu = tk.OptionMenu(scrollable_frame, clock_alignment_var, *alignmentOptions)
 grid_helper.add(clock_alignment_option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Padding for Clock:"), sticky="w")
 clock_horizontal_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=clockHorizontalPaddingVar)
 grid_helper.add(clock_horizontal_padding_entry, next_row=True)
+
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Title of page in header", variable=show_console_name_var), sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Page Title Alignment:"), sticky="w")
+page_title_alignment_option_menu = tk.OptionMenu(scrollable_frame, page_title_alignment_var, *alignmentOptions)
+grid_helper.add(page_title_alignment_option_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Padding for Page Title:"), sticky="w")
+page_title_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=pageTitlePaddingVar)
+grid_helper.add(page_title_padding_entry, next_row=True)
+
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Left Visual Button Guides", variable=remove_left_menu_guides_var), sticky="w")
@@ -3490,6 +3535,7 @@ def save_settings(config: Config):
     config.header_glyph_horizontal_padding_var = header_glyph_horizontal_padding_var.get()
     config.header_glyph_vertical_padding_var = header_glyph_vertical_padding_var.get()
     config.clockHorizontalPaddingVar = clockHorizontalPaddingVar.get()
+    config.pageTitlePaddingVar = pageTitlePaddingVar.get()
     config.text_padding_entry = text_padding_entry.get()
     config.VBG_Horizontal_Padding_entry = VBG_Horizontal_Padding_entry.get()
     config.VBG_Vertical_Padding_entry = VBG_Vertical_Padding_entry.get()
@@ -3534,6 +3580,7 @@ def save_settings(config: Config):
     config.battery_charging_style_var = battery_charging_style_var.get()
     config.clock_format_var = clock_format_var.get()
     config.clock_alignment_var = clock_alignment_var.get()
+    config.page_title_alignment_var = page_title_alignment_var.get()
     config.version_var = version_var.get()
     config.global_alignment_var = global_alignment_var.get()
     config.selected_overlay_var = selected_overlay_var.get()
@@ -3567,6 +3614,7 @@ def load_settings(config: Config):
     header_glyph_horizontal_padding_var.set(config.header_glyph_horizontal_padding_var)
     header_glyph_vertical_padding_var.set(config.header_glyph_vertical_padding_var)
     clockHorizontalPaddingVar.set(config.clockHorizontalPaddingVar)
+    pageTitlePaddingVar.set(config.pageTitlePaddingVar)
     VBG_Horizontal_Padding_entry.delete(0, tk.END)
     VBG_Horizontal_Padding_entry.insert(0, config.VBG_Horizontal_Padding_entry)
     VBG_Vertical_Padding_entry.delete(0, tk.END)
@@ -3626,6 +3674,7 @@ def load_settings(config: Config):
     battery_charging_style_var.set(config.battery_charging_style_var)
     clock_format_var.set(config.clock_format_var)
     clock_alignment_var.set(config.clock_alignment_var)
+    page_title_alignment_var.set(config.page_title_alignment_var)
     am_theme_directory_path.set(config.am_theme_directory_path)
     theme_directory_path.set(config.theme_directory_path)
     catalogue_directory_path.set(config.catalogue_directory_path)
@@ -3660,6 +3709,7 @@ VBG_Horizontal_Padding_var.trace_add("write",lambda *args: save_settings(global_
 header_glyph_horizontal_padding_var.trace_add("write",lambda *args: save_settings(global_config))
 header_glyph_vertical_padding_var.trace_add("write",lambda *args: save_settings(global_config))
 clockHorizontalPaddingVar.trace_add("write",lambda *args: save_settings(global_config))
+pageTitlePaddingVar.trace_add("write",lambda *args: save_settings(global_config))
 VBG_Vertical_Padding_var.trace_add("write",lambda *args: save_settings(global_config))
 bubblePaddingVar.trace_add("write", lambda *args: save_settings(global_config))
 itemsPerScreenVar.trace_add("write", lambda *args: save_settings(global_config))
@@ -3700,6 +3750,7 @@ main_menu_style_var.trace_add("write",lambda *args: save_settings(global_config)
 battery_charging_style_var.trace_add("write",lambda *args: save_settings(global_config))
 clock_format_var.trace_add("write",lambda *args: save_settings(global_config))
 clock_alignment_var.trace_add("write",lambda *args: save_settings(global_config))
+page_title_alignment_var.trace_add("write",lambda *args: save_settings(global_config))
 am_theme_directory_path.trace_add("write", lambda *args: save_settings(global_config))
 theme_directory_path.trace_add("write", lambda *args: save_settings(global_config))
 catalogue_directory_path.trace_add("write", lambda *args: save_settings(global_config))
