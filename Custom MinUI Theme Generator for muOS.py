@@ -23,6 +23,7 @@ import shutil
 import numpy as np
 import copy
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 
 ## TODO look into center align and left align
 ## TODO make header resizable
@@ -45,7 +46,8 @@ class Config: # TODO delete unneeded variables
         self.deviceScreenWidthVar = 640
         self.textPaddingVar = 40
         self.header_glyph_horizontal_padding_var = 10
-        self.header_glyph_horizontal_padding_var = 12.5
+        self.header_glyph_vertical_padding_var = 12.5
+        self.clockHorizontalPaddingVar = 10
         self.text_padding_entry = 40
         self.VBG_Vertical_Padding_entry = 15
         self.VBG_Horizontal_Padding_entry = 15
@@ -92,6 +94,8 @@ class Config: # TODO delete unneeded variables
         self.selected_overlay_var = "muOS Default CRT Overlay"
         self.main_menu_style_var = "Horizontal"
         self.battery_charging_style_var = "Default"
+        self.clock_format_var = "24 Hour"
+        self.clock_alignment_var = "Left"
         self.am_theme_directory_path = ""
         self.theme_directory_path = ""
         self.catalogue_directory_path = ""
@@ -111,6 +115,7 @@ class Config: # TODO delete unneeded variables
         self.developer_preview_var = False
         self.show_file_counter_var = False
         self.show_console_name_var = False
+        self.show_charging_battery_var = False
         self.load_config()
 
     def load_config(self):
@@ -579,25 +584,6 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                 if not os.path.exists(directory):
                     os.makedirs(directory)
                 image.save(f"{outputDir}/Folder/box/{workingItem[2]}.png")
-            elif workingItem[1] == "Menu":
-                # directory = os.path.dirname(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
-                # if not os.path.exists(directory):
-                #     os.makedirs(directory)
-                # image.save(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
-                if workingIndex == 0:
-                    bg_rgb = hex_to_rgb(bg_hex)
-                    background = Image.new("RGBA", (int(config.deviceScreenWidthVar) * render_factor, int(config.deviceScreenHeightVar) * render_factor), bg_rgb)
-                    if background_image != None:
-                        background.paste(background_image.resize((int(config.deviceScreenWidthVar) * render_factor, int(config.deviceScreenHeightVar) * render_factor)), (0,0))
-                    background = background.resize(image.size, Image.LANCZOS)
-                    background = Image.alpha_composite(background,image)
-                    if config.developer_preview_var:
-                        background.save(os.path.join(internal_files_dir,f"TempPreview{threadNumber}[{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}].png"))
-                    preview_size = (int(0.45*int(config.deviceScreenWidthVar)), int(0.45*int(config.deviceScreenHeightVar)))
-                    if int(config.deviceScreenWidthVar) == 720 and int(config.deviceScreenHeightVar) == 720:
-                        preview_size = (340,340)
-                    background = background.resize(preview_size, Image.LANCZOS)
-                    background.save(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","preview.png"))
                 
 
 def cut_out_image(original_image, logo_image, coordinates):
@@ -976,38 +962,67 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     return(image)
 
 def generatePilImageMuOSOverlay(config:Config,render_factor):
+    current_time = datetime.now()
     image = Image.new("RGBA", (int(config.deviceScreenWidthVar)*render_factor, int(config.deviceScreenHeightVar)*render_factor), (255, 255, 255, 0))
-    if float(config.headerHeightVar)-2*(float(config.header_glyph_horizontal_padding_var)) >=10:
-        heightOfGlyphs = int((float(config.headerHeightVar)-2*(float(config.header_glyph_horizontal_padding_var)))*render_factor)
+    if float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var)) >=10:
+        heightOfStuffInHeader = int((float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var)))*render_factor)
     else:
         raise ValueError("Header Height is too small or vertical header item padding too large!")
-    
-    glyphYPos = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfGlyphs/2))
-
-    #Battery not charging stuff
-    capacityGlyph = "capacity_30.png"
-    capacity_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{capacityGlyph[:-4]}[5x].png")
     accent_colour = config.deselectedFontHexVar
-    capacity_image_coloured = change_logo_color(capacity_image_path,accent_colour)
-    capacity_image_coloured = capacity_image_coloured.resize((int(heightOfGlyphs*(capacity_image_coloured.size[0]/capacity_image_coloured.size[1])),heightOfGlyphs), Image.LANCZOS)
-    glyph_sides_padding = 10
-    glyph_between_padding = 5
-    current_x_pos = int(int(config.deviceScreenWidthVar)*render_factor - (glyph_sides_padding*render_factor + capacity_image_coloured.size[0]))
-    image.paste(capacity_image_coloured,(current_x_pos,glyphYPos),capacity_image_coloured)
+    if "showing battery and network":
+        
+        
+        glyphYPos = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfStuffInHeader/2))
 
-    networkGlyph = "network_active"
-    network_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{networkGlyph}[5x].png")
-    network_image_coloured = change_logo_color(network_image_path,accent_colour)
-    network_image_coloured = network_image_coloured.resize((int(heightOfGlyphs*(network_image_coloured.size[0]/network_image_coloured.size[1])),heightOfGlyphs), Image.LANCZOS)
-    current_x_pos = int(current_x_pos - (glyph_between_padding*render_factor + network_image_coloured.size[0]))
-    image.paste(network_image_coloured,(current_x_pos,glyphYPos),network_image_coloured)
+        #Battery not charging stuff
+        capacityGlyph = "capacity_30.png"
+        capacity_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{capacityGlyph[:-4]}[5x].png")
+        
+        capacity_image_coloured = change_logo_color(capacity_image_path,accent_colour)
+        capacity_image_coloured = capacity_image_coloured.resize((int(heightOfStuffInHeader*(capacity_image_coloured.size[0]/capacity_image_coloured.size[1])),heightOfStuffInHeader), Image.LANCZOS)
+        glyph_sides_padding = int(config.header_glyph_horizontal_padding_var)
+        glyph_between_padding = 5
+        current_x_pos = int(int(config.deviceScreenWidthVar)*render_factor - (glyph_sides_padding*render_factor + capacity_image_coloured.size[0]))
+        if not config.show_charging_battery_var:
+            image.paste(capacity_image_coloured,(current_x_pos,glyphYPos),capacity_image_coloured)
 
-    capacityChargingGlyph = "70"
-    capacity_charging_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{BatteryChargingStyleOptionsDict[config.battery_charging_style_var]}{capacityChargingGlyph}[5x].png")
-    capacity_charging_image_coloured = change_logo_color(capacity_charging_image_path,config.batteryChargingHexVar)
-    capacity_charging_image_coloured = capacity_charging_image_coloured.resize((int(heightOfGlyphs*(capacity_charging_image_coloured.size[0]/capacity_charging_image_coloured.size[1])),heightOfGlyphs), Image.LANCZOS)
-    current_x_pos = current_x_pos - (glyph_between_padding*render_factor + capacity_charging_image_coloured.size[0])
-    image.paste(capacity_charging_image_coloured,(current_x_pos,glyphYPos),capacity_charging_image_coloured)
+        capacityChargingGlyph = "70"
+        capacity_charging_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{BatteryChargingStyleOptionsDict[config.battery_charging_style_var]}{capacityChargingGlyph}[5x].png")
+        capacity_charging_image_coloured = change_logo_color(capacity_charging_image_path,config.batteryChargingHexVar)
+        capacity_charging_image_coloured = capacity_charging_image_coloured.resize((int(heightOfStuffInHeader*(capacity_charging_image_coloured.size[0]/capacity_charging_image_coloured.size[1])),heightOfStuffInHeader), Image.LANCZOS)
+        if config.show_charging_battery_var:
+            image.paste(capacity_charging_image_coloured,(current_x_pos,glyphYPos),capacity_charging_image_coloured)
+
+        networkGlyph = "network_active"
+        network_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{networkGlyph}[5x].png")
+        network_image_coloured = change_logo_color(network_image_path,accent_colour)
+        network_image_coloured = network_image_coloured.resize((int(heightOfStuffInHeader*(network_image_coloured.size[0]/network_image_coloured.size[1])),heightOfStuffInHeader), Image.LANCZOS)
+        current_x_pos = int(current_x_pos - (glyph_between_padding*render_factor + network_image_coloured.size[0]))
+        image.paste(network_image_coloured,(current_x_pos,glyphYPos),network_image_coloured)
+
+        
+    if "showing time":
+        clock_padding = int(config.clockHorizontalPaddingVar)
+        
+        if config.clock_format_var == "12 Hour":
+            timeText = current_time.strftime("%I:%M %p")
+        else:
+            timeText = current_time.strftime("%H:%M")
+        fontSize = int(int((heightOfStuffInHeader*(4/3))/render_factor)*render_factor) ## TODO Make this not specific to BPreplay
+        clockFont = ImageFont.truetype(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),fontSize)
+        timeTextBbox = clockFont.getbbox(timeText)
+        timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
+        if config.clock_alignment_var == "Left":
+            timeText_X = clock_padding*render_factor
+        elif config.clock_alignment_var == "Centre":
+            timeText_X = int((int(config.deviceScreenWidthVar)*render_factor)/2-(timeTextWidth/2))
+        elif config.clock_alignment_var == "Right":
+            timeText_X = int(int(config.deviceScreenWidthVar)*render_factor) - (timeTextWidth + clock_padding*render_factor)
+        else:
+            raise ValueError("Invalid clock alignment")
+        timeText_Y = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfStuffInHeader/2))-timeTextBbox[1]
+        draw = ImageDraw.Draw(image)
+        draw.text((timeText_X,timeText_Y),timeText,font=clockFont,fill=(*ImageColor.getrgb(f"#{accent_colour}"), 255))
     return(image)
 
 def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor,config:Config,transparent=False,forPreview=False):
@@ -1565,20 +1580,6 @@ def HorizontalMenuGen(progress_bar,muOSSystemName, listItems, bg_hex, selected_f
             if not os.path.exists(directory):
                 os.makedirs(directory)
             image.save(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
-            if workingIndex == 0:
-                bg_rgb = hex_to_rgb(bg_hex)
-                background = Image.new("RGBA", (int(config.deviceScreenWidthVar) * render_factor, int(config.deviceScreenHeightVar) * render_factor), bg_rgb)
-                if background_image != None:
-                    background.paste(background_image.resize((int(config.deviceScreenWidthVar) * render_factor, int(config.deviceScreenHeightVar) * render_factor)), (0,0))
-                background = background.resize(image.size, Image.LANCZOS)
-                background = Image.alpha_composite(background,image)
-                if config.developer_preview_var: 
-                    background.save(os.path.join(internal_files_dir,f"TempPreview{threadNumber}[{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}].png"))
-                preview_size = (int(0.45*int(config.deviceScreenWidthVar)), int(0.45*int(config.deviceScreenHeightVar)))
-                if int(config.deviceScreenWidthVar) == 720 and int(config.deviceScreenHeightVar) == 720:
-                    preview_size = (340,340)
-                background = background.resize(preview_size, Image.LANCZOS)
-                background.save(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","preview.png"))
 
 def getAlternateMenuNameDict():
     if os.path.exists(global_config.alt_text_path):
@@ -1859,8 +1860,10 @@ def round_to_nearest_odd(number):
 def generate_theme(progress_bar, loading_window, threadNumber, config: Config,barrier, resolutions, assumed_res):
     try:
         progress_bar['value'] = 0
-        if config.main_menu_style_var == "Vertical" or config.main_menu_style_var == "Alt-Horizontal" or config.main_menu_style_var == "Horizontal":
+        if config.main_menu_style_var == "Alt-Horizontal" or config.main_menu_style_var == "Horizontal":
             progress_bar['maximum'] = 27*len(resolutions)
+        elif config.main_menu_style_var == "Vertical":
+            progress_bar['maximum'] = 19*len(resolutions)
         else:
             raise ValueError("Something went wrong with your Main Menu Style")
 
@@ -2019,10 +2022,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     blend_hex = percentage_color(bubble_hex,selected_font_hex,0.5)
     muted_hex = percentage_color(bg_hex,bubble_hex,0.25)
     counter_alignment = "Right"
-    datetime_alignment = "Auto"
-    datetime_padding = "10"
+    datetime_alignment = config.clock_alignment_var
+    datetime_padding = config.clockHorizontalPaddingVar
     status_alignment = "Right"
-    status_padding = "10"
+    status_padding = int(config.header_glyph_horizontal_padding_var)
     default_radius = "10"
     header_height = str(config.headerHeightVar)
     counter_padding_top = str(config.contentPaddingTopVar)
@@ -2058,7 +2061,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replace_in_file(os.path.join(newSchemeDir,"default.txt"), "{default_radius}", default_radius)
 
     # Global Header Settings:
-    datetime_alignment_map = {"Auto":0,"Left":1,"Center":2,"Right":3}
+    datetime_alignment_map = {"Auto":0,"Left":1,"Centre":2,"Right":3}
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{datetime_align}", str(datetime_alignment_map[datetime_alignment]))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{datetime_padding_left}", datetime_padding)
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{datetime_padding_right}", datetime_padding)
@@ -2069,8 +2072,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
                             "icons evenly distributed with equal space around them":4,
                             "First icon aligned left last icon aligned right all other icons evenly distributed":5}
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{status_align}", str(status_alignment_map[status_alignment]))
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{status_padding_left}", status_padding)
-    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{status_padding_right}", status_padding)
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{status_padding_left}", str(status_padding))
+    replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{status_padding_right}", str(status_padding))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{header_height}", str(int(header_height)-2))
     replace_in_file(os.path.join(newSchemeDir,"default.txt"),"{content_padding_top}", str(int(contentPaddingTop)-(int(header_height))))
 
@@ -2341,8 +2344,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         generateIndividualButtonGlyph(button,selected_font_path,accent_hex,render_factor, button_height).save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","footer",f"{button.lower()}.png"), format='PNG')
     capacities = [0,10,20,30,40,50,60,70,80,90,100]
     networkGlyphNames = ["network_active", "network_normal"]
-    if float(config.headerHeightVar)-2*(float(config.header_glyph_horizontal_padding_var)) >=10:
-        heightOfGlyphs = int((float(config.headerHeightVar)-2*(float(config.header_glyph_horizontal_padding_var))))
+    if float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var)) >=10:
+        heightOfGlyphs = int((float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var))))
     else:
         raise ValueError("Header Height is too small or vertical header item padding too large!")
 
@@ -2369,9 +2372,18 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     ## FONT STUFF
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel"), exist_ok=True) #Font binaries stuff
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","footer"), exist_ok=True) #Font binaries stuff
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","header"), exist_ok=True) #Font binaries stuff
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","default.bin"))
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(20)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","default.bin"))
+
+
+    ## FOOTER FONT STUFF
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{in_bubble_font_size}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","footer","default.bin"))
+    heightOfStuffInHeader = int((float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var)))*render_factor)
+    headerFontSize = int(int((heightOfStuffInHeader*(4/3))/render_factor))
+    print(headerFontSize)
+    ## HEADER FONT STUFF
+    shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{headerFontSize}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","header","default.bin"))
 
     ## IMAGE STUFF
     bootlogoimage = generatePilImageBootLogo(config.bgHexVar,config.deselectedFontHexVar,config.bubbleHexVar,render_factor,config).resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
@@ -2598,17 +2610,60 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         if menu[0] == "muxdevice":
             ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","image","static"),config, threadNumber=threadNumber)
         elif menu[0] == "muxlaunch":
-            if config.main_menu_style_var == "Vertical":
-                ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","image","static"),config, threadNumber=threadNumber)
-            elif config.main_menu_style_var == "Horizontal":
+            if config.main_menu_style_var == "Horizontal":
                 HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","image","static"), variant = "Horizontal",config=config, threadNumber=threadNumber)
             elif config.main_menu_style_var == "Alt-Horizontal":
                 HorizontalMenuGen(progress_bar,menu[0],itemsList[index], bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, icon_hex,render_factor, os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","image","static"), variant = "Alt-Horizontal",config=config, threadNumber=threadNumber)
 
         else:
             ContinuousFolderImageGen(progress_bar,menu[0],itemsList[index],textPadding,rectanglePadding,ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor, os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","image","static"),config, threadNumber=threadNumber)
-
-
+    fakeprogressbar={'value':0}
+    fakeprogressbar['maximum']=1
+    if config.main_menu_style_var == "Horizontal":
+        previewImage = generatePilImageHorizontal(fakeprogressbar,
+                                            0,
+                                            config.bgHexVar,
+                                            config.selectedFontHexVar,
+                                            config.deselectedFontHexVar,
+                                            config.bubbleHexVar,
+                                            config.iconHexVar,
+                                            render_factor,
+                                            config,
+                                            transparent=False,
+                                            forPreview=True)
+    elif config.main_menu_style_var == "Alt-Horizontal":
+        previewImage = generatePilImageAltHorizontal(fakeprogressbar,
+                                            0,
+                                            config.bgHexVar,
+                                            config.selectedFontHexVar,
+                                            config.deselectedFontHexVar,
+                                            config.bubbleHexVar,
+                                            config.iconHexVar,
+                                            render_factor,
+                                            config,
+                                            transparent=False,
+                                            forPreview=True)
+    elif config.main_menu_style_var == "Vertical":
+        previewImage = generatePilImageVertical(fakeprogressbar,0,
+                                        "muxlaunch",
+                                        itemsList[index][0:int(config.items_per_screen_entry)],
+                                        int(config.textPaddingVar),
+                                        int(config.bubblePaddingVar),
+                                        int(config.items_per_screen_entry),
+                                        config.bgHexVar,
+                                        config.selectedFontHexVar,
+                                        config.deselectedFontHexVar,
+                                        config.bubbleHexVar
+                                        ,render_factor,config,transparent=False,
+                                        forPreview=True)
+    preview_size = (int(0.45*int(config.deviceScreenWidthVar)), int(0.45*int(config.deviceScreenHeightVar)))
+    if int(config.deviceScreenWidthVar) == 720 and int(config.deviceScreenHeightVar) == 720:
+        preview_size = (340,340)
+    smallPreviewImage = previewImage.resize(preview_size, Image.LANCZOS)
+    smallPreviewImage.save(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}","preview.png"))
+    if config.developer_preview_var:
+        developerPreviewImage = previewImage.resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
+        developerPreviewImage.save(os.path.join(internal_files_dir,f"TempPreview{threadNumber}[{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}].png"))
 def select_alternate_menu_names():
     if os.path.exists(global_config.alt_text_path):
         menu_names_grid = MenuNamesGrid(root, menuNameMap, global_config.alt_text_path)
@@ -2805,8 +2860,11 @@ global_alignment_var = tk.StringVar()
 selected_overlay_var = tk.StringVar()
 main_menu_style_var = tk.StringVar()
 battery_charging_style_var = tk.StringVar()
+clock_format_var = tk.StringVar()
+clock_alignment_var = tk.StringVar()
 show_file_counter_var = tk.IntVar()
 show_console_name_var = tk.IntVar()
+show_charging_battery_var = tk.IntVar()
 show_hidden_files_var = tk.IntVar()
 include_overlay_var = tk.IntVar()
 show_glyphs_var = tk.IntVar()
@@ -2886,7 +2944,8 @@ grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 textPaddingVar = tk.StringVar()
 VBG_Horizontal_Padding_var = tk.StringVar()
 header_glyph_horizontal_padding_var = tk.StringVar()
-header_glyph_horizontal_padding_var = tk.StringVar()
+header_glyph_vertical_padding_var = tk.StringVar()
+clockHorizontalPaddingVar = tk.StringVar()
 VBG_Vertical_Padding_var = tk.StringVar()
 bubblePaddingVar = tk.StringVar()
 itemsPerScreenVar = tk.StringVar()
@@ -2938,11 +2997,35 @@ grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_boo
 
 grid_helper.add(tk.Label(scrollable_frame, text="*Will not show up in this programs preview yet",fg="#00f"), sticky="w",next_row=True)
 
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Charging battery in preview", variable=show_charging_battery_var), sticky="w", next_row=True)
+
+
 grid_helper.add(tk.Label(scrollable_frame, text="Battery Charging Glyph Style"), sticky="w")
 BatteryChargingStyleOptionsDict = {"Default": "capacity_", "Lightning 1":"capacity_charging_", "Lightning 2":"alt1_capacity_charging_", "Lightning 3":"alt2_capacity_charging_"}
 BatteryChargingStyleOptions = list(BatteryChargingStyleOptionsDict.keys())
 battery_charging_style_option_menu = tk.OptionMenu(scrollable_frame, battery_charging_style_var, *BatteryChargingStyleOptions)
 grid_helper.add(battery_charging_style_option_menu, colspan=3, sticky="w", next_row=True)
+
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Clock Format:"), sticky="w")
+clockFormatOptions = ["12 Hour", "24 Hour"]
+clock_format_option_menu = tk.OptionMenu(scrollable_frame, clock_format_var, *clockFormatOptions)
+grid_helper.add(clock_format_option_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Clock Alignment:"), sticky="w")
+clockAlignmentOptions = ["Left", "Centre", "Right"]
+clock_alignment_option_menu = tk.OptionMenu(scrollable_frame, clock_alignment_var, *clockAlignmentOptions)
+grid_helper.add(clock_alignment_option_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Padding for Clock:"), sticky="w")
+clock_horizontal_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=clockHorizontalPaddingVar)
+grid_helper.add(clock_horizontal_padding_entry, next_row=True)
 
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Left Visual Button Guides", variable=remove_left_menu_guides_var), sticky="w")
@@ -3056,14 +3139,13 @@ grid_helper.add(rectangle_padding_entry, next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Vertical Padding header glyphs:"), sticky="w")
-header_items_vertical_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_horizontal_padding_var)
+grid_helper.add(tk.Label(scrollable_frame, text="Vertical Padding for header glyphs:"), sticky="w")
+header_items_vertical_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_vertical_padding_var)
 grid_helper.add(header_items_vertical_padding_entry, next_row=True)
 
-if False: ## TODO Add this in when can work out how padding of battery and wifi work - I think I'll need to add padding to the actual images
-    grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Padding for header items:"), sticky="w")
-    header_items_horizontal_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_horizontal_padding_var)
-    grid_helper.add(header_items_horizontal_padding_entry, next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Padding for header glpyhs:"), sticky="w")
+header_items_horizontal_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_horizontal_padding_var)
+grid_helper.add(header_items_horizontal_padding_entry, next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
@@ -3379,7 +3461,8 @@ def on_change(*args):
         else:
             remove_image_from_label(image_label3)
         valid_params = True
-    except:
+    except Exception:
+        traceback.print_exc()
         if get_current_image(image_label1) != None and get_current_image(image_label2) != None and get_current_image(image_label3):
             if valid_params:
                 redOutlineImage1 = outline_image_with_inner_gap(get_current_image(image_label1)).resize(preview_size, Image.LANCZOS)
@@ -3405,7 +3488,8 @@ def save_settings(config: Config):
         raise ValueError("Invalid device type format, cannot find screen dimensions")
     config.textPaddingVar = textPaddingVar.get()
     config.header_glyph_horizontal_padding_var = header_glyph_horizontal_padding_var.get()
-    config.header_glyph_horizontal_padding_var = header_glyph_horizontal_padding_var.get()
+    config.header_glyph_vertical_padding_var = header_glyph_vertical_padding_var.get()
+    config.clockHorizontalPaddingVar = clockHorizontalPaddingVar.get()
     config.text_padding_entry = text_padding_entry.get()
     config.VBG_Horizontal_Padding_entry = VBG_Horizontal_Padding_entry.get()
     config.VBG_Vertical_Padding_entry = VBG_Vertical_Padding_entry.get()
@@ -3448,6 +3532,8 @@ def save_settings(config: Config):
     config.folderBoxArtPaddingVar = folderBoxArtPaddingVar.get()
     config.main_menu_style_var = main_menu_style_var.get()
     config.battery_charging_style_var = battery_charging_style_var.get()
+    config.clock_format_var = clock_format_var.get()
+    config.clock_alignment_var = clock_alignment_var.get()
     config.version_var = version_var.get()
     config.global_alignment_var = global_alignment_var.get()
     config.selected_overlay_var = selected_overlay_var.get()
@@ -3469,6 +3555,7 @@ def save_settings(config: Config):
     config.developer_preview_var = developer_preview_var.get()
     config.show_file_counter_var = show_file_counter_var.get()
     config.show_console_name_var = show_console_name_var.get()
+    config.show_charging_battery_var = show_charging_battery_var.get()
     config.save_config()
     on_change()
 
@@ -3478,7 +3565,8 @@ def load_settings(config: Config):
     deviceScreenWidthVar.set(config.deviceScreenWidthVar)
     textPaddingVar.set(config.textPaddingVar)
     header_glyph_horizontal_padding_var.set(config.header_glyph_horizontal_padding_var)
-    header_glyph_horizontal_padding_var.set(config.header_glyph_horizontal_padding_var)
+    header_glyph_vertical_padding_var.set(config.header_glyph_vertical_padding_var)
+    clockHorizontalPaddingVar.set(config.clockHorizontalPaddingVar)
     VBG_Horizontal_Padding_entry.delete(0, tk.END)
     VBG_Horizontal_Padding_entry.insert(0, config.VBG_Horizontal_Padding_entry)
     VBG_Vertical_Padding_entry.delete(0, tk.END)
@@ -3536,6 +3624,8 @@ def load_settings(config: Config):
     selected_overlay_var.set(config.selected_overlay_var)
     main_menu_style_var.set(config.main_menu_style_var)
     battery_charging_style_var.set(config.battery_charging_style_var)
+    clock_format_var.set(config.clock_format_var)
+    clock_alignment_var.set(config.clock_alignment_var)
     am_theme_directory_path.set(config.am_theme_directory_path)
     theme_directory_path.set(config.theme_directory_path)
     catalogue_directory_path.set(config.catalogue_directory_path)
@@ -3555,6 +3645,7 @@ def load_settings(config: Config):
     developer_preview_var.set(config.developer_preview_var)
     show_file_counter_var.set(config.show_file_counter_var)
     show_console_name_var.set(config.show_console_name_var)
+    show_charging_battery_var.set(config.show_charging_battery_var)
 
 
 
@@ -3567,7 +3658,8 @@ deviceScreenHeightVar.trace_add("write", lambda *args: save_settings(global_conf
 textPaddingVar.trace_add("write", lambda *args: save_settings(global_config))
 VBG_Horizontal_Padding_var.trace_add("write",lambda *args: save_settings(global_config))
 header_glyph_horizontal_padding_var.trace_add("write",lambda *args: save_settings(global_config))
-header_glyph_horizontal_padding_var.trace_add("write",lambda *args: save_settings(global_config))
+header_glyph_vertical_padding_var.trace_add("write",lambda *args: save_settings(global_config))
+clockHorizontalPaddingVar.trace_add("write",lambda *args: save_settings(global_config))
 VBG_Vertical_Padding_var.trace_add("write",lambda *args: save_settings(global_config))
 bubblePaddingVar.trace_add("write", lambda *args: save_settings(global_config))
 itemsPerScreenVar.trace_add("write", lambda *args: save_settings(global_config))
@@ -3585,6 +3677,7 @@ iconHexVar.trace_add("write", lambda *args: save_settings(global_config))
 batteryChargingHexVar.trace_add("write", lambda *args: save_settings(global_config))
 show_file_counter_var.trace_add("write", lambda *args: save_settings(global_config))
 show_console_name_var.trace_add("write", lambda *args: save_settings(global_config))
+show_charging_battery_var.trace_add("write", lambda *args: save_settings(global_config))
 include_overlay_var.trace_add("write", lambda *args: save_settings(global_config))
 show_glyphs_var.trace_add("write", lambda *args: save_settings(global_config))
 alternate_menu_names_var.trace_add("write", lambda *args: save_settings(global_config))
@@ -3605,6 +3698,8 @@ global_alignment_var.trace_add("write", lambda *args: save_settings(global_confi
 selected_overlay_var.trace_add("write",lambda *args: save_settings(global_config))
 main_menu_style_var.trace_add("write",lambda *args: save_settings(global_config))
 battery_charging_style_var.trace_add("write",lambda *args: save_settings(global_config))
+clock_format_var.trace_add("write",lambda *args: save_settings(global_config))
+clock_alignment_var.trace_add("write",lambda *args: save_settings(global_config))
 am_theme_directory_path.trace_add("write", lambda *args: save_settings(global_config))
 theme_directory_path.trace_add("write", lambda *args: save_settings(global_config))
 catalogue_directory_path.trace_add("write", lambda *args: save_settings(global_config))
