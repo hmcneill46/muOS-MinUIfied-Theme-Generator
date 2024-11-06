@@ -46,7 +46,10 @@ class Config: # TODO delete unneeded variables
         self.deviceScreenWidthVar = 640
         self.textPaddingVar = 40
         self.header_glyph_horizontal_padding_var = 10
-        self.header_glyph_vertical_padding_var = 12.5
+        self.header_glyph_height_var = 20
+        self.header_glyph_bubble_height_var = 35
+        self.header_text_bubble_height_var = 35
+        self.header_text_height_var = 20
         self.clockHorizontalPaddingVar = 10
         self.pageTitlePaddingVar = 10
         self.text_padding_entry = 40
@@ -75,6 +78,7 @@ class Config: # TODO delete unneeded variables
         self.icon_hex_entry = "ffffff"
         self.include_overlay_var = False
         self.show_glyphs_var = False
+        self.show_header_bubbles_var = False
         self.alternate_menu_names_var = False
         self.remove_right_menu_guides_var = False
         self.remove_left_menu_guides_var = False
@@ -218,6 +222,209 @@ def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,rende
         draw.text((smallerTextX,in_smaller_bubble_text_y),buttonText,font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
     return(image.resize((int(image.size[0]/render_factor),int(image.size[1]/render_factor)), Image.LANCZOS))
 
+def generateHeaderBubbles(config:Config,render_factor):
+    image = Image.new("RGBA", (int(config.deviceScreenWidthVar)*render_factor, int(config.deviceScreenHeightVar)*render_factor), (255, 255, 255, 0))
+    draw = ImageDraw.Draw(image)
+
+    accent_colour = config.deselectedFontHexVar
+
+    if int(config.header_text_height_var) < 10:
+        raise ValueError("Header Text Height Too Small!")
+    elif int(config.header_text_height_var) > int(config.headerHeightVar):
+        raise ValueError("Header Text Height Too Large!")
+    else:
+        heightOfText = int(int(config.header_text_height_var)*render_factor)
+
+    fontHeight = int(int((heightOfText*(4/3))/render_factor)*render_factor) ## TODO Make this not specific to BPreplay
+    headerFont = ImageFont.truetype(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),fontHeight)
+    
+    if int(config.header_text_bubble_height_var) - int(config.header_text_height_var) > 0:
+        headerTextPadding = int(config.header_text_bubble_height_var)-int(config.header_text_height_var)
+        print("header text padding",headerTextPadding)
+    else:
+        raise ValueError("Header Glyph Height Too Large!")
+
+    headerMiddleY = ((int(config.headerHeightVar)*render_factor)/2)
+
+    print("device screen height",int(config.deviceScreenHeightVar)*render_factor)
+    print("header middle y",headerMiddleY)
+
+    if "generate bubble for clock":
+        clock_padding = int(config.clockHorizontalPaddingVar)
+        maxTimeTextWidth = 0
+
+        if config.clock_format_var == "12 Hour":
+            for n in range(10):
+                timeText = f"{n}{n}:{n}{n} AM" ## TODO Make this use only real times, eg first n should be 0,1,2 and third n should be 0,1,2,3,4,5,6
+                timeTextBbox = headerFont.getbbox(timeText)
+                timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
+                if timeTextWidth > maxTimeTextWidth:
+                    maxTimeTextWidth = timeTextWidth
+            for n in range(10):
+                timeText = f"{n}:{n} PM"
+                timeTextBbox = headerFont.getbbox(timeText)
+                timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
+                if timeTextWidth > maxTimeTextWidth:
+                    maxTimeTextWidth = timeTextWidth
+            
+        else:
+            for n in range(10):
+                timeText = f"{n}{n}:{n}{n}" 
+                timeTextBbox = headerFont.getbbox(timeText)
+                timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
+                if timeTextWidth > maxTimeTextWidth:
+                    maxTimeTextWidth = timeTextWidth
+        if config.clock_alignment_var == "Left":
+            timeText_X = clock_padding*render_factor
+        elif config.clock_alignment_var == "Centre":
+            timeText_X = int((int(config.deviceScreenWidthVar)*render_factor)/2-(maxTimeTextWidth/2))
+        elif config.clock_alignment_var == "Right":
+            timeText_X = int(int(config.deviceScreenWidthVar)*render_factor) - (maxTimeTextWidth + clock_padding*render_factor)
+        else:
+            raise ValueError("Invalid clock alignment")
+                
+        draw.rounded_rectangle([(timeText_X-(headerTextPadding*render_factor),headerMiddleY-((int(config.header_text_bubble_height_var)*render_factor)/2)), #bottom left point
+                                (timeText_X+maxTimeTextWidth+(headerTextPadding*render_factor),headerMiddleY+((int(config.header_text_bubble_height_var)*render_factor)/2))], # Top right point
+                                radius=math.ceil((int(config.header_text_bubble_height_var)/2)*render_factor),
+                                fill = hex_to_rgb(accent_colour,alpha=0.133)
+                                )
+    if float(config.header_glyph_height_var) < 10:
+        raise ValueError("Header Glyph Height Too Small!")
+    elif float(config.header_glyph_height_var) > int(config.headerHeightVar):
+        raise ValueError("Header Glyph Height Too Large!")
+    else:
+        heightOfGlyph = int(float(config.header_glyph_height_var)*render_factor)
+
+    if int(config.header_glyph_bubble_height_var) - int(config.header_glyph_height_var) > 0:
+        headerGlyphPadding = int(config.header_glyph_bubble_height_var)-int(config.header_glyph_height_var)
+        print("header glyph padding",headerGlyphPadding)
+    else:
+        raise ValueError("Header Glyph Height Too Large!")
+    if "generate bubble for glyphs":
+
+        #Battery not charging stuff
+        capacityGlyph = "capacity_30.png"
+        capacity_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{capacityGlyph[:-4]}[5x].png")
+        
+        capacity_image_coloured = change_logo_color(capacity_image_path,accent_colour)
+        capacity_image_coloured = capacity_image_coloured.resize((int(heightOfGlyph*(capacity_image_coloured.size[0]/capacity_image_coloured.size[1])),heightOfGlyph), Image.LANCZOS)
+        glyph_sides_padding = int(config.header_glyph_horizontal_padding_var)
+        glyph_between_padding = 5
+
+        networkGlyph = "network_active"
+        network_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{networkGlyph}[5x].png")
+        network_image_coloured = change_logo_color(network_image_path,accent_colour)
+        network_image_coloured = network_image_coloured.resize((int(heightOfGlyph*(network_image_coloured.size[0]/network_image_coloured.size[1])),heightOfGlyph), Image.LANCZOS)
+
+        glyphTotalWidth = (capacity_image_coloured.size[0] + glyph_between_padding*render_factor + network_image_coloured.size[0])
+        glyphBubbleXPos = int(int(config.deviceScreenWidthVar)*render_factor) - (glyphTotalWidth + glyph_sides_padding*render_factor)
+
+        
+
+        draw.rounded_rectangle([(glyphBubbleXPos-(headerGlyphPadding*render_factor),headerMiddleY-((int(config.header_glyph_bubble_height_var)*render_factor)/2)), #bottom left point
+                                (glyphBubbleXPos+glyphTotalWidth+(headerGlyphPadding*render_factor),headerMiddleY+((int(config.header_glyph_bubble_height_var)*render_factor)/2))], # Top right point
+                                radius=math.ceil((int(config.header_glyph_bubble_height_var)/2)*render_factor),
+                                fill = hex_to_rgb(accent_colour,alpha=0.133)
+                                )
+
+
+        
+    return(image)
+
+
+def generatePilImageMuOSOverlay(config:Config,muOSpageName,render_factor):
+    muOSpageNameDict = {"muxlaunch":"MAIN MENU",
+                        "muxconfig":"CONFIGURATION",
+                        "muxinfo":"INFORMATION",
+                        "muxapp":"APPLICATIONS",
+                        "muxplore":"ROMS",
+                        "muxfavourite":"FAVOURITES",
+                        "muxhistory":"HISTORY"}
+    current_time = datetime.now()
+    image = Image.new("RGBA", (int(config.deviceScreenWidthVar)*render_factor, int(config.deviceScreenHeightVar)*render_factor), (255, 255, 255, 0))
+    draw = ImageDraw.Draw(image)
+    if float(config.header_glyph_height_var) < 10:
+        raise ValueError("Header Glyph Height Too Small!")
+    elif float(config.header_glyph_height_var) > int(config.headerHeightVar):
+        raise ValueError("Header Glyph Height Too Large!")
+    else:
+        heightOfGlyph = int(float(config.header_glyph_height_var)*render_factor)
+    accent_colour = config.deselectedFontHexVar
+    if "showing battery and network":
+        glyphYPos = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfGlyph/2))
+
+        #Battery not charging stuff
+        capacityGlyph = "capacity_30.png"
+        capacity_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{capacityGlyph[:-4]}[5x].png")
+        
+        capacity_image_coloured = change_logo_color(capacity_image_path,accent_colour)
+        capacity_image_coloured = capacity_image_coloured.resize((int(heightOfGlyph*(capacity_image_coloured.size[0]/capacity_image_coloured.size[1])),heightOfGlyph), Image.LANCZOS)
+        glyph_sides_padding = int(config.header_glyph_horizontal_padding_var)
+        glyph_between_padding = 5
+        current_x_pos = int(int(config.deviceScreenWidthVar)*render_factor - (glyph_sides_padding*render_factor + capacity_image_coloured.size[0]))
+        if not config.show_charging_battery_var:
+            image.paste(capacity_image_coloured,(current_x_pos,glyphYPos),capacity_image_coloured)
+
+        capacityChargingGlyph = "70"
+        capacity_charging_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{BatteryChargingStyleOptionsDict[config.battery_charging_style_var]}{capacityChargingGlyph}[5x].png")
+        capacity_charging_image_coloured = change_logo_color(capacity_charging_image_path,config.batteryChargingHexVar)
+        capacity_charging_image_coloured = capacity_charging_image_coloured.resize((int(heightOfGlyph*(capacity_charging_image_coloured.size[0]/capacity_charging_image_coloured.size[1])),heightOfGlyph), Image.LANCZOS)
+        if config.show_charging_battery_var:
+            image.paste(capacity_charging_image_coloured,(current_x_pos,glyphYPos),capacity_charging_image_coloured)
+
+        networkGlyph = "network_active"
+        network_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{networkGlyph}[5x].png")
+        network_image_coloured = change_logo_color(network_image_path,accent_colour)
+        network_image_coloured = network_image_coloured.resize((int(heightOfGlyph*(network_image_coloured.size[0]/network_image_coloured.size[1])),heightOfGlyph), Image.LANCZOS)
+        current_x_pos = int(current_x_pos - (glyph_between_padding*render_factor + network_image_coloured.size[0]))
+        image.paste(network_image_coloured,(current_x_pos,glyphYPos),network_image_coloured)
+    if int(config.header_text_height_var) < 10:
+        raise ValueError("Header Text Height Too Small!")
+    elif int(config.header_text_height_var) > int(config.headerHeightVar):
+        raise ValueError("Header Text Height Too Large!")
+    else:
+        heightOfText = int(int(config.header_text_height_var)*render_factor)
+
+
+    fontSize = int(int((heightOfText*(4/3))/render_factor)*render_factor) ## TODO Make this not specific to BPreplay
+    headerFont = ImageFont.truetype(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),fontSize)
+    if "showing time":
+        clock_padding = int(config.clockHorizontalPaddingVar)
+        
+        if config.clock_format_var == "12 Hour":
+            timeText = current_time.strftime("%I:%M %p")
+        else:
+            timeText = current_time.strftime("%H:%M")
+        
+        timeTextBbox = headerFont.getbbox(timeText)
+        timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
+        if config.clock_alignment_var == "Left":
+            timeText_X = clock_padding*render_factor
+        elif config.clock_alignment_var == "Centre":
+            timeText_X = int((int(config.deviceScreenWidthVar)*render_factor)/2-(timeTextWidth/2))
+        elif config.clock_alignment_var == "Right":
+            timeText_X = int(int(config.deviceScreenWidthVar)*render_factor) - (timeTextWidth + clock_padding*render_factor)
+        else:
+            raise ValueError("Invalid clock alignment")
+        timeText_Y = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfText/2))-timeTextBbox[1]
+        draw.text((timeText_X,timeText_Y),timeText,font=headerFont,fill=(*ImageColor.getrgb(f"#{accent_colour}"), 255))
+    if config.show_console_name_var:
+        page_title_padding = int(config.pageTitlePaddingVar)
+        pageTitle = muOSpageNameDict.get(muOSpageName, "UNKNOWN")
+        pageTitleBbox = headerFont.getbbox(pageTitle)
+        pageTitleWidth = pageTitleBbox[2] - pageTitleBbox[0]
+        if config.page_title_alignment_var == "Left":
+            pageTitle_X = page_title_padding*render_factor
+        elif config.page_title_alignment_var == "Centre":
+            pageTitle_X = int((int(config.deviceScreenWidthVar)*render_factor)/2-(pageTitleWidth/2))
+        elif config.page_title_alignment_var == "Right":
+            pageTitle_X = int(int(config.deviceScreenWidthVar)*render_factor) - (pageTitleWidth + page_title_padding*render_factor)
+        else:
+            raise ValueError("Invalid page title alignment")
+        pageTitle_Y = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfText/2))-pageTitleBbox[1]
+        draw.text((pageTitle_X,pageTitle_Y),pageTitle,font=headerFont,fill=(*ImageColor.getrgb(f"#{accent_colour}"), 255))
+
+    return(image)
 
 def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_factor,config:Config,lhsButtons=[["POWER","SLEEP"]]):
     image = Image.new("RGBA", (int(config.deviceScreenWidthVar)*render_factor, int(config.deviceScreenHeightVar)*render_factor), (255, 255, 255, 0))
@@ -528,7 +735,11 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     
     if (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp" or muOSSystemName == "muxplore" or muOSSystemName == "muxfavourite" or muOSSystemName == "muxhistory"):
         image = Image.alpha_composite(image, menuHelperGuides)
-        
+    
+    if config.show_header_bubbles_var:
+        headerBubbles = generateHeaderBubbles(config,render_factor)
+        image = Image.alpha_composite(image, headerBubbles)
+
     if forPreview:
         muOSOverlay = generatePilImageMuOSOverlay(config,muOSSystemName,render_factor)
         image = Image.alpha_composite(image, muOSOverlay)
@@ -958,96 +1169,14 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     image = Image.alpha_composite(image, menuHelperGuides)
 
     ## Show what header items will actually look like
+
+    if config.show_header_bubbles_var:
+        headerBubbles = generateHeaderBubbles(config,render_factor)
+        image = Image.alpha_composite(image, headerBubbles)
+    
     if forPreview:
         muOSOverlay = generatePilImageMuOSOverlay(config,"muxlaunch",render_factor)
         image = Image.alpha_composite(image, muOSOverlay)
-    return(image)
-
-def generatePilImageMuOSOverlay(config:Config,muOSpageName,render_factor):
-    muOSpageNameDict = {"muxlaunch":"MAIN MENU",
-                        "muxconfig":"CONFIGURATION",
-                        "muxinfo":"INFORMATION",
-                        "muxapp":"APPLICATIONS",
-                        "muxplore":"ROMS",
-                        "muxfavourite":"FAVOURITES",
-                        "muxhistory":"HISTORY"}
-    current_time = datetime.now()
-    image = Image.new("RGBA", (int(config.deviceScreenWidthVar)*render_factor, int(config.deviceScreenHeightVar)*render_factor), (255, 255, 255, 0))
-    draw = ImageDraw.Draw(image)
-    if float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var)) >=10:
-        heightOfStuffInHeader = int((float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var)))*render_factor)
-    else:
-        raise ValueError("Header Height is too small or vertical header item padding too large!")
-    accent_colour = config.deselectedFontHexVar
-    if "showing battery and network":
-        
-        
-        glyphYPos = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfStuffInHeader/2))
-
-        #Battery not charging stuff
-        capacityGlyph = "capacity_30.png"
-        capacity_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{capacityGlyph[:-4]}[5x].png")
-        
-        capacity_image_coloured = change_logo_color(capacity_image_path,accent_colour)
-        capacity_image_coloured = capacity_image_coloured.resize((int(heightOfStuffInHeader*(capacity_image_coloured.size[0]/capacity_image_coloured.size[1])),heightOfStuffInHeader), Image.LANCZOS)
-        glyph_sides_padding = int(config.header_glyph_horizontal_padding_var)
-        glyph_between_padding = 5
-        current_x_pos = int(int(config.deviceScreenWidthVar)*render_factor - (glyph_sides_padding*render_factor + capacity_image_coloured.size[0]))
-        if not config.show_charging_battery_var:
-            image.paste(capacity_image_coloured,(current_x_pos,glyphYPos),capacity_image_coloured)
-
-        capacityChargingGlyph = "70"
-        capacity_charging_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{BatteryChargingStyleOptionsDict[config.battery_charging_style_var]}{capacityChargingGlyph}[5x].png")
-        capacity_charging_image_coloured = change_logo_color(capacity_charging_image_path,config.batteryChargingHexVar)
-        capacity_charging_image_coloured = capacity_charging_image_coloured.resize((int(heightOfStuffInHeader*(capacity_charging_image_coloured.size[0]/capacity_charging_image_coloured.size[1])),heightOfStuffInHeader), Image.LANCZOS)
-        if config.show_charging_battery_var:
-            image.paste(capacity_charging_image_coloured,(current_x_pos,glyphYPos),capacity_charging_image_coloured)
-
-        networkGlyph = "network_active"
-        network_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{networkGlyph}[5x].png")
-        network_image_coloured = change_logo_color(network_image_path,accent_colour)
-        network_image_coloured = network_image_coloured.resize((int(heightOfStuffInHeader*(network_image_coloured.size[0]/network_image_coloured.size[1])),heightOfStuffInHeader), Image.LANCZOS)
-        current_x_pos = int(current_x_pos - (glyph_between_padding*render_factor + network_image_coloured.size[0]))
-        image.paste(network_image_coloured,(current_x_pos,glyphYPos),network_image_coloured)
-
-    fontSize = int(int((heightOfStuffInHeader*(4/3))/render_factor)*render_factor) ## TODO Make this not specific to BPreplay
-    headerFont = ImageFont.truetype(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),fontSize)
-    if "showing time":
-        clock_padding = int(config.clockHorizontalPaddingVar)
-        
-        if config.clock_format_var == "12 Hour":
-            timeText = current_time.strftime("%I:%M %p")
-        else:
-            timeText = current_time.strftime("%H:%M")
-        
-        timeTextBbox = headerFont.getbbox(timeText)
-        timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
-        if config.clock_alignment_var == "Left":
-            timeText_X = clock_padding*render_factor
-        elif config.clock_alignment_var == "Centre":
-            timeText_X = int((int(config.deviceScreenWidthVar)*render_factor)/2-(timeTextWidth/2))
-        elif config.clock_alignment_var == "Right":
-            timeText_X = int(int(config.deviceScreenWidthVar)*render_factor) - (timeTextWidth + clock_padding*render_factor)
-        else:
-            raise ValueError("Invalid clock alignment")
-        timeText_Y = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfStuffInHeader/2))-timeTextBbox[1]
-        draw.text((timeText_X,timeText_Y),timeText,font=headerFont,fill=(*ImageColor.getrgb(f"#{accent_colour}"), 255))
-    if config.show_console_name_var:
-        page_title_padding = int(config.pageTitlePaddingVar)
-        pageTitle = muOSpageNameDict.get(muOSpageName, "UNKNOWN")
-        pageTitleBbox = headerFont.getbbox(pageTitle)
-        pageTitleWidth = pageTitleBbox[2] - pageTitleBbox[0]
-        if config.page_title_alignment_var == "Left":
-            pageTitle_X = page_title_padding*render_factor
-        elif config.page_title_alignment_var == "Centre":
-            pageTitle_X = int((int(config.deviceScreenWidthVar)*render_factor)/2-(pageTitleWidth/2))
-        elif config.page_title_alignment_var == "Right":
-            pageTitle_X = int(int(config.deviceScreenWidthVar)*render_factor) - (pageTitleWidth + page_title_padding*render_factor)
-        else:
-            raise ValueError("Invalid page title alignment")
-        pageTitle_Y = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfStuffInHeader/2))-pageTitleBbox[1]
-        draw.text((pageTitle_X,pageTitle_Y),pageTitle,font=headerFont,fill=(*ImageColor.getrgb(f"#{accent_colour}"), 255))
-
     return(image)
 
 def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor,config:Config,transparent=False,forPreview=False):
@@ -1440,6 +1569,10 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
     if config.transparent_text_var:
         image = Image.alpha_composite(image, transparent_text_image)
     image = Image.alpha_composite(image, menuHelperGuides)
+
+    if config.show_header_bubbles_var:
+        headerBubbles = generateHeaderBubbles(config,render_factor)
+        image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
         muOSOverlay = generatePilImageMuOSOverlay(config,"muxlaunch",render_factor)
@@ -2373,15 +2506,17 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         generateIndividualButtonGlyph(button,selected_font_path,accent_hex,render_factor, button_height).save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","footer",f"{button.lower()}.png"), format='PNG')
     capacities = [0,10,20,30,40,50,60,70,80,90,100]
     networkGlyphNames = ["network_active", "network_normal"]
-    if float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var)) >=10:
-        heightOfGlyphs = int((float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var))))
+    if float(config.header_glyph_height_var) < 10:
+        raise ValueError("Header Glyph Height Too Small!")
+    elif float(config.header_glyph_height_var) > int(config.headerHeightVar):
+        raise ValueError("Header Glyph Height Too Large!")
     else:
-        raise ValueError("Header Height is too small or vertical header item padding too large!")
+        heightOfGlyph = int(float(config.header_glyph_height_var))
 
     for capacity in capacities:
         capacity_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"capacity_{capacity}[5x].png")
         capacity_image = Image.open(capacity_image_path)
-        capacity_image = capacity_image.resize((int(heightOfGlyphs*(capacity_image.size[0]/capacity_image.size[1])),heightOfGlyphs), Image.LANCZOS)
+        capacity_image = capacity_image.resize((int(heightOfGlyph*(capacity_image.size[0]/capacity_image.size[1])),heightOfGlyph), Image.LANCZOS)
         capacity_image.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","header",f"capacity_{capacity}.png"), format='PNG')
 
         try:
@@ -2389,13 +2524,13 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         except:
             raise Exception("Battery Charging Style not found")
         capacity_charging_image = Image.open(capacity_charging_image_path)
-        capacity_charging_image = capacity_charging_image.resize((int(heightOfGlyphs*(capacity_charging_image.size[0]/capacity_charging_image.size[1])),heightOfGlyphs), Image.LANCZOS)
+        capacity_charging_image = capacity_charging_image.resize((int(heightOfGlyph*(capacity_charging_image.size[0]/capacity_charging_image.size[1])),heightOfGlyph), Image.LANCZOS)
         capacity_charging_image.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","header",f"capacity_charging_{capacity}.png"), format='PNG')
 
     for networkGlyph in networkGlyphNames:
         input_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{networkGlyph}[5x].png")
         image = Image.open(input_image_path)
-        image = image.resize((int(heightOfGlyphs*(image.size[0]/image.size[1])),heightOfGlyphs), Image.LANCZOS)
+        image = image.resize((int(heightOfGlyph*(image.size[0]/image.size[1])),heightOfGlyph), Image.LANCZOS)
         image.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","header",f"{networkGlyph}.png"), format='PNG')
 
     ## FONT STUFF
@@ -2408,9 +2543,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
     ## FOOTER FONT STUFF
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{in_bubble_font_size}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","footer","default.bin"))
-    heightOfStuffInHeader = int((float(config.headerHeightVar)-2*(float(config.header_glyph_vertical_padding_var)))*render_factor)
-    headerFontSize = int(int((heightOfStuffInHeader*(4/3))/render_factor))
-    print(headerFontSize)
+    headerFontSize = int(int((int(int(config.header_text_height_var)*render_factor)*(4/3))/render_factor))
     ## HEADER FONT STUFF
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{headerFontSize}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","header","default.bin"))
 
@@ -2898,6 +3031,7 @@ show_charging_battery_var = tk.IntVar()
 show_hidden_files_var = tk.IntVar()
 include_overlay_var = tk.IntVar()
 show_glyphs_var = tk.IntVar()
+show_header_bubbles_var = tk.IntVar()
 alternate_menu_names_var = tk.IntVar()
 remove_right_menu_guides_var = tk.IntVar()
 remove_left_menu_guides_var = tk.IntVar()
@@ -2974,7 +3108,10 @@ grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 textPaddingVar = tk.StringVar()
 VBG_Horizontal_Padding_var = tk.StringVar()
 header_glyph_horizontal_padding_var = tk.StringVar()
-header_glyph_vertical_padding_var = tk.StringVar()
+header_glyph_height_var = tk.StringVar()
+header_text_height_var = tk.StringVar()
+header_glyph_bubble_height_var = tk.StringVar()
+header_text_bubble_height_var = tk.StringVar()
 clockHorizontalPaddingVar = tk.StringVar()
 pageTitlePaddingVar = tk.StringVar()
 VBG_Vertical_Padding_var = tk.StringVar()
@@ -2999,6 +3136,8 @@ previewConsoleNameVar = tk.StringVar()
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="General Configurations", font=subtitle_font), sticky="w", next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Bubble Behind Header Items", variable=show_header_bubbles_var), sticky="w", next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Main Menu Style"), sticky="w")
 MainMenuStyleOptions = ["Horizontal", "Vertical", "Alt-Horizontal"]
@@ -3161,6 +3300,24 @@ grid_helper.add(tk.Label(scrollable_frame, text="Header Height (Usually same as 
 header_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=headerHeightVar)
 grid_helper.add(header_height_entry, next_row=True)
 
+grid_helper.add(tk.Label(scrollable_frame, text="Header Text Height:"), sticky="w")
+header_text_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_text_height_var)
+grid_helper.add(header_text_height_entry, next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Header glyphs Height:"), sticky="w")
+header_glyph_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_height_var)
+grid_helper.add(header_glyph_height_entry, next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Header Text Bubble Height:"), sticky="w")
+header_text_bubble_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_text_bubble_height_var)
+grid_helper.add(header_text_bubble_height_entry, next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Header glyphs Bubble Height:"), sticky="w")
+header_glyph_bubble_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_bubble_height_var)
+grid_helper.add(header_glyph_bubble_height_entry, next_row=True)
+
+
+
 # Option for individualItemHeight
 grid_helper.add(tk.Label(scrollable_frame, text="Approximate Footer Height:"), sticky="w")
 individual_item_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=approxFooterHeightVar)
@@ -3184,11 +3341,7 @@ grid_helper.add(rectangle_padding_entry, next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Vertical Padding for header glyphs:"), sticky="w")
-header_items_vertical_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_vertical_padding_var)
-grid_helper.add(header_items_vertical_padding_entry, next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Padding for header glpyhs:"), sticky="w")
+grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Padding for header glyphs:"), sticky="w")
 header_items_horizontal_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_horizontal_padding_var)
 grid_helper.add(header_items_horizontal_padding_entry, next_row=True)
 
@@ -3533,7 +3686,10 @@ def save_settings(config: Config):
         raise ValueError("Invalid device type format, cannot find screen dimensions")
     config.textPaddingVar = textPaddingVar.get()
     config.header_glyph_horizontal_padding_var = header_glyph_horizontal_padding_var.get()
-    config.header_glyph_vertical_padding_var = header_glyph_vertical_padding_var.get()
+    config.header_glyph_height_var = header_glyph_height_var.get()
+    config.header_text_height_var = header_text_height_var.get()
+    config.header_glyph_bubble_height_var = header_glyph_bubble_height_var.get()
+    config.header_text_bubble_height_var = header_text_bubble_height_var.get()
     config.clockHorizontalPaddingVar = clockHorizontalPaddingVar.get()
     config.pageTitlePaddingVar = pageTitlePaddingVar.get()
     config.text_padding_entry = text_padding_entry.get()
@@ -3562,6 +3718,7 @@ def save_settings(config: Config):
     config.icon_hex_entry = icon_hex_entry.get()
     config.include_overlay_var = include_overlay_var.get()
     config.show_glyphs_var = show_glyphs_var.get()
+    config.show_header_bubbles_var = show_header_bubbles_var.get()
     config.alternate_menu_names_var = alternate_menu_names_var.get()
     config.remove_right_menu_guides_var = remove_right_menu_guides_var.get()
     config.remove_left_menu_guides_var = remove_left_menu_guides_var.get()
@@ -3612,7 +3769,10 @@ def load_settings(config: Config):
     deviceScreenWidthVar.set(config.deviceScreenWidthVar)
     textPaddingVar.set(config.textPaddingVar)
     header_glyph_horizontal_padding_var.set(config.header_glyph_horizontal_padding_var)
-    header_glyph_vertical_padding_var.set(config.header_glyph_vertical_padding_var)
+    header_glyph_height_var.set(config.header_glyph_height_var)
+    header_text_height_var.set(config.header_text_height_var)
+    header_glyph_bubble_height_var.set(config.header_glyph_bubble_height_var)
+    header_text_bubble_height_var.set(config.header_text_bubble_height_var)
     clockHorizontalPaddingVar.set(config.clockHorizontalPaddingVar)
     pageTitlePaddingVar.set(config.pageTitlePaddingVar)
     VBG_Horizontal_Padding_entry.delete(0, tk.END)
@@ -3655,6 +3815,7 @@ def load_settings(config: Config):
     batteryChargingHexVar.set(config.batteryChargingHexVar)
     include_overlay_var.set(config.include_overlay_var)
     show_glyphs_var.set(config.show_glyphs_var)
+    show_header_bubbles_var.set(config.show_header_bubbles_var)
     alternate_menu_names_var.set(config.alternate_menu_names_var)
     remove_right_menu_guides_var.set(config.remove_right_menu_guides_var)
     remove_left_menu_guides_var.set(config.remove_left_menu_guides_var)
@@ -3707,7 +3868,10 @@ deviceScreenHeightVar.trace_add("write", lambda *args: save_settings(global_conf
 textPaddingVar.trace_add("write", lambda *args: save_settings(global_config))
 VBG_Horizontal_Padding_var.trace_add("write",lambda *args: save_settings(global_config))
 header_glyph_horizontal_padding_var.trace_add("write",lambda *args: save_settings(global_config))
-header_glyph_vertical_padding_var.trace_add("write",lambda *args: save_settings(global_config))
+header_glyph_height_var.trace_add("write",lambda *args: save_settings(global_config))
+header_text_height_var.trace_add("write",lambda *args: save_settings(global_config))
+header_glyph_bubble_height_var.trace_add("write",lambda *args: save_settings(global_config))
+header_text_bubble_height_var.trace_add("write",lambda *args: save_settings(global_config))
 clockHorizontalPaddingVar.trace_add("write",lambda *args: save_settings(global_config))
 pageTitlePaddingVar.trace_add("write",lambda *args: save_settings(global_config))
 VBG_Vertical_Padding_var.trace_add("write",lambda *args: save_settings(global_config))
@@ -3730,6 +3894,7 @@ show_console_name_var.trace_add("write", lambda *args: save_settings(global_conf
 show_charging_battery_var.trace_add("write", lambda *args: save_settings(global_config))
 include_overlay_var.trace_add("write", lambda *args: save_settings(global_config))
 show_glyphs_var.trace_add("write", lambda *args: save_settings(global_config))
+show_header_bubbles_var.trace_add("write", lambda *args: save_settings(global_config))
 alternate_menu_names_var.trace_add("write", lambda *args: save_settings(global_config))
 remove_right_menu_guides_var.trace_add("write", lambda *args: save_settings(global_config))
 remove_left_menu_guides_var.trace_add("write", lambda *args: save_settings(global_config))
