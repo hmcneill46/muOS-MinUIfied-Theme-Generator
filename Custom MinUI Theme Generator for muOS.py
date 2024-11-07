@@ -227,6 +227,55 @@ def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,rende
         draw.text((smallerTextX,in_smaller_bubble_text_y),buttonText,font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
     return(image.resize((int(image.size[0]/render_factor),int(image.size[1]/render_factor)), Image.LANCZOS))
 
+def getTimeWithWidth(selected_font_path, timeFormat, find="max"):
+    TestFont = ImageFont.truetype(selected_font_path, 100)
+    stringsByActualSize = {"0": 0, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0, "7": 0, "8": 0, "9": 0, "AM": 0, "PM": 0}
+    
+    # Calculate the width of each character by repeating it
+    for n in stringsByActualSize.keys():
+        numberMultiplier = 100
+        stringsByActualSizeBbox = TestFont.getbbox(f"{str(n) * numberMultiplier}")
+        stringsByActualSizeWidth = stringsByActualSizeBbox[2] - stringsByActualSizeBbox[0]
+        stringsByActualSize[n] = stringsByActualSizeWidth
+    
+    # Sort by width to easily find min or max
+    sortedStringsByActualSize = dict(sorted(stringsByActualSize.items(), key=lambda item: item[1]))
+    
+    # Set the criteria for finding the desired width based on `find` argument
+    if find == "max":
+        lastDigit = max((s for s in sortedStringsByActualSize if any(char.isdigit() for char in s)), key=sortedStringsByActualSize.get)
+        secondLastDigit = max((s for s in sortedStringsByActualSize if s.isdigit() and int(s) < 6), key=sortedStringsByActualSize.get)
+    elif find == "min":
+        lastDigit = min((s for s in sortedStringsByActualSize if any(char.isdigit() for char in s)), key=sortedStringsByActualSize.get)
+        secondLastDigit = min((s for s in sortedStringsByActualSize if s.isdigit() and int(s) < 6), key=sortedStringsByActualSize.get)
+    else:
+        raise ValueError("Invalid option for 'find'. Choose 'max' or 'min'.")
+
+    firstDigits = None
+    widthResult = 0 if find == "max" else float('inf')
+    possibleFirstDigits = range(1, 13) if timeFormat == "12 Hour" else range(0, 24)
+    
+    # Adjust search logic for max or min width
+    for n in possibleFirstDigits:
+        currentString = str(n).zfill(2)
+        digit1, digit2 = currentString[0], currentString[1]
+        width1, width2 = sortedStringsByActualSize[digit1], sortedStringsByActualSize[digit2]
+        currentWidth = width1 + width2
+        
+        if (find == "max" and currentWidth > widthResult) or (find == "min" and currentWidth < widthResult):
+            widthResult = currentWidth
+            firstDigits = currentString
+
+    if timeFormat == "12 Hour":
+        suffex = max((s for s in sortedStringsByActualSize if not any(char.isdigit() for char in s)), key=sortedStringsByActualSize.get) if find == "max" else \
+                 min((s for s in sortedStringsByActualSize if not any(char.isdigit() for char in s)), key=sortedStringsByActualSize.get)
+        timeText = f"{firstDigits}:{secondLastDigit}{lastDigit} {suffex}"
+    else:
+        timeText = f"{firstDigits}:{secondLastDigit}{lastDigit}"
+    
+    return timeText
+
+
 def generateHeaderBubbles(config:Config,render_factor,accent_colour=None,bubble_alpha=0.133):
     image = Image.new("RGBA", (int(config.deviceScreenWidthVar)*render_factor, int(config.deviceScreenHeightVar)*render_factor), (255, 255, 255, 0))
     draw = ImageDraw.Draw(image)
@@ -259,33 +308,10 @@ def generateHeaderBubbles(config:Config,render_factor,accent_colour=None,bubble_
     if "generate bubble for clock":
         clock_left_padding = int(config.clockHorizontalLeftPaddingVar)
         clock_right_padding = int(config.clockHorizontalRightPaddingVar)
-        maxTimeTextWidth = 0
 
-        if config.clock_format_var == "12 Hour":
-            for n1 in range(1,13):
-                for n2 in range(6):
-                    for n in range(10):
-                        timeText = f"{str(n1).zfill(2)}:{n2}{n} AM" ## TODO Make this use only real times, eg first n should be 0,1,2 and third n should be 0,1,2,3,4,5,6
-                        timeTextBbox = headerFont.getbbox(timeText)
-                        timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
-                        if timeTextWidth > maxTimeTextWidth:
-                            maxTimeTextWidth = timeTextWidth
-                        
-                        timeText = f"{str(n1).zfill(2)}:{n2}{n} PM"
-                        timeTextBbox = headerFont.getbbox(timeText)
-                        timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
-                        if timeTextWidth > maxTimeTextWidth:
-                            maxTimeTextWidth = timeTextWidth
-            
-        else:
-            for n1 in range(24):
-                for n2 in range(6):
-                    for n in range(10):
-                        timeText = f"{str(n).zfill(2)}:{n2}{n}" 
-                        timeTextBbox = headerFont.getbbox(timeText)
-                        timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
-                        if timeTextWidth > maxTimeTextWidth:
-                            maxTimeTextWidth = timeTextWidth
+        timeText = getTimeWithWidth(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),config.clock_format_var,find="max")
+        maxTimeTextWidth = headerFont.getbbox(timeText)[2] - headerFont.getbbox(timeText)[0]
+
         if config.clock_alignment_var == "Left":
             timeText_X = clock_left_padding*render_factor
         elif config.clock_alignment_var == "Centre":
@@ -453,6 +479,8 @@ def generatePilImageMuOSOverlay(config:Config,muOSpageName,render_factor):
             timeText = current_time.strftime("%I:%M %p")
         else:
             timeText = current_time.strftime("%H:%M")
+        
+        timeText = getTimeWithWidth(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),config.clock_format_var,find="min")
         
         timeTextBbox = headerFont.getbbox(timeText)
         timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
