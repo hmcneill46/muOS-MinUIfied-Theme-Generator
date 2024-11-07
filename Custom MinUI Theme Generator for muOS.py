@@ -25,7 +25,7 @@ import copy
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
-## TODO look into center align and left align
+## TODO look into centre align and left align
 ## TODO make header resizable
 
 if getattr(sys, 'frozen', False):
@@ -203,10 +203,10 @@ def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,rende
         image = Image.new("RGBA", (button_height*render_factor, button_height*render_factor), (255, 255, 255, 0))
         draw = ImageDraw.Draw(image)
 
-        circleCenterX = ((button_height*render_factor)/2)
+        circleCentreX = ((button_height*render_factor)/2)
         draw.ellipse((0, 0,button_height*render_factor, button_height*render_factor),fill=f"#{colour_hex}")
         singleLetterWidth = sl_text_bbox[2]-sl_text_bbox[0]
-        smallerTextX = circleCenterX-(singleLetterWidth/2)
+        smallerTextX = circleCentreX-(singleLetterWidth/2)
         draw.text(( smallerTextX,single_letter_text_y), buttonText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
 
     else:
@@ -480,8 +480,9 @@ def generatePilImageMuOSOverlay(config:Config,muOSpageName,render_factor):
         else:
             timeText = current_time.strftime("%H:%M")
         
-        timeText = getTimeWithWidth(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),config.clock_format_var,find="min")
-        
+        #timeText = getTimeWithWidth(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),config.clock_format_var,find="max")
+        #timeText = getTimeWithWidth(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),config.clock_format_var,find="min")
+
         timeTextBbox = headerFont.getbbox(timeText)
         timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
         if config.clock_alignment_var == "Left":
@@ -667,11 +668,11 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
             realLhsPointer+=horizontal_padding*render_factor
             for pair in lhsButtons:
                 if len(pair[0]) == 1:
-                    circleCenterX = realLhsPointer+((guide_small_bubble_height*render_factor)/2)
-                    draw.ellipse((circleCenterX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCenterX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
+                    circleCentreX = realLhsPointer+((guide_small_bubble_height*render_factor)/2)
+                    draw.ellipse((circleCentreX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCentreX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
                     smallerTextBbox = singleLetterFont.getbbox(pair[0])
                     smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                    smallerTextX = circleCenterX-(smallerTextWidth/2)
+                    smallerTextX = circleCentreX-(smallerTextWidth/2)
                     draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
                     realLhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
 
@@ -704,11 +705,11 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
             realRhsPointer+=horizontal_padding*render_factor
             for pair in rhsButtons:
                 if len(pair[0]) == 1:
-                    circleCenterX = realRhsPointer+((guide_small_bubble_height*render_factor)/2)
-                    draw.ellipse((circleCenterX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCenterX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
+                    circleCentreX = realRhsPointer+((guide_small_bubble_height*render_factor)/2)
+                    draw.ellipse((circleCentreX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCentreX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
                     smallerTextBbox = singleLetterFont.getbbox(pair[0])
                     smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                    smallerTextX = circleCenterX-(smallerTextWidth/2)
+                    smallerTextX = circleCentreX-(smallerTextWidth/2)
                     draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
                     realRhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
 
@@ -769,7 +770,6 @@ def getTotalBubbleWidth(buttons,internalBubbleFont,bubbleFont,initalPadding,larg
 
 def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems,textPadding, rectanglePadding, ItemsPerScreen, bg_hex, selected_font_hex, deselected_font_hex, bubble_hex, render_factor,config:Config,numScreens=0,screenIndex=0,fileCounter="",folderName = None,transparent=False, forPreview=False):
     progress_bar['value'] +=1
-    #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
     if not transparent:
         image = Image.new("RGBA", (int(config.deviceScreenWidthVar) * render_factor, int(config.deviceScreenHeightVar) * render_factor), bg_rgb)
@@ -890,7 +890,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         ascent, descent = font.getmetrics()
         text_height = ascent + descent
 
-        # Calculate the text's y-position by centering it vertically within the rectangle
+        # Calculate the text's y-position by centreing it vertically within the rectangle
         text_y = middle_y - (text_height / 2)
 
         corner_radius = availableHeight // 2
@@ -1009,7 +1009,6 @@ def cut_out_image(original_image, logo_image, coordinates):
 
 def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor,config:Config,transparent=False,forPreview=False):
     progress_bar['value']+=1
-    #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
 
     # Create image
@@ -1115,9 +1114,9 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     text_y = top_row_bubble_middle - (text_height / 2)
 
 
-    bubble_center_x =  explore_middle
+    bubble_centre_x =  explore_middle
     textColour = selected_font_hex if workingIndex == 0 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 0 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1143,9 +1142,9 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         textString = "Favourites"
     text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
-    bubble_center_x =  favourite_middle
+    bubble_centre_x =  favourite_middle
     textColour = selected_font_hex if workingIndex == 1 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 1 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1171,9 +1170,9 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         textString = "History"
     text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
-    bubble_center_x =  history_middle
+    bubble_centre_x =  history_middle
     textColour = selected_font_hex if workingIndex == 2 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 2 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1198,9 +1197,9 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         textString = "Utilities"
     text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
-    bubble_center_x =  apps_middle
+    bubble_centre_x =  apps_middle
     textColour = selected_font_hex if workingIndex == 3 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 3 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1279,29 +1278,29 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     
 
     if workingIndex == 4:
-        center_x = info_middle
+        centre_x = info_middle
         if config.transparent_text_var:
-            draw_transparent.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+            draw_transparent.ellipse((int(centre_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(centre_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
         else:
-            draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+            draw.ellipse((int(centre_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(centre_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
     elif workingIndex == 5:
-        center_x = config_middle
+        centre_x = config_middle
         if config.transparent_text_var:
-            draw_transparent.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+            draw_transparent.ellipse((int(centre_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(centre_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
         else:
-            draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+            draw.ellipse((int(centre_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(centre_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
     elif workingIndex == 6:
-        center_x = reboot_middle
+        centre_x = reboot_middle
         if config.transparent_text_var:
-            draw_transparent.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+            draw_transparent.ellipse((int(centre_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(centre_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
         else:
-            draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+            draw.ellipse((int(centre_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(centre_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
     elif workingIndex == 7:
-        center_x = shutdown_middle
+        centre_x = shutdown_middle
         if config.transparent_text_var:
-            draw_transparent.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+            draw_transparent.ellipse((int(centre_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(centre_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
         else:
-            draw.ellipse((int(center_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(center_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
+            draw.ellipse((int(centre_x-circle_radius),int(bottom_row_middle_y-circle_radius),int(centre_x+circle_radius),int(bottom_row_middle_y+circle_radius)),fill=f"#{bubble_hex}")
 
     info_logo_y = int(bottom_row_middle_y-(infoLogoColoured.size[1]/2))
     config_logo_y = int(bottom_row_middle_y-(configLogoColoured.size[1]/2))
@@ -1352,7 +1351,6 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
 
 def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor,config:Config,transparent=False,forPreview=False):
     progress_bar['value']+=1
-    #print(f"progress_bar Max = {progress_bar['maximum']} | progress_bar Value = {progress_bar['value']} | {100*(int(progress_bar['value'])/int(progress_bar['maximum']))}%")
     bg_rgb = hex_to_rgb(bg_hex)
 
     # Create image
@@ -1458,9 +1456,9 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
     text_y = top_row_bubble_middle - (text_height / 2)
 
 
-    bubble_center_x =  explore_middle_x
+    bubble_centre_x =  explore_middle_x
     textColour = selected_font_hex if workingIndex == 0 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 0 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1486,9 +1484,9 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
         textString = "Favourites"
     text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
-    bubble_center_x =  favourite_middle_x
+    bubble_centre_x =  favourite_middle_x
     textColour = selected_font_hex if workingIndex == 1 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 1 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1514,9 +1512,9 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
         textString = "History"
     text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
-    bubble_center_x =  history_middle_x
+    bubble_centre_x =  history_middle_x
     textColour = selected_font_hex if workingIndex == 2 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 2 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1541,9 +1539,9 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
         textString = "Utilities"
     text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
-    bubble_center_x =  apps_middle_x
+    bubble_centre_x =  apps_middle_x
     textColour = selected_font_hex if workingIndex == 3 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 3 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1627,9 +1625,9 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
     text_y = bottom_row_bubble_middle - (text_height / 2)
 
 
-    bubble_center_x =  info_middle_x
+    bubble_centre_x =  info_middle_x
     textColour = selected_font_hex if workingIndex == 4 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 4 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1655,9 +1653,9 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
         textString = "Config"
     text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
-    bubble_center_x =  config_middle_x
+    bubble_centre_x =  config_middle_x
     textColour = selected_font_hex if workingIndex == 5 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 5 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1685,9 +1683,9 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
         textString = "Reboot"
     text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
-    bubble_center_x =  reboot_middle_x
+    bubble_centre_x =  reboot_middle_x
     textColour = selected_font_hex if workingIndex == 6 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 6 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1715,9 +1713,9 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
         textString = "Shutdown"
     text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
-    bubble_center_x =  shutdown_middle_x
+    bubble_centre_x =  shutdown_middle_x
     textColour = selected_font_hex if workingIndex == 7 else deselected_font_hex
-    text_x = bubble_center_x - (text_width / 2)
+    text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 7 :
         bubbleLength = text_width+horizontalBubblePadding
         if config.transparent_text_var:
@@ -1976,7 +1974,7 @@ def delete_folder(folder_path):
     if os.path.exists(folder_path):
         shutil.rmtree(folder_path)
     else:
-        print(f"The folder {folder_path} does not exist.")
+        raise FileNotFoundError(f"Folder {folder_path} does not exist")
 
 def select_theme_directory():
     theme_directory_path.set(filedialog.askdirectory())
@@ -2214,6 +2212,15 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
             if height != assumed_res[1]:
                 res_config.items_per_screen_entry = height_items_per_screen_map[height]
                 res_config.itemsPerScreenVar = height_items_per_screen_map[height]
+                if res_config.clock_alignment_var == "Centre":
+                    res_config.clockHorizontalLeftPaddingVar = str(int(int(res_config.clockHorizontalLeftPaddingVar) * (width / assumed_res[0])))
+                    res_config.clockHorizontalRightPaddingVar = str(int(int(res_config.clockHorizontalRightPaddingVar) * (width / assumed_res[0])))
+                if res_config.header_glyph_alignment_var == "Centre":
+                    res_config.header_glyph_horizontal_left_padding_var = str(int(int(res_config.header_glyph_horizontal_left_padding_var) * (width / assumed_res[0])))
+                    res_config.header_glyph_horizontal_right_padding_var = str(int(int(res_config.header_glyph_horizontal_right_padding_var) * (width / assumed_res[0])))
+                if res_config.page_title_alignment_var == "Centre":
+                    res_config.pageTitlePaddingVar = str(int(int(res_config.pageTitlePaddingVar) * (width / assumed_res[0])))
+                    res_config.pageTitlePaddingVar = str(int(int(res_config.pageTitlePaddingVar) * (width / assumed_res[0])))
             FillTempThemeFolder(progress_bar, threadNumber,config=res_config)
             shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"),
                         os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "scheme"))
@@ -2357,6 +2364,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     datetime_right_padding = config.clockHorizontalRightPaddingVar
     status_padding_left = int(config.header_glyph_horizontal_left_padding_var)
     status_padding_right = int(config.header_glyph_horizontal_right_padding_var)
+
     default_radius = "10"
     header_height = str(config.headerHeightVar)
     counter_padding_top = str(config.contentPaddingTopVar)
@@ -2964,11 +2972,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
             # Execute the command
             result = subprocess.run(command,shell=True )
-
-        except FileNotFoundError as e:
-            print(f"FileNotFoundError: {e}")
         except Exception as e:
-            print(f"An error occurred: {e}")
+            raise ValueError(f"Error converting font: {e}")
     
     itemsList = []
     if config.version_var[0:9] == "muOS 2410":
@@ -3082,7 +3087,7 @@ class MenuNamesGrid(tk.Toplevel):
         self.data = data
         self.entries = {}
         self.create_widgets()
-        self.center_on_parent(parent)
+        self.centre_on_parent(parent)
         self.grab_set()
 
     def create_widgets(self):        
@@ -3124,7 +3129,7 @@ class MenuNamesGrid(tk.Toplevel):
         save_button = ttk.Button(self, text="Save", command=self.save)
         save_button.grid(row=max(len(first_half), len(second_half)), column=0, columnspan=5, pady=10)
     
-    def center_on_parent(self, parent):
+    def centre_on_parent(self, parent):
         self.update_idletasks()
         x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
         y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
@@ -3432,7 +3437,7 @@ grid_helper.add(clock_horizontal_left_padding_entry, next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Right Padding for Clock:"), sticky="w")
 clock_horizontal_right_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=clockHorizontalRightPaddingVar)
 grid_helper.add(clock_horizontal_right_padding_entry, next_row=True)
-
+#grid_helper.add(tk.Label(scrollable_frame, text="[Tip] If you want the time to align left nicely \nwith the bubble you can set the clock alignment to centre,\nand make the left say 10, and set the right to\n640[screen width]-10[left value]-(70/114 depending on clock style)[set]",fg="#00f"), sticky="w",next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
@@ -3722,7 +3727,7 @@ def outline_image_with_inner_gap(image, outline_color=(255, 0, 0), outline_width
         width=outline_width
     )
     
-    # Paste the original image at the center of the new image, accounting for the outline width and gap
+    # Paste the original image at the centre of the new image, accounting for the outline width and gap
     outlined_image.paste(image, (outline_width + gap, outline_width + gap))
 
     final_image = outlined_image.resize((image.width, image.height), Image.LANCZOS)
