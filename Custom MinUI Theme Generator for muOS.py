@@ -270,14 +270,12 @@ def generateHeaderBubbles(config:Config,render_factor,accent_colour=None,bubble_
                         timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
                         if timeTextWidth > maxTimeTextWidth:
                             maxTimeTextWidth = timeTextWidth
-                            print(timeText)
                         
                         timeText = f"{str(n1).zfill(2)}:{n2}{n} PM"
                         timeTextBbox = headerFont.getbbox(timeText)
                         timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
                         if timeTextWidth > maxTimeTextWidth:
                             maxTimeTextWidth = timeTextWidth
-                            print(timeText)
             
         else:
             for n1 in range(24):
@@ -288,7 +286,6 @@ def generateHeaderBubbles(config:Config,render_factor,accent_colour=None,bubble_
                         timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
                         if timeTextWidth > maxTimeTextWidth:
                             maxTimeTextWidth = timeTextWidth
-                            print(timeText)
         if config.clock_alignment_var == "Left":
             timeText_X = clock_left_padding*render_factor
         elif config.clock_alignment_var == "Centre":
@@ -526,8 +523,6 @@ def generateGameSwitcherOverlay(config: Config, render_factor, gameNameForPrevie
         fontSize = bottom_bar_height_over_footer * 0.55
         fontSize = int(fontSize/render_factor)
         fontSize = fontSize*render_factor
-        print("Font Size:", fontSize)
-        print("Render Factor:", render_factor)
         bottomBarFont = ImageFont.truetype(os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"), fontSize)
         bottomBarText = gameNameForPreview
 
@@ -549,7 +544,6 @@ def generateGameSwitcherOverlay(config: Config, render_factor, gameNameForPrevie
         return screenshot
     if "showing game screenshot":
         screenshot = Image.alpha_composite(screenshot, overlay)
-        screenshot.show()
         return screenshot
     
 
