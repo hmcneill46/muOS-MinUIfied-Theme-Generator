@@ -456,16 +456,6 @@ def generatePilImageMuOSOverlay(config:Config,muOSpageName,render_factor):
             timeText = current_time.strftime("%I:%M %p")
         else:
             timeText = current_time.strftime("%H:%M")
-
-        if config.clock_format_var == "12 Hour": ## TODO Remove this [Longest]
-            timeText = "04:00 AM"
-        else:
-            timeText = "00:00"
-
-        if config.clock_format_var == "12 Hour": ## TODO Remove this [Shortest]
-            timeText = "11:11 AM"
-        else:
-            timeText = "11:11"
         
         timeTextBbox = headerFont.getbbox(timeText)
         timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
@@ -3357,7 +3347,8 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Bubble Behind Header
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Join Header Bubbles Together", variable=join_header_bubbles_var), sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Game Switcher", variable=enable_game_switcher_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Game Switcher*", variable=enable_game_switcher_var), sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="*Not recommended Very Experimental",fg="#f00"), sticky="w",next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Main Menu Style"), sticky="w")
 MainMenuStyleOptions = ["Horizontal", "Vertical", "Alt-Horizontal"]
@@ -3855,34 +3846,34 @@ def on_change(*args):
                                         forPreview=True).resize(preview_size, Image.LANCZOS)
         
         gameSwitcherOverlay = generateGameSwitcherOverlay(global_config,previewRenderFactor,gameNameForPreview="Goodboy Galaxy", generatingForPreview=True).resize(preview_size, Image.LANCZOS)
-
-        image1 = gameSwitcherOverlay
-
-        if global_config.main_menu_style_var == "Horizontal":
-            image3 = generatePilImageHorizontal(fakeprogressbar,
-                                                4,
-                                                global_config.bgHexVar,
-                                                global_config.selectedFontHexVar,
-                                                global_config.deselectedFontHexVar,
-                                                global_config.bubbleHexVar,
-                                                global_config.iconHexVar,
-                                                previewRenderFactor,
-                                                global_config,
-                                                transparent=False,
-                                                forPreview=True).resize(preview_size, Image.LANCZOS)
-        
-        elif global_config.main_menu_style_var == "Alt-Horizontal":
-            image3 = generatePilImageAltHorizontal(fakeprogressbar,
-                                                4,
-                                                global_config.bgHexVar,
-                                                global_config.selectedFontHexVar,
-                                                global_config.deselectedFontHexVar,
-                                                global_config.bubbleHexVar,
-                                                global_config.iconHexVar,
-                                                previewRenderFactor,
-                                                global_config,
-                                                transparent=False,
-                                                forPreview=True).resize(preview_size, Image.LANCZOS)
+        if global_config.enable_game_switcher_var:
+            image3 = gameSwitcherOverlay
+        else:
+            if global_config.main_menu_style_var == "Horizontal":
+                image3 = generatePilImageHorizontal(fakeprogressbar,
+                                                    4,
+                                                    global_config.bgHexVar,
+                                                    global_config.selectedFontHexVar,
+                                                    global_config.deselectedFontHexVar,
+                                                    global_config.bubbleHexVar,
+                                                    global_config.iconHexVar,
+                                                    previewRenderFactor,
+                                                    global_config,
+                                                    transparent=False,
+                                                    forPreview=True).resize(preview_size, Image.LANCZOS)
+            
+            elif global_config.main_menu_style_var == "Alt-Horizontal":
+                image3 = generatePilImageAltHorizontal(fakeprogressbar,
+                                                    4,
+                                                    global_config.bgHexVar,
+                                                    global_config.selectedFontHexVar,
+                                                    global_config.deselectedFontHexVar,
+                                                    global_config.bubbleHexVar,
+                                                    global_config.iconHexVar,
+                                                    previewRenderFactor,
+                                                    global_config,
+                                                    transparent=False,
+                                                    forPreview=True).resize(preview_size, Image.LANCZOS)
 
         if global_config.include_overlay_var and global_config.selected_overlay_var != "":
             preview_overlay_resized = preview_overlay_image.resize(image1.size, Image.LANCZOS)
