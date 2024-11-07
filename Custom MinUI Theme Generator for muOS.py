@@ -2458,6 +2458,9 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     else:
         replacementStringMap["default"]["{content_width}"] = int(config.deviceScreenWidthVar)-2*(int(config.textPaddingVar)-int(config.bubblePaddingVar))
     replacementStringMap["default"]["{footer_alpha}"] = 0
+    replacementStringMap["default"]["{footer_background_alpha}"] = 0
+    replacementStringMap["default"]["{footer_pad_top}"] = 0
+    replacementStringMap["default"]["{footer_pad_bottom}"] = 0
     if config.show_glyphs_var:
         replacementStringMap["default"]["{bubble_padding_left}"] = int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad)
         replacementStringMap["default"]["{list_glyph_alpha}"] = 255
@@ -2524,7 +2527,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
         replacementStringMap["muxfavourite"] = replacementStringMap["muxplore"].copy()
 
-    if config.enable_game_switcher_var:
+    if config.enable_game_switcher_var and not "Generating new game switcher":
         replacementStringMap["muxhistory"] = {}
 
         bottom_bar_height_over_footer_percent = 0.1
@@ -2543,6 +2546,32 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replacementStringMap["muxhistory"]["{navigation_type}"] = "1"
         history_content_padding_top = int(config.deviceScreenHeightVar)- bottom_bar_total_height
         replacementStringMap["muxhistory"]["{content_padding_top}"] = int(history_content_padding_top)-(int(header_height)+2)
+        replacementStringMap["muxhistory"]["{content_height}"] =bottom_bar_height_over_footer
+    if config.enable_game_switcher_var:
+        replacementStringMap["muxhistory"] = {}
+
+        bottom_bar_height_over_footer_percent = 0.1
+        bottom_bar_height_over_footer = int((int(config.deviceScreenHeightVar) * bottom_bar_height_over_footer_percent))
+        bottom_bar_total_height = int(getRealFooterHeight(config)) + bottom_bar_height_over_footer
+        bottom_bar_height_over_footer += 2
+
+
+        replacementStringMap["muxhistory"]["{content_height}"] =bottom_bar_height_over_footer
+        replacementStringMap["muxhistory"]["{content_item_count}"] = 1
+        replacementStringMap["muxhistory"]["{bubble_alpha}"] = "0"
+        replacementStringMap["muxhistory"]["{selected_font_hex}"] = accent_hex
+        content_alignment_map = {"Left":0,"Centre":1,"Right":2}
+        replacementStringMap["muxhistory"]["{content_alignment}"] = content_alignment_map["Centre"]
+        replacementStringMap["muxhistory"]["{content_padding_left}"] = 0
+        replacementStringMap["muxhistory"]["{content_width}"] = config.deviceScreenWidthVar
+        replacementStringMap["muxhistory"]["{navigation_type}"] = "1"
+        history_content_padding_top = int(config.deviceScreenHeightVar)- bottom_bar_total_height
+        replacementStringMap["muxhistory"]["{content_padding_top}"] = int(history_content_padding_top)-(int(header_height)+2)
+        replacementStringMap["muxhistory"]["{footer_background_alpha}"] = int(0) ## Could change to 255 * 0.866 later if content font is changed to render over footer
+        replacementStringMap["muxhistory"]["{footer_alpha}"] = 255
+        replacementStringMap["muxhistory"]["{footer_height}"] = bottom_bar_total_height
+        replacementStringMap["muxhistory"]["{footer_pad_top}"] = int((bottom_bar_total_height - int(getRealFooterHeight(config)))/2)
+        replacementStringMap["muxhistory"]["{footer_pad_bottom}"] = 0
         
     else:
         if int(config.maxBoxArtWidth) > 0:
@@ -2770,8 +2799,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
     #GameSwitcher
     if config.enable_game_switcher_var:
-        gameSwitcherOverlay = generateGameSwitcherOverlay(config,render_factor,gameNameForPreview="Goodboy Galaxy").resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-
+        if not "generating new game switcher":
+            gameSwitcherOverlay = generateGameSwitcherOverlay(config,render_factor,gameNameForPreview="Goodboy Galaxy").resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+        else:
+            gameSwitcherOverlay = generateHeaderBubbles(config,render_factor,config.bgHexVar,bubble_alpha=0.866).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
         altered_background = Image.alpha_composite(background, gameSwitcherOverlay)
         gameSwitcherOverlay.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxhistory.png"), format='PNG')
         progress_bar['value'] +=1
