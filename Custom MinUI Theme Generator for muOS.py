@@ -2135,25 +2135,18 @@ menus2405_3 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["Shutdown Device","shutdown"]]]]
 
 def replace_in_file(file_path, search_string, replace_string):
-    try:
-        # Read the content of the file in binary mode
-        with open(file_path, 'rb') as file:
-            file_contents = file.read()
-        
-        # Replace the occurrences of the search_string with replace_string in binary data
-        search_bytes = search_string.encode()
-        replace_bytes = replace_string.encode()
-        new_contents = file_contents.replace(search_bytes, replace_bytes)
-        
-        # Write the new content back to the file in binary mode
-        with open(file_path, 'wb') as file:
-            file.write(new_contents)
-    except Exception as e:
-        if global_config.advanced_error_var:
-            tb_str = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}\n{tb_str}")
-        else:
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+    # Read the content of the file in binary mode
+    with open(file_path, 'rb') as file:
+        file_contents = file.read()
+    
+    # Replace the occurrences of the search_string with replace_string in binary data
+    search_bytes = search_string.encode()
+    replace_bytes = replace_string.encode()
+    new_contents = file_contents.replace(search_bytes, replace_bytes)
+    
+    # Write the new content back to the file in binary mode
+    with open(file_path, 'wb') as file:
+        file.write(new_contents)
 
 
 def hex_to_rgb(hex_color,alpha = 1.0):
@@ -2390,7 +2383,6 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replacementStringMap["default"] = {}
     for n in stringsToReplace:
         replacementStringMap["default"][n] = None
-    print(replacementStringMap)
 
     # Set up default colours that should be the same everywhere
     replacementStringMap["default"]["{accent_hex}"] = accent_hex
@@ -2413,6 +2405,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     page_title_alignment_map = {"Auto":0,"Left":1,"Centre":2,"Right":3}
     replacementStringMap["default"]["{page_title_text_align}"] = page_title_alignment_map[config.page_title_alignment_var]
     replacementStringMap["default"]["{page_title_padding}"] = int(config.pageTitlePaddingVar)
+
+    replacementStringMap["default"]["{bar_height}"] = 42
+    replacementStringMap["default"]["{bar_progress_width}"] = int(config.deviceScreenWidthVar) - 90
+    replacementStringMap["default"]["{bar_y_pos}"] = int(config.deviceScreenHeightVar) - (30+getRealFooterHeight(config))
+    replacementStringMap["default"]["{bar_width}"] = int(config.deviceScreenWidthVar) - 25
+    replacementStringMap["default"]["{bar_progress_height}"] = 16
 
     content_height = individualItemHeight*int(config.itemsPerScreenVar)
 
@@ -2440,6 +2438,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
     # Rest of the settings
     replacementStringMap["default"]["{content_height}"] =content_height
+    replacementStringMap["default"]["{content_item_height}"] = individualItemHeight-2
     replacementStringMap["default"]["{content_item_count}"] = config.itemsPerScreenVar
     replacementStringMap["default"]["{background_alpha}"] = 0
     replacementStringMap["default"]["{selected_font_hex}"] = base_hex
@@ -2475,10 +2474,16 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     
 
 
+    missingValues = []
 
     for n in replacementStringMap["default"].keys():
         if replacementStringMap["default"][n] == None:
-            raise ValueError(f"Replacement string {n} was not set")
+            missingValues.append(n)
+    if missingValues:
+        missingValuesString = ""
+        for n in missingValues:
+            missingValuesString += n+"\n"
+        raise ValueError(f"Replacement string(s) \n{missingValuesString} not set")
     
     ## Overrides:
 
