@@ -103,6 +103,7 @@ class Config: # TODO delete unneeded variables
         self.selected_overlay_var = "muOS Default CRT Overlay"
         self.main_menu_style_var = "Horizontal"
         self.battery_charging_style_var = "Default"
+        self.battery_style_var = "Default"
         self.clock_format_var = "24 Hour"
         self.clock_alignment_var = "Left"
         self.header_glyph_alignment_var = "Right"
@@ -417,13 +418,13 @@ def generatePilImageMuOSOverlay(config:Config,muOSpageName,render_factor):
         glyphYPos = int(((int(config.headerHeightVar)*render_factor)/2)-(heightOfGlyph/2))
 
         #Battery not charging stuff
-        capacityGlyph = "capacity_30.png"
-        capacity_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{capacityGlyph[:-4]}[5x].png")
+        capacityGlyph = "30"
+        capacity_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{BatteryStyleOptionsDict[config.battery_style_var]}{capacityGlyph}[5x].png")
         
         capacity_image_coloured = change_logo_color(capacity_image_path,accent_colour)
         capacity_image_coloured = capacity_image_coloured.resize((int(heightOfGlyph*(capacity_image_coloured.size[0]/capacity_image_coloured.size[1])),heightOfGlyph), Image.LANCZOS)
 
-        capacityChargingGlyph = "70"
+        capacityChargingGlyph = "30"
         capacity_charging_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{BatteryChargingStyleOptionsDict[config.battery_charging_style_var]}{capacityChargingGlyph}[5x].png")
         capacity_charging_image_coloured = change_logo_color(capacity_charging_image_path,config.batteryChargingHexVar)
         capacity_charging_image_coloured = capacity_charging_image_coloured.resize((int(heightOfGlyph*(capacity_charging_image_coloured.size[0]/capacity_charging_image_coloured.size[1])),heightOfGlyph), Image.LANCZOS)
@@ -2624,7 +2625,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         heightOfGlyph = int(float(config.header_glyph_height_var))
 
     for capacity in capacities:
-        capacity_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"capacity_{capacity}[5x].png")
+        try:
+            capacity_image_path = os.path.join(internal_files_dir,"Assets","glyphs",f"{BatteryStyleOptionsDict[config.battery_style_var]}{capacity}[5x].png") # auto works with options, like alternative 1 alternative 2 default etc...
+        except:
+            raise Exception("Battery Style not found")
         capacity_image = Image.open(capacity_image_path)
         capacity_image = capacity_image.resize((int(heightOfGlyph*(capacity_image.size[0]/capacity_image.size[1])),heightOfGlyph), Image.LANCZOS)
         capacity_image.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","header",f"capacity_{capacity}.png"), format='PNG')
@@ -3143,6 +3147,7 @@ global_alignment_var = tk.StringVar()
 selected_overlay_var = tk.StringVar()
 main_menu_style_var = tk.StringVar()
 battery_charging_style_var = tk.StringVar()
+battery_style_var = tk.StringVar()
 clock_format_var = tk.StringVar()
 clock_alignment_var = tk.StringVar()
 header_glyph_alignment_var = tk.StringVar()
@@ -3300,12 +3305,17 @@ grid_helper.add(tk.Label(scrollable_frame, text="*Will not show up in this progr
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
+grid_helper.add(tk.Label(scrollable_frame, text="Battery Glyph Style"), sticky="w")
+BatteryStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_"}
+BatteryStyleOptions = list(BatteryStyleOptionsDict.keys())
+battery_style_option_menu = tk.OptionMenu(scrollable_frame, battery_style_var, *BatteryStyleOptions)
+grid_helper.add(battery_style_option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Charging battery in preview", variable=show_charging_battery_var), sticky="w", next_row=True)
 
 
 grid_helper.add(tk.Label(scrollable_frame, text="Battery Charging Glyph Style"), sticky="w")
-BatteryChargingStyleOptionsDict = {"Default": "capacity_", "Lightning 1":"capacity_charging_", "Lightning 2":"alt1_capacity_charging_", "Lightning 3":"alt2_capacity_charging_"}
+BatteryChargingStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_", "Percentage Lightning":"percentage_capacity_charging_", "Lightning 1":"capacity_charging_", "Lightning 2":"alt1_capacity_charging_", "Lightning 3":"alt2_capacity_charging_"}
 BatteryChargingStyleOptions = list(BatteryChargingStyleOptionsDict.keys())
 battery_charging_style_option_menu = tk.OptionMenu(scrollable_frame, battery_charging_style_var, *BatteryChargingStyleOptions)
 grid_helper.add(battery_charging_style_option_menu, colspan=3, sticky="w", next_row=True)
@@ -3889,6 +3899,7 @@ def save_settings(config: Config):
     config.folderBoxArtPaddingVar = folderBoxArtPaddingVar.get()
     config.main_menu_style_var = main_menu_style_var.get()
     config.battery_charging_style_var = battery_charging_style_var.get()
+    config.battery_style_var = battery_style_var.get()
     config.clock_format_var = clock_format_var.get()
     config.clock_alignment_var = clock_alignment_var.get()
     config.header_glyph_alignment_var = header_glyph_alignment_var.get()
@@ -3992,6 +4003,7 @@ def load_settings(config: Config):
     selected_overlay_var.set(config.selected_overlay_var)
     main_menu_style_var.set(config.main_menu_style_var)
     battery_charging_style_var.set(config.battery_charging_style_var)
+    battery_style_var.set(config.battery_style_var)
     clock_format_var.set(config.clock_format_var)
     clock_alignment_var.set(config.clock_alignment_var)
     header_glyph_alignment_var.set(config.header_glyph_alignment_var)
@@ -4077,6 +4089,7 @@ global_alignment_var.trace_add("write", lambda *args: save_settings(global_confi
 selected_overlay_var.trace_add("write",lambda *args: save_settings(global_config))
 main_menu_style_var.trace_add("write",lambda *args: save_settings(global_config))
 battery_charging_style_var.trace_add("write",lambda *args: save_settings(global_config))
+battery_style_var.trace_add("write",lambda *args: save_settings(global_config))
 clock_format_var.trace_add("write",lambda *args: save_settings(global_config))
 clock_alignment_var.trace_add("write",lambda *args: save_settings(global_config))
 header_glyph_alignment_var.trace_add("write",lambda *args: save_settings(global_config))
