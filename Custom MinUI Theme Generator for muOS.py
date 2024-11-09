@@ -2481,6 +2481,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     
     ## Overrides:
 
+    # horizontal muxlaunch specific options - basically remove all text content and set naviagtion type
     if config.main_menu_style_var != "Vertical":
         replacementStringMap["muxlaunch"] = {}
         replacementStringMap["muxlaunch"]["{bubble_alpha}"] = 0
@@ -2491,13 +2492,13 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         else:
             replacementStringMap["muxlaunch"]["{navigation_type}"] = 2
 
-    # muxnetwork Specific settings
+    # muxnetwork Specific settings - account for status at the bottom and show footer
     if config.version_var == "muOS 2410.1 Banana":
         replacementStringMap["muxnetwork"] = {}
         replacementStringMap["muxnetwork"]["{content_height}"] = int((content_height/int(config.itemsPerScreenVar))*(int(config.itemsPerScreenVar)-2))
         replacementStringMap["muxnetwork"]["{content_item_count}"] = int(config.itemsPerScreenVar)-2
         replacementStringMap["muxnetwork"]["{footer_alpha}"] = 255
-    else: ## 2405.2 removed the status being fixed to the bottom
+    else: ## muxnetwork - show the footer
         replacementStringMap["muxnetwork"] = {}
         replacementStringMap["muxnetwork"]["{footer_alpha}"] = 255
     
@@ -2507,10 +2508,9 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replacementStringMap["muxassign"]["{list_glyph_alpha}"] = 255 # for glyph support
     replacementStringMap["muxassign"]["{footer_alpha}"] = 255 ## Show footer in muxassign as can't generate custom one
 
-    # muxgov - Force Glyphs on
-    replacementStringMap["muxgov"] = {}
-    replacementStringMap["muxgov"]["{bubble_padding_left}"] = int(int(config.bubblePaddingVar)+(glyph_width/2)+glyph_to_text_pad) # for glyph support
-    replacementStringMap["muxgov"]["{list_glyph_alpha}"] = 255 # for glyph support
+    # muxgov - same as muxassign, but hide footer
+    replacementStringMap["muxgov"] = replacementStringMap["muxassign"].copy()
+    replacementStringMap["muxgov"]["{footer_alpha}"] = 0 # for glyph support
 
     # muxtheme - Cut text off before preview image
     if config.version_var != "muOS 2410.1 Banana": 
@@ -2519,14 +2519,17 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         if int(config.deviceScreenWidthVar) == 720:
             max_preview_size = 340
         replacementStringMap["muxtheme"]["{content_width}"] = int(config.deviceScreenWidthVar)-max_preview_size-(int(config.textPaddingVar)-int(config.bubblePaddingVar))
-     # rest of the default Specific settings
+     
+     # muxplore - cut off text if needed for box art
     if int(config.maxBoxArtWidth) > 0:
         replacementStringMap["muxplore"] = {}
 
         replacementStringMap["muxplore"]["{content_width}"] = int(config.deviceScreenWidthVar)-int(config.maxBoxArtWidth)-(int(config.textPaddingVar)-int(config.bubblePaddingVar))
 
+        # muxfavourite - same as muxplore
         replacementStringMap["muxfavourite"] = replacementStringMap["muxplore"].copy()
 
+    # muxhistory - make this more like a game switcher
     if config.enable_game_switcher_var and not "Generating new game switcher":
         replacementStringMap["muxhistory"] = {}
 
@@ -2573,10 +2576,11 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replacementStringMap["muxhistory"]["{footer_pad_top}"] = int((bottom_bar_total_height - int(getRealFooterHeight(config)))/2)
         replacementStringMap["muxhistory"]["{footer_pad_bottom}"] = 0
         
-    else:
+    else: # muxhistory - if not making it onto game switcher, should be the same as muxplore
         if int(config.maxBoxArtWidth) > 0:
             replacementStringMap["muxhistory"] = replacementStringMap["muxplore"].copy()
-        
+    
+    # muxstorage, show the footer after banana
     if config.version_var != "muOS 2410.1 Banana":
         replacementStringMap["muxstorage"] = {}
         replacementStringMap["muxstorage"]["{footer_alpha}"] = 255
@@ -3219,7 +3223,7 @@ grid_helper.add(device_type_option_menu, colspan=3, sticky="w", next_row=True)
 
 
 grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
-options = ["muOS 2410.1 Banana", "muOS 2410.2 Test Build [for future]"]
+options = ["muOS 2410.1 Banana", "muOS 2410.2 BIGBANANA"]
 option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
