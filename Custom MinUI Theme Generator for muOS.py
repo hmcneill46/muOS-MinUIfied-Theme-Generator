@@ -2471,9 +2471,44 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replacementStringMap["default"]["{navigation_type}"] = 0
     replacementStringMap["default"]["{content_padding_top}"] = int(contentPaddingTop)-(int(header_height)+2)
 
+    # Grid Settings
+
+    replacementStringMap["default"]["{grid_navigation_type}"] = 2
+    replacementStringMap["default"]["{grid_background}"] = config.bgHexVar
+    replacementStringMap["default"]["{grid_background_alpha}"] = 0
+    replacementStringMap["default"]["{grid_location_x}"] = 0
+    replacementStringMap["default"]["{grid_location_y}"] = 0
+    replacementStringMap["default"]["{grid_column_count}"] = 0
+    replacementStringMap["default"]["{grid_row_count}"] = 0
+    replacementStringMap["default"]["{grid_row_height}"] = 0
+    replacementStringMap["default"]["{grid_column_width}"] = 0
+    replacementStringMap["default"]["{grid_cell_width}"] = 200
+    replacementStringMap["default"]["{grid_cell_height}"] = 200
+    replacementStringMap["default"]["{grid_cell_radius}"] = 10
+    replacementStringMap["default"]["{grid_cell_border_width}"] = 5
+    replacementStringMap["default"]["{grid_cell_image_padding_top}"] = 5
+    replacementStringMap["default"]["{grid_cell_text_padding_bottom}"] = 5
+    replacementStringMap["default"]["{grid_cell_text_padding_side}"] = 5
+    replacementStringMap["default"]["{grid_cell_text_line_spacing}"] = 0
+    replacementStringMap["default"]["{grid_cell_default_background}"] = config.bgHexVar
+    replacementStringMap["default"]["{grid_cell_default_background_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_default_border}"] = config.bgHexVar
+    replacementStringMap["default"]["{grid_cell_default_border_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_default_image_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_default_image_recolour}"] = config.deselectedFontHexVar
+    replacementStringMap["default"]["{grid_cell_default_image_recolour_alpha}"] = 0
+    replacementStringMap["default"]["{grid_cell_default_text}"] = config.deselectedFontHexVar
+    replacementStringMap["default"]["{grid_cell_default_text_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_focus_background}"] = config.deselectedFontHexVar
+    replacementStringMap["default"]["{grid_cell_focus_background_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_focus_border}"] = config.deselectedFontHexVar
+    replacementStringMap["default"]["{grid_cell_focus_border_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_focus_image_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_focus_image_recolour}"] = config.icon_hex_entry
+    replacementStringMap["default"]["{grid_cell_focus_image_recolour_alpha}"] = 0
+    replacementStringMap["default"]["{grid_cell_focus_text}"] = config.selected_font_hex_entry
+    replacementStringMap["default"]["{grid_cell_focus_text_alpha}"] = 255
     
-
-
     missingValues = []
 
     for n in replacementStringMap["default"].keys():
