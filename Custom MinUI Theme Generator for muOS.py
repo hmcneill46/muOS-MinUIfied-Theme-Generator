@@ -3131,8 +3131,8 @@ window_height = int(min(screen_height*0.9, 1720))
 
 root.geometry(f"1280x{window_height}")  # Set a default size for the window
 
-subtitle_font = font.Font(family="Helvetica", size=10, weight="bold")
-title_font = font.Font(family="Helvetica", size=14, weight="bold")
+subtitle_font = font.Font(family="Helvetica", size=14, weight="bold")
+title_font = font.Font(family="Helvetica", size=20, weight="bold")
 
 # Variables for user input
 roms_directory_path = tk.StringVar()
@@ -3268,14 +3268,12 @@ batteryChargingHexVar = tk.StringVar()
 maxBoxArtWidth = tk.StringVar()
 previewConsoleNameVar = tk.StringVar()
 
+
+
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="General Configurations", font=subtitle_font), sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Bubble Behind Header Items", variable=show_header_bubbles_var), sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Join Header Bubbles Together", variable=join_header_bubbles_var), sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Game Switcher*", variable=enable_game_switcher_var), sticky="w", next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="*Not recommended Very Experimental",fg="#f00"), sticky="w",next_row=True)
@@ -3299,87 +3297,11 @@ overlayOptions = ["muOS Default CRT Overlay",
 overlay_option_menu = tk.OptionMenu(scrollable_frame, selected_overlay_var, *overlayOptions)
 grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Glyphs*", variable=show_glyphs_var), sticky="w",next_row=True)
-
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Custom Bootlogo Image*:", variable=use_custom_bootlogo_var), sticky="w")
 grid_helper.add(tk.Entry(scrollable_frame, textvariable=bootlogo_image_path, width=50))
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_bootlogo_image_path), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="*Will not show up in this programs preview yet",fg="#00f"), sticky="w",next_row=True)
-
-# Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Battery Glyph Style"), sticky="w")
-BatteryStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_"}
-BatteryStyleOptions = list(BatteryStyleOptionsDict.keys())
-battery_style_option_menu = tk.OptionMenu(scrollable_frame, battery_style_var, *BatteryStyleOptions)
-grid_helper.add(battery_style_option_menu, colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Charging battery in preview", variable=show_charging_battery_var), sticky="w", next_row=True)
-
-
-grid_helper.add(tk.Label(scrollable_frame, text="Battery Charging Glyph Style"), sticky="w")
-BatteryChargingStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_", "Percentage Lightning":"percentage_capacity_charging_", "Lightning 1":"capacity_charging_", "Lightning 2":"alt1_capacity_charging_", "Lightning 3":"alt2_capacity_charging_"}
-BatteryChargingStyleOptions = list(BatteryChargingStyleOptionsDict.keys())
-battery_charging_style_option_menu = tk.OptionMenu(scrollable_frame, battery_charging_style_var, *BatteryChargingStyleOptions)
-grid_helper.add(battery_charging_style_option_menu, colspan=3, sticky="w", next_row=True)
-
-# Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Clock Format:"), sticky="w")
-clockFormatOptions = ["12 Hour", "24 Hour"]
-clock_format_option_menu = tk.OptionMenu(scrollable_frame, clock_format_var, *clockFormatOptions)
-grid_helper.add(clock_format_option_menu, colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Clock Alignment:"), sticky="w")
-alignmentOptions = ["Left", "Centre", "Right"]
-clock_alignment_option_menu = tk.OptionMenu(scrollable_frame, clock_alignment_var, *alignmentOptions)
-grid_helper.add(clock_alignment_option_menu, colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Left Padding for Clock:"), sticky="w")
-clock_horizontal_left_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=clockHorizontalLeftPaddingVar)
-grid_helper.add(clock_horizontal_left_padding_entry, next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Right Padding for Clock:"), sticky="w")
-clock_horizontal_right_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=clockHorizontalRightPaddingVar)
-grid_helper.add(clock_horizontal_right_padding_entry, next_row=True)
-#grid_helper.add(tk.Label(scrollable_frame, text="[Tip] If you want the time to align left nicely \nwith the bubble you can set the clock alignment to centre,\nand make the left say 10, and set the right to\n640[screen width]-10[left value]-(70/114 depending on clock style)[set]",fg="#00f"), sticky="w",next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Header Glyph Alignment:"), sticky="w")
-header_glyph_alignment_option_menu = tk.OptionMenu(scrollable_frame, header_glyph_alignment_var, *alignmentOptions)
-grid_helper.add(header_glyph_alignment_option_menu, colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Left Padding for header glyphs:"), sticky="w")
-header_items_horizontal_left_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_horizontal_left_padding_var)
-grid_helper.add(header_items_horizontal_left_padding_entry, next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Right Padding for header glyphs:"), sticky="w")
-header_items_horizontal_right_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_horizontal_right_padding_var)
-grid_helper.add(header_items_horizontal_right_padding_entry, next_row=True)
-
-# Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Title of page in header", variable=show_console_name_var), sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Page Title Alignment:"), sticky="w")
-page_title_alignment_option_menu = tk.OptionMenu(scrollable_frame, page_title_alignment_var, *alignmentOptions)
-grid_helper.add(page_title_alignment_option_menu, colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Padding for Page Title:"), sticky="w")
-page_title_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=pageTitlePaddingVar)
-grid_helper.add(page_title_padding_entry, next_row=True)
-
-# Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
-
-
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Left Visual Button Guides", variable=remove_left_menu_guides_var), sticky="w")
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Right Visual Button Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
 
 
 # Spacer row
@@ -3445,34 +3367,26 @@ grid_helper.add(tk.Entry(scrollable_frame, textvariable=alt_font_path, width=50)
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_alt_font_path), next_row=True)
 grid_helper.add(tk.Label(scrollable_frame,text="*Use if text override characters not supported by default font\n!!!Currently Wont Work In Menus!!! left in as a reminder",fg="#00f"),sticky="w",next_row=True)
 
-# Spacer row
+
+
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Size Configuration", font=subtitle_font), colspan=3, sticky="w", next_row=True)
-
-# Option for ItemsPerScreen
-grid_helper.add(tk.Label(scrollable_frame, text="Items Per Screen (Better if Odd) [5-13 Inclusive]:"), sticky="w")
-items_per_screen_entry = tk.Entry(scrollable_frame, width=50, textvariable=itemsPerScreenVar)
-grid_helper.add(items_per_screen_entry, next_row=True)
-
-
-# Option for ItemsPerScreen
-grid_helper.add(tk.Label(scrollable_frame, text="Padding from top, for list content (Default 44):"), sticky="w")
-content_padding_top_entry = tk.Entry(scrollable_frame, width=50, textvariable=contentPaddingTopVar)
-grid_helper.add(content_padding_top_entry, next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Header Configurations", font=subtitle_font), sticky="w", next_row=True)
 
 # Option for headerHeight
 grid_helper.add(tk.Label(scrollable_frame, text="Header Height (Usually same as padding from top):"), sticky="w")
 header_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=headerHeightVar)
 grid_helper.add(header_height_entry, next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Header Text Height:"), sticky="w")
-header_text_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_text_height_var)
-grid_helper.add(header_text_height_entry, next_row=True)
+# Option for ItemsPerScreen
+grid_helper.add(tk.Label(scrollable_frame, text="Padding from top, for content list (Default 44):"), sticky="w")
+content_padding_top_entry = tk.Entry(scrollable_frame, width=50, textvariable=contentPaddingTopVar)
+grid_helper.add(content_padding_top_entry, next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Header glyphs Height:"), sticky="w")
-header_glyph_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_height_var)
-grid_helper.add(header_glyph_height_entry, next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Bubble Behind Header Items", variable=show_header_bubbles_var), sticky="w", next_row=True)
+
 
 grid_helper.add(tk.Label(scrollable_frame, text="Header Text Bubble Height:"), sticky="w")
 header_text_bubble_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_text_bubble_height_var)
@@ -3482,18 +3396,98 @@ grid_helper.add(tk.Label(scrollable_frame, text="Header glyphs Bubble Height:"),
 header_glyph_bubble_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_bubble_height_var)
 grid_helper.add(header_glyph_bubble_height_entry, next_row=True)
 
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Join Header Bubbles Together", variable=join_header_bubbles_var), sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 
-# Option for individualItemHeight
-grid_helper.add(tk.Label(scrollable_frame, text="Approximate Footer Height:"), sticky="w")
-individual_item_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=approxFooterHeightVar)
-grid_helper.add(individual_item_height_entry, next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Clock Format:"), sticky="w")
+clockFormatOptions = ["12 Hour", "24 Hour"]
+clock_format_option_menu = tk.OptionMenu(scrollable_frame, clock_format_var, *clockFormatOptions)
+grid_helper.add(clock_format_option_menu, colspan=3, sticky="w", next_row=True)
 
+grid_helper.add(tk.Label(scrollable_frame, text="Clock Alignment:"), sticky="w")
+alignmentOptions = ["Left", "Centre", "Right"]
+clock_alignment_option_menu = tk.OptionMenu(scrollable_frame, clock_alignment_var, *alignmentOptions)
+grid_helper.add(clock_alignment_option_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Header Text Height:"), sticky="w")
+header_text_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_text_height_var)
+grid_helper.add(header_text_height_entry, next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Left Padding for Clock:"), sticky="w")
+clock_horizontal_left_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=clockHorizontalLeftPaddingVar)
+grid_helper.add(clock_horizontal_left_padding_entry, next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Right Padding for Clock:"), sticky="w")
+clock_horizontal_right_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=clockHorizontalRightPaddingVar)
+grid_helper.add(clock_horizontal_right_padding_entry, next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Title of page in header", variable=show_console_name_var), sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Page Title Alignment:"), sticky="w")
+page_title_alignment_option_menu = tk.OptionMenu(scrollable_frame, page_title_alignment_var, *alignmentOptions)
+grid_helper.add(page_title_alignment_option_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Padding for Page Title:"), sticky="w")
+page_title_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=pageTitlePaddingVar)
+grid_helper.add(page_title_padding_entry, next_row=True)
+
+#grid_helper.add(tk.Label(scrollable_frame, text="[Tip] If you want the time to align left nicely \nwith the bubble you can set the clock alignment to centre,\nand make the left say 10, and set the right to\n640[screen width]-10[left value]-(70/114 depending on clock style)[set]",fg="#00f"), sticky="w",next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Header Glyph Alignment:"), sticky="w")
+header_glyph_alignment_option_menu = tk.OptionMenu(scrollable_frame, header_glyph_alignment_var, *alignmentOptions)
+grid_helper.add(header_glyph_alignment_option_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Header glyphs Height:"), sticky="w")
+header_glyph_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_height_var)
+grid_helper.add(header_glyph_height_entry, next_row=True)
+
+
+grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Left Padding for header glyphs:"), sticky="w")
+header_items_horizontal_left_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_horizontal_left_padding_var)
+grid_helper.add(header_items_horizontal_left_padding_entry, next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Right Padding for header glyphs:"), sticky="w")
+header_items_horizontal_right_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=header_glyph_horizontal_right_padding_var)
+grid_helper.add(header_items_horizontal_right_padding_entry, next_row=True)
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Battery Glyph Style"), sticky="w")
+BatteryStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_"}
+BatteryStyleOptions = list(BatteryStyleOptionsDict.keys())
+battery_style_option_menu = tk.OptionMenu(scrollable_frame, battery_style_var, *BatteryStyleOptions)
+grid_helper.add(battery_style_option_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Charging battery in preview", variable=show_charging_battery_var), sticky="w", next_row=True)
+
+
+grid_helper.add(tk.Label(scrollable_frame, text="Battery Charging Glyph Style"), sticky="w")
+BatteryChargingStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_", "Percentage Lightning":"percentage_capacity_charging_", "Lightning 1":"capacity_charging_", "Lightning 2":"alt1_capacity_charging_", "Lightning 3":"alt2_capacity_charging_"}
+BatteryChargingStyleOptions = list(BatteryChargingStyleOptionsDict.keys())
+battery_charging_style_option_menu = tk.OptionMenu(scrollable_frame, battery_charging_style_var, *BatteryChargingStyleOptions)
+grid_helper.add(battery_charging_style_option_menu, colspan=3, sticky="w", next_row=True)
 
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Label(scrollable_frame, text="Padding Configuration", font=subtitle_font), colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Content List Configuration", font=subtitle_font), colspan=3, sticky="w", next_row=True)
+
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Glyphs*", variable=show_glyphs_var), sticky="w",next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="*Will not show up in this programs preview yet",fg="#00f"), sticky="w",next_row=True)
+
+# Option for ItemsPerScreen
+grid_helper.add(tk.Label(scrollable_frame, text="Items Per Screen (Better if Odd) [5-13 Inclusive]:"), sticky="w")
+items_per_screen_entry = tk.Entry(scrollable_frame, width=50, textvariable=itemsPerScreenVar)
+grid_helper.add(items_per_screen_entry, next_row=True)
 
 # Option for textPadding
 grid_helper.add(tk.Label(scrollable_frame, text="Text Padding:"), sticky="w")
@@ -3505,6 +3499,19 @@ grid_helper.add(tk.Label(scrollable_frame, text="Bubble Padding:"), sticky="w")
 rectangle_padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubblePaddingVar)
 grid_helper.add(rectangle_padding_entry, next_row=True)
 
+grid_helper.add(tk.Label(scrollable_frame, text="Box Art Max Width (px):"), sticky="w")
+max_games_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxBoxArtWidth)
+grid_helper.add(max_games_bubble_length_entry, next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text=" - This is used to make text not go over your Box Art",fg="#00f"), colspan=3, sticky="w", next_row=True)
+
+# Spacer row
+grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="Footer Configurations", font=subtitle_font), sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Approximate Footer Height:"), sticky="w")
+individual_item_height_entry = tk.Entry(scrollable_frame, width=50, textvariable=approxFooterHeightVar)
+grid_helper.add(individual_item_height_entry, next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
@@ -3516,19 +3523,8 @@ grid_helper.add(tk.Label(scrollable_frame, text="Vertical Padding for Visual But
 VBG_Vertical_Padding_entry = tk.Entry(scrollable_frame, width=50, textvariable=VBG_Vertical_Padding_var)
 grid_helper.add(VBG_Vertical_Padding_entry, next_row=True)
 
-
-
-# Spacer row
-grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Content Explorer Specific Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text="Box Art Max Width (px):"), sticky="w")
-max_games_bubble_length_entry = tk.Entry(scrollable_frame, width=50, textvariable=maxBoxArtWidth)
-grid_helper.add(max_games_bubble_length_entry, next_row=True)
-
-grid_helper.add(tk.Label(scrollable_frame, text=" - This is used to make text not go over your Box Art",fg="#00f"), colspan=3, sticky="w", next_row=True)
-
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Left Visual Button Guides", variable=remove_left_menu_guides_var), sticky="w")
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Remove Right Visual Button Guides", variable=remove_right_menu_guides_var), colspan=3, sticky="w", next_row=True)
 
 
 # Spacer row
