@@ -376,7 +376,7 @@ def generateHeaderBubbles(config:Config,render_factor,accent_colour=None,bubble_
         left_x_points["glyphs"] = current_x_pos-(headerGlyphPadding*render_factor)
         right_x_points["glyphs"] = current_x_pos+glyphTotalWidth+(headerGlyphPadding*render_factor)
 
-    if config.join_header_bubbles_var:
+    if config.join_header_bubbles_var and (config.show_glyphs_bubbles_var or config.show_clock_bubbles_var):
         bottom_y = min(bottom_y_points.values())
         top_y = max(top_y_points.values())
         left_x = min(left_x_points.values())
