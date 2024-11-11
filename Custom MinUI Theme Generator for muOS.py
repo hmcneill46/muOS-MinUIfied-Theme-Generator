@@ -968,7 +968,23 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                 if not os.path.exists(directory):
                     os.makedirs(directory)
                 image.save(f"{outputDir}/Folder/box/{workingItem[2]}.png")
-                
+
+def resize_system_logos(system_logos_path, output_system_logos_path,grid_cell_size,grid_image_padding):
+    system_logos = os.listdir(system_logos_path)
+    effective_circle_diameter = grid_cell_size-(grid_image_padding*2)
+    for system_logo in system_logos:
+        if system_logo.endswith(".png"):
+            print("trying to resize",system_logo)
+            system_logo_path = os.path.join(system_logos_path, system_logo)
+            system_logo_image = Image.open(system_logo_path).convert("RGBA")
+            old_size = system_logo_image.size
+            aspect_ratio = old_size[0]/old_size[1]
+            new_height = math.sqrt(math.pow(effective_circle_diameter,2)/(1+math.pow(aspect_ratio,2)))
+            new_size = int(new_height*aspect_ratio),int(new_height)
+            print("new image size",new_size)
+            system_logo_image = system_logo_image.resize(new_size, Image.LANCZOS)
+            system_logo_image.save(os.path.join(output_system_logos_path, system_logo)) 
+            print(f"Resized {system_logo}")
 
 def cut_out_image(original_image, logo_image, coordinates):
     x, y = coordinates
@@ -2664,6 +2680,14 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replacementStringMap["muxplore"]["{grid_cell_text_padding_side}"] = 5
         replacementStringMap["muxplore"]["{grid_cell_text_line_spacing}"] = 0
         replacementStringMap["muxplore"]["{grid_cell_radius}"] = 1000
+
+        grid_image_padding = 10
+
+        system_logos_path = os.path.join(internal_files_dir,"Assets", "System Logos",f"png [5x]")
+
+        output_system_logos_path = os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","system_logos")
+        os.makedirs(output_system_logos_path, exist_ok=True)
+        resize_system_logos(system_logos_path, output_system_logos_path,grid_cell_size,grid_image_padding)
         
     for fileName in replacementStringMap.keys():
         shutil.copy2(templateSchemeFile,os.path.join(newSchemeDir,f"{fileName}.txt"))
