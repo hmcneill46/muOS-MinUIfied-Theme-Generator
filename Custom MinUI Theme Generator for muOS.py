@@ -2849,7 +2849,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     for item in muxvisual_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxvisual",f"{item}.png"), format='PNG')
     
-    muxtweakadv_items = ["accelerate","swap","thermal","font","volume","brightness","offset","lock","led","theme","retrowait","usbfunction","state","verbose","rumble","hdmi","storage"]
+    muxtweakadv_items = ["accelerate", "swap", "thermal", "font", "volume", "brightness", "offset", "lock", "led", "theme", "retrowait", "usbfunction", "state", "verbose", "rumble", "hdmi", "userinit", "dpadswap"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv"), exist_ok=True)
     for item in muxtweakadv_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv",f"{item}.png"), format='PNG')
