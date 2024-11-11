@@ -83,6 +83,7 @@ class Config: # TODO delete unneeded variables
         self.show_header_bubbles_var = False
         self.join_header_bubbles_var = False
         self.enable_game_switcher_var = False
+        self.enable_grid_view_explore_var = False
         self.alternate_menu_names_var = False
         self.remove_right_menu_guides_var = False
         self.remove_left_menu_guides_var = False
@@ -2473,7 +2474,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
     # Grid Settings
 
-    replacementStringMap["default"]["{grid_navigation_type}"] = 2
+    replacementStringMap["default"]["{grid_navigation_type}"] = 4
     replacementStringMap["default"]["{grid_background}"] = config.bgHexVar
     replacementStringMap["default"]["{grid_background_alpha}"] = 0
     replacementStringMap["default"]["{grid_location_x}"] = 0
@@ -2485,29 +2486,29 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replacementStringMap["default"]["{grid_cell_width}"] = 200
     replacementStringMap["default"]["{grid_cell_height}"] = 200
     replacementStringMap["default"]["{grid_cell_radius}"] = 10
-    replacementStringMap["default"]["{grid_cell_border_width}"] = 5
-    replacementStringMap["default"]["{grid_cell_image_padding_top}"] = 5
-    replacementStringMap["default"]["{grid_cell_text_padding_bottom}"] = 5
-    replacementStringMap["default"]["{grid_cell_text_padding_side}"] = 5
+    replacementStringMap["default"]["{grid_cell_border_width}"] = 0
+    replacementStringMap["default"]["{grid_cell_image_padding_top}"] = 0
+    replacementStringMap["default"]["{grid_cell_text_padding_bottom}"] = 0
+    replacementStringMap["default"]["{grid_cell_text_padding_side}"] = 0
     replacementStringMap["default"]["{grid_cell_text_line_spacing}"] = 0
     replacementStringMap["default"]["{grid_cell_default_background}"] = config.bgHexVar
-    replacementStringMap["default"]["{grid_cell_default_background_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_default_background_alpha}"] = 0
     replacementStringMap["default"]["{grid_cell_default_border}"] = config.bgHexVar
-    replacementStringMap["default"]["{grid_cell_default_border_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_default_border_alpha}"] = 0
     replacementStringMap["default"]["{grid_cell_default_image_alpha}"] = 255
-    replacementStringMap["default"]["{grid_cell_default_image_recolour}"] = config.deselectedFontHexVar
-    replacementStringMap["default"]["{grid_cell_default_image_recolour_alpha}"] = 0
+    replacementStringMap["default"]["{grid_cell_default_image_recolour}"] = config.iconHexVar
+    replacementStringMap["default"]["{grid_cell_default_image_recolour_alpha}"] = 255
     replacementStringMap["default"]["{grid_cell_default_text}"] = config.deselectedFontHexVar
-    replacementStringMap["default"]["{grid_cell_default_text_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_default_text_alpha}"] = 0
     replacementStringMap["default"]["{grid_cell_focus_background}"] = config.deselectedFontHexVar
-    replacementStringMap["default"]["{grid_cell_focus_background_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_focus_background_alpha}"] = 255*0.133
     replacementStringMap["default"]["{grid_cell_focus_border}"] = config.deselectedFontHexVar
-    replacementStringMap["default"]["{grid_cell_focus_border_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_focus_border_alpha}"] = 0
     replacementStringMap["default"]["{grid_cell_focus_image_alpha}"] = 255
-    replacementStringMap["default"]["{grid_cell_focus_image_recolour}"] = config.icon_hex_entry
-    replacementStringMap["default"]["{grid_cell_focus_image_recolour_alpha}"] = 0
+    replacementStringMap["default"]["{grid_cell_focus_image_recolour}"] = config.iconHexVar
+    replacementStringMap["default"]["{grid_cell_focus_image_recolour_alpha}"] = 255
     replacementStringMap["default"]["{grid_cell_focus_text}"] = config.selected_font_hex_entry
-    replacementStringMap["default"]["{grid_cell_focus_text_alpha}"] = 255
+    replacementStringMap["default"]["{grid_cell_focus_text_alpha}"] = 0
     
     missingValues = []
 
@@ -2616,7 +2617,6 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replacementStringMap["muxhistory"]["{footer_height}"] = bottom_bar_total_height
         replacementStringMap["muxhistory"]["{footer_pad_top}"] = int((bottom_bar_total_height - int(getRealFooterHeight(config)))/2)
         replacementStringMap["muxhistory"]["{footer_pad_bottom}"] = 0
-        
     else: # muxhistory - if not making it onto game switcher, should be the same as muxplore
         if int(config.maxBoxArtWidth) > 0:
             replacementStringMap["muxhistory"] = replacementStringMap["muxplore"].copy()
@@ -2625,6 +2625,33 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     if config.version_var != "muOS 2410.1 Banana":
         replacementStringMap["muxstorage"] = {}
         replacementStringMap["muxstorage"]["{footer_alpha}"] = 255
+
+    if config.enable_grid_view_explore_var:
+        grid_padding_top = 10
+        grid_column_count = 4
+        grid_row_count = 2
+        grid_row_height = int((int(config.deviceScreenHeightVar)-getRealFooterHeight(config)-int(config.headerHeightVar))/grid_row_count)
+        grid_column_width = int(int(config.deviceScreenWidthVar)/grid_column_count)
+        cell_inner_padding = 10
+        grid_location_x = 0
+        grid_location_y = grid_padding_top+int(config.headerHeightVar)
+        grid_cell_width = grid_column_width-2*cell_inner_padding
+        grid_cell_height = grid_row_height-2*cell_inner_padding
+        grid_cell_size = min(grid_cell_width,grid_cell_height)
+        replacementStringMap["muxplore"] = {}
+        replacementStringMap["muxplore"]["{grid_location_x}"] = grid_location_x
+        replacementStringMap["muxplore"]["{grid_location_y}"] = grid_location_y
+        replacementStringMap["muxplore"]["{grid_column_count}"] = grid_column_count
+        replacementStringMap["muxplore"]["{grid_row_count}"] = grid_row_count
+        replacementStringMap["muxplore"]["{grid_row_height}"] = grid_row_height
+        replacementStringMap["muxplore"]["{grid_column_width}"] = grid_column_width
+        replacementStringMap["muxplore"]["{grid_cell_width}"] = grid_cell_size
+        replacementStringMap["muxplore"]["{grid_cell_height}"] = grid_cell_size
+        replacementStringMap["muxplore"]["{grid_cell_image_padding_top}"] = 5
+        replacementStringMap["muxplore"]["{grid_cell_text_padding_bottom}"] = 5
+        replacementStringMap["muxplore"]["{grid_cell_text_padding_side}"] = 5
+        replacementStringMap["muxplore"]["{grid_cell_text_line_spacing}"] = 0
+        replacementStringMap["muxplore"]["{grid_cell_radius}"] = 1000
         
     for fileName in replacementStringMap.keys():
         shutil.copy2(templateSchemeFile,os.path.join(newSchemeDir,f"{fileName}.txt"))
@@ -2632,7 +2659,6 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
             replacement = replacementStringMap[fileName].get(stringToBeReplaced,replacementStringMap["default"][stringToBeReplaced])
             replace_in_file(os.path.join(newSchemeDir,f"{fileName}.txt"), stringToBeReplaced, str(replacement))
 
-   
 
 
     
@@ -3201,6 +3227,7 @@ show_glyphs_var = tk.IntVar()
 show_header_bubbles_var = tk.IntVar()
 join_header_bubbles_var = tk.IntVar()
 enable_game_switcher_var = tk.IntVar()
+enable_grid_view_explore_var = tk.IntVar()
 alternate_menu_names_var = tk.IntVar()
 remove_right_menu_guides_var = tk.IntVar()
 remove_left_menu_guides_var = tk.IntVar()
@@ -3312,6 +3339,10 @@ grid_helper.add(tk.Label(scrollable_frame, text="General Configurations", font=s
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Game Switcher*", variable=enable_game_switcher_var), sticky="w", next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="*Not recommended Very Experimental",fg="#f00"), sticky="w",next_row=True)
+
+
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Grid View in Explore*", variable=enable_grid_view_explore_var), sticky="w", next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="*Test builds only",fg="#f40"), sticky="w",next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Main Menu Style"), sticky="w")
 MainMenuStyleOptions = ["Horizontal", "Vertical", "Alt-Horizontal"]
@@ -3919,6 +3950,7 @@ def save_settings(config: Config):
     config.show_header_bubbles_var = show_header_bubbles_var.get()
     config.join_header_bubbles_var = join_header_bubbles_var.get()
     config.enable_game_switcher_var = enable_game_switcher_var.get()
+    config.enable_grid_view_explore_var = enable_grid_view_explore_var.get()
     config.alternate_menu_names_var = alternate_menu_names_var.get()
     config.remove_right_menu_guides_var = remove_right_menu_guides_var.get()
     config.remove_left_menu_guides_var = remove_left_menu_guides_var.get()
@@ -4022,6 +4054,7 @@ def load_settings(config: Config):
     show_header_bubbles_var.set(config.show_header_bubbles_var)
     join_header_bubbles_var.set(config.join_header_bubbles_var)
     enable_game_switcher_var.set(config.enable_game_switcher_var)
+    enable_grid_view_explore_var.set(config.enable_grid_view_explore_var)
     alternate_menu_names_var.set(config.alternate_menu_names_var)
     remove_right_menu_guides_var.set(config.remove_right_menu_guides_var)
     remove_left_menu_guides_var.set(config.remove_left_menu_guides_var)
@@ -4107,6 +4140,7 @@ show_glyphs_var.trace_add("write", lambda *args: save_settings(global_config))
 show_header_bubbles_var.trace_add("write", lambda *args: save_settings(global_config))
 join_header_bubbles_var.trace_add("write", lambda *args: save_settings(global_config))
 enable_game_switcher_var.trace_add("write", lambda *args: save_settings(global_config))
+enable_grid_view_explore_var.trace_add("write", lambda *args: save_settings(global_config))
 alternate_menu_names_var.trace_add("write", lambda *args: save_settings(global_config))
 remove_right_menu_guides_var.trace_add("write", lambda *args: save_settings(global_config))
 remove_left_menu_guides_var.trace_add("write", lambda *args: save_settings(global_config))
