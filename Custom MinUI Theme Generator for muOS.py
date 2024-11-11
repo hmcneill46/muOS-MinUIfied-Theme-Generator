@@ -2621,16 +2621,32 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     if config.version_var != "muOS 2410.1 Banana":
         replacementStringMap["muxstorage"] = {}
         replacementStringMap["muxstorage"]["{footer_alpha}"] = 255
+    
+    
 
     if config.enable_grid_view_explore_var:
-        grid_padding_top = 10
-        grid_column_count = 4
-        grid_row_count = 2
-        grid_row_height = int((int(config.deviceScreenHeightVar)-getRealFooterHeight(config)-int(config.headerHeightVar))/grid_row_count)
-        grid_column_width = int(int(config.deviceScreenWidthVar)/grid_column_count)
+        grid_total_height = (int(config.deviceScreenHeightVar)-getRealFooterHeight(config)-int(config.headerHeightVar))
+        grid_total_width = int(config.deviceScreenWidthVar)
+        max_items_per_screen = 12
+
+        diff_aspect_ratios = {}
+        target_aspect_ratio = grid_total_width/grid_total_height
+        for columns in range(1,max_items_per_screen):
+            for rows in range(1,max_items_per_screen):
+                if columns*rows <= max_items_per_screen:
+                    if columns*rows >= 4:
+                        aspect_ratio = columns/rows
+                        diff_aspect_ratio = abs(aspect_ratio-target_aspect_ratio)
+                        
+                        diff_aspect_ratios[diff_aspect_ratio] = (columns,rows)
+        closest_aspect_ratio = diff_aspect_ratios[min(diff_aspect_ratios.keys())]
+        grid_column_count, grid_row_count = closest_aspect_ratio
+
+        grid_row_height = int(grid_total_height/grid_row_count)
+        grid_column_width = int(grid_total_width/grid_column_count)
         cell_inner_padding = 10
         grid_location_x = 0
-        grid_location_y = grid_padding_top+int(config.headerHeightVar)
+        grid_location_y = int(config.headerHeightVar)
         grid_cell_width = grid_column_width-2*cell_inner_padding
         grid_cell_height = grid_row_height-2*cell_inner_padding
         grid_cell_size = min(grid_cell_width,grid_cell_height)
