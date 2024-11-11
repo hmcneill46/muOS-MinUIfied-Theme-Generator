@@ -80,7 +80,8 @@ class Config: # TODO delete unneeded variables
         self.icon_hex_entry = "ffffff"
         self.include_overlay_var = False
         self.show_glyphs_var = False
-        self.show_header_bubbles_var = False
+        self.show_clock_bubbles_var = False
+        self.show_glyphs_bubbles_var = False
         self.join_header_bubbles_var = False
         self.enable_game_switcher_var = False
         self.enable_grid_view_explore_var = False
@@ -307,7 +308,7 @@ def generateHeaderBubbles(config:Config,render_factor,accent_colour=None,bubble_
     right_x_points = {}
 
 
-    if "generate bubble for clock":
+    if config.show_clock_bubbles_var:
         clock_left_padding = int(config.clockHorizontalLeftPaddingVar)
         clock_right_padding = int(config.clockHorizontalRightPaddingVar)
 
@@ -339,7 +340,7 @@ def generateHeaderBubbles(config:Config,render_factor,accent_colour=None,bubble_
         headerGlyphPadding = int((int(config.header_glyph_bubble_height_var)-int(config.header_glyph_height_var))/2)
     else:
         raise ValueError("Header Glyph Height Too Large!")
-    if "generate bubble for glyphs":
+    if config.show_glyphs_bubbles_var:
 
         #Battery not charging stuff
         capacityGlyph = "capacity_30.png"
@@ -542,9 +543,8 @@ def generateGameSwitcherOverlay(config: Config, render_factor, gameNameForPrevie
     menuHelperGuide = generateMenuHelperGuides([["A", "OKAY"], ["B", "BACK"]], os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"), config.deselectedFontHexVar, render_factor, config)
     overlay = Image.alpha_composite(overlay, menuHelperGuide)
 
-    if config.show_header_bubbles_var:
-        headerBubbles = generateHeaderBubbles(config, render_factor,accent_colour=config.bgHexVar,bubble_alpha=0.866)
-        overlay = Image.alpha_composite(overlay, headerBubbles)
+    headerBubbles = generateHeaderBubbles(config, render_factor,accent_colour=config.bgHexVar,bubble_alpha=0.866)
+    overlay = Image.alpha_composite(overlay, headerBubbles)
     
 
         
@@ -742,10 +742,9 @@ def generateMuOSBackgroundOverlay(rhsButtons,selected_font_path,colour_hex,rende
     menuHelperGuides = generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_factor,config,lhsButtons=lhsButtons)
 
     image = Image.alpha_composite(image,menuHelperGuides)
-    if config.show_header_bubbles_var:
-        headerBubbles = generateHeaderBubbles(config,render_factor)
+    headerBubbles = generateHeaderBubbles(config,render_factor)
 
-        image = Image.alpha_composite(image,headerBubbles)
+    image = Image.alpha_composite(image,headerBubbles)
 
     return(image)
 
@@ -909,9 +908,8 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     if (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp" or muOSSystemName == "muxplore" or muOSSystemName == "muxfavourite" or muOSSystemName == "muxhistory"):
         image = Image.alpha_composite(image, menuHelperGuides)
     
-    if config.show_header_bubbles_var:
-        headerBubbles = generateHeaderBubbles(config,render_factor)
-        image = Image.alpha_composite(image, headerBubbles)
+    headerBubbles = generateHeaderBubbles(config,render_factor)
+    image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
         muOSOverlay = generatePilImageMuOSOverlay(config,muOSSystemName,render_factor)
@@ -1342,9 +1340,8 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
 
     ## Show what header items will actually look like
 
-    if config.show_header_bubbles_var:
-        headerBubbles = generateHeaderBubbles(config,render_factor)
-        image = Image.alpha_composite(image, headerBubbles)
+    headerBubbles = generateHeaderBubbles(config,render_factor)
+    image = Image.alpha_composite(image, headerBubbles)
     
     if forPreview:
         muOSOverlay = generatePilImageMuOSOverlay(config,"muxlaunch",render_factor)
@@ -1741,9 +1738,8 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
         image = Image.alpha_composite(image, transparent_text_image)
     image = Image.alpha_composite(image, menuHelperGuides)
 
-    if config.show_header_bubbles_var:
-        headerBubbles = generateHeaderBubbles(config,render_factor)
-        image = Image.alpha_composite(image, headerBubbles)
+    headerBubbles = generateHeaderBubbles(config,render_factor)
+    image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
         muOSOverlay = generatePilImageMuOSOverlay(config,"muxlaunch",render_factor)
@@ -3224,7 +3220,8 @@ show_charging_battery_var = tk.IntVar()
 show_hidden_files_var = tk.IntVar()
 include_overlay_var = tk.IntVar()
 show_glyphs_var = tk.IntVar()
-show_header_bubbles_var = tk.IntVar()
+show_clock_bubbles_var = tk.IntVar()
+show_glyphs_bubbles_var = tk.IntVar()
 join_header_bubbles_var = tk.IntVar()
 enable_game_switcher_var = tk.IntVar()
 enable_grid_view_explore_var = tk.IntVar()
@@ -3451,7 +3448,8 @@ grid_helper.add(content_padding_top_entry, next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
-grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Bubble Behind Header Items", variable=show_header_bubbles_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Bubble Behind Clock", variable=show_clock_bubbles_var), sticky="w", next_row=True)
+grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Bubble Behind Glyphs", variable=show_glyphs_bubbles_var), sticky="w", next_row=True)
 
 
 grid_helper.add(tk.Label(scrollable_frame, text="Header Text Bubble Height:"), sticky="w")
@@ -3947,7 +3945,8 @@ def save_settings(config: Config):
     config.icon_hex_entry = icon_hex_entry.get()
     config.include_overlay_var = include_overlay_var.get()
     config.show_glyphs_var = show_glyphs_var.get()
-    config.show_header_bubbles_var = show_header_bubbles_var.get()
+    config.show_glyphs_bubbles_var = show_glyphs_bubbles_var.get()
+    config.show_clock_bubbles_var = show_clock_bubbles_var.get()
     config.join_header_bubbles_var = join_header_bubbles_var.get()
     config.enable_game_switcher_var = enable_game_switcher_var.get()
     config.enable_grid_view_explore_var = enable_grid_view_explore_var.get()
@@ -4051,7 +4050,8 @@ def load_settings(config: Config):
     batteryChargingHexVar.set(config.batteryChargingHexVar)
     include_overlay_var.set(config.include_overlay_var)
     show_glyphs_var.set(config.show_glyphs_var)
-    show_header_bubbles_var.set(config.show_header_bubbles_var)
+    show_glyphs_bubbles_var.set(config.show_glyphs_bubbles_var)
+    show_clock_bubbles_var.set(config.show_clock_bubbles_var)
     join_header_bubbles_var.set(config.join_header_bubbles_var)
     enable_game_switcher_var.set(config.enable_game_switcher_var)
     enable_grid_view_explore_var.set(config.enable_grid_view_explore_var)
@@ -4137,7 +4137,8 @@ show_console_name_var.trace_add("write", lambda *args: save_settings(global_conf
 show_charging_battery_var.trace_add("write", lambda *args: save_settings(global_config))
 include_overlay_var.trace_add("write", lambda *args: save_settings(global_config))
 show_glyphs_var.trace_add("write", lambda *args: save_settings(global_config))
-show_header_bubbles_var.trace_add("write", lambda *args: save_settings(global_config))
+show_clock_bubbles_var.trace_add("write", lambda *args: save_settings(global_config))
+show_glyphs_bubbles_var.trace_add("write", lambda *args: save_settings(global_config))
 join_header_bubbles_var.trace_add("write", lambda *args: save_settings(global_config))
 enable_game_switcher_var.trace_add("write", lambda *args: save_settings(global_config))
 enable_grid_view_explore_var.trace_add("write", lambda *args: save_settings(global_config))
