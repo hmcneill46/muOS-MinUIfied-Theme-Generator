@@ -2854,7 +2854,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     for item in muxtweakadv_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv",f"{item}.png"), format='PNG')
 
-    muxwebserv_items = ["shell", "browser", "terminal", "sync", "resilio", "ntp"]
+    muxwebserv_items = ["sshd", "sftpgo", "ttyd", "syncthing", "rslsync", "ntp"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv"), exist_ok=True)
     for item in muxwebserv_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv",f"{item}.png"), format='PNG')
