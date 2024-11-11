@@ -59,6 +59,7 @@ def main():
     # Print missing consoles with red color
     for n in missing_consoles:
         print(f"{n}: {color_missing}Missing{reset_color}")
+    print("Percentage of logos found: ", len(found_consoles)/len(console_names)*100, "%")
 
 
 if __name__ == "__main__":
