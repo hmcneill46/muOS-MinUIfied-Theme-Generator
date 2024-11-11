@@ -2672,10 +2672,6 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replacementStringMap["muxplore"]["{grid_column_width}"] = grid_column_width
         replacementStringMap["muxplore"]["{grid_cell_width}"] = grid_cell_size
         replacementStringMap["muxplore"]["{grid_cell_height}"] = grid_cell_size
-        replacementStringMap["muxplore"]["{grid_cell_image_padding_top}"] = 5
-        replacementStringMap["muxplore"]["{grid_cell_text_padding_bottom}"] = 5
-        replacementStringMap["muxplore"]["{grid_cell_text_padding_side}"] = 5
-        replacementStringMap["muxplore"]["{grid_cell_text_line_spacing}"] = 0
         replacementStringMap["muxplore"]["{grid_cell_radius}"] = 1000
 
         grid_image_padding = 10
@@ -2691,10 +2687,6 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         for stringToBeReplaced in replacementStringMap["default"].keys():
             replacement = replacementStringMap[fileName].get(stringToBeReplaced,replacementStringMap["default"][stringToBeReplaced])
             replace_in_file(os.path.join(newSchemeDir,f"{fileName}.txt"), stringToBeReplaced, str(replacement))
-
-
-
-    
 
 
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall"), exist_ok=True)
