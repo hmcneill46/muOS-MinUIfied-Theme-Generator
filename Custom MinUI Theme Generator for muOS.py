@@ -2667,7 +2667,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
         grid_row_height = int(grid_total_height/grid_row_count)
         grid_column_width = int(grid_total_width/grid_column_count)
-        cell_inner_padding = 10
+        cell_inner_padding = 5
         grid_location_x = 0
         grid_location_y = int(config.headerHeightVar)
         grid_cell_width = grid_column_width-2*cell_inner_padding
