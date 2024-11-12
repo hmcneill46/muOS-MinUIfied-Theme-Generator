@@ -25,7 +25,11 @@ def get_console_names_from_github():
         
         console_names = []
 
+        ini_files = [file_info['name'] for file_info in contents if file_info['name'].endswith(".ini")]
+        no_ini_files = len(ini_files)
+
         # Loop through each .ini file
+        current_ini_file = 0
         for file_info in contents:
             if file_info['name'].endswith(".ini"):
                 # Get the file content URL
@@ -40,8 +44,12 @@ def get_console_names_from_github():
                             console_name = line.split("=", 1)[1].strip()
                             console_names.append(console_name)
                             break
+                    current_ini_file += 1
+                    print(f"Successfully Processed {file_info['name']}")
+                    print(f"Progress: {round(100*(current_ini_file/no_ini_files),2)}% Done")
                 else:
                     print(f"Failed to retrieve file content for {file_info['name']}: {file_response.status_code}")
+                    print(f"Progress: {round(100*(current_ini_file/no_ini_files),2)}% Done")
         
         return console_names
     else:
