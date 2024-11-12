@@ -2232,6 +2232,16 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
                         os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "image"))
             shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "preview.png"),
                         os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "preview.png"))
+            if config.enable_grid_view_explore_var:
+                if config.theme_directory_path == "":
+                    theme_dir = os.path.join(script_dir, "Generated Theme")
+                else:
+                    theme_dir = config.theme_directory_path
+                systemIconsAmFileName = f"{themeName} AM System Icons [{width}x{height}]"
+                os.makedirs(os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}", "opt"), exist_ok=True)
+                shutil.copy2(os.path.join(internal_files_dir, "Assets", "AM - Scripts", "System Logo Load", "update.sh"),
+                            os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}", "opt", "update.sh"))
+                shutil.make_archive(os.path.join(theme_dir, systemIconsAmFileName),"zip", os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "scheme"),
                         os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "image"),
@@ -2678,7 +2688,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
         system_logos_path = os.path.join(internal_files_dir,"Assets", "System Logos",f"png [5x]")
 
-        output_system_logos_path = os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","system_logos")
+        output_system_logos_path = os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}","run","muos","storage","info", "catalogue", "Folder", "grid")
         os.makedirs(output_system_logos_path, exist_ok=True)
         resize_system_logos(system_logos_path, output_system_logos_path,grid_cell_size,grid_image_padding)
         

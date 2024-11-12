@@ -5,8 +5,6 @@ try:
 except ImportError:
     raise ImportError("Please create a githubToken.py file with your GITHUB_TOKEN.")
 
-
-
 GITHUB_USER = "MustardOS"
 REPO_NAME = "internal"
 BRANCH = "main"
@@ -25,14 +23,29 @@ def get_console_names_from_github():
         # Parse the JSON response
         contents = response.json()
         
-        # Collect .ini filenames
-        console_names = [file_info['name'][:-4] for file_info in contents if file_info['name'].endswith(".ini")]
+        console_names = []
 
-        # Display the filenames
-        return(console_names)
+        # Loop through each .ini file
+        for file_info in contents:
+            if file_info['name'].endswith(".ini"):
+                # Get the file content URL
+                file_url = file_info['download_url']
+                file_response = requests.get(file_url, headers=headers)
+                
+                # Check if the file content is successfully retrieved
+                if file_response.status_code == 200:
+                    # Look for the line with "catalogue="
+                    for line in file_response.text.splitlines():
+                        if line.startswith("catalogue="):
+                            console_name = line.split("=", 1)[1].strip()
+                            console_names.append(console_name)
+                            break
+                else:
+                    print(f"Failed to retrieve file content for {file_info['name']}: {file_response.status_code}")
+        
+        return console_names
     else:
         raise Exception(f"Failed to retrieve data: {response.status_code} - {response.text}")
-# Run the function to get the latest filenames
 
 def main():
     console_names = get_console_names_from_github()
@@ -59,8 +72,7 @@ def main():
     # Print missing consoles with red color
     for n in missing_consoles:
         print(f"{n}: {color_missing}Missing{reset_color}")
-    print("Percentage of logos found: ", len(found_consoles)/len(console_names)*100, "%")
-
+    print("Percentage of logos found: ", len(found_consoles) / len(console_names) * 100, "%", "of", len(console_names), "logos found.")
 
 if __name__ == "__main__":
     main()
