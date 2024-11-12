@@ -969,17 +969,26 @@ def ContinuousFolderImageGen(progress_bar,muOSSystemName, listItems, textPadding
                     os.makedirs(directory)
                 image.save(f"{outputDir}/Folder/box/{workingItem[2]}.png")
 
-def resize_system_logos(system_logos_path, output_system_logos_path,grid_cell_size,grid_image_padding):
+def resize_system_logos(system_logos_path, output_system_logos_path,grid_cell_size,grid_image_padding,circular_grid):
     system_logos = os.listdir(system_logos_path)
-    effective_circle_diameter = grid_cell_size-(grid_image_padding*2)
+    if circular_grid:
+        effective_circle_diameter = grid_cell_size-(grid_image_padding*2)
+    else:
+        effective_grid_size = grid_cell_size-(grid_image_padding*2)
     for system_logo in system_logos:
         if system_logo.endswith(".png"):
             system_logo_path = os.path.join(system_logos_path, system_logo)
             system_logo_image = Image.open(system_logo_path).convert("RGBA")
-            old_size = system_logo_image.size
-            aspect_ratio = old_size[0]/old_size[1]
-            new_height = math.sqrt(math.pow(effective_circle_diameter,2)/(1+math.pow(aspect_ratio,2)))
-            new_size = int(new_height*aspect_ratio),int(new_height)
+            if circular_grid:
+                old_size = system_logo_image.size
+                aspect_ratio = old_size[0]/old_size[1]
+                new_height = math.sqrt(math.pow(effective_circle_diameter,2)/(1+math.pow(aspect_ratio,2)))
+                new_size = int(new_height*aspect_ratio),int(new_height)
+            else:
+                width_multiplier = effective_grid_size/system_logo_image.size[0]
+                height_multiplier = effective_grid_size/system_logo_image.size[1]
+                multiplier = min(width_multiplier,height_multiplier)
+                new_size = int(system_logo_image.size[0]*multiplier),int(system_logo_image.size[1]*multiplier)
             system_logo_image = system_logo_image.resize(new_size, Image.LANCZOS)
             system_logo_image.save(os.path.join(output_system_logos_path, system_logo)) 
 
@@ -2226,10 +2235,14 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
                     res_config.pageTitlePaddingVar = str(int(int(res_config.pageTitlePaddingVar) * (width / assumed_res[0])))
                     res_config.pageTitlePaddingVar = str(int(int(res_config.pageTitlePaddingVar) * (width / assumed_res[0])))
             FillTempThemeFolder(progress_bar, threadNumber,config=res_config)
-            shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"),
-                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "scheme"))
+            shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "font"),
+                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "font"))
+            shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "glyph"),
+                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "glyph"))
             shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "image"),
                         os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "image"))
+            shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"),
+                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "scheme"))
             shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "preview.png"),
                         os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{width}x{height}", "preview.png"))
             if config.enable_grid_view_explore_var:
@@ -2242,10 +2255,15 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
                 shutil.copy2(os.path.join(internal_files_dir, "Assets", "AM - Scripts", "System Logo Load", "update.sh"),
                             os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}", "opt", "update.sh"))
                 shutil.make_archive(os.path.join(theme_dir, systemIconsAmFileName),"zip", os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
-        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "scheme"),
-                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"))
+                delete_folder(os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
+        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "font"),
+                    os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "font"))
+        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "glyph"),
+                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "glyph"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "image"),
                     os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "image"))
+        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "scheme"),
+                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "preview.png"),
                     os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "preview.png"))
         if os.path.exists(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}")):
@@ -2682,7 +2700,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replacementStringMap["muxplore"]["{grid_column_width}"] = grid_column_width
         replacementStringMap["muxplore"]["{grid_cell_width}"] = grid_cell_size
         replacementStringMap["muxplore"]["{grid_cell_height}"] = grid_cell_size
-        replacementStringMap["muxplore"]["{grid_cell_radius}"] = 1000
+        replacementStringMap["muxplore"]["{grid_cell_radius}"] = math.ceil(grid_cell_size/2.0)
 
         grid_image_padding = 10
 
@@ -2690,7 +2708,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
         output_system_logos_path = os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}","run","muos","storage","info", "catalogue", "Folder", "grid")
         os.makedirs(output_system_logos_path, exist_ok=True)
-        resize_system_logos(system_logos_path, output_system_logos_path,grid_cell_size,grid_image_padding)
+        resize_system_logos(system_logos_path, output_system_logos_path,grid_cell_size,grid_image_padding,circular_grid=False)
         
     for fileName in replacementStringMap.keys():
         shutil.copy2(templateSchemeFile,os.path.join(newSchemeDir,f"{fileName}.txt"))
@@ -2705,8 +2723,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{config.selected_overlay_var}.png"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","overlay.png"))
     
     ## GLYPH STUFF
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","footer"), exist_ok=True) #Font binaries stuff
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","header"), exist_ok=True) #Font binaries stuff
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","footer"), exist_ok=True)
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","header"), exist_ok=True)
 
     muosSpaceBetweenItems = 2
     footerHeight = int(config.deviceScreenHeightVar)-(individualItemHeight*int(config.itemsPerScreenVar))-int(config.contentPaddingTopVar)+muosSpaceBetweenItems
@@ -2753,6 +2771,17 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","footer"), exist_ok=True) #Font binaries stuff
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","header"), exist_ok=True) #Font binaries stuff
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","default.bin"))
+    muxarchive_font_size_640 = 17
+    muxarchive_font_size = math.floor(muxarchive_font_size_640*(int(config.deviceScreenWidthVar)/640))
+    print("muxarchive_font_size",muxarchive_font_size)
+    if fontSize > muxarchive_font_size:
+        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(muxarchive_font_size)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxarchive.bin"))
+    muxtheme_font_size_640 = 18
+    muxtheme_font_size = math.floor(muxtheme_font_size_640*(int(config.deviceScreenWidthVar)/640))
+    print("muxtheme_font_size",muxtheme_font_size)
+    if fontSize > muxtheme_font_size:
+        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(muxtheme_font_size)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxtheme.bin"))
+    
     if config.enable_game_switcher_var:
         gameSwitcherFontSize = bottom_bar_height_over_footer * 0.55
         gameSwitcherFontSize = int(fontSize)
