@@ -3239,7 +3239,7 @@ def start_theme_task():
     barrier = threading.Barrier(2)
         # Create a new Toplevel window for the loading bar
     loading_window = tk.Toplevel(root)
-    loading_window.title("Loading...")
+    loading_window.title("Generating...")
     loading_window.geometry("300x100")
     
     # Create a Progressbar widget in the loading window
