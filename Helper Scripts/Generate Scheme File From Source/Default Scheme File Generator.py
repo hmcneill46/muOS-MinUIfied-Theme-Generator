@@ -4,7 +4,14 @@ import os
 from collections import defaultdict
 
 # URL to the raw theme.c file in the GitHub repo
-GITHUB_URL = "https://raw.githubusercontent.com/MustardOS/frontend/main/common/theme.c"
+BANCH_MAP = {"Banana": "e81f65f9b883412ccaf9651a96dd921cbfd7df4b",
+             "Current": "main"}
+
+REPO_OWNER = "MustardOS"
+REPO_NAME = "frontend"
+BRANCH = BANCH_MAP["Current"]
+
+GITHUB_URL = f"https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}/{BRANCH}/common/theme.c"
 
 def download_theme_file(url, local_filename):
     """Download the theme.c file from GitHub."""
