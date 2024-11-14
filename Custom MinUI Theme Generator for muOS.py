@@ -2851,7 +2851,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     for item in muxconfig_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxconfig",f"{item}.png"), format='PNG')
     if config.version_var == "muOS 2410.1 Banana":
-        muxconfig_items = ["tracker", "tester", "system", "credit"]
+        muxinfo_items = ["tracker", "tester", "system", "credit"]
     else:
         muxinfo_items = ["tracker", "tester", "system", "credit"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxinfo"), exist_ok=True)
@@ -2861,7 +2861,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     if config.version_var == "muOS 2410.1 Banana":
         muxoption_items = ["core", "governor"]
     else:
-        muxoption_items = ["core", "governor"]
+        muxoption_items = ["search", "core", "governor"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxoption"), exist_ok=True)
     for item in muxoption_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxoption",f"{item}.png"), format='PNG')
@@ -2917,7 +2917,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     if config.version_var == "muOS 2410.1 Banana":
         muxwebserv_items = ["shell", "browser", "terminal", "sync", "resilio", "ntp"]
     else:
-        muxwebserv_items = ["sshd", "sftpgo", "ttyd", "syncthing", "rslsync", "ntp"]
+        muxwebserv_items = ["sshd", "sftpgo", "ttyd", "syncthing", "rslsync", "ntp", "tailscaled"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv"), exist_ok=True)
     for item in muxwebserv_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv",f"{item}.png"), format='PNG')
