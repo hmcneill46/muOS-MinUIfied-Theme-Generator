@@ -2658,10 +2658,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         if int(config.maxBoxArtWidth) > 0:
             replacementStringMap["muxhistory"] = replacementStringMap["muxplore"].copy()
     
-    # muxstorage, show the footer after banana
-    if config.version_var != "muOS 2410.1 Banana":
-        replacementStringMap["muxstorage"] = {}
-        replacementStringMap["muxstorage"]["{footer_alpha}"] = 255
+    replacementStringMap["muxstorage"] = {}
+    replacementStringMap["muxstorage"]["{footer_alpha}"] = 255
     
     
 
@@ -2845,17 +2843,25 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     
     visualbuttonoverlay_B_BACK_A_SELECT = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     
-    muxconfig_items = ["general", "theme", "network", "service", "clock", "language", "storage"]
+    if config.version_var == "muOS 2410.1 Banana":
+        muxconfig_items = ["general", "theme", "network", "service", "clock", "language"]
+    else:
+        muxconfig_items = ["general", "theme", "network", "service", "clock", "language", "storage"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxconfig"), exist_ok=True)
     for item in muxconfig_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxconfig",f"{item}.png"), format='PNG')
-
-    muxinfo_items = ["tracker", "tester", "system", "credit"]
+    if config.version_var == "muOS 2410.1 Banana":
+        muxconfig_items = ["tracker", "tester", "system", "credit"]
+    else:
+        muxinfo_items = ["tracker", "tester", "system", "credit"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxinfo"), exist_ok=True)
     for item in muxinfo_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxinfo",f"{item}.png"), format='PNG')
 
-    muxoption_items = ["core", "governor"]
+    if config.version_var == "muOS 2410.1 Banana":
+        muxoption_items = ["core", "governor"]
+    else:
+        muxoption_items = ["core", "governor"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxoption"), exist_ok=True)
     for item in muxoption_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxoption",f"{item}.png"), format='PNG')
@@ -2865,7 +2871,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     
     visualbuttonoverlay_A_SELECT = generateMuOSBackgroundOverlay([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
 
-    muxlaunch_items = ["explore", "favourite", "history", "apps", "info", "config", "reboot", "shutdown"]
+    if config.version_var == "muOS 2410.1 Banana":
+        muxlaunch_items = ["explore", "favourite", "history", "apps", "info", "config", "reboot", "shutdown"]
+    else:
+        muxlaunch_items = ["explore", "favourite", "history", "apps", "info", "config", "reboot", "shutdown"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch"), exist_ok=True)
     for item in muxlaunch_items:
         visualbuttonoverlay_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch",f"{item}.png"), format='PNG')
@@ -2873,37 +2882,58 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
     visualbuttonoverlay_B_BACK = generateMuOSBackgroundOverlay([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
 
-    muxtweakgen_items = ["hidden", "bgm", "sound", "startup", "colour", "brightness", "hdmi", "power", "interface", "advanced"]
+    if config.version_var == "muOS 2410.1 Banana":
+        muxtweakgen_items = ["hidden", "bgm", "sound", "startup", "colour", "brightness", "hdmi", "power", "interface", "advanced"]
+    else:
+        muxtweakgen_items = ["hidden", "bgm", "sound", "startup", "colour", "brightness", "hdmi", "power", "interface", "advanced"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakgen"), exist_ok=True)
     for item in muxtweakgen_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakgen",f"{item}.png"), format='PNG')
 
-    muxpower_items = ["shutdown", "battery", "idle_display", "idle_sleep"]
+    if config.version_var == "muOS 2410.1 Banana":
+        muxpower_items = ["shutdown", "battery", "idle_display", "idle_sleep"]
+    else:
+        muxpower_items = ["shutdown", "battery", "idle_display", "idle_sleep"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxpower"), exist_ok=True)
     for item in muxpower_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxpower",f"{item}.png"), format='PNG')
 
-    muxvisual_items = ["battery", "network", "bluetooth", "clock", "boxart", "boxartalign", "name", "dash", "friendlyfolder", "thetitleformat", "titleincluderootdrive", "folderitemcount", "folderempty", "counterfolder", "counterfile", "backgroundanimation", "launchsplash", "blackfade"]
+    if config.version_var == "muOS 2410.1 Banana":
+        muxvisual_items = ["battery", "network", "bluetooth", "clock", "boxart", "boxartalign", "name", "dash", "friendlyfolder", "thetitleformat", "titleincluderootdrive", "folderitemcount", "counterfolder", "counterfile", "backgroundanimation"]
+    else:
+        muxvisual_items = ["battery", "network", "bluetooth", "clock", "boxart", "boxartalign", "name", "dash", "friendlyfolder", "thetitleformat", "titleincluderootdrive", "folderitemcount", "folderempty", "counterfolder", "counterfile", "backgroundanimation", "launchsplash", "blackfade"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxvisual"), exist_ok=True)
     for item in muxvisual_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxvisual",f"{item}.png"), format='PNG')
     
-    muxtweakadv_items = ["accelerate", "swap", "thermal", "font", "volume", "brightness", "offset", "lock", "led", "theme", "retrowait", "usbfunction", "state", "verbose", "rumble", "hdmi", "userinit", "dpadswap"]
+    if config.version_var == "muOS 2410.1 Banana":
+        muxtweakadv_items = ["accelerate", "swap", "thermal", "font", "volume", "brightness", "offset", "lock", "led", "theme", "retrowait", "usbfunction", "state", "verbose", "rumble", "hdmi", "storage"]
+    else:
+        muxtweakadv_items = ["accelerate", "swap", "thermal", "font", "volume", "brightness", "offset", "lock", "led", "theme", "retrowait", "usbfunction", "state", "verbose", "rumble", "hdmi", "userinit", "dpadswap"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv"), exist_ok=True)
     for item in muxtweakadv_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv",f"{item}.png"), format='PNG')
 
-    muxwebserv_items = ["sshd", "sftpgo", "ttyd", "syncthing", "rslsync", "ntp"]
+    if config.version_var == "muOS 2410.1 Banana":
+        muxwebserv_items = ["shell", "browser", "terminal", "sync", "resilio", "ntp"]
+    else:
+        muxwebserv_items = ["sshd", "sftpgo", "ttyd", "syncthing", "rslsync", "ntp"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv"), exist_ok=True)
     for item in muxwebserv_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv",f"{item}.png"), format='PNG')
     
-    muxrtc_items = ["year", "month", "day", "hour", "minute", "notation", "timezone"]
+    if config.version_var == "muOS 2410.1 Banana":
+        muxrtc_items = ["year", "month", "day", "hour", "minute", "notation", "timezone"]
+    else:
+        muxrtc_items = ["year", "month", "day", "hour", "minute", "notation", "timezone"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxrtc"), exist_ok=True)
     for item in muxrtc_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxrtc",f"{item}.png"), format='PNG')
     
-    muxsysinfo_items = ["version", "device", "kernel", "uptime", "cpu", "speed", "governor", "memory", "temp", "service", "capacity", "voltage"]
+    if config.version_var == "muOS 2410.1 Banana":
+        muxsysinfo_items = ["version", "device", "kernel", "uptime", "cpu", "speed", "governor", "memory", "temp", "service", "capacity", "voltage"]
+    else:
+        muxsysinfo_items = ["version", "device", "kernel", "uptime", "cpu", "speed", "governor", "memory", "temp", "service", "capacity", "voltage"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxsysinfo"), exist_ok=True)
     for item in muxsysinfo_items:
         visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxsysinfo",f"{item}.png"), format='PNG')

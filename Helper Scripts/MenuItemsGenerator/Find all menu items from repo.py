@@ -7,9 +7,13 @@ except ImportError:
     raise ImportError("Please create a githubToken.py file with your GITHUB_TOKEN.")
 
 # GitHub repository details
+
+BANCH_MAP = {"Banana": "e81f65f9b883412ccaf9651a96dd921cbfd7df4b",
+             "Current": "main"}
+
 REPO_OWNER = "MustardOS"
 REPO_NAME = "frontend"
-BRANCH = "main"
+BRANCH = BANCH_MAP["Banana"]
 BASE_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents"
 
 # Regex pattern for capturing the last item
