@@ -3516,8 +3516,7 @@ overlayOptions = ["muOS Default CRT Overlay",
            "Grid_Thin_2px_20", 
            "Grid_Thin_2px_30", 
            "Perfect_CRT-noframe", 
-           "Perfect_CRT",
-           "GameSwitcher"]
+           "Perfect_CRT"]
 overlay_option_menu = tk.OptionMenu(scrollable_frame, selected_overlay_var, *overlayOptions)
 grid_helper.add(overlay_option_menu, colspan=3, sticky="w", next_row=True)
 
