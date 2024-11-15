@@ -2732,7 +2732,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         output_system_logos_path = os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}","run","muos","storage","info", "catalogue", "Folder", "grid")
         os.makedirs(output_system_logos_path, exist_ok=True)
         resize_system_logos(system_logos_path, output_system_logos_path,grid_cell_size,grid_image_padding,circular_grid=False)
-    if not "Dont Generate for lanuage on muxlaunch":
+    if not "Generating for lanuage on muxlaunch":
         horizontalLogoSize = getHorizontalLogoSize(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"), 1, config)
         paddingBetweenLogos = (int(config.deviceScreenWidthVar)-(horizontalLogoSize[0]*4))/(4+1)
 
