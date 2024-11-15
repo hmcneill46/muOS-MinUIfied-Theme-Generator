@@ -1029,7 +1029,14 @@ def cut_out_image(original_image, logo_image, coordinates):
     # Return the edited image
     return edited_image
 
-def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor,config:Config,transparent=False,forPreview=False):
+def getHorizontalLogoSize(path_to_logo, render_factor, config:Config):
+    exploreLogoColoured = change_logo_color(path_to_logo,config.iconHexVar)
+    top_logo_size = (int((exploreLogoColoured.size[0]*render_factor*min(int(config.deviceScreenHeightVar)/480,int(config.deviceScreenWidthVar)/640))/5),
+                     int((exploreLogoColoured.size[1]*render_factor*min(int(config.deviceScreenHeightVar)/480,int(config.deviceScreenWidthVar)/640))/5))
+    return(top_logo_size)
+    
+
+def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_hex,deselected_font_hex, bubble_hex,icon_hex,render_factor,config:Config,transparent=False,forPreview=False, generateText = True):
     progress_bar['value']+=1
     bg_rgb = hex_to_rgb(bg_hex)
 
@@ -1051,8 +1058,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     historyLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "history.png"),icon_hex)
     appsLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "apps.png"),icon_hex)
    
-    top_logo_size = (int((exploreLogoColoured.size[0]*render_factor*min(int(config.deviceScreenHeightVar)/480,int(config.deviceScreenWidthVar)/640))/5),
-                     int((exploreLogoColoured.size[1]*render_factor*min(int(config.deviceScreenHeightVar)/480,int(config.deviceScreenWidthVar)/640))/5))
+    top_logo_size = getHorizontalLogoSize(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"), render_factor, config)
     
     exploreLogoColoured = exploreLogoColoured.resize((top_logo_size), Image.LANCZOS)
     favouriteLogoColoured = favouriteLogoColoured.resize((top_logo_size), Image.LANCZOS)
@@ -1119,6 +1125,8 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
         current_x_midpoint = apps_middle
     else:
         current_x_midpoint = 104+(144*workingIndex)
+    betweenBubblePadding=5*render_factor
+    maxBubbleLength = int((((int(config.deviceScreenWidthVar)*render_factor)-padding_between_top_logos)/4)-betweenBubblePadding/2)
 
     
 
@@ -1140,7 +1148,10 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     textColour = selected_font_hex if workingIndex == 0 else deselected_font_hex
     text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 0 :
-        bubbleLength = text_width+horizontalBubblePadding
+        if generateText:
+            bubbleLength = text_width+horizontalBubblePadding
+        else:
+            bubbleLength = maxBubbleLength
         if config.transparent_text_var:
             draw_transparent.rounded_rectangle(
                 [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
@@ -1153,10 +1164,11 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
                 radius=(bubble_height/2),
                 fill=f"#{bubble_hex}"
             )
-    if config.transparent_text_var and workingIndex == 0:
-        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
-    else:
-        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+    if generateText:
+        if config.transparent_text_var and workingIndex == 0:
+            draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+        else:
+            draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
     
     if config.alternate_menu_names_var:
         textString = bidi_get_display(menuNameMap.get("favourites", "Favourites"))
@@ -1168,7 +1180,10 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     textColour = selected_font_hex if workingIndex == 1 else deselected_font_hex
     text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 1 :
-        bubbleLength = text_width+horizontalBubblePadding
+        if generateText:
+            bubbleLength = text_width+horizontalBubblePadding
+        else:
+            bubbleLength = maxBubbleLength
         if config.transparent_text_var:
             draw_transparent.rounded_rectangle(
                 [((current_x_midpoint-(bubbleLength/2)), int(top_row_bubble_middle-bubble_height/2)), ((current_x_midpoint+(bubbleLength/2)), int(top_row_bubble_middle+bubble_height/2))],
@@ -1181,10 +1196,11 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
                 radius=(bubble_height/2),
                 fill=f"#{bubble_hex}"
             )
-    if config.transparent_text_var and workingIndex == 1:
-        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
-    else:
-        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+    if generateText:
+        if config.transparent_text_var and workingIndex == 1:
+            draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+        else:
+            draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
 
     if config.alternate_menu_names_var:
         textString = bidi_get_display(menuNameMap.get("history", "History"))
@@ -1196,7 +1212,10 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     textColour = selected_font_hex if workingIndex == 2 else deselected_font_hex
     text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 2 :
-        bubbleLength = text_width+horizontalBubblePadding
+        if generateText:
+            bubbleLength = text_width+horizontalBubblePadding
+        else:
+            bubbleLength = maxBubbleLength
         if config.transparent_text_var:
             draw_transparent.rounded_rectangle(
                 [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
@@ -1209,10 +1228,11 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
                 radius=(bubble_height/2),
                 fill=f"#{bubble_hex}"
             )
-    if config.transparent_text_var and workingIndex == 2:
-        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
-    else:
-        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+    if generateText:
+        if config.transparent_text_var and workingIndex == 2:
+            draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+        else:
+            draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
     if config.alternate_menu_names_var:
         textString = bidi_get_display(menuNameMap.get("applications", "Utilities"))
     else:
@@ -1223,7 +1243,10 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     textColour = selected_font_hex if workingIndex == 3 else deselected_font_hex
     text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 3 :
-        bubbleLength = text_width+horizontalBubblePadding
+        if generateText:
+            bubbleLength = text_width+horizontalBubblePadding
+        else:
+            bubbleLength = maxBubbleLength
         if config.transparent_text_var:
             draw_transparent.rounded_rectangle(
                 [((current_x_midpoint-(bubbleLength/2)), int((top_row_bubble_middle-bubble_height/2))), ((current_x_midpoint+(bubbleLength/2)), int((top_row_bubble_middle+bubble_height/2)))],
@@ -1236,10 +1259,11 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
                 radius=(bubble_height/2),
                 fill=f"#{bubble_hex}"
             )
-    if config.transparent_text_var and workingIndex == 3:
-        draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
-    else:
-        draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
+    if generateText:
+        if config.transparent_text_var and workingIndex == 3:
+            draw_transparent.text((text_x, text_y), textString, font=font, fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency))
+        else:
+            draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
 
     
 
@@ -2428,6 +2452,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replacementStringMap["default"]["{blend_hex}"] = blend_hex
     replacementStringMap["default"]["{muted_hex}"] = muted_hex
     replacementStringMap["default"]["{battery_charging_hex}"] = config.batteryChargingHexVar
+    replacementStringMap["default"]["{bubble_hex}"] = config.bubbleHexVar
 
     # More Global Settings
     glyph_width = 20
@@ -2479,8 +2504,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replacementStringMap["default"]["{content_item_height}"] = individualItemHeight-2
     replacementStringMap["default"]["{content_item_count}"] = config.itemsPerScreenVar
     replacementStringMap["default"]["{background_alpha}"] = 0
-    replacementStringMap["default"]["{selected_font_hex}"] = base_hex
-    replacementStringMap["default"]["{deselected_font_hex}"] = accent_hex
+    replacementStringMap["default"]["{selected_font_hex}"] = config.selectedFontHexVar
+    replacementStringMap["default"]["{deselected_font_hex}"] = config.deselectedFontHexVar
     replacementStringMap["default"]["{bubble_alpha}"] = 255
     replacementStringMap["default"]["{bubble_padding_right}"] = config.bubblePaddingVar
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
@@ -2538,7 +2563,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replacementStringMap["default"]["{grid_cell_default_text}"] = config.deselectedFontHexVar
     replacementStringMap["default"]["{grid_cell_default_text_alpha}"] = 0
     replacementStringMap["default"]["{grid_cell_focus_background}"] = config.deselectedFontHexVar
-    replacementStringMap["default"]["{grid_cell_focus_background_alpha}"] = 255*0.133
+    replacementStringMap["default"]["{grid_cell_focus_background_alpha}"] = int(255*0.133)
     replacementStringMap["default"]["{grid_cell_focus_border}"] = config.deselectedFontHexVar
     replacementStringMap["default"]["{grid_cell_focus_border_alpha}"] = 0
     replacementStringMap["default"]["{grid_cell_focus_image_alpha}"] = 255
@@ -2707,6 +2732,44 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         output_system_logos_path = os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}","run","muos","storage","info", "catalogue", "Folder", "grid")
         os.makedirs(output_system_logos_path, exist_ok=True)
         resize_system_logos(system_logos_path, output_system_logos_path,grid_cell_size,grid_image_padding,circular_grid=False)
+    if not "Dont Generate for lanuage on muxlaunch":
+        horizontalLogoSize = getHorizontalLogoSize(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"), 1, config)
+        paddingBetweenLogos = (int(config.deviceScreenWidthVar)-(horizontalLogoSize[0]*4))/(4+1)
+
+        bubble_height = min((int(config.deviceScreenHeightVar)*36.3)/480,(int(config.deviceScreenWidthVar)*36.3)/640)
+        effective_text_padding_top = 4
+
+        combined_height = bubble_height+horizontalLogoSize[1]
+        heightAbove_logo = (int(config.deviceScreenHeightVar)-combined_height)/2
+
+        grid_total_width = int(config.deviceScreenWidthVar)-paddingBetweenLogos
+
+        grid_column_count = 4
+        grid_row_count = 2
+
+        grid_row_height = heightAbove_logo+combined_height+effective_text_padding_top
+        grid_column_width = int(grid_total_width/grid_column_count)
+        cell_inner_padding = 0
+        grid_location_x = paddingBetweenLogos/2
+        grid_location_y = 0
+        grid_cell_width = grid_column_width-2*cell_inner_padding
+        grid_cell_height = grid_row_height-2*cell_inner_padding
+        replacementStringMap["muxlaunch"]["{grid_location_x}"] = grid_location_x
+        replacementStringMap["muxlaunch"]["{grid_location_y}"] = grid_location_y
+        replacementStringMap["muxlaunch"]["{grid_column_count}"] = grid_column_count
+        replacementStringMap["muxlaunch"]["{grid_row_count}"] = grid_row_count
+        replacementStringMap["muxlaunch"]["{grid_row_height}"] = grid_row_height
+        replacementStringMap["muxlaunch"]["{grid_column_width}"] = grid_column_width
+        replacementStringMap["muxlaunch"]["{grid_cell_width}"] = grid_cell_width
+        replacementStringMap["muxlaunch"]["{grid_cell_height}"] = grid_cell_height
+        replacementStringMap["muxlaunch"]["{grid_cell_radius}"] = 0
+        replacementStringMap["muxlaunch"]["{grid_cell_focus_background_alpha}"] = 0
+        replacementStringMap["muxlaunch"]["{grid_cell_default_image_alpha}"] = 0
+        replacementStringMap["muxlaunch"]["{grid_cell_default_image_recolour_alpha}"] = 0
+        replacementStringMap["muxlaunch"]["{grid_cell_default_text_alpha}"] = 255
+        replacementStringMap["muxlaunch"]["{grid_cell_focus_image_alpha}"] = 0
+        replacementStringMap["muxlaunch"]["{grid_cell_focus_image_recolour_alpha}"] = 0
+        replacementStringMap["muxlaunch"]["{grid_cell_focus_text_alpha}"] = 255
         
     for fileName in replacementStringMap.keys():
         shutil.copy2(templateSchemeFile,os.path.join(newSchemeDir,f"{fileName}.txt"))
