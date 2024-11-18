@@ -2834,12 +2834,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","default.bin"))
     muxarchive_font_size_640 = 17
     muxarchive_font_size = math.floor(muxarchive_font_size_640*(int(config.deviceScreenWidthVar)/640))
-    print("muxarchive_font_size",muxarchive_font_size)
     if fontSize > muxarchive_font_size:
         shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(muxarchive_font_size)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxarchive.bin"))
     muxtheme_font_size_640 = 18
     muxtheme_font_size = math.floor(muxtheme_font_size_640*(int(config.deviceScreenWidthVar)/640))
-    print("muxtheme_font_size",muxtheme_font_size)
     if fontSize > muxtheme_font_size:
         shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(muxtheme_font_size)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxtheme.bin"))
     
