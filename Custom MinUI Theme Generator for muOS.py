@@ -2614,7 +2614,9 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
     # muxgov - same as muxassign, but hide footer
     replacementStringMap["muxgov"] = replacementStringMap["muxassign"].copy()
-    replacementStringMap["muxgov"]["{footer_alpha}"] = 0 # for glyph support
+    replacementStringMap["muxsearch"] = replacementStringMap["muxassign"].copy()
+    replacementStringMap["muxsearch"]["{footer_alpha}"] = 0 
+    replacementStringMap["muxgov"]["{footer_alpha}"] = 0
 
     # muxtheme - Cut text off before preview image
     if config.version_var != "muOS 2410.1 Banana": 
@@ -2834,12 +2836,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(fontSize)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","default.bin"))
     muxarchive_font_size_640 = 17
     muxarchive_font_size = math.floor(muxarchive_font_size_640*(int(config.deviceScreenWidthVar)/640))
-    print("muxarchive_font_size",muxarchive_font_size)
     if fontSize > muxarchive_font_size:
         shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(muxarchive_font_size)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxarchive.bin"))
     muxtheme_font_size_640 = 18
     muxtheme_font_size = math.floor(muxtheme_font_size_640*(int(config.deviceScreenWidthVar)/640))
-    print("muxtheme_font_size",muxtheme_font_size)
     if fontSize > muxtheme_font_size:
         shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(muxtheme_font_size)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxtheme.bin"))
     
@@ -3073,6 +3073,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxgov)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxgov.png"), format='PNG')
     progress_bar['value'] +=1
+
+    visualbuttonoverlay_muxsearch = generateMuOSBackgroundOverlay([["X", "CLEAR"],["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxsearch)
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxsearch.png"), format='PNG')
+    progress_bar['value'] +=1
+
 
     
     if False: ## Testing converting font in generator
