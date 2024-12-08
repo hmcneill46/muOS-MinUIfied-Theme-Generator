@@ -3,16 +3,15 @@
 These themes were built using my custom theme generator, specifically for **muOS 2410.1 BANANA**
 
 ### Installation Methods:
-
-1. **Drag and Drop**  
-   - Download the themes you want and place the  files directly into the  folder on your whichever SD Card is used for your themes on your muOS device
-   - If removed, Re-insert your SD Card into your muOS device
-   - Open the **Theme Picker** from configuration and select your new theme
-2. **Via Archive Manager**  
-   - Download the themes you want and place the  files directly into the  folder on your whichever SD Card is used for your themes on your muOS device
-   - If removed, Re-insert your SD Card into your muOS device
-   - Open the **Archive Manager** from the Applications menu, on your muOS device and install the theme
-   - Once installed, select it from the **Theme Picker**
+1. **Drag and Drop**
+   - Download the themes you want and place the  files directly into the  folder on your SD Card.
+   - Re-insert your SD Card into your muOS device.
+   - Open the **Theme Picker** from configuration and select your new theme.
+2. **Via Archive Manager**
+   - Download the themes you want and place the  files into the  folder on your SD Card.
+   - Re-insert your SD Card into your muOS device.
+   - Open the **Archive Manager** from the Applications menu and install the theme.
+   - Once installed, select it from the **Theme Picker**.
 
 | Alt-Horizontal | Horizontal | Vertical |
 | :---: | :---: | :---: |
