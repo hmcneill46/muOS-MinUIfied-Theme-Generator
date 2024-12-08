@@ -14,7 +14,7 @@ BANCH_MAP = {"Banana": "e81f65f9b883412ccaf9651a96dd921cbfd7df4b",
 REPO_OWNER = "MustardOS"
 REPO_NAME = "frontend"
 BRANCH = BANCH_MAP["Current"]
-BASE_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents"
+BASE_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/module"
 
 # Regex pattern for capturing the last item
 pattern = re.compile(r'apply_theme_list_glyph\(&theme, [^,]+, mux_module, "([^"]+)"\);')
@@ -48,23 +48,21 @@ def main():
 
         for item in root_contents:
             # Check if the item is a folder
-            if item["type"] == "dir":
-                folder_name = item["name"]
-                print(f"Checking folder: {folder_name}")
-                
-                # Check if the folder contains a main.c file
-                folder_contents = get_repo_contents(folder_name)
-                main_c_file = next((file for file in folder_contents if file["name"] == "main.c"), None)
+            if item["type"] == "file":
+                file_name = item["name"]
+                print(f"Checking file: {file_name}")
 
-                if main_c_file:
-                    print(f"Found main.c in folder: {folder_name}")
+                c_file =  file_name[-2:] == ".c"
+
+                if c_file:
+                    print(f"Found .c file: {file_name}")
                     
                     # Process main.c and find regex matches
-                    matches = process_main_c(main_c_file["download_url"])
+                    matches = process_main_c(item["download_url"])
 
                     # Write the screen name and matched groups to the output file
-                    print(f"Writing matches for {folder_name} to output file.")
-                    output_file.write(f"Screen: {folder_name}\n")
+                    print(f"Writing matches for {file_name[:-2]} to output file.")
+                    output_file.write(f"Screen: {file_name[:-2]}\n")
                     output_file.write("Items:\n")
                     output_file.write("[")
                     for match in matches:
@@ -74,9 +72,9 @@ def main():
                     output_file.write("]\n")
                     output_file.write("\n")
                     if not matches:
-                        print(f"No matches found in main.c for {folder_name}.")
+                        print(f"No matches found in main.c for {file_name[:-2]}.")
                 else:
-                    print(f"No main.c file found in folder: {folder_name}")
+                    print(f"No main.c file found in folder: {file_name[:-2]}")
 
     # Verify if output was successfully saved
     if os.path.exists(output_file_path) and os.path.getsize(output_file_path) > 0:
