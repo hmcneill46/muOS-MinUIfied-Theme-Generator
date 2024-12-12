@@ -173,6 +173,7 @@ LIST_DEFAULT_GLYPH_PAD_LEFT={glyph_padding_left}
 LIST_DEFAULT_GLYPH_ALPHA={list_glyph_alpha}
 LIST_DEFAULT_GLYPH_RECOLOUR={deselected_font_hex}
 LIST_DEFAULT_GLYPH_RECOLOUR_ALPHA=255
+LIST_DEFAULT_LABEL_LONG_MODE={list_default_label_long_mode}
 LIST_DISABLED_TEXT={muted_hex}
 LIST_DISABLED_TEXT_ALPHA={list_text_alpha}
 LIST_FOCUS_BACKGROUND={bubble_hex}
@@ -312,4 +313,8 @@ ANIMATED_BACKGROUND=0
 RANDOM_BACKGROUND=0
 IMAGE_OVERLAY={image_overlay}
 NAVIGATION_TYPE={navigation_type}
+
+[terminal]
+FOREGROUND={accent_hex}
+BACKGROUND={base_hex}
 
