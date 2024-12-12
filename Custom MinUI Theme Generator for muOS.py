@@ -3475,12 +3475,18 @@ deviceScreenWidthVar = tk.StringVar()
 deviceScreenHeightVar = tk.StringVar()
 
 grid_helper.add(tk.Label(scrollable_frame, text="Device Type"), sticky="w")
+"""
 deviceTypeOptions = ["Other [640x480]",
                      "RG CubeXX [720x720]",
                      "RG34XX [720x480]",
                      "Full HD [1920x1080]",
                      "HD [1280x720]",
                      "TrimUI Brick [1024x768]"]
+"""
+
+deviceTypeOptions = ["Other [640x480]",
+                     "RG CubeXX [720x720]"]
+
 device_type_option_menu = tk.OptionMenu(scrollable_frame, device_type_var, *deviceTypeOptions)
 grid_helper.add(device_type_option_menu, colspan=3, sticky="w", next_row=True)
 
