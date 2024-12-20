@@ -183,6 +183,19 @@
             "icon_hex_entry": "ffffff"
         },
         {
+            "theme_name_entry": "MinUIfied - White",
+            "bgHexVar": "ffffff",
+            "background_hex_entry": "ffffff",
+            "selectedFontHexVar": "ffffff",
+            "selected_font_hex_entry": "ffffff",
+            "deselectedFontHexVar": "000000",
+            "deselected_font_hex_entry": "000000",
+            "bubbleHexVar": "000000",
+            "bubble_hex_entry": "000000",
+            "iconHexVar": "000000",
+            "icon_hex_entry": "000000"
+        },
+        {
             "theme_name_entry": "MinUIfied - Yellow",
             "bgHexVar": "ffd000",
             "background_hex_entry": "ffd000",
