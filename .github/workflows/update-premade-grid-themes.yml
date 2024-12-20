@@ -1,4 +1,4 @@
-name: Update Premade Themes
+name: Update Premade Grid Themes
 
 on:
   push:
