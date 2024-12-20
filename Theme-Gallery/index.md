@@ -1,6 +1,6 @@
 # Pre-made MinUIfied Theme Gallery
-## Theme Installation Instructions for muOS 2410.1 BANANA
-These themes were built using my custom theme generator, specifically for **muOS 2410.1 BANANA**
+## Theme Installation Instructions for muOS 2410.2 BIG BANANA
+These themes were built using my custom theme generator, specifically for **muOS 2410.2 BIG BANANA**
 
 ### Installation Methods:
 1. **Drag and Drop**
