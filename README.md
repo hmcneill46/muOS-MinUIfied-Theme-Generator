@@ -11,7 +11,9 @@ This script helps you create and customize themes for your muOS system, creating
 
 
 ## If you just want a Pre-made Theme and don't want to customise it with the script:
-[Follow this link](https://hmcneill46.github.io/muOS-MinUIfied-Theme-Generator/Theme-Gallery/)
+[Follow this link for a page of themes **Without** grid mode](https://hmcneill46.github.io/muOS-MinUIfied-Theme-Generator/Theme-Gallery/)
+
+[Follow this link for a page of themes **With** grid mode](https://hmcneill46.github.io/muOS-MinUIfied-Theme-Generator/Grid-Theme-Gallery/)
 
 ## Prerequisites for running from Downloaded Binary [Windows]:
  - None
