@@ -99,7 +99,7 @@ class Config: # TODO delete unneeded variables
         self.override_folder_box_art_padding_var = False
         self.page_by_page_var = False
         self.transparent_text_var = False
-        self.version_var = "muOS 2410.1 Banana"
+        self.version_var = "muOS 2410.2 BIG BANANA"
         self.device_type_var = "Other [640x480]"
         self.global_alignment_var = "Left"
         self.selected_overlay_var = "muOS Default CRT Overlay"
@@ -2226,9 +2226,9 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
     try:
         progress_bar['value'] = 0
         if config.main_menu_style_var == "Alt-Horizontal" or config.main_menu_style_var == "Horizontal":
-            progress_bar['maximum'] = 27*len(resolutions)
+            progress_bar['maximum'] = 28*len(resolutions)
         elif config.main_menu_style_var == "Vertical":
-            progress_bar['maximum'] = 19*len(resolutions)
+            progress_bar['maximum'] = 20*len(resolutions)
         else:
             raise ValueError("Something went wrong with your Main Menu Style")
 
@@ -3069,9 +3069,13 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtimezone.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxpicker_muxlanguage = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxpicker_muxlanguage)
+    visualbuttonoverlay_muxpicker = generateMuOSBackgroundOverlay([["Y","SAVE"],["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxpicker)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxpicker.png"), format='PNG')
+    progress_bar['value'] +=1
+
+    visualbuttonoverlay_muxlanguage = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxlanguage)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxlanguage.png"), format='PNG')
     progress_bar['value'] +=1
 
@@ -3465,9 +3469,6 @@ else:
 # Create the grid helper
 grid_helper = GridHelper(scrollable_frame)
 
-
-
-
 # Create the GUI components
 grid_helper.add(tk.Label(scrollable_frame, text="Configurations", font=title_font), colspan=3, sticky="w", next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Device Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
@@ -3492,7 +3493,7 @@ grid_helper.add(device_type_option_menu, colspan=3, sticky="w", next_row=True)
 
 
 grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
-options = ["muOS 2410.1 Banana", "muOS 2410.2 BIGBANANA"]
+options = ["muOS 2410.1 Banana", "muOS 2410.2 BIG BANANA"]
 option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 

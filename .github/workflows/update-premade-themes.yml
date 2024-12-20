@@ -24,7 +24,7 @@ jobs:
       - name: Get release assets from GitHub API
         id: get_themes
         run: |
-          TAG="themes-muos-v2410.1"
+          TAG="themes-muos-v2410.2"
           response=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}")
           echo "${response}" | jq -r '.assets[] | "\(.name) \(.browser_download_url) \(.download_count)"' > theme_assets.txt
 
