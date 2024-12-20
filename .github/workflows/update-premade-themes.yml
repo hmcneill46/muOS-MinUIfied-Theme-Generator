@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 */3 * * *'
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 permissions:
@@ -36,8 +36,8 @@ jobs:
           # Header for the index file
           cat <<EOT > Theme-Gallery/index.md
           # Pre-made MinUIfied Theme Gallery
-          ## Theme Installation Instructions for muOS 2410.1 BANANA
-          These themes were built using my custom theme generator, specifically for **muOS 2410.1 BANANA**
+          ## Theme Installation Instructions for muOS 2410.2 BIG BANANA
+          These themes were built using my custom theme generator, specifically for **muOS 2410.2 BIG BANANA**
 
           ### Installation Methods:
           1. **Drag and Drop**

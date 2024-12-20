@@ -1,0 +1,108 @@
+name: Update Premade Themes
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-premade-themes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y jq curl
+
+      - name: Get release assets from GitHub API
+        id: get_themes
+        run: |
+          TAG="themes-muos-v2410.2-grid"
+          response=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}")
+          echo "${response}" | jq -r '.assets[] | "\(.name) \(.browser_download_url) \(.download_count)"' > theme_assets.txt
+
+      - name: Generate Grid-Theme-Gallery/index.md
+        run: |
+          mkdir -p Grid-Theme-Gallery
+          theme_count=0
+          
+          # Header for the index file
+          cat <<EOT > Grid-Theme-Gallery/index.md
+          # Pre-made MinUIfied Grid Theme Gallery
+          ## Theme Installation Instructions for muOS 2410.2 BIG BANANA
+          These themes were built using my custom theme generator, specifically for **muOS 2410.2 BIG BANANA**
+
+          ### Installation Methods:
+          1. **Drag and Drop**
+             - Download the themes you want and place the `.zip` files directly into the `MUOS/theme` folder on your SD Card.
+             - Re-insert your SD Card into your muOS device.
+             - Open the **Theme Picker** from configuration and select your new theme.
+          2. **Via Archive Manager**
+             - Download the themes you want and place the `.zip` files into the `ARCHIVE` folder on your SD Card.
+             - Re-insert your SD Card into your muOS device.
+             - Open the **Archive Manager** from the Applications menu and install the theme.
+             - Once installed, select it from the **Theme Picker**.
+
+          | Alt-Horizontal | Horizontal | Vertical |
+          | :---: | :---: | :---: |
+          EOT
+
+          # Process assets
+          while IFS= read -r line; do
+            filename=$(echo "$line" | awk '{print $1}')
+            url=$(echo "$line" | awk '{print $2}')
+            downloads=$(echo "$line" | awk '{print $3}')
+            
+            # Process preview image (.png)
+            if [[ "$filename" == *".png" ]]; then
+              theme_name="${filename%.*}"  # Extract theme name without extension
+              preview_url="$url"
+            fi
+
+            # Process theme zip file (.zip)
+            if [[ "$filename" == *".zip" ]]; then
+              theme_zip="$url"
+
+              # Start a new row if necessary
+              if [[ $theme_count -eq 0 ]]; then
+                echo -n "| " >> Grid-Theme-Gallery/index.md
+              fi
+
+              # Add theme info
+              download_text="${downloads} download(s)"
+              echo -n "![${theme_name}](${preview_url}) <br> [Download](${theme_zip}) | " >> Grid-Theme-Gallery/index.md
+
+              # Increment theme count
+              theme_count=$((theme_count + 1))
+
+              # Close row after 3 themes
+              if [[ $theme_count -eq 3 ]]; then
+                echo "" >> Grid-Theme-Gallery/index.md
+                theme_count=0
+              fi
+            fi
+          done < theme_assets.txt
+
+          # Close the last row if incomplete
+          if [[ $theme_count -ne 0 ]]; then
+            echo "" >> Grid-Theme-Gallery/index.md
+          fi
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add Grid-Theme-Gallery/index.md
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update Grid-Theme-Gallery/index.md with latest themes"
+            git push
+          fi
