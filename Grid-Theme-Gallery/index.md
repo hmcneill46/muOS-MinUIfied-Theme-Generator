@@ -2,6 +2,10 @@
 ## Theme Installation Instructions for muOS 2410.2 BIG BANANA
 These themes were built using my custom theme generator, specifically for **muOS 2410.2 BIG BANANA**
 
+### THESE THEMES REQUIRE YOU INSTALL ONE OF THE FOLLOWING USING ARCHIVE MANAGER:
+  - [System Icons 640x480](https://github.com/hmcneill46/muOS-MinUIfied-Theme-Generator/releases/download/themes-muos-v2410.2-system-icons/MinUIfied.-.System.Icons.640x480.-AM.zip)
+  - [System Icons 720x720](https://github.com/hmcneill46/muOS-MinUIfied-Theme-Generator/releases/download/themes-muos-v2410.2-system-icons/MinUIfied.-.System.Icons.720x720.-AM.zip)
+
 ### Installation Methods:
 1. **Drag and Drop**
    - Download the themes you want and place the  files directly into the  folder on your SD Card.
