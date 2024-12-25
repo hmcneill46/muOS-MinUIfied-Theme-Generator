@@ -212,7 +212,7 @@ def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,rende
 
     rendered_bubble_height = int(button_height*render_factor)
 
-    if buttonText.upper() in ["A", "B", "X,", "Y"] and physical_controller_layout in ["PlayStation", "Xbox", "Universal"]:
+    if buttonText.upper() in ["A", "B", "X", "Y"] and physical_controller_layout in ["PlayStation", "Xbox", "Universal"]:
         buttonSize = (rendered_bubble_height, rendered_bubble_height)
         if physical_controller_layout == "PlayStation":
             image = Image.open(os.path.join(internal_files_dir, "Assets", "Button Glyphs", "PlayStation",f"{buttonText.upper()}.png")).convert("RGBA").resize(buttonSize, Image.LANCZOS)
