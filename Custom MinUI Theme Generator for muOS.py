@@ -25,6 +25,8 @@ import copy
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
+Image.MAX_IMAGE_PIXELS = None
+
 ## TODO look into centre align and left align
 ## TODO make header resizable
 
@@ -103,6 +105,8 @@ class Config: # TODO delete unneeded variables
         self.device_type_var = "Other [640x480]"
         self.global_alignment_var = "Left"
         self.selected_overlay_var = "muOS Default CRT Overlay"
+        self.physical_controler_layout_var = "Nintendo"
+        self.muos_button_swap_var = "Retro"
         self.main_menu_style_var = "Horizontal"
         self.horizontal_menu_behaviour_var = "Wrap to Row"
         self.battery_charging_style_var = "Default"
@@ -168,9 +172,12 @@ contentPaddingTop = 44
 textMF = 0.7
 
 
-def change_logo_color(input_path, hex_color):
+def change_logo_color(input, hex_color):
     # Load the image
-    img = Image.open(input_path).convert("RGBA")
+    if isinstance(input, Image.Image):
+        img = input
+    else:
+        img = Image.open(input).convert("RGBA")
     
     # Convert hex_color to RGBA
     r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
@@ -186,7 +193,7 @@ def change_logo_color(input_path, hex_color):
     
     return result_image
 
-def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,render_factor, button_height:int):
+def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,render_factor, button_height, physical_controller_layout):
     in_smaller_bubble_font_size = button_height*(20.1/40)*render_factor
     inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
 
@@ -203,12 +210,32 @@ def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,rende
 
     horizontal_small_padding = button_height*(10/40)
 
-    if len(buttonText) == 1:
-        image = Image.new("RGBA", (button_height*render_factor, button_height*render_factor), (255, 255, 255, 0))
+    rendered_bubble_height = int(button_height*render_factor)
+
+    if buttonText.upper() in ["A", "B", "X,", "Y"] and physical_controller_layout in ["PlayStation", "Xbox", "Universal"]:
+        buttonSize = (rendered_bubble_height, rendered_bubble_height)
+        if physical_controller_layout == "PlayStation":
+            image = Image.open(os.path.join(internal_files_dir, "Assets", "Button Glyphs", "PlayStation",f"{buttonText.upper()}.png")).convert("RGBA").resize(buttonSize, Image.LANCZOS)
+        if physical_controller_layout == "Universal":
+            image = Image.open(os.path.join(internal_files_dir, "Assets", "Button Glyphs", "Universal",f"{buttonText.upper()}.png")).convert("RGBA").resize(buttonSize, Image.LANCZOS)
+        elif physical_controller_layout == "Xbox":
+            if buttonText.upper() == "A":
+                image = generateIndividualButtonGlyph("B", selected_font_path, colour_hex, render_factor, button_height, "Nintendo")
+            elif buttonText.upper() == "B":
+                image = generateIndividualButtonGlyph("A", selected_font_path, colour_hex, render_factor, button_height, "Nintendo")
+            elif buttonText.upper() == "X":
+                image = generateIndividualButtonGlyph("Y", selected_font_path, colour_hex, render_factor, button_height, "Nintendo")
+            elif buttonText.upper() == "Y":
+                image = generateIndividualButtonGlyph("X", selected_font_path, colour_hex, render_factor, button_height, "Nintendo")
+
+
+
+    elif len(buttonText) == 1:
+        image = Image.new("RGBA", (rendered_bubble_height, rendered_bubble_height), (255, 255, 255, 0))
         draw = ImageDraw.Draw(image)
 
-        circleCentreX = ((button_height*render_factor)/2)
-        draw.ellipse((0, 0,button_height*render_factor, button_height*render_factor),fill=f"#{colour_hex}")
+        circleCentreX = ((rendered_bubble_height)/2)
+        draw.ellipse((0, 0,rendered_bubble_height, rendered_bubble_height),fill=f"#{colour_hex}")
         singleLetterWidth = sl_text_bbox[2]-sl_text_bbox[0]
         smallerTextX = circleCentreX-(singleLetterWidth/2)
         draw.text(( smallerTextX,single_letter_text_y), buttonText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
@@ -219,17 +246,19 @@ def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,rende
         smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
         smallerBubbleWidth = int(horizontal_small_padding+smallerTextWidth/render_factor+horizontal_small_padding)
 
-        image = Image.new("RGBA", (smallerBubbleWidth*render_factor, button_height*render_factor), (255, 255, 255, 0))
+        rendered_smallerBubbleWidth = int(smallerBubbleWidth*render_factor)
+
+        image = Image.new("RGBA", (rendered_smallerBubbleWidth, rendered_bubble_height), (255, 255, 255, 0))
         draw = ImageDraw.Draw(image)
 
         draw.rounded_rectangle([(0,0), #bottom left point
-                        (smallerBubbleWidth*render_factor,button_height*render_factor)], # Top right point
+                        (rendered_smallerBubbleWidth,rendered_bubble_height)], # Top right point
                         radius=(math.ceil(button_height/2))*render_factor,
                         fill = hex_to_rgb(colour_hex,alpha=1)
                         )
         smallerTextX = horizontal_small_padding*render_factor
         draw.text((smallerTextX,in_smaller_bubble_text_y),buttonText,font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-    return(image.resize((int(image.size[0]/render_factor),int(image.size[1]/render_factor)), Image.LANCZOS))
+    return(image)
 
 def getTimeWithWidth(selected_font_path, timeFormat, find="max"):
     TestFont = ImageFont.truetype(selected_font_path, 100)
@@ -670,28 +699,12 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
                                     )
             realLhsPointer+=horizontal_padding*render_factor
             for pair in lhsButtons:
-                if len(pair[0]) == 1:
-                    circleCentreX = realLhsPointer+((guide_small_bubble_height*render_factor)/2)
-                    draw.ellipse((circleCentreX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCentreX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
-                    smallerTextBbox = singleLetterFont.getbbox(pair[0])
-                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                    smallerTextX = circleCentreX-(smallerTextWidth/2)
-                    draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                    realLhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
+                button_image = generateIndividualButtonGlyph(pair[0],selected_font_path,colour_hex,render_factor, guide_small_bubble_height, config.physical_controler_layout_var)
+                button_image = change_logo_color(button_image, colour_hex)
+                print("desired height:",guide_small_bubble_height, "actual height:",button_image.size[1]/render_factor)
+                image.paste(button_image,(int(realLhsPointer),int(bottom_guide_middle_y*render_factor-(button_image.size[1]/2))),button_image)
+                realLhsPointer+=(button_image.size[0])+(horizontal_small_padding)*render_factor
 
-                else:
-                    ## Make the smaller bubble
-                    smallerTextBbox = inSmallerBubbleFont.getbbox(pair[0])
-                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                    smallerBubbleWidth = horizontal_small_padding+smallerTextWidth/render_factor+horizontal_small_padding
-                    draw.rounded_rectangle([(realLhsPointer,(bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), #bottom left point
-                                    (realLhsPointer+(smallerBubbleWidth*render_factor),(bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)], # Top right point
-                                    radius=(guide_small_bubble_height/2)*render_factor,
-                                    fill = hex_to_rgb(colour_hex,alpha=1)
-                                    )
-                    smallerTextX = realLhsPointer + horizontal_small_padding*render_factor
-                    draw.text((smallerTextX,in_smaller_bubble_text_y),pair[0],font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                    realLhsPointer+=(smallerBubbleWidth+horizontal_small_padding)*render_factor
                 textBbox = inBubbleFont.getbbox(pair[1])
                 textWidth = textBbox[2]-textBbox[0]
                 draw.text((realLhsPointer,in_bubble_text_y),pair[1],font=inBubbleFont,fill=f"#{colour_hex}")
@@ -707,28 +720,13 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
                                     )
             realRhsPointer+=horizontal_padding*render_factor
             for pair in rhsButtons:
-                if len(pair[0]) == 1:
-                    circleCentreX = realRhsPointer+((guide_small_bubble_height*render_factor)/2)
-                    draw.ellipse((circleCentreX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCentreX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
-                    smallerTextBbox = singleLetterFont.getbbox(pair[0])
-                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                    smallerTextX = circleCentreX-(smallerTextWidth/2)
-                    draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                    realRhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
+                
+                button_image = generateIndividualButtonGlyph(pair[0],selected_font_path,colour_hex,render_factor, guide_small_bubble_height, config.physical_controler_layout_var)
+                button_image = change_logo_color(button_image, colour_hex)
+                    
+                image.paste(button_image,(int(realRhsPointer),int(bottom_guide_middle_y*render_factor-(button_image.size[1]/2))),button_image)
+                realRhsPointer+=(button_image.size[0])+(horizontal_small_padding)*render_factor
 
-                else:
-                    ## Make the smaller bubble
-                    smallerTextBbox = inSmallerBubbleFont.getbbox(pair[0])
-                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                    smallerBubbleWidth = horizontal_small_padding+smallerTextWidth/render_factor+horizontal_small_padding
-                    draw.rounded_rectangle([(realRhsPointer,(bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), #bottom left point
-                                    (realRhsPointer+(smallerBubbleWidth*render_factor),(bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)], # Top right point
-                                    radius=(guide_small_bubble_height/2)*render_factor,
-                                    fill = hex_to_rgb(colour_hex,alpha=1)
-                                    )
-                    smallerTextX = realRhsPointer + horizontal_small_padding*render_factor
-                    draw.text((smallerTextX,in_smaller_bubble_text_y),pair[0],font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                    realRhsPointer+=(smallerBubbleWidth+horizontal_small_padding)*render_factor
                 textBbox = inBubbleFont.getbbox(pair[1])
                 textWidth = textBbox[2]-textBbox[0]
                 draw.text((realRhsPointer,in_bubble_text_y),pair[1],font=inBubbleFont,fill=f"#{colour_hex}")
@@ -2798,7 +2796,9 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
     buttonsToGenerate = ["A","B","C","MENU","X","Y","Z"]
     for button in buttonsToGenerate:
-        generateIndividualButtonGlyph(button,selected_font_path,accent_hex,render_factor, button_height).save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","footer",f"{button.lower()}.png"), format='PNG')
+        button_image = generateIndividualButtonGlyph(button,selected_font_path,accent_hex,render_factor, button_height,config.physical_controler_layout_var)
+        button_image = button_image.resize((int(button_image.size[0]/render_factor),int(button_image.size[1]/render_factor)), Image.LANCZOS)
+        button_image.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","footer",f"{button.lower()}.png"), format='PNG')
     capacities = [0,10,20,30,40,50,60,70,80,90,100]
     networkGlyphNames = ["network_active", "network_normal"]
     if float(config.header_glyph_height_var) < 10:
@@ -3399,6 +3399,8 @@ version_var = tk.StringVar()
 device_type_var = tk.StringVar()
 global_alignment_var = tk.StringVar()
 selected_overlay_var = tk.StringVar()
+physical_controler_layout_var = tk.StringVar()
+muos_button_swap_var = tk.StringVar()
 main_menu_style_var = tk.StringVar()
 horizontal_menu_behaviour_var = tk.StringVar()
 battery_charging_style_var = tk.StringVar()
@@ -3534,6 +3536,20 @@ previewConsoleNameVar = tk.StringVar()
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="General Configurations", font=subtitle_font), sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Physical Controller Layout"), sticky="w")
+physicalControllerLayout = ["Nintendo", 
+           "Xbox",
+           "PlayStation",
+           "Universal"]
+physical_controller_layout_menu = tk.OptionMenu(scrollable_frame, physical_controler_layout_var, *physicalControllerLayout)
+grid_helper.add(physical_controller_layout_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="muOS Control Scheme"), sticky="w")
+muosButtonSwap = ["Retro", 
+           "Modern"]
+muos_button_swap_menu = tk.OptionMenu(scrollable_frame, muos_button_swap_var, *muosButtonSwap)
+grid_helper.add(muos_button_swap_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Game Switcher*", variable=enable_game_switcher_var), sticky="w", next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="*Not recommended Very Experimental",fg="#f00"), sticky="w",next_row=True)
@@ -4180,6 +4196,8 @@ def save_settings(config: Config):
     config.version_var = version_var.get()
     config.global_alignment_var = global_alignment_var.get()
     config.selected_overlay_var = selected_overlay_var.get()
+    config.physical_controler_layout_var = physical_controler_layout_var.get()
+    config.muos_button_swap_var = muos_button_swap_var.get()
     config.am_theme_directory_path = am_theme_directory_path.get()
     config.theme_directory_path = theme_directory_path.get()
     config.catalogue_directory_path = catalogue_directory_path.get()
@@ -4276,6 +4294,8 @@ def load_settings(config: Config):
     version_var.set(config.version_var)
     global_alignment_var.set(config.global_alignment_var)
     selected_overlay_var.set(config.selected_overlay_var)
+    physical_controler_layout_var.set(config.physical_controler_layout_var)
+    muos_button_swap_var.set(config.muos_button_swap_var)
     main_menu_style_var.set(config.main_menu_style_var)
     horizontal_menu_behaviour_var.set(config.horizontal_menu_behaviour_var)
     battery_charging_style_var.set(config.battery_charging_style_var)
@@ -4365,6 +4385,8 @@ version_var.trace_add("write", lambda *args: save_settings(global_config))
 device_type_var.trace_add("write", lambda *args: save_settings(global_config))
 global_alignment_var.trace_add("write", lambda *args: save_settings(global_config))
 selected_overlay_var.trace_add("write",lambda *args: save_settings(global_config))
+physical_controler_layout_var.trace_add("write",lambda *args: save_settings(global_config))
+muos_button_swap_var.trace_add("write",lambda *args: save_settings(global_config))
 main_menu_style_var.trace_add("write",lambda *args: save_settings(global_config))
 horizontal_menu_behaviour_var.trace_add("write",lambda *args: save_settings(global_config))
 battery_charging_style_var.trace_add("write",lambda *args: save_settings(global_config))
