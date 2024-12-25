@@ -616,9 +616,25 @@ def getRealFooterHeight(config:Config) -> int:
     footerHeight = int(config.deviceScreenHeightVar)-(individualItemHeight*int(config.itemsPerScreenVar))-int(config.contentPaddingTopVar)
     return(footerHeight)
 
-def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_factor,config:Config,lhsButtons=[["POWER","SLEEP"]]):
+def generateMenuHelperGuides(retro_rhs_buttons,selected_font_path,colour_hex,render_factor,config:Config,lhsButtons=[["POWER","SLEEP"]]):
     image = Image.new("RGBA", (int(config.deviceScreenWidthVar)*render_factor, int(config.deviceScreenHeightVar)*render_factor), (255, 255, 255, 0))
     draw = ImageDraw.Draw(image)
+
+    real_rhs_buttons = []
+    
+    if config.muos_button_swap_var == "Modern":
+        for pair in retro_rhs_buttons:
+            if pair[0].upper() == "A":
+                real_rhs_buttons.append(["B",pair[1]])
+            elif pair[0].upper() == "B":
+                real_rhs_buttons.append(["A",pair[1]])
+            elif pair[0].upper() == "X":
+                real_rhs_buttons.append(["Y",pair[1]])
+            elif pair[0].upper() == "Y":
+                real_rhs_buttons.append(["X",pair[1]])
+    else:
+        real_rhs_buttons = retro_rhs_buttons
+
     if not( config.remove_left_menu_guides_var and config.remove_right_menu_guides_var):
         required_padding_between_sides=15 # This is the maximum space between the two sides of the menu helper guides
         lhsTotalWidth = 0
@@ -685,7 +701,7 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
                 combined_width += lhsTotalWidth
 
             if not remove_right_menu_guides_var:
-                rhsTotalWidth += getTotalBubbleWidth(rhsButtons,inSmallerBubbleFont,inBubbleFont,horizontal_padding,horizontal_large_padding,horizontal_small_padding,guide_small_bubble_height,render_factor)
+                rhsTotalWidth += getTotalBubbleWidth(real_rhs_buttons,inSmallerBubbleFont,inBubbleFont,horizontal_padding,horizontal_large_padding,horizontal_small_padding,guide_small_bubble_height,render_factor)
                 combined_width += rhsTotalWidth
             iterations +=1
 
@@ -719,7 +735,7 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
                                     fill = hex_to_rgb(colour_hex,alpha=0.133)
                                     )
             realRhsPointer+=horizontal_padding*render_factor
-            for pair in rhsButtons:
+            for pair in real_rhs_buttons:
                 
                 button_image = generateIndividualButtonGlyph(pair[0],selected_font_path,colour_hex,render_factor, guide_small_bubble_height, config.physical_controler_layout_var)
                 button_image = change_logo_color(button_image, colour_hex)
