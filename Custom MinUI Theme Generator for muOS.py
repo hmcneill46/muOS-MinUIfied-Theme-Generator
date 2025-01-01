@@ -8,8 +8,7 @@ import os
 import sys
 import math
 import tkinter as tk
-from tkinter import font, PanedWindow, Scrollbar
-from tkinter import filedialog, simpledialog, messagebox, ttk
+from tkinter import font, PanedWindow, Scrollbar,filedialog, simpledialog, messagebox, ttk, colorchooser
 import shutil
 import re
 import traceback
@@ -24,6 +23,7 @@ import numpy as np
 import copy
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -3397,6 +3397,24 @@ def start_bulk_theme_task():
 def on_resize(event):
     right_pane_width = image_frame.winfo_width()
 
+def select_color(entry):
+    """Opens a color picker and sets the selected color to the given entry."""
+    current_color = "#"+entry.get()  # Get the current color from the entry
+    try:
+        # Validate the current color to ensure it's a valid hex color
+        if current_color:
+            color_code = colorchooser.askcolor(initialcolor=current_color, title="Choose Color")[1]
+        else:
+            color_code = colorchooser.askcolor(title="Choose Color")[1]
+    except Exception:
+        # Fallback in case the initial color is invalid
+        color_code = colorchooser.askcolor(title="Choose Color")[1]
+
+    if color_code:  # If a color was selected
+        entry.delete(0, tk.END)
+        entry.insert(0, color_code[1:])
+
+
 root = tk.Tk()
 root.title("MinUI Theme Generator")
 root.minsize(1080, 500)  # Set a minimum size for the window
@@ -3621,40 +3639,46 @@ grid_helper.add(tk.Label(scrollable_frame, text="*Will not show up in this progr
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
+# Section title
 grid_helper.add(tk.Label(scrollable_frame, text="Colour Configuration", font=subtitle_font), colspan=3, sticky="w", next_row=True)
-
 
 # Option for Background Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Background Hex Colour: #"), sticky="w")
 background_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=bgHexVar)
-grid_helper.add(background_hex_entry, next_row=True)
+grid_helper.add(background_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(background_hex_entry)), next_row=True)
 
 # Option for Selected Font Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Selected Font Hex Colour: #"), sticky="w")
 selected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=selectedFontHexVar)
-grid_helper.add(selected_font_hex_entry, next_row=True)
+grid_helper.add(selected_font_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(selected_font_hex_entry)), next_row=True)
 
 # Option for Deselected Font Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Deselected Font Hex Colour: #"), sticky="w")
 deselected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=deselectedFontHexVar)
-grid_helper.add(deselected_font_hex_entry, next_row=True)
+grid_helper.add(deselected_font_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(deselected_font_hex_entry)), next_row=True)
 
 # Option for Bubble Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Bubble Hex Colour: #"), sticky="w")
 bubble_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubbleHexVar)
-grid_helper.add(bubble_hex_entry, next_row=True)
+grid_helper.add(bubble_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(bubble_hex_entry)), next_row=True)
 
 # Option for Icon Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Icon Hex Colour: #"), sticky="w")
 icon_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=iconHexVar)
-grid_helper.add(icon_hex_entry, next_row=True)
+grid_helper.add(icon_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(icon_hex_entry)), next_row=True)
 
-# Option for Icon Hex Colour
+# Option for Battery Charging Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Battery Charging Colour: #"), sticky="w")
 battery_charging_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=batteryChargingHexVar)
-grid_helper.add(battery_charging_hex_entry, next_row=True)
+grid_helper.add(battery_charging_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(battery_charging_hex_entry)), next_row=True)
 
-
+# Additional options
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Optional] Override background colour with image", variable=use_custom_background_var), sticky="w")
 grid_helper.add(tk.Entry(scrollable_frame, textvariable=background_image_path, width=50))
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_background_image_path), next_row=True)
