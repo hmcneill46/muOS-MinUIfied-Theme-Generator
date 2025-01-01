@@ -1,6 +1,6 @@
 # Pre-made MinUIfied Theme Gallery
-## Theme Installation Instructions for muOS 2410.2 AW BANANA
-These themes were built using my custom theme generator, specifically for **muOS 2410.2 AW BANANA**
+## Theme Installation Instructions for muOS 2410.3 AW BANANA
+These themes were built using my custom theme generator, specifically for **muOS 2410.3 AW BANANA**
 
 ### Installation Methods:
 1. **Drag and Drop**
