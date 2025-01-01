@@ -2291,8 +2291,13 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
                 os.makedirs(os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}", "opt"), exist_ok=True)
                 shutil.copy2(os.path.join(internal_files_dir, "Assets", "AM - Scripts", "System Logo Load", "update.sh"),
                             os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}", "opt", "update.sh"))
-        shutil.make_archive(os.path.join(theme_dir, "MinUIfied AM System Icons"),"zip", os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
-        delete_folder(os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
+        if config.enable_grid_view_explore_var:
+            if config.theme_directory_path == "":
+                theme_dir = os.path.join(script_dir, "Generated Theme")
+            else:
+                theme_dir = config.theme_directory_path
+            shutil.make_archive(os.path.join(theme_dir, "MinUIfied AM System Icons"),"zip", os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
+            delete_folder(os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "font"),
                     os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "font"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "glyph"),
