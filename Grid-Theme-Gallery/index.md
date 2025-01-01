@@ -4,6 +4,7 @@ These themes were built using my custom theme generator, specifically for **muOS
 
 ### ALL THESE THEMES REQUIRE YOU INSTALL THE FOLLOWING FILE USING ARCHIVE MANAGER:
   - [System Icons](https://github.com/hmcneill46/muOS-MinUIfied-Theme-Generator/releases/download/themes-muos-v2410.2-system-icons/MinUIfied.AM.System.Icons.zip)
+  - Note: This file should be reinstalled every time the resolution changes ( e.g. you switch device, or plug in an external monitor. This isn't required but is recommended for the best experience.)
 
 ### Installation Methods:
 1. **Drag and Drop**
