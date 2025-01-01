@@ -717,7 +717,6 @@ def generateMenuHelperGuides(retro_rhs_buttons,selected_font_path,colour_hex,ren
             for pair in lhsButtons:
                 button_image = generateIndividualButtonGlyph(pair[0],selected_font_path,colour_hex,render_factor, guide_small_bubble_height, config.physical_controler_layout_var)
                 button_image = change_logo_color(button_image, colour_hex)
-                print("desired height:",guide_small_bubble_height, "actual height:",button_image.size[1]/render_factor)
                 image.paste(button_image,(int(realLhsPointer),int(bottom_guide_middle_y*render_factor-(button_image.size[1]/2))),button_image)
                 realLhsPointer+=(button_image.size[0])+(horizontal_small_padding)*render_factor
 
@@ -2289,7 +2288,7 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
                     theme_dir = os.path.join(script_dir, "Generated Theme")
                 else:
                     theme_dir = config.theme_directory_path
-                systemIconsAmFileName = f"{themeName} AM System Icons [{width}x{height}]"
+                systemIconsAmFileName = f"MinUIfied AM System Icons [{width}x{height}]"
                 os.makedirs(os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}", "opt"), exist_ok=True)
                 shutil.copy2(os.path.join(internal_files_dir, "Assets", "AM - Scripts", "System Logo Load", "update.sh"),
                             os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}", "opt", "update.sh"))
@@ -2709,18 +2708,27 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     if config.enable_grid_view_explore_var:
         grid_total_height = (int(config.deviceScreenHeightVar)-getRealFooterHeight(config)-int(config.headerHeightVar))
         grid_total_width = int(config.deviceScreenWidthVar)
-        max_items_per_screen = 12
+        min_cell_size = min(160, int(grid_total_height/2), int(grid_total_width/4)) # 160 is the minimum size for a grid cell (excluding padding)
+        print("min_cell_size",min_cell_size)
 
         diff_aspect_ratios = {}
         target_aspect_ratio = grid_total_width/grid_total_height
-        for columns in range(1,max_items_per_screen):
-            for rows in range(1,max_items_per_screen):
-                if columns*rows <= max_items_per_screen:
-                    if columns*rows >= 4:
-                        aspect_ratio = columns/rows
-                        diff_aspect_ratio = abs(aspect_ratio-target_aspect_ratio)
-                        
-                        diff_aspect_ratios[diff_aspect_ratio] = (columns,rows)
+        columns = 0
+        rows = 0
+        while True:
+            columns += 1
+            rows = 0
+            if grid_total_width/columns < min_cell_size:
+                break
+            while True:
+                rows += 1
+                if grid_total_height/rows < min_cell_size:
+                    break
+                if columns*rows >= 8:
+                    aspect_ratio = columns/rows
+                    diff_aspect_ratio = abs(aspect_ratio-target_aspect_ratio)
+                    
+                    diff_aspect_ratios[diff_aspect_ratio] = (columns,rows)
         closest_aspect_ratio = diff_aspect_ratios[min(diff_aspect_ratios.keys())]
         grid_column_count, grid_row_count = closest_aspect_ratio
 
@@ -2732,6 +2740,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         grid_cell_width = grid_column_width-2*cell_inner_padding
         grid_cell_height = grid_row_height-2*cell_inner_padding
         grid_cell_size = min(grid_cell_width,grid_cell_height)
+        print("grid_cell_size",grid_cell_size,"screen dimensions",config.deviceScreenWidthVar,config.deviceScreenHeightVar)
         replacementStringMap["muxplore"] = {}
         replacementStringMap["muxplore"]["{grid_location_x}"] = grid_location_x
         replacementStringMap["muxplore"]["{grid_location_y}"] = grid_location_y
@@ -3504,7 +3513,10 @@ deviceTypeOptions = ["Other [640x480]",
 """
 
 deviceTypeOptions = ["Other [640x480]",
-                     "RG CubeXX [720x720]"]
+                     "RG CubeXX [720x720]",
+                     "RG34XX [720x480]",
+                     "576p [720x576]",
+                     "HD [1280x720]"]
 
 device_type_option_menu = tk.OptionMenu(scrollable_frame, device_type_var, *deviceTypeOptions)
 grid_helper.add(device_type_option_menu, colspan=3, sticky="w", next_row=True)
