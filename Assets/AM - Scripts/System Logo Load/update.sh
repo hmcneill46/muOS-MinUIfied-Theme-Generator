@@ -5,10 +5,32 @@
 . /opt/muos/script/var/func.sh
 
 # Define global variables
+SCREEN_WIDTH=$(GET_VAR device mux/width)
+SCREEN_HEIGHT=$(GET_VAR device mux/height)
+
 CORE_DIRECTORY="/run/muos/storage/info/core"
-GRID_FOLDER="/run/muos/storage/info/catalogue/Folder/grid"
+DEST_GRID_FOLDER="/run/muos/storage/info/catalogue/Folder/grid"
+TEMP_FOLDER="$DEST_GRID_FOLDER/resolutions" # Use temp folder to allow for excess files to be removed
+SCREEN_RESOLUTION="${SCREEN_WIDTH}x${SCREEN_HEIGHT}"
+SOURCE_GRID_FOLDER="$TEMP_FOLDER/$SCREEN_RESOLUTION" # Find out what folder the device should be looking for
 ASSIGN_JSON="/mnt/mmc/MUOS/info/assign.json"
 ASSIGN_FOLDER="/mnt/mmc/MUOS/info/assign"
+
+# Copy the images of correct size to the destination folder
+if [ -d "$SOURCE_GRID_FOLDER" ]; then
+  echo "Copying the contents of $SOURCE_GRID_FOLDER to $DEST_GRID_FOLDER"
+  cp -r "$SOURCE_GRID_FOLDER/"* "$DEST_GRID_FOLDER"
+else
+  echo "Source folder $SOURCE_GRID_FOLDER does not exist"
+fi
+
+# Remove the temporary folder - removing the files which are the incorrect size
+if [ -d "$TEMP_FOLDER" ]; then
+    echo "Removing temporary folder: $TEMP_FOLDER"
+    rm -rf "$TEMP_FOLDER"
+else
+    echo "Temporary folder $TEMP_FOLDER does not exist, skipping cleanup."
+fi
 
 # Define a function to handle the common logic
 copy_image() {
@@ -20,14 +42,14 @@ copy_image() {
       continue
   fi
   
-  if [ "$(echo "$GRID_FOLDER/$source_name.png" | tr '[:upper:]' '[:lower:]')" = "$(echo "$GRID_FOLDER/$folder_name.png" | tr '[:upper:]' '[:lower:]')" ]; then
-      LOG_INFO "$0" 0 "" "File already exists %s/%s.png\n" "$GRID_FOLDER" "$folder_name"
+  if [ "$(echo "$DEST_GRID_FOLDER/$source_name.png" | tr '[:upper:]' '[:lower:]')" = "$(echo "$DEST_GRID_FOLDER/$folder_name.png" | tr '[:upper:]' '[:lower:]')" ]; then
+      LOG_INFO "$0" 0 "" "File already exists %s/%s.png\n" "$DEST_GRID_FOLDER" "$folder_name"
       continue
   fi
 
-  if [ -f "$GRID_FOLDER/$source_name.png" ]; then
-      cp -f "$GRID_FOLDER/$source_name.png" "$GRID_FOLDER/$folder_name.png"
-      LOG_INFO "$0" 0 "" "Copied to %s/%s.png\n" "$GRID_FOLDER" "$folder_name"
+  if [ -f "$DEST_GRID_FOLDER/$source_name.png" ]; then
+      cp -f "$DEST_GRID_FOLDER/$source_name.png" "$DEST_GRID_FOLDER/$folder_name.png"
+      LOG_INFO "$0" 0 "" "Copied to %s/%s.png\n" "$DEST_GRID_FOLDER" "$folder_name"
   fi
 }
 

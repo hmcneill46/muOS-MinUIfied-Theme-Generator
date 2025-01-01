@@ -36,12 +36,11 @@ jobs:
           # Header for the index file
           cat <<EOT > Grid-Theme-Gallery/index.md
           # Pre-made MinUIfied Grid Theme Gallery
-          ## Theme Installation Instructions for muOS 2410.2 BIG BANANA
-          These themes were built using my custom theme generator, specifically for **muOS 2410.2 BIG BANANA**
+          ## Theme Installation Instructions for muOS 2410.3 AW BANANA
+          These themes were built using my custom theme generator, specifically for **muOS 2410.3 AW BANANA**
 
-          ### THESE THEMES REQUIRE YOU INSTALL ONE OF THE FOLLOWING USING ARCHIVE MANAGER:
-            - [System Icons 640x480](https://github.com/hmcneill46/muOS-MinUIfied-Theme-Generator/releases/download/themes-muos-v2410.2-system-icons/MinUIfied.-.System.Icons.640x480.-AM.zip)
-            - [System Icons 720x720](https://github.com/hmcneill46/muOS-MinUIfied-Theme-Generator/releases/download/themes-muos-v2410.2-system-icons/MinUIfied.-.System.Icons.720x720.-AM.zip)
+          ### ALL THESE THEMES REQUIRE YOU INSTALL THE FOLLOWING FILE USING ARCHIVE MANAGER:
+            - [System Icons](https://github.com/hmcneill46/muOS-MinUIfied-Theme-Generator/releases/download/themes-muos-v2410.2-system-icons/MinUIfied.AM.System.Icons.zip)
 
           ### Installation Methods:
           1. **Drag and Drop**

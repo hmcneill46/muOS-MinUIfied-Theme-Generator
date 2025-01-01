@@ -101,7 +101,7 @@ class Config: # TODO delete unneeded variables
         self.override_folder_box_art_padding_var = False
         self.page_by_page_var = False
         self.transparent_text_var = False
-        self.version_var = "muOS 2410.2 BIG BANANA"
+        self.version_var = "muOS 2410.3 AW BANANA"
         self.device_type_var = "Other [640x480]"
         self.global_alignment_var = "Left"
         self.selected_overlay_var = "muOS Default CRT Overlay"
@@ -2288,12 +2288,11 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
                     theme_dir = os.path.join(script_dir, "Generated Theme")
                 else:
                     theme_dir = config.theme_directory_path
-                systemIconsAmFileName = f"MinUIfied AM System Icons [{width}x{height}]"
                 os.makedirs(os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}", "opt"), exist_ok=True)
                 shutil.copy2(os.path.join(internal_files_dir, "Assets", "AM - Scripts", "System Logo Load", "update.sh"),
                             os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}", "opt", "update.sh"))
-                shutil.make_archive(os.path.join(theme_dir, systemIconsAmFileName),"zip", os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
-                delete_folder(os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
+        shutil.make_archive(os.path.join(theme_dir, "MinUIfied AM System Icons"),"zip", os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
+        delete_folder(os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "font"),
                     os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "font"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "glyph"),
@@ -2754,7 +2753,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
         system_logos_path = os.path.join(internal_files_dir,"Assets", "System Logos",f"png [5x]")
 
-        output_system_logos_path = os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}","run","muos","storage","info", "catalogue", "Folder", "grid")
+        output_system_logos_path = os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}","run","muos","storage","info", "catalogue", "Folder", "grid", "resolutions", f"{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}")
         os.makedirs(output_system_logos_path, exist_ok=True)
         resize_system_logos(system_logos_path, output_system_logos_path,grid_cell_size,grid_image_padding,circular_grid=False)
     if not "Generating for lanuage on muxlaunch":
@@ -3521,7 +3520,7 @@ grid_helper.add(device_type_option_menu, colspan=3, sticky="w", next_row=True)
 
 
 grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
-options = ["muOS 2410.1 Banana", "muOS 2410.2 BIG BANANA"]
+options = ["muOS 2410.1 Banana", "muOS 2410.3 AW BANANA"]
 option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
@@ -3582,7 +3581,7 @@ grid_helper.add(tk.Label(scrollable_frame, text="*Not recommended Very Experimen
 
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Grid View in Explore*", variable=enable_grid_view_explore_var), sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="*Test builds only",fg="#f40"), sticky="w",next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="*Won't show in preview",fg="#f40"), sticky="w",next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Main Menu Style"), sticky="w")
 MainMenuStyleOptions = ["Horizontal", "Vertical", "Alt-Horizontal"]
