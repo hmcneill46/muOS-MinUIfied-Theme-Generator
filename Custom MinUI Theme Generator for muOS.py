@@ -2709,7 +2709,6 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         grid_total_height = (int(config.deviceScreenHeightVar)-getRealFooterHeight(config)-int(config.headerHeightVar))
         grid_total_width = int(config.deviceScreenWidthVar)
         min_cell_size = min(160, int(grid_total_height/2), int(grid_total_width/4)) # 160 is the minimum size for a grid cell (excluding padding)
-        print("min_cell_size",min_cell_size)
 
         diff_aspect_ratios = {}
         target_aspect_ratio = grid_total_width/grid_total_height
@@ -2740,7 +2739,6 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         grid_cell_width = grid_column_width-2*cell_inner_padding
         grid_cell_height = grid_row_height-2*cell_inner_padding
         grid_cell_size = min(grid_cell_width,grid_cell_height)
-        print("grid_cell_size",grid_cell_size,"screen dimensions",config.deviceScreenWidthVar,config.deviceScreenHeightVar)
         replacementStringMap["muxplore"] = {}
         replacementStringMap["muxplore"]["{grid_location_x}"] = grid_location_x
         replacementStringMap["muxplore"]["{grid_location_y}"] = grid_location_y
