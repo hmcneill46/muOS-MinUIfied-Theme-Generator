@@ -2810,7 +2810,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall"), exist_ok=True)
 
     if config.include_overlay_var:
-        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{config.selected_overlay_var}.png"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","overlay.png"))
+        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}",f"{config.selected_overlay_var}.png"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","overlay.png"))
     
     ## GLYPH STUFF
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","footer"), exist_ok=True)
@@ -3536,7 +3536,8 @@ deviceTypeOptions = ["Other [640x480]",
                      "RG CubeXX [720x720]",
                      "RG34XX [720x480]",
                      "576p [720x576]",
-                     "HD [1280x720]"]
+                     "HD [1280x720]",
+                     "Full HD [1920x1080]"]
 
 device_type_option_menu = tk.OptionMenu(scrollable_frame, device_type_var, *deviceTypeOptions)
 grid_helper.add(device_type_option_menu, colspan=3, sticky="w", next_row=True)
@@ -3993,7 +3994,7 @@ def on_change(*args):
     global menuNameMap
     menuNameMap = getAlternateMenuNameDict()
     try:
-        preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{global_config.selected_overlay_var}.png")).convert("RGBA")
+        preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{global_config.deviceScreenWidthVar}x{global_config.deviceScreenHeightVar}",f"{global_config.selected_overlay_var}.png")).convert("RGBA")
     except:
         pass
     global contentPaddingTop
