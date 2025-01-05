@@ -92,7 +92,7 @@
             "icon_hex_entry": "993a40"
         },
         {
-            "theme_name_entry": "MinUIfied - GBA Purple",
+            "theme_name_entry": "MinUIfied - GBA Purple Dark",
             "bgHexVar": "5f5a93",
             "background_hex_entry": "5f5a93",
             "selectedFontHexVar": "5f5a93",
@@ -103,6 +103,19 @@
             "bubble_hex_entry": "dbdadf",
             "iconHexVar": "dbdadf",
             "icon_hex_entry": "dbdadf"
+        },
+        {
+            "theme_name_entry": "MinUIfied - GBA Purple Light",
+            "bgHexVar": "cdccd1",
+            "background_hex_entry": "cdccd1",
+            "selectedFontHexVar": "cdccd1",
+            "selected_font_hex_entry": "cdccd1",
+            "deselectedFontHexVar": "5e5992",
+            "deselected_font_hex_entry": "5e5992",
+            "bubbleHexVar": "5e5992",
+            "bubble_hex_entry": "5e5992",
+            "iconHexVar": "5e5992",
+            "icon_hex_entry": "5e5992"
         },
         {
             "theme_name_entry": "MinUIfied - Green",
