@@ -91,6 +91,7 @@ Please go into your MUOS/theme/active folder and remove everything in there, you
 *where the .spec file is the one in the github page, modify the .spec file to work on macOS and Linux if you are able to/want to, and put it on a PR.
 
 ## Credits and thanks
+ - Thanks to the Team of people working on [MustardOS](https://github.com/MustardOS), which this theme is designed for.
  - Thanks to [Shaun Inman](https://github.com/shauninman) for creating [MinUI](https://github.com/shauninman/MinUI), which this muOS theme is trying to emulate the look of
  - Thanks to [@JCR64](https://github.com/JCR64) for creating [GarlicOS-MinUIfied](https://github.com/JCR64/GarlicOS-MinUIfied) the inspiration for the theme and horizontal logo
  - Thanks to [@anthonycaccese](https://github.com/anthonycaccese) for creating [art-book-next-es-de](https://github.com/anthonycaccese/art-book-next-es-de) Which is where the grid mode icons are sourced from.
