@@ -93,7 +93,7 @@ Please go into your MUOS/theme/active folder and remove everything in there, you
 ## Credits and thanks
  - Thanks to [Shaun Inman](https://github.com/shauninman) for creating [MinUI](https://github.com/shauninman/MinUI), which this muOS theme is trying to emulate the look of
  - Thanks to [@JCR64](https://github.com/JCR64) for the inspiration for the theme and horizontal logo
- - Credits and thanks to [@GrumpyGopher](https://github.com/GrumpyGopher) for the work he's been putting into making the project better
+ - Credits and thanks to [@GrumpyGopher](https://github.com/GrumpyGopher) for the work he's put into making the project better
  - Thanks to [@damagedspline](https://github.com/damagedspline) for the Hebrew translation file
 
 **muOS Discord Server:** https://discord.gg/USS5ybVtDz
