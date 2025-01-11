@@ -2743,7 +2743,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         grid_cell_width = grid_column_width-2*cell_inner_padding
         grid_cell_height = grid_row_height-2*cell_inner_padding
         grid_cell_size = min(grid_cell_width,grid_cell_height)
-        replacementStringMap["muxplore"] = {}
+        if "muxplore" not in replacementStringMap:
+            replacementStringMap["muxplore"] = {}
         replacementStringMap["muxplore"]["{grid_location_x}"] = grid_location_x
         replacementStringMap["muxplore"]["{grid_location_y}"] = grid_location_y
         replacementStringMap["muxplore"]["{grid_column_count}"] = grid_column_count
