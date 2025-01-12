@@ -1,0 +1,14 @@
+from .utils import find_base_dirs
+
+
+BASE_DIR, RESOURCES_DIR = find_base_dirs()
+
+ASSETS_DIR = BASE_DIR / "Assets"
+TEMPLATE_SCHEME_DIR = BASE_DIR / "Template Scheme"
+THEME_SHELL_DIR = BASE_DIR / "Theme Shell"
+
+CONFIG_FILENAME = "MinUIThemeGeneratorConfig.json"
+CONFIG_PATH = BASE_DIR / CONFIG_FILENAME
+
+PREMADE_THEMES_FILENAME = "PremadeThemes.json"
+PREMADE_THEMES_PATH = BASE_DIR / PREMADE_THEMES_FILENAME
