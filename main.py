@@ -1,48 +1,40 @@
-# -*- coding: utf-8 -*-
-from PIL import (
-    ImageTk,
-    Image,
-    ImageDraw,
-    ImageFont,
-    ImageFilter,
-    ImageEnhance,
-    ImageColor,
-    ImageChops,
-)
-
-try:
-    from bidi import get_display as bidi_get_display
-except:
-    from bidi.algorithm import get_display as bidi_get_display
-import os
-import sys
+import copy
+from datetime import datetime
+import json
 import math
+import numpy as np
+import os
+import platform
+import queue
+import re
+import shutil
+import subprocess
+import sys
+import threading
 import tkinter as tk
 from tkinter import (
     font,
     PanedWindow,
     Scrollbar,
     filedialog,
-    simpledialog,
     messagebox,
     ttk,
     colorchooser,
 )
-import shutil
-import re
 import traceback
-import platform
-import threading
-import queue
-import time
-import json
-import subprocess
-import shutil
-import numpy as np
-import copy
-from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
 
+try:
+    from bidi import get_display as bidi_get_display
+except:
+    from bidi.algorithm import get_display as bidi_get_display
+
+from PIL import (
+    ImageTk,
+    Image,
+    ImageDraw,
+    ImageFont,
+    ImageColor,
+)
 
 Image.MAX_IMAGE_PIXELS = None
 
