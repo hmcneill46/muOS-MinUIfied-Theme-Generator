@@ -1,15 +1,14 @@
 import copy
 from datetime import datetime
 import json
+import os
 import math
 import numpy as np
-import os
+from pathlib import Path
 import platform
 import queue
 import re
 import shutil
-import subprocess
-import sys
 import threading
 import tkinter as tk
 from tkinter import (
@@ -36,146 +35,25 @@ from PIL import (
     ImageColor,
 )
 
+from generator.config import Config
+from generator.constants import (
+    BASE_DIR,
+    RESOURCES_DIR,
+    ASSETS_DIR,
+    BUTTON_GLYPHS_DIR,
+    GLYPHS_DIR,
+    HORIZONTAL_LOGOS_DIR,
+    THEME_SHELL_DIR,
+    TEMPLATE_SCHEME_PATH,
+    OVERLAY_DIR,
+    FONTS_DIR,
+)
+from generator.font import get_font_path
+
 Image.MAX_IMAGE_PIXELS = None
 
 ## TODO look into centre align and left align
 ## TODO make header resizable
-
-if getattr(sys, "frozen", False):
-    # The application is running as a bundle
-    internal_files_dir = sys._MEIPASS
-    script_dir = os.path.dirname(sys.executable)
-else:
-    # The application is running in a normal Python environment
-    internal_files_dir = os.path.dirname(os.path.abspath(__file__))
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-
-
-# HI
-# Default values for parameters
-class Config:  # TODO delete unneeded variables
-    def __init__(
-        self, config_file=os.path.join(script_dir, "MinUIThemeGeneratorConfig.json")
-    ):
-        self.config_file = config_file
-        self.deviceScreenHeightVar = 480
-        self.deviceScreenWidthVar = 640
-        self.textPaddingVar = 40
-        self.header_glyph_horizontal_left_padding_var = 10
-        self.header_glyph_horizontal_right_padding_var = 10
-        self.header_glyph_height_var = 20
-        self.header_glyph_bubble_height_var = 35
-        self.header_text_bubble_height_var = 35
-        self.header_text_height_var = 20
-        self.clockHorizontalLeftPaddingVar = 10
-        self.clockHorizontalRightPaddingVar = 10
-        self.pageTitlePaddingVar = 10
-        self.text_padding_entry = 40
-        self.VBG_Vertical_Padding_entry = 15
-        self.VBG_Horizontal_Padding_entry = 15
-        self.bubblePaddingVar = 20
-        self.rectangle_padding_entry = 20
-        self.itemsPerScreenVar = 7
-        self.items_per_screen_entry = 7
-        self.approxFooterHeightVar = 80
-        self.contentPaddingTopVar = 44
-        self.headerHeightVar = 44
-        self.content_padding_top_entry = 44
-        self.font_size_var = 24
-        self.custom_font_size_entry = "24"
-        self.bgHexVar = "000000"
-        self.background_hex_entry = "000000"
-        self.selectedFontHexVar = "000000"
-        self.selected_font_hex_entry = "000000"
-        self.deselectedFontHexVar = "ffffff"
-        self.deselected_font_hex_entry = "ffffff"
-        self.bubbleHexVar = "ffffff"
-        self.footerBubbleHexVar = "ffffff"
-        self.bubble_hex_entry = "ffffff"
-        self.iconHexVar = "ffffff"
-        self.batteryChargingHexVar = "2eb774"
-        self.icon_hex_entry = "ffffff"
-        self.include_overlay_var = False
-        self.show_glyphs_var = False
-        self.show_clock_bubbles_var = False
-        self.show_glyphs_bubbles_var = False
-        self.join_header_bubbles_var = False
-        self.enable_game_switcher_var = False
-        self.enable_grid_view_explore_var = False
-        self.alternate_menu_names_var = False
-        self.remove_right_menu_guides_var = False
-        self.remove_left_menu_guides_var = False
-        self.boxArtPaddingVar = 0
-        self.folderBoxArtPaddingVar = 0
-        self.box_art_directory_path = ""
-        self.maxBoxArtWidth = 0
-        self.roms_directory_path = ""
-        self.application_directory_path = ""
-        self.previewConsoleNameVar = "Nintendo Game Boy"
-        self.show_hidden_files_var = False
-        self.override_folder_box_art_padding_var = False
-        self.page_by_page_var = False
-        self.transparent_text_var = False
-        self.version_var = "muOS 2410.3 AW BANANA"
-        self.device_type_var = "Other [640x480]"
-        self.global_alignment_var = "Left"
-        self.selected_overlay_var = "muOS Default CRT Overlay"
-        self.physical_controler_layout_var = "Nintendo"
-        self.muos_button_swap_var = "Retro"
-        self.main_menu_style_var = "Horizontal"
-        self.horizontal_menu_behaviour_var = "Wrap to Row"
-        self.battery_charging_style_var = "Default"
-        self.battery_style_var = "Default"
-        self.clock_format_var = "24 Hour"
-        self.clock_alignment_var = "Left"
-        self.header_glyph_alignment_var = "Right"
-        self.page_title_alignment_var = "Centre"
-        self.am_theme_directory_path = ""
-        self.theme_directory_path = ""
-        self.catalogue_directory_path = ""
-        self.name_json_path = ""
-        self.background_image_path = ""
-        self.bootlogo_image_path = ""
-        self.alt_font_path = ""
-        self.alt_text_path = "AlternativeMenuNames.json"
-        self.use_alt_font_var = False
-        self.use_custom_background_var = False
-        self.use_custom_bootlogo_var = False
-        self.theme_name_entry = "MinUIfied - Default Theme"
-        self.amThemeName = "MinUIfied - Default AM Theme"
-        self.am_ignore_theme_var = False
-        self.am_ignore_cd_var = False
-        self.advanced_error_var = False
-        self.developer_preview_var = False
-        self.show_file_counter_var = False
-        self.show_console_name_var = False
-        self.show_charging_battery_var = False
-        self.load_config()
-
-    def load_config(self):
-        if os.path.exists(self.config_file):
-            with open(self.config_file, "r") as file:
-                config_data = json.load(file)
-                self.__dict__.update(config_data)
-        else:
-            self.save_config()
-
-    def save_config(self):
-        with open(self.config_file, "w") as file:
-            json.dump(self.__dict__, file, indent=4)
-
-    def load_premade_themes(self, themes_file="PremadeThemes.json"):
-        if os.path.exists(themes_file):
-            with open(themes_file, "r") as file:
-                themes_data = json.load(file)
-                return themes_data["themes"]
-        return []
-
-    def apply_theme(self, theme):
-        # Update the Config object with all key-value pairs from the theme
-        self.__dict__.update(theme)
-        self.save_config()
-
 
 global_config = Config()
 
@@ -253,13 +131,7 @@ def generateIndividualButtonGlyph(
         if physical_controller_layout == "PlayStation":
             image = (
                 Image.open(
-                    os.path.join(
-                        internal_files_dir,
-                        "Assets",
-                        "Button Glyphs",
-                        "PlayStation",
-                        f"{buttonText.upper()}.png",
-                    )
+                    BUTTON_GLYPHS_DIR / "PlayStation" / f"{buttonText.upper()}.png"
                 )
                 .convert("RGBA")
                 .resize(buttonSize, Image.LANCZOS)
@@ -267,13 +139,7 @@ def generateIndividualButtonGlyph(
         if physical_controller_layout == "Universal":
             image = (
                 Image.open(
-                    os.path.join(
-                        internal_files_dir,
-                        "Assets",
-                        "Button Glyphs",
-                        "Universal",
-                        f"{buttonText.upper()}.png",
-                    )
+                    BUTTON_GLYPHS_DIR / "Universal" / f"{buttonText.upper()}.png"
                 )
                 .convert("RGBA")
                 .resize(buttonSize, Image.LANCZOS)
@@ -499,8 +365,7 @@ def generateHeaderBubbles(
         int((heightOfText * (4 / 3)) / render_factor) * render_factor
     )  ## TODO Make this not specific to BPreplay
     headerFont = ImageFont.truetype(
-        os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"),
-        fontHeight,
+        get_font_path(config.use_alt_font_var, config.alt_font_filename), fontHeight
     )
 
     if (
@@ -529,9 +394,7 @@ def generateHeaderBubbles(
         clock_right_padding = int(config.clockHorizontalRightPaddingVar)
 
         timeText = getTimeWithWidth(
-            os.path.join(
-                internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-            ),
+            get_font_path(config.use_alt_font_var, config.alt_font_filename),
             config.clock_format_var,
             find="max",
         )
@@ -599,9 +462,7 @@ def generateHeaderBubbles(
     if config.show_glyphs_bubbles_var:
         # Battery not charging stuff
         capacityGlyph = "capacity_30.png"
-        capacity_image_path = os.path.join(
-            internal_files_dir, "Assets", "glyphs", f"{capacityGlyph[:-4]}[5x].png"
-        )
+        capacity_image_path = GLYPHS_DIR / f"{capacityGlyph[:-4]}[5x].png"
 
         capacity_image_coloured = change_logo_color(capacity_image_path, accent_colour)
         capacity_image_coloured = capacity_image_coloured.resize(
@@ -622,9 +483,8 @@ def generateHeaderBubbles(
         glyph_between_padding = 5
 
         networkGlyph = "network_active"
-        network_image_path = os.path.join(
-            internal_files_dir, "Assets", "glyphs", f"{networkGlyph}[5x].png"
-        )
+        network_image_path = GLYPHS_DIR / f"{networkGlyph}[5x].png"
+
         network_image_coloured = change_logo_color(network_image_path, accent_colour)
         network_image_coloured = network_image_coloured.resize(
             (
@@ -749,11 +609,9 @@ def generatePilImageMuOSOverlay(config: Config, muOSpageName, render_factor):
 
         # Battery not charging stuff
         capacityGlyph = "30"
-        capacity_image_path = os.path.join(
-            internal_files_dir,
-            "Assets",
-            "glyphs",
-            f"{BatteryStyleOptionsDict[config.battery_style_var]}{capacityGlyph}[5x].png",
+        capacity_image_path = (
+            GLYPHS_DIR
+            / f"{BatteryStyleOptionsDict[config.battery_style_var]}{capacityGlyph}[5x].png"
         )
 
         capacity_image_coloured = change_logo_color(capacity_image_path, accent_colour)
@@ -772,12 +630,11 @@ def generatePilImageMuOSOverlay(config: Config, muOSpageName, render_factor):
         )
 
         capacityChargingGlyph = "30"
-        capacity_charging_image_path = os.path.join(
-            internal_files_dir,
-            "Assets",
-            "glyphs",
-            f"{BatteryChargingStyleOptionsDict[config.battery_charging_style_var]}{capacityChargingGlyph}[5x].png",
+        capacity_charging_image_path = (
+            GLYPHS_DIR
+            / f"{BatteryChargingStyleOptionsDict[config.battery_charging_style_var]}{capacityChargingGlyph}[5x].png"
         )
+
         capacity_charging_image_coloured = change_logo_color(
             capacity_charging_image_path, config.batteryChargingHexVar
         )
@@ -796,9 +653,8 @@ def generatePilImageMuOSOverlay(config: Config, muOSpageName, render_factor):
         )
 
         networkGlyph = "network_active"
-        network_image_path = os.path.join(
-            internal_files_dir, "Assets", "glyphs", f"{networkGlyph}[5x].png"
-        )
+        network_image_path = GLYPHS_DIR / f"{networkGlyph}[5x].png"
+
         network_image_coloured = change_logo_color(network_image_path, accent_colour)
         network_image_coloured = network_image_coloured.resize(
             (
@@ -880,7 +736,7 @@ def generatePilImageMuOSOverlay(config: Config, muOSpageName, render_factor):
         int((heightOfText * (4 / 3)) / render_factor) * render_factor
     )  ## TODO Make this not specific to BPreplay
     headerFont = ImageFont.truetype(
-        os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"),
+        get_font_path(config.use_alt_font_var, config.alt_font_filename),
         fontSize,
     )
     if "showing time":
@@ -968,159 +824,157 @@ def generatePilImageMuOSOverlay(config: Config, muOSpageName, render_factor):
     return image
 
 
-def generateGameSwitcherOverlay(
-    config: Config, render_factor, gameNameForPreview=None, generatingForPreview=False
-):
-    overlay = Image.new(
-        "RGBA",
-        (
-            int(config.deviceScreenWidthVar) * render_factor,
-            int(config.deviceScreenHeightVar) * render_factor,
-        ),
-        (255, 255, 255, 0),
-    )
-    draw = ImageDraw.Draw(overlay)
-
-    if os.path.exists(
-        os.path.join(
-            internal_files_dir,
-            "Assets",
-            "Game Screenshots",
-            f"{gameNameForPreview}.png",
-        )
-    ):
-        screenshot = (
-            Image.open(
-                os.path.join(
-                    internal_files_dir,
-                    "Assets",
-                    "Game Screenshots",
-                    f"{gameNameForPreview}.png",
-                )
-            )
-            .convert("RGBA")
-            .resize(
-                (
-                    int(config.deviceScreenWidthVar) * render_factor,
-                    int(config.deviceScreenHeightVar) * render_factor,
-                ),
-                Image.LANCZOS,
-            )
-        )
-    else:
-        screenshot = Image.new(
-            "RGBA",
-            (
-                int(config.deviceScreenWidthVar) * render_factor,
-                int(config.deviceScreenHeightVar) * render_factor,
-            ),
-            (255, 255, 255, 0),
-        )
-
-    bottom_bar_height_over_footer_percent = 0.1
-    bottom_bar_height_over_footer = int(
-        (int(config.deviceScreenHeightVar) * bottom_bar_height_over_footer_percent)
-        * render_factor
-    )
-    bottom_bar_total_height = (
-        int(getRealFooterHeight(config) * render_factor) + bottom_bar_height_over_footer
-    )
-
-    # Draw a rectangle at the bottom of the screen here
-    draw.rectangle(
-        [
-            (
-                0,
-                (int(config.deviceScreenHeightVar) * render_factor)
-                - bottom_bar_total_height,
-            ),  # bottom left point
-            (
-                int(config.deviceScreenWidthVar) * render_factor,
-                int(config.deviceScreenHeightVar) * render_factor,
-            ),
-        ],  # Top right point
-        fill=hex_to_rgb(config.bgHexVar, alpha=0.866),
-    )
-    if not "dont Draw upper rectangle for testing":
-        # Draw a rectangle at the bottom of the screen here
-        draw.rectangle(
-            [
-                (
-                    0,
-                    (int(config.deviceScreenHeightVar) * render_factor)
-                    - (bottom_bar_total_height),
-                ),  # top left point
-                (
-                    int(config.deviceScreenWidthVar) * render_factor,
-                    (int(config.deviceScreenHeightVar) * render_factor)
-                    - (bottom_bar_total_height - bottom_bar_height_over_footer),
-                ),
-            ],  # Top right point
-            fill=hex_to_rgb("ff0000", alpha=0.866),
-        )
-
-    menuHelperGuide = generateMenuHelperGuides(
-        [["A", "OKAY"], ["B", "BACK"]],
-        os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"),
-        config.deselectedFontHexVar,
-        render_factor,
-        config,
-    )
-    overlay = Image.alpha_composite(overlay, menuHelperGuide)
-
-    headerBubbles = generateHeaderBubbles(
-        config, render_factor, accent_colour=config.bgHexVar, bubble_alpha=0.866
-    )
-    overlay = Image.alpha_composite(overlay, headerBubbles)
-
-    if generatingForPreview:
-        screenshot = Image.alpha_composite(screenshot, overlay)
-
-        fontSize = bottom_bar_height_over_footer * 0.55
-        fontSize = int(fontSize / render_factor)
-        fontSize = fontSize * render_factor
-        bottomBarFont = ImageFont.truetype(
-            os.path.join(
-                internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-            ),
-            fontSize,
-        )
-        bottomBarText = gameNameForPreview
-
-        # Generate other overlays first
-        muOSOverlay = generatePilImageMuOSOverlay(
-            config, "Recently Played", render_factor
-        )
-        screenshot = Image.alpha_composite(screenshot, muOSOverlay)
-        drawScreenshot = ImageDraw.Draw(screenshot)
-
-        # Now, draw the game name text on the final composite overlay
-        bottomBarTextBbox = bottomBarFont.getbbox(bottomBarText)
-        bottomBarTextWidth = bottomBarTextBbox[2] - bottomBarTextBbox[0]
-        bottomBarText_X = int(
-            (int(config.deviceScreenWidthVar) * render_factor) / 2
-            - (bottomBarTextWidth / 2)
-        )
-        bottomBarText_Y = (int(config.deviceScreenHeightVar) * render_factor) - (
-            bottom_bar_total_height - (bottom_bar_height_over_footer / 2)
-        )
-        bottomBarText_Y = (
-            bottomBarText_Y - (bottomBarTextBbox[1] + bottomBarTextBbox[3]) / 2
-        )
-        drawScreenshot.text(
-            (bottomBarText_X, bottomBarText_Y),
-            bottomBarText,
-            font=bottomBarFont,
-            fill=(*ImageColor.getrgb(f"#{config.deselectedFontHexVar}"), 255),
-        )
-
-        # Final composite with screenshot
-        return screenshot
-    if "showing game screenshot":
-        screenshot = Image.alpha_composite(screenshot, overlay)
-        return screenshot
-
-    return overlay
+# def generateGameSwitcherOverlay(
+#     config: Config, render_factor, gameNameForPreview=None, generatingForPreview=False
+# ):
+#     overlay = Image.new(
+#         "RGBA",
+#         (
+#             int(config.deviceScreenWidthVar) * render_factor,
+#             int(config.deviceScreenHeightVar) * render_factor,
+#         ),
+#         (255, 255, 255, 0),
+#     )
+#     draw = ImageDraw.Draw(overlay)
+#
+#     if os.path.exists(
+#         os.path.join(
+#             internal_files_dir,
+#             "Assets",
+#             "Game Screenshots",
+#             f"{gameNameForPreview}.png",
+#         )
+#     ):
+#         screenshot = (
+#             Image.open(
+#                 os.path.join(
+#                     internal_files_dir,
+#                     "Assets",
+#                     "Game Screenshots",
+#                     f"{gameNameForPreview}.png",
+#                  )
+#             )
+#             .convert("RGBA")
+#             .resize(
+#                 (
+#                     int(config.deviceScreenWidthVar) * render_factor,
+#                     int(config.deviceScreenHeightVar) * render_factor,
+#                 ),
+#                 Image.LANCZOS,
+#             )
+#         )
+#     else:
+#         screenshot = Image.new(
+#             "RGBA",
+#             (
+#                 int(config.deviceScreenWidthVar) * render_factor,
+#                 int(config.deviceScreenHeightVar) * render_factor,
+#             ),
+#             (255, 255, 255, 0),
+#         )
+#
+#     bottom_bar_height_over_footer_percent = 0.1
+#     bottom_bar_height_over_footer = int(
+#         (int(config.deviceScreenHeightVar) * bottom_bar_height_over_footer_percent)
+#         * render_factor
+#     )
+#     bottom_bar_total_height = (
+#         int(getRealFooterHeight(config) * render_factor) + bottom_bar_height_over_footer
+#     )
+#
+#     # Draw a rectangle at the bottom of the screen here
+#     draw.rectangle(
+#         [
+#             (
+#                 0,
+#                 (int(config.deviceScreenHeightVar) * render_factor)
+#                 - bottom_bar_total_height,
+#             ),  # bottom left point
+#             (
+#                 int(config.deviceScreenWidthVar) * render_factor,
+#                 int(config.deviceScreenHeightVar) * render_factor,
+#             ),
+#         ],  # Top right point
+#         fill=hex_to_rgb(config.bgHexVar, alpha=0.866),
+#     )
+#     if not "dont Draw upper rectangle for testing":
+#         # Draw a rectangle at the bottom of the screen here
+#         draw.rectangle(
+#             [
+#                 (
+#                     0,
+#                     (int(config.deviceScreenHeightVar) * render_factor)
+#                     - (bottom_bar_total_height),
+#                 ),  # top left point
+#                 (
+# #                    int(config.deviceScreenWidthVar) * render_factor,
+#                     (int(config.deviceScreenHeightVar) * render_factor)
+#                     - (bottom_bar_total_height - bottom_bar_height_over_footer),
+#                 ),
+#             ],  # Top right point
+#             fill=hex_to_rgb("ff0000", alpha=0.866),
+#         )
+#
+#     menuHelperGuide = generateMenuHelperGuides(
+#         [["A", "OKAY"], ["B", "BACK"]],
+#         get_font_path(config.use_alt_font_var, config.alt_font_path),
+#         config.deselectedFontHexVar,
+#         render_factor,
+#         config,
+#     )
+#     overlay = Image.alpha_composite(overlay, menuHelperGuide)
+#
+#     headerBubbles = generateHeaderBubbles(
+#         config, render_factor, accent_colour=config.bgHexVar, bubble_alpha=0.866
+#     )
+#     overlay = Image.alpha_composite(overlay, headerBubbles)
+#
+#     if generatingForPreview:
+#         screenshot = Image.alpha_composite(screenshot, overlay)
+#
+#         fontSize = bottom_bar_height_over_footer * 0.55
+#         fontSize = int(fontSize / render_factor)
+#         fontSize = fontSize * render_factor
+#         bottomBarFont = ImageFont.truetype(
+#             get_font_path(config.use_alt_font_var, config.alt_font_path),
+#             fontSize,
+#         )
+#         bottomBarText = gameNameForPreview
+#
+#         # Generate other overlays first
+#         muOSOverlay = generatePilImageMuOSOverlay(
+#             config, "Recently Played", render_factor
+#         )
+#         screenshot = Image.alpha_composite(screenshot, muOSOverlay)
+#         drawScreenshot = ImageDraw.Draw(screenshot)
+#
+#         # Now, draw the game name text on the final composite overlay
+#         bottomBarTextBbox = bottomBarFont.getbbox(bottomBarText)
+#         bottomBarTextWidth = bottomBarTextBbox[2] - bottomBarTextBbox[0]
+#         bottomBarText_X = int(
+#             (int(config.deviceScreenWidthVar) * render_factor) / 2
+#             - (bottomBarTextWidth / 2)
+#         )
+#         bottomBarText_Y = (int(config.deviceScreenHeightVar) * render_factor) - (
+#             bottom_bar_total_height - (bottom_bar_height_over_footer / 2)
+#         )
+#         bottomBarText_Y = (
+#             bottomBarText_Y - (bottomBarTextBbox[1] + bottomBarTextBbox[3]) / 2
+#         )
+#         drawScreenshot.text(
+#             (bottomBarText_X, bottomBarText_Y),
+#             bottomBarText,
+#             font=bottomBarFont,
+#             fill=(*ImageColor.getrgb(f"#{config.deselectedFontHexVar}"), 255),
+#         )
+#
+#         # Final composite with screenshot
+#         return screenshot
+#     if "showing game screenshot":
+#         screenshot = Image.alpha_composite(screenshot, overlay)
+#         return screenshot
+#
+#     return overlay
 
 
 def getRealFooterHeight(config: Config) -> int:
@@ -1546,17 +1400,10 @@ def generatePilImageVertical(
     boxArtWidth = 0
     if len(listItems) == 0:
         return image
-    if not config.use_alt_font_var:
-        selected_font_path = os.path.join(
-            internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-        )
-    else:
-        if os.path.exists(config.alt_font_path):
-            selected_font_path = config.alt_font_path
-        else:
-            selected_font_path = os.path.join(
-                internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-            )
+
+    selected_font_path = get_font_path(
+        config.use_alt_font_var, config.alt_font_filename
+    )
 
     if muOSSystemName == "muxlaunch":
         menuHelperGuides = generateMenuHelperGuides(
@@ -1652,7 +1499,8 @@ def generatePilImageVertical(
 
     try:
         font_size = int(config.custom_font_size_entry) * render_factor
-    except:
+    except Exception as e:
+        print(e)
         font_size = int(individualItemHeight * render_factor * textMF)
 
     font = ImageFont.truetype(selected_font_path, font_size)
@@ -2008,26 +1856,18 @@ def generatePilImageHorizontal(
         )
 
     exploreLogoColoured = change_logo_color(
-        os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"),
-        icon_hex,
+        HORIZONTAL_LOGOS_DIR / "explore.png", icon_hex
     )
     favouriteLogoColoured = change_logo_color(
-        os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "favourite.png"),
-        icon_hex,
+        HORIZONTAL_LOGOS_DIR / "favourite.png", icon_hex
     )
     historyLogoColoured = change_logo_color(
-        os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "history.png"),
-        icon_hex,
+        HORIZONTAL_LOGOS_DIR / "history.png", icon_hex
     )
-    appsLogoColoured = change_logo_color(
-        os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "apps.png"),
-        icon_hex,
-    )
+    appsLogoColoured = change_logo_color(HORIZONTAL_LOGOS_DIR / "apps.png", icon_hex)
 
     top_logo_size = getHorizontalLogoSize(
-        os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"),
-        render_factor,
-        config,
+        HORIZONTAL_LOGOS_DIR / "explore.png", render_factor, config
     )
 
     exploreLogoColoured = exploreLogoColoured.resize((top_logo_size), Image.LANCZOS)
@@ -2129,17 +1969,10 @@ def generatePilImageHorizontal(
         draw_transparent = ImageDraw.Draw(transparent_text_image)
         transparency = 0
 
-    if not config.use_alt_font_var:
-        selected_font_path = os.path.join(
-            internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-        )
-    else:
-        if os.path.exists(config.alt_font_path):
-            selected_font_path = config.alt_font_path
-        else:
-            selected_font_path = os.path.join(
-                internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-            )
+    selected_font_path = get_font_path(
+        config.use_alt_font_var, config.alt_font_filename
+    )
+
     menuHelperGuides = generateMenuHelperGuides(
         [["A", "SELECT"]],
         selected_font_path,
@@ -2413,55 +2246,35 @@ def generatePilImageHorizontal(
 
     if workingIndex == 4:
         infoLogoColoured = change_logo_color(
-            os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "info.png"),
-            selected_font_hex,
+            HORIZONTAL_LOGOS_DIR / "info.png", selected_font_hex
         )
     else:
         infoLogoColoured = change_logo_color(
-            os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "info.png"),
-            deselected_font_hex,
+            HORIZONTAL_LOGOS_DIR / "info.png", deselected_font_hex
         )
     if workingIndex == 5:
         configLogoColoured = change_logo_color(
-            os.path.join(
-                internal_files_dir, "Assets", "Horizontal Logos", "config.png"
-            ),
-            selected_font_hex,
+            HORIZONTAL_LOGOS_DIR / "config.png", selected_font_hex
         )
     else:
         configLogoColoured = change_logo_color(
-            os.path.join(
-                internal_files_dir, "Assets", "Horizontal Logos", "config.png"
-            ),
-            deselected_font_hex,
+            HORIZONTAL_LOGOS_DIR / "config.png", deselected_font_hex
         )
     if workingIndex == 6:
         rebootLogoColoured = change_logo_color(
-            os.path.join(
-                internal_files_dir, "Assets", "Horizontal Logos", "reboot.png"
-            ),
-            selected_font_hex,
+            HORIZONTAL_LOGOS_DIR / "reboot.png", selected_font_hex
         )
     else:
         rebootLogoColoured = change_logo_color(
-            os.path.join(
-                internal_files_dir, "Assets", "Horizontal Logos", "reboot.png"
-            ),
-            deselected_font_hex,
+            HORIZONTAL_LOGOS_DIR / "reboot.png", deselected_font_hex
         )
     if workingIndex == 7:
         shutdownLogoColoured = change_logo_color(
-            os.path.join(
-                internal_files_dir, "Assets", "Horizontal Logos", "shutdown.png"
-            ),
-            selected_font_hex,
+            HORIZONTAL_LOGOS_DIR / "shutdown.png", selected_font_hex
         )
     else:
         shutdownLogoColoured = change_logo_color(
-            os.path.join(
-                internal_files_dir, "Assets", "Horizontal Logos", "shutdown.png"
-            ),
-            deselected_font_hex,
+            HORIZONTAL_LOGOS_DIR / "shutdown.png", deselected_font_hex
         )
 
     bottom_logo_size = (
@@ -2811,21 +2624,15 @@ def generatePilImageAltHorizontal(
     )  ## CHANGE for adjustment
 
     exploreLogoColoured = change_logo_color(
-        os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"),
-        icon_hex,
+        HORIZONTAL_LOGOS_DIR / "explore.png", icon_hex
     )
     favouriteLogoColoured = change_logo_color(
-        os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "favourite.png"),
-        icon_hex,
+        HORIZONTAL_LOGOS_DIR / "favourite.png", icon_hex
     )
     historyLogoColoured = change_logo_color(
-        os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "history.png"),
-        icon_hex,
+        HORIZONTAL_LOGOS_DIR / "history.png", icon_hex
     )
-    appsLogoColoured = change_logo_color(
-        os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "apps.png"),
-        icon_hex,
-    )
+    appsLogoColoured = change_logo_color(HORIZONTAL_LOGOS_DIR / "apps.png", icon_hex)
 
     top_logo_size = (
         int(
@@ -2955,17 +2762,10 @@ def generatePilImageAltHorizontal(
         draw_transparent = ImageDraw.Draw(transparent_text_image)
         transparency = 0
 
-    if not config.use_alt_font_var:
-        selected_font_path = os.path.join(
-            internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-        )
-    else:
-        if os.path.exists(config.alt_font_path):
-            selected_font_path = config.alt_font_path
-        else:
-            selected_font_path = os.path.join(
-                internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-            )
+    selected_font_path = get_font_path(
+        config.use_alt_font_var, config.alt_font_filename
+    )
+
     menuHelperGuides = generateMenuHelperGuides(
         [["A", "SELECT"]],
         selected_font_path,
@@ -3211,26 +3011,16 @@ def generatePilImageAltHorizontal(
         draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
 
     infoLogoColoured = change_logo_color(
-        os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "alt-info.png"),
-        icon_hex,
+        HORIZONTAL_LOGOS_DIR / "alt-info.png", icon_hex
     )
     configLogoColoured = change_logo_color(
-        os.path.join(
-            internal_files_dir, "Assets", "Horizontal Logos", "alt-config.png"
-        ),
-        icon_hex,
+        HORIZONTAL_LOGOS_DIR / "alt-config.png", icon_hex
     )
     rebootLogoColoured = change_logo_color(
-        os.path.join(
-            internal_files_dir, "Assets", "Horizontal Logos", "alt-reboot.png"
-        ),
-        icon_hex,
+        HORIZONTAL_LOGOS_DIR / "alt-reboot.png", icon_hex
     )
     shutdownLogoColoured = change_logo_color(
-        os.path.join(
-            internal_files_dir, "Assets", "Horizontal Logos", "alt-shutdown.png"
-        ),
-        icon_hex,
+        HORIZONTAL_LOGOS_DIR / "alt-shutdown.png", icon_hex
     )
 
     bottom_logo_size = (
@@ -3606,17 +3396,9 @@ def generatePilImageBootLogo(
     transparent_text_image = Image.new("RGBA", image.size, (255, 255, 255, 0))
     draw_transparent = ImageDraw.Draw(transparent_text_image)
 
-    if not config.use_alt_font_var:
-        selected_font_path = os.path.join(
-            internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-        )
-    else:
-        if os.path.exists(config.alt_font_path):
-            selected_font_path = config.alt_font_path
-        else:
-            selected_font_path = os.path.join(
-                internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-            )
+    selected_font_path = get_font_path(
+        config.use_alt_font_var, config.alt_font_filename
+    )
 
     mu_font_size = 130 * render_factor
     mu_font = ImageFont.truetype(selected_font_path, mu_font_size)
@@ -3718,17 +3500,9 @@ def generatePilImageBootScreen(
 
     draw = ImageDraw.Draw(image)
 
-    if not config.use_alt_font_var:
-        selected_font_path = os.path.join(
-            internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-        )
-    else:
-        if os.path.exists(config.alt_font_path):
-            selected_font_path = config.alt_font_path
-        else:
-            selected_font_path = os.path.join(
-                internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-            )
+    selected_font_path = get_font_path(
+        config.use_alt_font_var, config.alt_font_filename
+    )
 
     screen_x_middle, screen_y_middle = (
         int((int(config.deviceScreenWidthVar) / 2) * render_factor),
@@ -3824,7 +3598,6 @@ def HorizontalMenuGen(
     endIndex = 8
     for workingIndex in range(startIndex, endIndex):
         workingItem = listItems[workingIndex]
-        # image.save(os.path.join(script_dir,"Images for testing horizontal",f"{workingIndex}.png"))
         if variant == "Horizontal":
             image = generatePilImageHorizontal(
                 progress_bar,
@@ -3879,51 +3652,41 @@ def HorizontalMenuGen(
 
 
 def getAlternateMenuNameDict():
-    if os.path.exists(global_config.alt_text_path):
-        try:
-            with open(global_config.alt_text_path, "r", encoding="utf-8") as file:
-                data = json.load(file)
-            data = {key.lower(): value for key, value in data.items()}
-            return data
-        except:
-            return getDefaultAlternateMenuNameData()
-    elif os.path.exists(os.path.join(script_dir, global_config.alt_text_path)):
-        try:
-            with open(
-                os.path.join(script_dir, global_config.alt_text_path),
-                "r",
-                encoding="utf-8",
-            ) as file:
-                data = json.load(file)
-            data = {key.lower(): value for key, value in data.items()}
-            return data
-        except:
-            return getDefaultAlternateMenuNameData()
+    ALT_TEXT_PATH = BASE_DIR / global_config.alt_text_filename
+    data = getDefaultAlternateMenuNameData()
 
-    return getDefaultAlternateMenuNameData()
+    if ALT_TEXT_PATH.exists():
+        with ALT_TEXT_PATH.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+        data = {key.lower(): value for key, value in data.items()}
+        return data
+
+    return data
 
 
 def getDefaultAlternateMenuNameData():
-    defaultMenuNameMap = {}
+    defaultMenuNameMap = {
+        "content explorer": "Games",
+        "applications": "Utilities",
+        "power": "POWER",
+        "sleep": "SLEEP",
+        "menu": "MENU",
+        "help": "HELP",
+        "back": "BACK",
+        "okay": "OKAY",
+        "confirm": "CONFIRM",
+        "launch": "LAUNCH",
+        "charging...": "Charging...",
+        "loading...": "Loading...",
+        "rebooting...": "Rebooting...",
+        "shutting down...": "Shutting Down...",
+    }
+
     for section in menus2405_2:
         if section[0].startswith("mux"):
             for n in section[1]:
                 defaultMenuNameMap[n[0].lower()] = n[0]
 
-    defaultMenuNameMap["content explorer"] = "Games"
-    defaultMenuNameMap["applications"] = "Utilities"
-    defaultMenuNameMap["power"] = "POWER"
-    defaultMenuNameMap["sleep"] = "SLEEP"
-    defaultMenuNameMap["menu"] = "MENU"
-    defaultMenuNameMap["help"] = "HELP"
-    defaultMenuNameMap["back"] = "BACK"
-    defaultMenuNameMap["okay"] = "OKAY"
-    defaultMenuNameMap["confirm"] = "CONFIRM"
-    defaultMenuNameMap["launch"] = "LAUNCH"
-    defaultMenuNameMap["charging..."] = "Charging..."
-    defaultMenuNameMap["loading..."] = "Loading..."
-    defaultMenuNameMap["rebooting..."] = "Rebooting..."
-    defaultMenuNameMap["shutting down..."] = "Shutting Down..."
     return defaultMenuNameMap
 
 
@@ -3996,15 +3759,15 @@ def select_alt_font_path():
         ],  # Only show font files
         title="Select font file",
     )
-    alt_font_path.set(file_path)
+    alt_font_filename.set(file_path)
 
 
-def select_alt_text_path():
-    file_path = filedialog.askopenfilename(
-        filetypes=[("JSON", "*.json")],  # Only show font files
-        title="Select Text Replacement file",
-    )
-    alt_text_path.set(file_path)
+# def select_alt_text_path():
+#     file_path = filedialog.askopenfilename(
+#         filetypes=[("JSON", "*.json")],  # Only show font files
+#         title="Select Text Replacement file",
+#     )
+#     alt_text_path.set(file_path)
 
 
 # INFO FOR BELOW LIST
@@ -4302,6 +4065,10 @@ def generate_theme(
     resolutions,
     assumed_res,
 ):
+    temp_build_dir = RESOURCES_DIR / f".TempBuildTheme{threadNumber}"
+    temp_system_icons_dir = RESOURCES_DIR / f".TempBuildSystemIconsAMFile{threadNumber}"
+    assumed_res_dir = temp_build_dir / f"{assumed_res[0]}x{assumed_res[1]}"
+
     try:
         progress_bar["value"] = 0
         if (
@@ -4327,6 +4094,8 @@ def generate_theme(
             )
 
         for width, height in resolutions:
+            temp_res_dir = temp_build_dir / f"{width}x{height}"
+
             res_config = copy.deepcopy(config)
             res_config.deviceScreenWidthVar = width
             res_config.deviceScreenHeightVar = height
@@ -4373,252 +4142,76 @@ def generate_theme(
                         )
                     )
             FillTempThemeFolder(progress_bar, threadNumber, config=res_config)
-            shutil.move(
-                os.path.join(
-                    internal_files_dir, f".TempBuildTheme{threadNumber}", "font"
-                ),
-                os.path.join(
-                    internal_files_dir,
-                    f".TempBuildTheme{threadNumber}",
-                    f"{width}x{height}",
-                    "font",
-                ),
-            )
-            shutil.move(
-                os.path.join(
-                    internal_files_dir, f".TempBuildTheme{threadNumber}", "glyph"
-                ),
-                os.path.join(
-                    internal_files_dir,
-                    f".TempBuildTheme{threadNumber}",
-                    f"{width}x{height}",
-                    "glyph",
-                ),
-            )
-            shutil.move(
-                os.path.join(
-                    internal_files_dir, f".TempBuildTheme{threadNumber}", "image"
-                ),
-                os.path.join(
-                    internal_files_dir,
-                    f".TempBuildTheme{threadNumber}",
-                    f"{width}x{height}",
-                    "image",
-                ),
-            )
-            shutil.move(
-                os.path.join(
-                    internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"
-                ),
-                os.path.join(
-                    internal_files_dir,
-                    f".TempBuildTheme{threadNumber}",
-                    f"{width}x{height}",
-                    "scheme",
-                ),
-            )
-            shutil.move(
-                os.path.join(
-                    internal_files_dir, f".TempBuildTheme{threadNumber}", "preview.png"
-                ),
-                os.path.join(
-                    internal_files_dir,
-                    f".TempBuildTheme{threadNumber}",
-                    f"{width}x{height}",
-                    "preview.png",
-                ),
-            )
+
+            try:
+                for target in ["font", "glyph", "image", "scheme", "preview.png"]:
+                    shutil.move(
+                        str(temp_build_dir / target), str(temp_res_dir / target)
+                    )
+            except Exception as e:
+                print(e)
+                pass
+
             if config.enable_grid_view_explore_var:
-                if config.theme_directory_path == "":
-                    theme_dir = os.path.join(script_dir, "Generated Theme")
-                else:
-                    theme_dir = config.theme_directory_path
+                theme_dir = config.theme_directory_path
+
                 os.makedirs(
-                    os.path.join(
-                        internal_files_dir,
-                        f".TempBuildSystemIconsAMFile{threadNumber}",
-                        "opt",
-                    ),
+                    str(temp_system_icons_dir / "opt"),
                     exist_ok=True,
                 )
                 shutil.copy2(
-                    os.path.join(
-                        internal_files_dir,
-                        "Assets",
-                        "AM - Scripts",
-                        "System Logo Load",
-                        "update.sh",
-                    ),
-                    os.path.join(
-                        internal_files_dir,
-                        f".TempBuildSystemIconsAMFile{threadNumber}",
-                        "opt",
-                        "update.sh",
-                    ),
+                    ASSETS_DIR / "AM - Scripts" / "System Logo Load" / "update.sh",
+                    temp_system_icons_dir / "opt" / "update.sh",
                 )
         if config.enable_grid_view_explore_var:
-            if config.theme_directory_path == "":
-                theme_dir = os.path.join(script_dir, "Generated Theme")
-            else:
-                theme_dir = config.theme_directory_path
-            shutil.make_archive(
-                os.path.join(theme_dir, "MinUIfied AM System Icons"),
-                "zip",
-                os.path.join(
-                    internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}"
-                ),
-            )
-            delete_folder(
-                os.path.join(
-                    internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}"
-                )
-            )
-        shutil.move(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                f"{assumed_res[0]}x{assumed_res[1]}",
-                "font",
-            ),
-            os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "font"),
-        )
-        shutil.move(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                f"{assumed_res[0]}x{assumed_res[1]}",
-                "glyph",
-            ),
-            os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "glyph"),
-        )
-        shutil.move(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                f"{assumed_res[0]}x{assumed_res[1]}",
-                "image",
-            ),
-            os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "image"),
-        )
-        shutil.move(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                f"{assumed_res[0]}x{assumed_res[1]}",
-                "scheme",
-            ),
-            os.path.join(
-                internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"
-            ),
-        )
-        shutil.move(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                f"{assumed_res[0]}x{assumed_res[1]}",
-                "preview.png",
-            ),
-            os.path.join(
-                internal_files_dir, f".TempBuildTheme{threadNumber}", "preview.png"
-            ),
-        )
-        if os.path.exists(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                f"{assumed_res[0]}x{assumed_res[1]}",
-            )
-        ):
-            os.rmdir(
-                os.path.join(
-                    internal_files_dir,
-                    f".TempBuildTheme{threadNumber}",
-                    f"{assumed_res[0]}x{assumed_res[1]}",
-                )
-            )
-
-        if config.theme_directory_path == "":
-            theme_dir = os.path.join(script_dir, "Generated Theme")
-        else:
             theme_dir = config.theme_directory_path
 
-        shutil.make_archive(
-            os.path.join(theme_dir, themeName),
-            "zip",
-            os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}"),
-        )
+            shutil.make_archive(
+                str(theme_dir / "MinUIfied AM System Icons"),
+                "zip",
+                str(temp_system_icons_dir),
+            )
+            delete_folder(str(temp_system_icons_dir))
+
+        for target in ["font", "glyph", "image", "scheme", "preview.png"]:
+            shutil.move(assumed_res_dir / target, temp_build_dir / target)
+
+        if assumed_res_dir.exists():
+            os.rmdir(assumed_res_dir)
+
+        theme_dir = config.theme_directory_path
+
+        shutil.make_archive(str(theme_dir / themeName), "zip", temp_build_dir)
 
         if config.developer_preview_var:
-            preview_dir = os.path.join(theme_dir)
-
-            os.makedirs(preview_dir, exist_ok=True)
+            os.makedirs(str(theme_dir), exist_ok=True)
             for width, height in resolutions:
-                temp_preview_path = os.path.join(
-                    preview_dir, f"TempPreview{threadNumber}[{width}x{height}].png"
-                )
-                if os.path.exists(temp_preview_path):
-                    os.remove(temp_preview_path)
-                shutil.move(
-                    os.path.join(
-                        internal_files_dir,
-                        f"TempPreview{threadNumber}[{width}x{height}].png",
-                    ),
-                    preview_dir,
-                )
+                thread_and_res = f"{threadNumber}[{width}x{height}].png"
+                theme_and_res = f"{themeName}[{width}x{height}].png"
+                temp_preview_path = RESOURCES_DIR / f"TempPreview{thread_and_res}"
+                theme_preview_path = theme_dir / theme_and_res
+                preview_path = theme_dir / "preview" / f"TempPreview{thread_and_res}"
 
-                theme_preview_path = os.path.join(
-                    preview_dir, f"{themeName}[{width}x{height}].png"
-                )
-                if os.path.exists(theme_preview_path):
+                if theme_preview_path.exists():
                     os.remove(theme_preview_path)
 
-                os.rename(
-                    os.path.join(
-                        preview_dir, f"TempPreview{threadNumber}[{width}x{height}].png"
-                    ),
-                    theme_preview_path,
-                )
+                os.rename(temp_preview_path, theme_preview_path)
 
-                if os.path.exists(
-                    os.path.join(
-                        internal_files_dir,
-                        f"TempPreview{threadNumber}[{width}x{height}].png",
-                    )
-                ):
-                    os.remove(
-                        os.path.join(
-                            internal_files_dir,
-                            f"TempPreview{threadNumber}[{width}x{height}].png",
-                        )
-                    )
-                if os.path.exists(
-                    os.path.join(
-                        theme_dir,
-                        "preview",
-                        f"TempPreview{threadNumber}[{width}x{height}].png",
-                    )
-                ):
-                    os.remove(
-                        os.path.join(
-                            theme_dir,
-                            "preview",
-                            f"TempPreview{threadNumber}[{width}x{height}].png",
-                        )
-                    )
+                if temp_preview_path.exists():
+                    os.remove(temp_preview_path)
 
-        delete_folder(
-            os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}")
-        )
+                if preview_path.exists():
+                    os.remove(preview_path)
+
+        delete_folder(str(temp_build_dir))
         if threadNumber == -1:
             messagebox.showinfo("Success", "Theme generated successfully.")
         loading_window.destroy()
         barrier.wait()
     except Exception as e:
+        print(e)
         loading_window.destroy()
-        if config.theme_directory_path == "":
-            theme_dir = os.path.join(script_dir, "Generated Theme")
-        else:
-            theme_dir = config.theme_directory_path
+        theme_dir = config.theme_directory_path
 
         if config.advanced_error_var:
             tb_str = "".join(traceback.format_exception(type(e), e, e.__traceback__))
@@ -4628,36 +4221,18 @@ def generate_theme(
         else:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
 
-        delete_folder(
-            os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}")
-        )
+        delete_folder(str(temp_build_dir))
         if config.developer_preview_var:
-            if os.path.exists(
-                os.path.join(
-                    internal_files_dir,
-                    f"TempPreview{threadNumber}[{width}x{height}].png",
-                )
-            ):
-                os.remove(
-                    os.path.join(
-                        internal_files_dir,
-                        f"TempPreview{threadNumber}[{width}x{height}].png",
-                    )
-                )
-            if os.path.exists(
-                os.path.join(
-                    theme_dir,
-                    "preview",
-                    f"TempPreview{threadNumber}[{width}x{height}].png",
-                )
-            ):
-                os.remove(
-                    os.path.join(
-                        theme_dir,
-                        "preview",
-                        f"TempPreview{threadNumber}[{width}x{height}].png",
-                    )
-                )
+            for width, height in resolutions:
+                thread_and_res = f"{threadNumber}[{width}x{height}].png"
+                temp_preview_path = RESOURCES_DIR / f"TempPreview{thread_and_res}"
+                preview_path = theme_dir / "preview" / f"TempPreview{thread_and_res}"
+
+                if temp_preview_path.exists():
+                    os.remove(temp_preview_path)
+
+                if preview_path.exists():
+                    os.remove(preview_path)
 
 
 def generate_themes(themes):
@@ -4722,26 +4297,14 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     bubble_hex = config.bubble_hex_entry
     icon_hex = config.icon_hex_entry
 
-    if not config.use_alt_font_var:
-        selected_font_path = os.path.join(
-            internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-        )
-    else:
-        if os.path.exists(config.alt_font_path):
-            selected_font_path = config.alt_font_path
-        else:
-            selected_font_path = os.path.join(
-                internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-            )
-
-    copy_contents(
-        os.path.join(internal_files_dir, "Theme Shell"),
-        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}"),
+    selected_font_path = get_font_path(
+        config.use_alt_font_var, config.alt_font_filename
     )
+    temp_build_dir = RESOURCES_DIR / f".TempBuildTheme{threadNumber}"
 
-    newSchemeDir = os.path.join(
-        internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"
-    )
+    copy_contents(THEME_SHELL_DIR, temp_build_dir)
+
+    newSchemeDir = temp_build_dir / "scheme"
     os.makedirs(newSchemeDir, exist_ok=True)
 
     fontSize = int(config.font_size_var)
@@ -4776,14 +4339,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         - int(config.contentPaddingTopVar)
     )
 
-    templateSchemeFile = os.path.join(
-        internal_files_dir, "Template Scheme", "template.txt"
-    )
-
     stringsToReplace = []
 
     # Read the template file and search for all instances of strings enclosed in {}
-    with open(templateSchemeFile, "r") as file:
+    with open(TEMPLATE_SCHEME_PATH, "r") as file:
         content = file.read()
         # Find all occurrences of patterns like {some_string}
         matches = re.findall(r"\{[^}]+\}", content)
@@ -5057,86 +4616,86 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         replacementStringMap["muxfavourite"] = replacementStringMap["muxplore"].copy()
 
     # muxhistory - make this more like a game switcher
-    if config.enable_game_switcher_var and not "Generating new game switcher":
-        replacementStringMap["muxhistory"] = {}
+    # if config.enable_game_switcher_var and not "Generating new game switcher":
+    #     replacementStringMap["muxhistory"] = {}
 
-        bottom_bar_height_over_footer_percent = 0.1
-        bottom_bar_height_over_footer = int(
-            (int(config.deviceScreenHeightVar) * bottom_bar_height_over_footer_percent)
-        )
-        bottom_bar_total_height = (
-            int(getRealFooterHeight(config)) + bottom_bar_height_over_footer
-        )
-        bottom_bar_height_over_footer += 2
+    #     bottom_bar_height_over_footer_percent = 0.1
+    #     bottom_bar_height_over_footer = int(
+    #         (int(config.deviceScreenHeightVar) * bottom_bar_height_over_footer_percent)
+    #     )
+    #     bottom_bar_total_height = (
+    #         int(getRealFooterHeight(config)) + bottom_bar_height_over_footer
+    #     )
+    #     bottom_bar_height_over_footer += 2
 
-        replacementStringMap["muxhistory"]["{content_height}"] = (
-            bottom_bar_height_over_footer
-        )
-        replacementStringMap["muxhistory"]["{content_item_count}"] = 1
-        replacementStringMap["muxhistory"]["{bubble_alpha}"] = "0"
-        content_alignment_map = {"Left": 0, "Centre": 1, "Right": 2}
-        replacementStringMap["muxhistory"]["{content_alignment}"] = (
-            content_alignment_map["Centre"]
-        )
-        replacementStringMap["muxhistory"]["{content_padding_left}"] = 0
-        replacementStringMap["muxhistory"]["{content_width}"] = (
-            config.deviceScreenWidthVar
-        )
-        replacementStringMap["muxhistory"]["{navigation_type}"] = "1"
-        history_content_padding_top = (
-            int(config.deviceScreenHeightVar) - bottom_bar_total_height
-        )
-        replacementStringMap["muxhistory"]["{content_padding_top}"] = int(
-            history_content_padding_top
-        ) - (int(header_height) + 2)
-        replacementStringMap["muxhistory"]["{content_height}"] = (
-            bottom_bar_height_over_footer
-        )
-    if config.enable_game_switcher_var:
-        replacementStringMap["muxhistory"] = {}
+    #     replacementStringMap["muxhistory"]["{content_height}"] = (
+    #         bottom_bar_height_over_footer
+    #     )
+    #     replacementStringMap["muxhistory"]["{content_item_count}"] = 1
+    #     replacementStringMap["muxhistory"]["{bubble_alpha}"] = "0"
+    #     content_alignment_map = {"Left": 0, "Centre": 1, "Right": 2}
+    #     replacementStringMap["muxhistory"]["{content_alignment}"] = (
+    #         content_alignment_map["Centre"]
+    #     )
+    #     replacementStringMap["muxhistory"]["{content_padding_left}"] = 0
+    #     replacementStringMap["muxhistory"]["{content_width}"] = (
+    #         config.deviceScreenWidthVar
+    #     )
+    #     replacementStringMap["muxhistory"]["{navigation_type}"] = "1"
+    #     history_content_padding_top = (
+    #         int(config.deviceScreenHeightVar) - bottom_bar_total_height
+    #     )
+    #     replacementStringMap["muxhistory"]["{content_padding_top}"] = int(
+    #         history_content_padding_top
+    #     ) - (int(header_height) + 2)
+    #     replacementStringMap["muxhistory"]["{content_height}"] = (
+    #         bottom_bar_height_over_footer
+    #     )
+    # if config.enable_game_switcher_var:
+    #     replacementStringMap["muxhistory"] = {}
 
-        bottom_bar_height_over_footer_percent = 0.1
-        bottom_bar_height_over_footer = int(
-            (int(config.deviceScreenHeightVar) * bottom_bar_height_over_footer_percent)
-        )
-        bottom_bar_total_height = (
-            int(getRealFooterHeight(config)) + bottom_bar_height_over_footer
-        )
-        bottom_bar_height_over_footer += 2
+    #     bottom_bar_height_over_footer_percent = 0.1
+    #     bottom_bar_height_over_footer = int(
+    #         (int(config.deviceScreenHeightVar) * bottom_bar_height_over_footer_percent)
+    #     )
+    #     bottom_bar_total_height = (
+    #         int(getRealFooterHeight(config)) + bottom_bar_height_over_footer
+    #     )
+    #     bottom_bar_height_over_footer += 2
 
-        replacementStringMap["muxhistory"]["{content_height}"] = (
-            bottom_bar_height_over_footer
-        )
-        replacementStringMap["muxhistory"]["{content_item_count}"] = 1
-        replacementStringMap["muxhistory"]["{bubble_alpha}"] = "0"
-        replacementStringMap["muxhistory"]["{selected_font_hex}"] = accent_hex
-        content_alignment_map = {"Left": 0, "Centre": 1, "Right": 2}
-        replacementStringMap["muxhistory"]["{content_alignment}"] = (
-            content_alignment_map["Centre"]
-        )
-        replacementStringMap["muxhistory"]["{content_padding_left}"] = 0
-        replacementStringMap["muxhistory"]["{content_width}"] = (
-            config.deviceScreenWidthVar
-        )
-        replacementStringMap["muxhistory"]["{navigation_type}"] = "1"
-        history_content_padding_top = (
-            int(config.deviceScreenHeightVar) - bottom_bar_total_height
-        )
-        replacementStringMap["muxhistory"]["{content_padding_top}"] = int(
-            history_content_padding_top
-        ) - (int(header_height) + 2)
-        replacementStringMap["muxhistory"]["{footer_background_alpha}"] = int(
-            0
-        )  ## Could change to 255 * 0.866 later if content font is changed to render over footer
-        replacementStringMap["muxhistory"]["{footer_alpha}"] = 255
-        replacementStringMap["muxhistory"]["{footer_height}"] = bottom_bar_total_height
-        replacementStringMap["muxhistory"]["{footer_pad_top}"] = int(
-            (bottom_bar_total_height - int(getRealFooterHeight(config))) / 2
-        )
-        replacementStringMap["muxhistory"]["{footer_pad_bottom}"] = 0
-    else:  # muxhistory - if not making it onto game switcher, should be the same as muxplore
-        if int(config.maxBoxArtWidth) > 0:
-            replacementStringMap["muxhistory"] = replacementStringMap["muxplore"].copy()
+    #     replacementStringMap["muxhistory"]["{content_height}"] = (
+    #         bottom_bar_height_over_footer
+    #     )
+    #     replacementStringMap["muxhistory"]["{content_item_count}"] = 1
+    #     replacementStringMap["muxhistory"]["{bubble_alpha}"] = "0"
+    #     replacementStringMap["muxhistory"]["{selected_font_hex}"] = accent_hex
+    #     content_alignment_map = {"Left": 0, "Centre": 1, "Right": 2}
+    #     replacementStringMap["muxhistory"]["{content_alignment}"] = (
+    #         content_alignment_map["Centre"]
+    #     )
+    #     replacementStringMap["muxhistory"]["{content_padding_left}"] = 0
+    #     replacementStringMap["muxhistory"]["{content_width}"] = (
+    #         config.deviceScreenWidthVar
+    #     )
+    #     replacementStringMap["muxhistory"]["{navigation_type}"] = "1"
+    #     history_content_padding_top = (
+    #         int(config.deviceScreenHeightVar) - bottom_bar_total_height
+    #     )
+    #     replacementStringMap["muxhistory"]["{content_padding_top}"] = int(
+    #         history_content_padding_top
+    #     ) - (int(header_height) + 2)
+    #     replacementStringMap["muxhistory"]["{footer_background_alpha}"] = int(
+    #         0
+    #     )  ## Could change to 255 * 0.866 later if content font is changed to render over footer
+    #     replacementStringMap["muxhistory"]["{footer_alpha}"] = 255
+    #     replacementStringMap["muxhistory"]["{footer_height}"] = bottom_bar_total_height
+    #     replacementStringMap["muxhistory"]["{footer_pad_top}"] = int(
+    #         (bottom_bar_total_height - int(getRealFooterHeight(config))) / 2
+    #     )
+    #     replacementStringMap["muxhistory"]["{footer_pad_bottom}"] = 0
+    # else:  # muxhistory - if not making it onto game switcher, should be the same as muxplore
+    if int(config.maxBoxArtWidth) > 0:
+        replacementStringMap["muxhistory"] = replacementStringMap["muxplore"].copy()
 
     replacementStringMap["muxstorage"] = {}
     replacementStringMap["muxstorage"]["{footer_alpha}"] = 255
@@ -5197,22 +4756,22 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
 
         grid_image_padding = 10
 
-        system_logos_path = os.path.join(
-            internal_files_dir, "Assets", "System Logos", f"png [5x]"
-        )
+        system_logos_path = ASSETS_DIR / "System Logos" / "png [5x]"
 
-        output_system_logos_path = os.path.join(
-            internal_files_dir,
-            f".TempBuildSystemIconsAMFile{threadNumber}",
-            "run",
-            "muos",
-            "storage",
-            "info",
-            "catalogue",
-            "Folder",
-            "grid",
-            "resolutions",
-            f"{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}",
+        temp_system_icons_dir = (
+            RESOURCES_DIR / f".TempBuildSystemIconsAMFile{threadNumber}"
+        )
+        output_system_logos_path = (
+            temp_system_icons_dir
+            / "run"
+            / "muos"
+            / "storage"
+            / "info"
+            / "catalogue"
+            / "Folder"
+            / "grid"
+            / "resolutions"
+            / f"{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}"
         )
         os.makedirs(output_system_logos_path, exist_ok=True)
         resize_system_logos(
@@ -5224,11 +4783,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         )
     if not "Generating for lanuage on muxlaunch":
         horizontalLogoSize = getHorizontalLogoSize(
-            os.path.join(
-                internal_files_dir, "Assets", "Horizontal Logos", "explore.png"
-            ),
-            1,
-            config,
+            HORIZONTAL_LOGOS_DIR / "explore.png", 1, config
         )
         paddingBetweenLogos = (
             int(config.deviceScreenWidthVar) - (horizontalLogoSize[0] * 4)
@@ -5277,54 +4832,30 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         replacementStringMap["muxlaunch"]["{grid_cell_focus_text_alpha}"] = 255
 
     for fileName in replacementStringMap.keys():
-        shutil.copy2(templateSchemeFile, os.path.join(newSchemeDir, f"{fileName}.txt"))
+        shutil.copy2(TEMPLATE_SCHEME_PATH, newSchemeDir / f"{fileName}.txt")
         for stringToBeReplaced in replacementStringMap["default"].keys():
             replacement = replacementStringMap[fileName].get(
                 stringToBeReplaced, replacementStringMap["default"][stringToBeReplaced]
             )
             replace_in_file(
-                os.path.join(newSchemeDir, f"{fileName}.txt"),
+                newSchemeDir / f"{fileName}.txt",
                 stringToBeReplaced,
                 str(replacement),
             )
 
-    os.makedirs(
-        os.path.join(
-            internal_files_dir, f".TempBuildTheme{threadNumber}", "image", "wall"
-        ),
-        exist_ok=True,
-    )
+    os.makedirs(temp_build_dir / "image" / "wall", exist_ok=True)
 
     if config.include_overlay_var:
         shutil.copy2(
-            os.path.join(
-                internal_files_dir,
-                "Assets",
-                "Overlays",
-                f"{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}",
-                f"{config.selected_overlay_var}.png",
-            ),
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "overlay.png",
-            ),
+            OVERLAY_DIR
+            / f"{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}"
+            / f"{config.selected_overlay_var}.png",
+            temp_build_dir / "image" / "overlay.png",
         )
 
     ## GLYPH STUFF
-    os.makedirs(
-        os.path.join(
-            internal_files_dir, f".TempBuildTheme{threadNumber}", "glyph", "footer"
-        ),
-        exist_ok=True,
-    )
-    os.makedirs(
-        os.path.join(
-            internal_files_dir, f".TempBuildTheme{threadNumber}", "glyph", "header"
-        ),
-        exist_ok=True,
-    )
+    os.makedirs(temp_build_dir / "glyph" / "footer", exist_ok=True)
+    os.makedirs(temp_build_dir / "glyph" / "header", exist_ok=True)
 
     muosSpaceBetweenItems = 2
     footerHeight = (
@@ -5356,13 +4887,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             Image.LANCZOS,
         )
         button_image.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "glyph",
-                "footer",
-                f"{button.lower()}.png",
-            ),
+            temp_build_dir / "glyph" / "footer" / f"{button.lower()}.png",
             format="PNG",
         )
     capacities = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
@@ -5376,12 +4901,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
 
     for capacity in capacities:
         try:
-            capacity_image_path = os.path.join(
-                internal_files_dir,
-                "Assets",
-                "glyphs",
-                f"{BatteryStyleOptionsDict[config.battery_style_var]}{capacity}[5x].png",
-            )  # auto works with options, like alternative 1 alternative 2 default etc...
+            capacity_image_path = (
+                GLYPHS_DIR
+                / f"{BatteryStyleOptionsDict[config.battery_style_var]}{capacity}[5x].png"
+            )
         except:
             raise Exception("Battery Style not found")
         capacity_image = Image.open(capacity_image_path)
@@ -5393,23 +4916,15 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             Image.LANCZOS,
         )
         capacity_image.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "glyph",
-                "header",
-                f"capacity_{capacity}.png",
-            ),
+            temp_build_dir / "glyph" / "header" / f"capacity_{capacity}.png",
             format="PNG",
         )
 
         try:
-            capacity_charging_image_path = os.path.join(
-                internal_files_dir,
-                "Assets",
-                "glyphs",
-                f"{BatteryChargingStyleOptionsDict[config.battery_charging_style_var]}{capacity}[5x].png",
-            )  # auto works with options, like alternative 1 alternative 2 default etc...
+            capacity_charging_image_path = (
+                GLYPHS_DIR
+                / f"{BatteryChargingStyleOptionsDict[config.battery_charging_style_var]}{capacity}[5x].png"
+            )
         except:
             raise Exception("Battery Charging Style not found")
         capacity_charging_image = Image.open(capacity_charging_image_path)
@@ -5427,70 +4942,34 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             Image.LANCZOS,
         )
         capacity_charging_image.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "glyph",
-                "header",
-                f"capacity_charging_{capacity}.png",
-            ),
+            temp_build_dir / "glyph" / "header" / f"capacity_charging_{capacity}.png",
             format="PNG",
         )
 
     for networkGlyph in networkGlyphNames:
-        input_image_path = os.path.join(
-            internal_files_dir, "Assets", "glyphs", f"{networkGlyph}[5x].png"
-        )
+        input_image_path = GLYPHS_DIR / f"{networkGlyph}[5x].png"
         image = Image.open(input_image_path)
         image = image.resize(
             (int(heightOfGlyph * (image.size[0] / image.size[1])), heightOfGlyph),
             Image.LANCZOS,
         )
         image.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "glyph",
-                "header",
-                f"{networkGlyph}.png",
-            ),
+            temp_build_dir / "glyph" / "header" / f"{networkGlyph}.png",
             format="PNG",
         )
 
     ## FONT STUFF
-    os.makedirs(
-        os.path.join(
-            internal_files_dir, f".TempBuildTheme{threadNumber}", "font", "panel"
-        ),
-        exist_ok=True,
-    )  # Font binaries stuff
-    os.makedirs(
-        os.path.join(
-            internal_files_dir, f".TempBuildTheme{threadNumber}", "font", "footer"
-        ),
-        exist_ok=True,
-    )  # Font binaries stuff
-    os.makedirs(
-        os.path.join(
-            internal_files_dir, f".TempBuildTheme{threadNumber}", "font", "header"
-        ),
-        exist_ok=True,
-    )  # Font binaries stuff
+    font_path = temp_build_dir / "font"
+    font_panel_path = font_path / "panel"
+    font_footer_path = font_path / "footer"
+    font_header_path = font_path / "header"
+    font_binary_path = FONTS_DIR / "Binaries"
+    os.makedirs(font_panel_path, exist_ok=True)
+    os.makedirs(temp_build_dir / "font" / "footer", exist_ok=True)
+    os.makedirs(temp_build_dir / "font" / "header", exist_ok=True)
     shutil.copy2(
-        os.path.join(
-            internal_files_dir,
-            "Assets",
-            "Font",
-            "Binaries",
-            f"BPreplayBold-unhinted-{int(fontSize)}.bin",
-        ),
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "font",
-            "panel",
-            "default.bin",
-        ),
+        font_binary_path / f"BPreplayBold-unhinted-{int(fontSize)}.bin",
+        font_panel_path / "default.bin",
     )
     muxarchive_font_size_640 = 17
     muxarchive_font_size = math.floor(
@@ -5498,117 +4977,64 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     )
     if fontSize > muxarchive_font_size:
         shutil.copy2(
-            os.path.join(
-                internal_files_dir,
-                "Assets",
-                "Font",
-                "Binaries",
-                f"BPreplayBold-unhinted-{int(muxarchive_font_size)}.bin",
-            ),
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "font",
-                "panel",
-                "muxarchive.bin",
-            ),
+            font_binary_path / f"BPreplayBold-unhinted-{int(muxarchive_font_size)}.bin",
+            font_panel_path / "muxarchive.bin",
         )
+
     muxpicker_font_size_640 = 18
     muxpicker_font_size = math.floor(
         muxpicker_font_size_640 * (int(config.deviceScreenWidthVar) / 640)
     )
     if fontSize > muxpicker_font_size:
         shutil.copy2(
-            os.path.join(
-                internal_files_dir,
-                "Assets",
-                "Font",
-                "Binaries",
-                f"BPreplayBold-unhinted-{int(muxpicker_font_size)}.bin",
-            ),
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "font",
-                "panel",
-                "muxpicker.bin",
-            ),
+            font_binary_path / f"BPreplayBold-unhinted-{int(muxpicker_font_size)}.bin",
+            font_panel_path / "muxpicker.bin",
         )
 
-    if config.enable_game_switcher_var:
-        gameSwitcherFontSize = bottom_bar_height_over_footer * 0.55
-        gameSwitcherFontSize = int(fontSize)
-        shutil.copy2(
-            os.path.join(
-                internal_files_dir,
-                "Assets",
-                "Font",
-                "Binaries",
-                f"BPreplayBold-unhinted-{int(gameSwitcherFontSize)}.bin",
-            ),
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "font",
-                "panel",
-                "muxhistory.bin",
-            ),
-        )
+    # if config.enable_game_switcher_var:
+    #     gameSwitcherFontSize = bottom_bar_height_over_footer * 0.55
+    #     gameSwitcherFontSize = int(fontSize)
+    #     shutil.copy2(
+    #         os.path.join(
+    #             internal_files_dir,
+    #             "Assets",
+    #             "Font",
+    #             "Binaries",
+    #             f"BPreplayBold-unhinted-{int(gameSwitcherFontSize)}.bin",
+    #         ),
+    #         os.path.join(
+    #             internal_files_dir,
+    #             f".TempBuildTheme{threadNumber}",
+    #             "font",
+    #             "panel",
+    #             "muxhistory.bin",
+    #         ),
+    #     )
     shutil.copy2(
-        os.path.join(
-            internal_files_dir,
-            "Assets",
-            "Font",
-            "Binaries",
-            f"BPreplayBold-unhinted-{int(20)}.bin",
-        ),
-        os.path.join(
-            internal_files_dir, f".TempBuildTheme{threadNumber}", "font", "default.bin"
-        ),
+        font_binary_path / f"BPreplayBold-unhinted-{int(20)}.bin",
+        font_path / "default.bin",
     )
 
     ## FOOTER FONT STUFF
     shutil.copy2(
-        os.path.join(
-            internal_files_dir,
-            "Assets",
-            "Font",
-            "Binaries",
-            f"BPreplayBold-unhinted-{in_bubble_font_size}.bin",
-        ),
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "font",
-            "footer",
-            "default.bin",
-        ),
+        font_binary_path / f"BPreplayBold-unhinted-{in_bubble_font_size}.bin",
+        font_footer_path / "default.bin",
     )
+
+    ## HEADER FONT STUFF
     headerFontSize = int(
         int(
             (int(int(config.header_text_height_var) * render_factor) * (4 / 3))
             / render_factor
         )
     )
-    ## HEADER FONT STUFF
     shutil.copy2(
-        os.path.join(
-            internal_files_dir,
-            "Assets",
-            "Font",
-            "Binaries",
-            f"BPreplayBold-unhinted-{headerFontSize}.bin",
-        ),
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "font",
-            "header",
-            "default.bin",
-        ),
+        font_binary_path / f"BPreplayBold-unhinted-{headerFontSize}.bin",
+        font_header_path / "default.bin",
     )
 
     ## IMAGE STUFF
+    temp_image_dir = temp_build_dir / "image"
     bootlogoimage = generatePilImageBootLogo(
         config.bgHexVar,
         config.deselectedFontHexVar,
@@ -5620,12 +5046,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         Image.LANCZOS,
     )
     bootlogoimage.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "bootlogo.bmp",
-        ),
+        temp_image_dir / "bootlogo.bmp",
         format="BMP",
     )
     progress_bar["value"] += 1
@@ -5637,19 +5058,13 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         "CHARGING...",
         render_factor,
         config,
-        icon_path=os.path.join(internal_files_dir, "Assets", "ChargingLogo[5x].png"),
+        icon_path=ASSETS_DIR / "ChargingLogo[5x].png",
     ).resize(
         (int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)),
         Image.LANCZOS,
     )
     chargingimage.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxcharge.png",
-        ),
+        temp_image_dir / "wall" / "muxcharge.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -5666,13 +5081,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         Image.LANCZOS,
     )
     loadingimage.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxstart.png",
-        ),
+        temp_image_dir / "wall" / "muxstart.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -5689,12 +5098,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         Image.LANCZOS,
     )
     shutdownimage.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "shutdown.png",
-        ),
+        temp_image_dir / "shutdown.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -5711,9 +5115,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         Image.LANCZOS,
     )
     rebootimage.save(
-        os.path.join(
-            internal_files_dir, f".TempBuildTheme{threadNumber}", "image", "reboot.png"
-        ),
+        temp_image_dir / "reboot.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -5725,13 +5127,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         Image.LANCZOS,
     )
     defaultimage.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "default.png",
-        ),
+        temp_image_dir / "wall" / "default.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -5770,25 +5166,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "storage",
         ]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxconfig",
-        ),
+        temp_image_dir / "static" / "muxconfig",
         exist_ok=True,
     )
     for item in muxconfig_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxconfig",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxconfig" / f"{item}.png",
             format="PNG",
         )
 
@@ -5797,25 +5180,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     else:
         muxcustom_items = ["theme", "catalogue", "config"]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxcustom",
-        ),
+        temp_image_dir / "static" / "muxcustom",
         exist_ok=True,
     )
     for item in muxcustom_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxcustom",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxcustom" / f"{item}.png",
             format="PNG",
         )
 
@@ -5824,25 +5194,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     else:
         muxinfo_items = ["tracker", "tester", "system", "credit"]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxinfo",
-        ),
+        temp_image_dir / "static" / "muxinfo",
         exist_ok=True,
     )
     for item in muxinfo_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxinfo",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxinfo" / f"{item}.png",
             format="PNG",
         )
 
@@ -5851,25 +5208,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     else:
         muxoption_items = ["search", "core", "governor"]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxoption",
-        ),
+        temp_image_dir / "static" / "muxoption",
         exist_ok=True,
     )
     for item in muxoption_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxoption",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxoption" / f"{item}.png",
             format="PNG",
         )
     progress_bar["value"] += 1
@@ -5909,25 +5253,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "shutdown",
         ]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxlaunch",
-        ),
+        temp_image_dir / "static" / "muxlaunch",
         exist_ok=True,
     )
     for item in muxlaunch_items:
         visualbuttonoverlay_A_SELECT.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxlaunch",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxlaunch" / f"{item}.png",
             format="PNG",
         )
     progress_bar["value"] += 1
@@ -5982,25 +5313,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "advanced",
         ]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxtweakgen",
-        ),
+        temp_image_dir / "static" / "muxtweakgen",
         exist_ok=True,
     )
     for item in muxtweakgen_items:
         visualbuttonoverlay_B_SAVE.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxtweakgen",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxtweakgen" / f"{item}.png",
             format="PNG",
         )
 
@@ -6017,25 +5335,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "audio",
         ]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxhdmi",
-        ),
+        temp_image_dir / "static" / "muxhdmi",
         exist_ok=True,
     )
     for item in muxhdmi_items:
         visualbuttonoverlay_B_SAVE.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxhdmi",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxhdmi" / f"{item}.png",
             format="PNG",
         )
 
@@ -6044,25 +5349,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     else:
         muxpower_items = ["shutdown", "battery", "idle_display", "idle_sleep"]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxpower",
-        ),
+        temp_image_dir / "static" / "muxpower",
         exist_ok=True,
     )
     for item in muxpower_items:
         visualbuttonoverlay_B_SAVE.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxpower",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxpower" / f"{item}.png",
             format="PNG",
         )
 
@@ -6106,25 +5398,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "blackfade",
         ]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxvisual",
-        ),
+        temp_image_dir / "static" / "muxvisual",
         exist_ok=True,
     )
     for item in muxvisual_items:
         visualbuttonoverlay_B_SAVE.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxvisual",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxvisual" / f"{item}.png",
             format="PNG",
         )
 
@@ -6172,25 +5451,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "cardmode",
         ]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxtweakadv",
-        ),
+        temp_image_dir / "static" / "muxtweakadv",
         exist_ok=True,
     )
     for item in muxtweakadv_items:
         visualbuttonoverlay_B_SAVE.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxtweakadv",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxtweakadv" / f"{item}.png",
             format="PNG",
         )
 
@@ -6207,25 +5473,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "tailscaled",
         ]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxwebserv",
-        ),
+        temp_image_dir / "static" / "muxwebserv",
         exist_ok=True,
     )
     for item in muxwebserv_items:
         visualbuttonoverlay_B_SAVE.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxwebserv",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxwebserv" / f"{item}.png",
             format="PNG",
         )
 
@@ -6250,25 +5503,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "timezone",
         ]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxrtc",
-        ),
+        temp_image_dir / "static" / "muxrtc",
         exist_ok=True,
     )
     for item in muxrtc_items:
         visualbuttonoverlay_B_SAVE.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxrtc",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxrtc" / f"{item}.png",
             format="PNG",
         )
 
@@ -6303,25 +5543,12 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "voltage",
         ]
     os.makedirs(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "static",
-            "muxsysinfo",
-        ),
+        temp_image_dir / "static" / "muxsysinfo",
         exist_ok=True,
     )
     for item in muxsysinfo_items:
         visualbuttonoverlay_B_BACK.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "static",
-                "muxsysinfo",
-                f"{item}.png",
-            ),
+            temp_image_dir / "static" / "muxsysinfo" / f"{item}.png",
             format="PNG",
         )
     progress_bar["value"] += 1
@@ -6366,23 +5593,11 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     )
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxapp)
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxapp.png",
-        ),
+        temp_image_dir / "wall" / "muxapp.png",
         format="PNG",
     )
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxtask.png",
-        ),
+        temp_image_dir / "wall" / "muxtask.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -6406,13 +5621,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     )
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxplore)
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxplore.png",
-        ),
+        temp_image_dir / "wall" / "muxplore.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -6432,77 +5641,65 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         background, visualbuttonoverlay_muxfavourite
     )
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxfavourite.png",
-        ),
+        temp_image_dir / "wall" / "muxfavourite.png",
         format="PNG",
     )
     progress_bar["value"] += 1
 
     # GameSwitcher
-    if config.enable_game_switcher_var:
-        if not "generating new game switcher":
-            gameSwitcherOverlay = generateGameSwitcherOverlay(
-                config, render_factor, gameNameForPreview="Goodboy Galaxy"
-            ).resize(
-                (int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)),
-                Image.LANCZOS,
-            )
-        else:
-            gameSwitcherOverlay = generateHeaderBubbles(
-                config, render_factor, config.bgHexVar, bubble_alpha=0.866
-            ).resize(
-                (int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)),
-                Image.LANCZOS,
-            )
-        altered_background = Image.alpha_composite(background, gameSwitcherOverlay)
-        gameSwitcherOverlay.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "wall",
-                "muxhistory.png",
-            ),
-            format="PNG",
-        )
-        progress_bar["value"] += 1
-    else:
-        visualbuttonoverlay_muxhistory = generateMuOSBackgroundOverlay(
-            [
-                ["MENU", "INFO"],
-                ["Y", "FAVOURITE"],
-                ["X", "REMOVE"],
-                ["B", "BACK"],
-                ["A", "OPEN"],
-            ],
-            selected_font_path,
-            config.footerBubbleHexVar,
-            render_factor,
-            config,
-            lhsButtons=[["POWER", "SLEEP"]],
-        ).resize(
-            (int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)),
-            Image.LANCZOS,
-        )
-        altered_background = Image.alpha_composite(
-            background, visualbuttonoverlay_muxhistory
-        )
-        altered_background.save(
-            os.path.join(
-                internal_files_dir,
-                f".TempBuildTheme{threadNumber}",
-                "image",
-                "wall",
-                "muxhistory.png",
-            ),
-            format="PNG",
-        )
-        progress_bar["value"] += 1
+    # if config.enable_game_switcher_var:
+    #     if not "generating new game switcher":
+    #         gameSwitcherOverlay = generateGameSwitcherOverlay(
+    #             config, render_factor, gameNameForPreview="Goodboy Galaxy"
+    #         ).resize(
+    #             (int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)),
+    #             Image.LANCZOS,
+    #         )
+    #     else:
+    #         gameSwitcherOverlay = generateHeaderBubbles(
+    #             config, render_factor, config.bgHexVar, bubble_alpha=0.866
+    #         ).resize(
+    #             (int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)),
+    #             Image.LANCZOS,
+    #         )
+    #     altered_background = Image.alpha_composite(background, gameSwitcherOverlay)
+    #     gameSwitcherOverlay.save(
+    #         os.path.join(
+    #             internal_files_dir,
+    #             f".TempBuildTheme{threadNumber}",
+    #             "image",
+    #             "wall",
+    #             "muxhistory.png",
+    #         ),
+    #         format="PNG",
+    #     )
+    #     progress_bar["value"] += 1
+    # else:
+    visualbuttonoverlay_muxhistory = generateMuOSBackgroundOverlay(
+        [
+            ["MENU", "INFO"],
+            ["Y", "FAVOURITE"],
+            ["X", "REMOVE"],
+            ["B", "BACK"],
+            ["A", "OPEN"],
+        ],
+        selected_font_path,
+        config.footerBubbleHexVar,
+        render_factor,
+        config,
+        lhsButtons=[["POWER", "SLEEP"]],
+    ).resize(
+        (int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)),
+        Image.LANCZOS,
+    )
+    altered_background = Image.alpha_composite(
+        background, visualbuttonoverlay_muxhistory
+    )
+    altered_background.save(
+        temp_image_dir / "wall" / "muxhistory.png",
+        format="PNG",
+    )
+    progress_bar["value"] += 1
 
     visualbuttonoverlay_muxtimezone = generateMuOSBackgroundOverlay(
         [["A", "SELECT"]],
@@ -6519,13 +5716,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         background, visualbuttonoverlay_muxtimezone
     )
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxtimezone.png",
-        ),
+        temp_image_dir / "wall" / "muxtimezone.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -6545,13 +5736,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         background, visualbuttonoverlay_muxpicker
     )
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxpicker.png",
-        ),
+        temp_image_dir / "wall" / "muxpicker.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -6571,13 +5756,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         background, visualbuttonoverlay_muxlanguage
     )
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxlanguage.png",
-        ),
+        temp_image_dir / "wall" / "muxlanguage.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -6597,13 +5776,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         background, visualbuttonoverlay_muxarchive
     )
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxarchive.png",
-        ),
+        temp_image_dir / "wall" / "muxarchive.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -6623,13 +5796,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         background, visualbuttonoverlay_muxnetprofile
     )
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxnetprofile.png",
-        ),
+        temp_image_dir / "wall" / "muxnetprofile.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -6649,13 +5816,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         background, visualbuttonoverlay_muxnetscan
     )
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxnetscan.png",
-        ),
+        temp_image_dir / "wall" / "muxnetscan.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -6673,13 +5834,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     )
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxgov)
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxgov.png",
-        ),
+        temp_image_dir / "wall" / "muxgov.png",
         format="PNG",
     )
     progress_bar["value"] += 1
@@ -6699,50 +5854,44 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         background, visualbuttonoverlay_muxsearch
     )
     altered_background.save(
-        os.path.join(
-            internal_files_dir,
-            f".TempBuildTheme{threadNumber}",
-            "image",
-            "wall",
-            "muxsearch.png",
-        ),
+        temp_image_dir / "wall" / "muxsearch.png",
         format="PNG",
     )
     progress_bar["value"] += 1
 
-    if False:  ## Testing converting font in generator
-        try:
-            # Define the command
-            command = [
-                "lv_font_conv",
-                "--bpp",
-                "4",
-                "--size",
-                str(40),
-                "--font",
-                os.path.join(
-                    internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
-                ),
-                "-r",
-                "0x20-0x7F",
-                "--format",
-                "bin",
-                "--no-compress",
-                "--no-prefilter",
-                "-o",
-                os.path.join(
-                    internal_files_dir,
-                    f".TempBuildTheme{threadNumber}",
-                    "Assets",
-                    "font",
-                    "default.bin",
-                ),
-            ]
+    # if False:  ## Testing converting font in generator
+    #     try:
+    #         # Define the command
+    #         command = [
+    #             "lv_font_conv",
+    #             "--bpp",
+    #             "4",
+    #             "--size",
+    #             str(40),
+    #             "--font",
+    #             os.path.join(
+    #                 internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf"
+    #             ),
+    #             "-r",
+    #             "0x20-0x7F",
+    #             "--format",
+    #             "bin",
+    #             "--no-compress",
+    #             "--no-prefilter",
+    #             "-o",
+    #             os.path.join(
+    #                 internal_files_dir,
+    #                 f".TempBuildTheme{threadNumber}",
+    #                 "Assets",
+    #                 "font",
+    #                 "default.bin",
+    #             ),
+    #         ]
 
-            # Execute the command
-            result = subprocess.run(command, shell=True)
-        except Exception as e:
-            raise ValueError(f"Error converting font: {e}")
+    #         # Execute the command
+    #         result = subprocess.run(command, shell=True)
+    #     except Exception as e:
+    #         raise ValueError(f"Error converting font: {e}")
 
     itemsList = []
     if config.version_var[0:9] == "muOS 2410":
@@ -6786,12 +5935,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
                 deselected_font_hex,
                 bubble_hex,
                 render_factor,
-                os.path.join(
-                    internal_files_dir,
-                    f".TempBuildTheme{threadNumber}",
-                    "image",
-                    "static",
-                ),
+                temp_image_dir / "static",
                 config,
                 threadNumber=threadNumber,
             )
@@ -6807,12 +5951,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
                     bubble_hex,
                     icon_hex,
                     render_factor,
-                    os.path.join(
-                        internal_files_dir,
-                        f".TempBuildTheme{threadNumber}",
-                        "image",
-                        "static",
-                    ),
+                    temp_image_dir / "static",
                     variant="Horizontal",
                     config=config,
                     threadNumber=threadNumber,
@@ -6828,12 +5967,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
                     bubble_hex,
                     icon_hex,
                     render_factor,
-                    os.path.join(
-                        internal_files_dir,
-                        f".TempBuildTheme{threadNumber}",
-                        "image",
-                        "static",
-                    ),
+                    temp_image_dir / "static",
                     variant="Alt-Horizontal",
                     config=config,
                     threadNumber=threadNumber,
@@ -6852,12 +5986,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
                 deselected_font_hex,
                 bubble_hex,
                 render_factor,
-                os.path.join(
-                    internal_files_dir,
-                    f".TempBuildTheme{threadNumber}",
-                    "image",
-                    "static",
-                ),
+                temp_image_dir / "static",
                 config,
                 threadNumber=threadNumber,
             )
@@ -6919,35 +6048,23 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     ):
         preview_size = (340, 340)
     smallPreviewImage = previewImage.resize(preview_size, Image.LANCZOS)
-    smallPreviewImage.save(
-        os.path.join(
-            internal_files_dir, f".TempBuildTheme{threadNumber}", "preview.png"
-        )
-    )
+    smallPreviewImage.save(temp_build_dir / "preview.png")
     if config.developer_preview_var:
         developerPreviewImage = previewImage.resize(
             (int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)),
             Image.LANCZOS,
         )
         developerPreviewImage.save(
-            os.path.join(
-                internal_files_dir,
-                f"TempPreview{threadNumber}[{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}].png",
-            )
+            RESOURCES_DIR
+            / f"TempPreview{threadNumber}[{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}].png",
         )
 
 
 def select_alternate_menu_names():
-    if os.path.exists(global_config.alt_text_path):
-        menu_names_grid = MenuNamesGrid(root, menuNameMap, global_config.alt_text_path)
-    elif os.path.exists(os.path.join(script_dir, global_config.alt_text_path)):
-        menu_names_grid = MenuNamesGrid(
-            root, menuNameMap, os.path.join(script_dir, global_config.alt_text_path)
-        )
-    else:
-        menu_names_grid = MenuNamesGrid(
-            root, menuNameMap, os.path.join(script_dir, "AlternateMenuNames.json")
-        )
+    ALT_TEXT_PATH = BASE_DIR / global_config.alt_text_filename
+
+    menu_names_grid = MenuNamesGrid(root, menuNameMap, ALT_TEXT_PATH)
+
     root.wait_window(menu_names_grid)
     on_change()
 
@@ -6974,12 +6091,13 @@ class GridHelper:
 
 
 class MenuNamesGrid(tk.Toplevel):
-    def __init__(self, parent, data, AlternateMenuNamesPath):
+    def __init__(self, parent, data, alt_text_path):
         super().__init__(parent)
         self.title("Alternate Menu Names Editor")
 
         self.data = data
         self.entries = {}
+        self.alt_text_path = alt_text_path
         self.create_widgets()
         self.centre_on_parent(parent)
         self.grab_set()
@@ -7035,22 +6153,9 @@ class MenuNamesGrid(tk.Toplevel):
     def save(self):
         for key, entry in self.entries.items():
             self.data[key] = entry.get()
-        if os.path.exists(alt_text_path.get()):
-            with open(
-                alt_text_path.get(), "w", newline="\n", encoding="utf-8"
-            ) as json_file:
-                json.dump(menuNameMap, json_file, indent=2)
-        elif os.path.exists(os.path.join(script_dir, alt_text_path.get())):
-            with open(
-                os.path.join(script_dir, alt_text_path.get()),
-                "w",
-                newline="\n",
-                encoding="utf-8",
-            ) as json_file:
-                json.dump(menuNameMap, json_file, indent=2)
-        else:
-            with open(
-                os.path.join(script_dir, "AlternateMenuNames.json"),
+
+        if self.alt_text_path.exists():
+            with self.alt_text_path.open(
                 "w",
                 newline="\n",
                 encoding="utf-8",
@@ -7136,9 +6241,7 @@ def start_theme_task():
 def start_bulk_theme_task():
     save_settings(global_config)
     # Create a new Toplevel window for the loading bar
-    themes = global_config.load_premade_themes(
-        os.path.join(script_dir, "PremadeThemes.json")
-    )
+    themes = global_config.load_premade_themes()
 
     threading.Thread(target=generate_themes, args=(themes,)).start()
 
@@ -7186,12 +6289,12 @@ application_directory_path = tk.StringVar()
 name_json_path = tk.StringVar()
 background_image_path = tk.StringVar()
 bootlogo_image_path = tk.StringVar()
-alt_font_path = tk.StringVar()
-alt_text_path = tk.StringVar()
+alt_font_filename = tk.StringVar()
+alt_text_filename = tk.StringVar()
 box_art_directory_path = tk.StringVar()
 catalogue_directory_path = tk.StringVar()
 theme_directory_path = tk.StringVar()
-am_theme_directory_path = tk.StringVar()
+# am_theme_directory_path = tk.StringVar()
 version_var = tk.StringVar()
 device_type_var = tk.StringVar()
 global_alignment_var = tk.StringVar()
@@ -7215,7 +6318,7 @@ show_glyphs_var = tk.IntVar()
 show_clock_bubbles_var = tk.IntVar()
 show_glyphs_bubbles_var = tk.IntVar()
 join_header_bubbles_var = tk.IntVar()
-enable_game_switcher_var = tk.IntVar()
+# enable_game_switcher_var = tk.IntVar()
 enable_grid_view_explore_var = tk.IntVar()
 alternate_menu_names_var = tk.IntVar()
 remove_right_menu_guides_var = tk.IntVar()
@@ -7381,18 +6484,18 @@ muos_button_swap_menu = tk.OptionMenu(
 )
 grid_helper.add(muos_button_swap_menu, colspan=3, sticky="w", next_row=True)
 
-grid_helper.add(
-    tk.Checkbutton(
-        scrollable_frame, text="Use Game Switcher*", variable=enable_game_switcher_var
-    ),
-    sticky="w",
-    next_row=True,
-)
-grid_helper.add(
-    tk.Label(scrollable_frame, text="*Not recommended Very Experimental", fg="#f00"),
-    sticky="w",
-    next_row=True,
-)
+# grid_helper.add(
+#     tk.Checkbutton(
+#         scrollable_frame, text="Use Game Switcher*", variable=enable_game_switcher_var
+#     ),
+#     sticky="w",
+#     next_row=True,
+# )
+# grid_helper.add(
+#     tk.Label(scrollable_frame, text="*Not recommended Very Experimental", fg="#f00"),
+#     sticky="w",
+#     next_row=True,
+# )
 
 
 grid_helper.add(
@@ -7563,6 +6666,7 @@ grid_helper.add(
     next_row=True,
 )
 
+
 # Option for Icon Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Icon Hex Colour: #"), sticky="w")
 icon_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=iconHexVar)
@@ -7653,7 +6757,7 @@ grid_helper.add(
     ),
     sticky="w",
 )
-grid_helper.add(tk.Entry(scrollable_frame, textvariable=alt_font_path, width=50))
+grid_helper.add(tk.Entry(scrollable_frame, textvariable=alt_font_filename, width=50))
 grid_helper.add(
     tk.Button(scrollable_frame, text="Browse...", command=select_alt_font_path),
     next_row=True,
@@ -8189,13 +7293,9 @@ def on_change(*args):
     menuNameMap = getAlternateMenuNameDict()
     try:
         preview_overlay_image = Image.open(
-            os.path.join(
-                internal_files_dir,
-                "Assets",
-                "Overlays",
-                f"{global_config.deviceScreenWidthVar}x{global_config.deviceScreenHeightVar}",
-                f"{global_config.selected_overlay_var}.png",
-            )
+            OVERLAY_DIR
+            / f"{global_config.deviceScreenWidthVar}x{global_config.deviceScreenHeightVar}"
+            / f"{global_config.selected_overlay_var}.png",
         ).convert("RGBA")
     except:
         pass
@@ -8367,44 +7467,44 @@ def on_change(*args):
             forPreview=True,
         ).resize(preview_size, Image.LANCZOS)
 
-        gameSwitcherOverlay = generateGameSwitcherOverlay(
-            global_config,
-            previewRenderFactor,
-            gameNameForPreview="Goodboy Galaxy",
-            generatingForPreview=True,
-        ).resize(preview_size, Image.LANCZOS)
-        if global_config.enable_game_switcher_var:
-            image3 = gameSwitcherOverlay
-        else:
-            if global_config.main_menu_style_var == "Horizontal":
-                image3 = generatePilImageHorizontal(
-                    fakeprogressbar,
-                    4,
-                    global_config.bgHexVar,
-                    global_config.selectedFontHexVar,
-                    global_config.deselectedFontHexVar,
-                    global_config.bubbleHexVar,
-                    global_config.iconHexVar,
-                    previewRenderFactor,
-                    global_config,
-                    transparent=False,
-                    forPreview=True,
-                ).resize(preview_size, Image.LANCZOS)
+        # gameSwitcherOverlay = generateGameSwitcherOverlay(
+        #     global_config,
+        #     previewRenderFactor,
+        #     gameNameForPreview="Goodboy Galaxy",
+        #     generatingForPreview=True,
+        # ).resize(preview_size, Image.LANCZOS)
+        # if global_config.enable_game_switcher_var:
+        #     image3 = gameSwitcherOverlay
+        # else:
+        if global_config.main_menu_style_var == "Horizontal":
+            image3 = generatePilImageHorizontal(
+                fakeprogressbar,
+                4,
+                global_config.bgHexVar,
+                global_config.selectedFontHexVar,
+                global_config.deselectedFontHexVar,
+                global_config.bubbleHexVar,
+                global_config.iconHexVar,
+                previewRenderFactor,
+                global_config,
+                transparent=False,
+                forPreview=True,
+            ).resize(preview_size, Image.LANCZOS)
 
-            elif global_config.main_menu_style_var == "Alt-Horizontal":
-                image3 = generatePilImageAltHorizontal(
-                    fakeprogressbar,
-                    4,
-                    global_config.bgHexVar,
-                    global_config.selectedFontHexVar,
-                    global_config.deselectedFontHexVar,
-                    global_config.bubbleHexVar,
-                    global_config.iconHexVar,
-                    previewRenderFactor,
-                    global_config,
-                    transparent=False,
-                    forPreview=True,
-                ).resize(preview_size, Image.LANCZOS)
+        elif global_config.main_menu_style_var == "Alt-Horizontal":
+            image3 = generatePilImageAltHorizontal(
+                fakeprogressbar,
+                4,
+                global_config.bgHexVar,
+                global_config.selectedFontHexVar,
+                global_config.deselectedFontHexVar,
+                global_config.bubbleHexVar,
+                global_config.iconHexVar,
+                previewRenderFactor,
+                global_config,
+                transparent=False,
+                forPreview=True,
+            ).resize(preview_size, Image.LANCZOS)
 
         if (
             global_config.include_overlay_var
@@ -8504,7 +7604,7 @@ def save_settings(config: Config):
     config.show_glyphs_bubbles_var = show_glyphs_bubbles_var.get()
     config.show_clock_bubbles_var = show_clock_bubbles_var.get()
     config.join_header_bubbles_var = join_header_bubbles_var.get()
-    config.enable_game_switcher_var = enable_game_switcher_var.get()
+    # config.enable_game_switcher_var = enable_game_switcher_var.get()
     config.enable_grid_view_explore_var = enable_grid_view_explore_var.get()
     config.alternate_menu_names_var = alternate_menu_names_var.get()
     config.remove_right_menu_guides_var = remove_right_menu_guides_var.get()
@@ -8535,14 +7635,14 @@ def save_settings(config: Config):
     config.selected_overlay_var = selected_overlay_var.get()
     config.physical_controler_layout_var = physical_controler_layout_var.get()
     config.muos_button_swap_var = muos_button_swap_var.get()
-    config.am_theme_directory_path = am_theme_directory_path.get()
-    config.theme_directory_path = theme_directory_path.get()
+    # config.am_theme_directory_path = am_theme_directory_path.get()
+    config.theme_directory_path = Path(theme_directory_path.get())
     config.catalogue_directory_path = catalogue_directory_path.get()
     config.name_json_path = name_json_path.get()
     config.background_image_path = background_image_path.get()
     config.bootlogo_image_path = bootlogo_image_path.get()
-    config.alt_font_path = alt_font_path.get()
-    config.alt_text_path = alt_text_path.get()
+    config.alt_font_filename = alt_font_filename.get()
+    config.alt_text_filename = alt_text_filename.get()
     config.use_alt_font_var = use_alt_font_var.get()
     config.use_custom_background_var = use_custom_background_var.get()
     config.use_custom_bootlogo_var = use_custom_bootlogo_var.get()
@@ -8620,7 +7720,7 @@ def load_settings(config: Config):
     show_glyphs_bubbles_var.set(config.show_glyphs_bubbles_var)
     show_clock_bubbles_var.set(config.show_clock_bubbles_var)
     join_header_bubbles_var.set(config.join_header_bubbles_var)
-    enable_game_switcher_var.set(config.enable_game_switcher_var)
+    # enable_game_switcher_var.set(config.enable_game_switcher_var)
     enable_grid_view_explore_var.set(config.enable_grid_view_explore_var)
     alternate_menu_names_var.set(config.alternate_menu_names_var)
     remove_right_menu_guides_var.set(config.remove_right_menu_guides_var)
@@ -8647,14 +7747,14 @@ def load_settings(config: Config):
     clock_alignment_var.set(config.clock_alignment_var)
     header_glyph_alignment_var.set(config.header_glyph_alignment_var)
     page_title_alignment_var.set(config.page_title_alignment_var)
-    am_theme_directory_path.set(config.am_theme_directory_path)
+    # am_theme_directory_path.set(config.am_theme_directory_path)
     theme_directory_path.set(config.theme_directory_path)
     catalogue_directory_path.set(config.catalogue_directory_path)
     name_json_path.set(config.name_json_path)
     background_image_path.set(config.background_image_path)
     bootlogo_image_path.set(config.bootlogo_image_path)
-    alt_font_path.set(config.alt_font_path)
-    alt_text_path.set(config.alt_text_path)
+    alt_font_filename.set(config.alt_font_filename)
+    alt_text_filename.set(config.alt_text_filename)
     use_alt_font_var.set(config.use_alt_font_var)
     use_custom_background_var.set(config.use_custom_background_var)
     use_custom_bootlogo_var.set(config.use_custom_bootlogo_var)
@@ -8724,7 +7824,7 @@ show_glyphs_var.trace_add("write", lambda *args: save_settings(global_config))
 show_clock_bubbles_var.trace_add("write", lambda *args: save_settings(global_config))
 show_glyphs_bubbles_var.trace_add("write", lambda *args: save_settings(global_config))
 join_header_bubbles_var.trace_add("write", lambda *args: save_settings(global_config))
-enable_game_switcher_var.trace_add("write", lambda *args: save_settings(global_config))
+# enable_game_switcher_var.trace_add("write", lambda *args: save_settings(global_config))
 enable_grid_view_explore_var.trace_add(
     "write", lambda *args: save_settings(global_config)
 )
@@ -8770,7 +7870,7 @@ header_glyph_alignment_var.trace_add(
     "write", lambda *args: save_settings(global_config)
 )
 page_title_alignment_var.trace_add("write", lambda *args: save_settings(global_config))
-am_theme_directory_path.trace_add("write", lambda *args: save_settings(global_config))
+# am_theme_directory_path.trace_add("write", lambda *args: save_settings(global_config))
 theme_directory_path.trace_add("write", lambda *args: save_settings(global_config))
 catalogue_directory_path.trace_add("write", lambda *args: save_settings(global_config))
 name_json_path.trace_add("write", lambda *args: save_settings(global_config))
@@ -8783,8 +7883,8 @@ developer_preview_var.trace_add("write", lambda *args: save_settings(global_conf
 use_alt_font_var.trace_add("write", lambda *args: save_settings(global_config))
 use_custom_background_var.trace_add("write", lambda *args: save_settings(global_config))
 use_custom_bootlogo_var.trace_add("write", lambda *args: save_settings(global_config))
-alt_font_path.trace_add("write", lambda *args: save_settings(global_config))
-alt_text_path.trace_add("write", lambda *args: save_settings(global_config))
+alt_font_filename.trace_add("write", lambda *args: save_settings(global_config))
+alt_text_filename.trace_add("write", lambda *args: save_settings(global_config))
 
 resize_event_id = None
 
@@ -8813,4 +7913,3 @@ save_settings(global_config)
 
 # Run the main loop
 root.mainloop()
-

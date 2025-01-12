@@ -13,7 +13,7 @@ def find_base_dirs() -> tuple[Path, Path]:
         RESOURCES_DIR = Path(mei_pass)  # type: ignore[attr-defined]
     else:
         # the application is running in a normal Python environment
-        BASE_DIR = Path(__file__).resolve().parent
+        BASE_DIR = Path()
         RESOURCES_DIR = BASE_DIR
 
     return BASE_DIR, RESOURCES_DIR

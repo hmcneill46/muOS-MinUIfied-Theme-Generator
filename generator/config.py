@@ -1,11 +1,16 @@
 import json
 from pathlib import Path
 
-from ..generator import defaults
-from .constants import CONFIG_PATH, PREMADE_THEMES_PATH
+from generator import defaults
+from generator.constants import CONFIG_PATH, PREMADE_THEMES_PATH
 
 
 class Config:  # TODO delete unneeded variables
+    PATH_KEYS = (
+        "config_path",
+        "theme_directory_path",
+    )
+
     def __init__(self, config_path: Path = CONFIG_PATH):
         self.config_path = config_path
         self.deviceScreenHeightVar = 480
@@ -40,6 +45,7 @@ class Config:  # TODO delete unneeded variables
         self.deselectedFontHexVar = "ffffff"
         self.deselected_font_hex_entry = "ffffff"
         self.bubbleHexVar = "ffffff"
+        self.footerBubbleHexVar = "ffffff"
         self.bubble_hex_entry = "ffffff"
         self.iconHexVar = "ffffff"
         self.batteryChargingHexVar = "2eb774"
@@ -49,7 +55,7 @@ class Config:  # TODO delete unneeded variables
         self.show_clock_bubbles_var = False
         self.show_glyphs_bubbles_var = False
         self.join_header_bubbles_var = False
-        self.enable_game_switcher_var = False
+        # self.enable_game_switcher_var = False
         self.enable_grid_view_explore_var = False
         self.alternate_menu_names_var = False
         self.remove_right_menu_guides_var = False
@@ -79,8 +85,8 @@ class Config:  # TODO delete unneeded variables
         self.clock_alignment_var = "Left"
         self.header_glyph_alignment_var = "Right"
         self.page_title_alignment_var = "Centre"
-        self.am_theme_directory_path = ""
-        self.theme_directory_path = ""
+        # self.am_theme_directory_path = ""
+        self.theme_directory_path = defaults.DEFAULT_THEME_PATH
         self.catalogue_directory_path = ""
         self.name_json_path = ""
         self.background_image_path = ""
@@ -101,17 +107,34 @@ class Config:  # TODO delete unneeded variables
         self.show_charging_battery_var = False
         self.load_config()
 
+    @classmethod
+    def _process_string_paths(cls, obj):
+        return {k: Path(v) if k in cls.PATH_KEYS else v for k, v in obj.items()}
+
     def load_config(self):
+        if isinstance(self.config_path, str):
+            self.config_path = Path(self.config_path)
+
         if self.config_path.exists():
             with self.config_path.open("r") as file:
-                config_data = json.load(file)
+                config_data = json.load(file, object_hook=Config._process_string_paths)
                 self.__dict__.update(config_data)
         else:
             self.save_config()
 
     def save_config(self):
+        if isinstance(self.config_path, str):
+            self.config_path = Path(self.config_path)
+
         with self.config_path.open("w") as file:
-            json.dump(self.__dict__, file, indent=4)
+            json.dump(
+                self.__dict__,
+                file,
+                indent=4,
+                default=lambda obj: str(obj.resolve())
+                if isinstance(obj, Path)
+                else obj,
+            )
 
     def load_premade_themes(self, themes_path=PREMADE_THEMES_PATH):
         themes = []
