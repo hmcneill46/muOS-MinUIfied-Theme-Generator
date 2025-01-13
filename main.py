@@ -73,7 +73,7 @@ contentPaddingTop = 44
 textMF = 0.7
 
 
-def change_logo_color(input, hex_color):
+def change_logo_color(input: Path | Image.Image, hex_color):
     # Load the image
     if isinstance(input, Image.Image):
         img = input
@@ -104,7 +104,7 @@ def generateIndividualButtonGlyph(
     render_factor,
     button_height,
     physical_controller_layout,
-):
+) -> Image.Image:
     in_smaller_bubble_font_size = button_height * (20.1 / 40) * render_factor
     inSmallerBubbleFont = ImageFont.truetype(
         selected_font_path, in_smaller_bubble_font_size
