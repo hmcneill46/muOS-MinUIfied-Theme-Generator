@@ -11,7 +11,9 @@ This script helps you create and customize themes for your muOS system, creating
 
 
 ## If you just want a Pre-made Theme and don't want to customise it with the script:
-[Follow this link](https://hmcneill46.github.io/muOS-MinUIfied-Theme-Generator/Theme-Gallery/)
+[Follow this link for a page of themes **Without** grid mode](https://hmcneill46.github.io/muOS-MinUIfied-Theme-Generator/Theme-Gallery/)
+
+[Follow this link for a page of themes **With** grid mode](https://hmcneill46.github.io/muOS-MinUIfied-Theme-Generator/Grid-Theme-Gallery/)
 
 ## Prerequisites for running from Downloaded Binary [Windows]:
  - None
@@ -89,8 +91,11 @@ Please go into your MUOS/theme/active folder and remove everything in there, you
 *where the .spec file is the one in the github page, modify the .spec file to work on macOS and Linux if you are able to/want to, and put it on a PR.
 
 ## Credits and thanks
- - Thanks to [@JCR64](https://github.com/JCR64) for the inspiration for the theme and horizontal logo
- - Credits and thanks to [@GrumpyGopher](https://github.com/GrumpyGopher) for the work he's been putting into making the project better
+ - Thanks to the Team of people working on [MustardOS](https://github.com/MustardOS), which this theme is designed for.
+ - Thanks to [Shaun Inman](https://github.com/shauninman) for creating [MinUI](https://github.com/shauninman/MinUI), which this muOS theme is trying to emulate the look of
+ - Thanks to [@JCR64](https://github.com/JCR64) for creating [GarlicOS-MinUIfied](https://github.com/JCR64/GarlicOS-MinUIfied) the inspiration for the theme and horizontal logo
+ - Thanks to [@anthonycaccese](https://github.com/anthonycaccese) for creating [art-book-next-es-de](https://github.com/anthonycaccese/art-book-next-es-de) Which is where the grid mode icons are sourced from.
+ - Credits and thanks to [@GrumpyGopher](https://github.com/GrumpyGopher) for the work he's put into making the project better
  - Thanks to [@damagedspline](https://github.com/damagedspline) for the Hebrew translation file
 
 **muOS Discord Server:** https://discord.gg/USS5ybVtDz

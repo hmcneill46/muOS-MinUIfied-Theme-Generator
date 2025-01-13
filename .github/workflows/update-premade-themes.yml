@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 */3 * * *'
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 permissions:
@@ -18,43 +18,47 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y jq curl
+
       - name: Get release assets from GitHub API
         id: get_themes
         run: |
-          TAG="themes-muos-v2410.1"
+          TAG="themes-muos-v2410.2"
           response=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/${TAG}")
           echo "${response}" | jq -r '.assets[] | "\(.name) \(.browser_download_url) \(.download_count)"' > theme_assets.txt
 
       - name: Generate Theme-Gallery/index.md
         run: |
-          # Initialize a counter to track how many themes are in a row
+          mkdir -p Theme-Gallery
           theme_count=0
+          
+          # Header for the index file
+          cat <<EOT > Theme-Gallery/index.md
+          # Pre-made MinUIfied Theme Gallery
+          ## Theme Installation Instructions for muOS 2410.3 AW BANANA
+          These themes were built using my custom theme generator, specifically for **muOS 2410.3 AW BANANA**
 
-          # Add header for the table (optional)
-          echo "# Pre-made MinUIfied Theme Gallery" > Theme-Gallery/index.md
-          echo "## Theme Installation Instructions for muOS 2410.1 BANANA" >> Theme-Gallery/index.md
-          echo "These themes were built using my custom theme generator, specifically for **muOS 2410.1 BANANA**" >> Theme-Gallery/index.md
-          echo "" >> Theme-Gallery/index.md
-          echo "### Installation Methods:" >> Theme-Gallery/index.md
-          echo "" >> Theme-Gallery/index.md
-          echo "1. **Drag and Drop**  " >> Theme-Gallery/index.md
-          echo "   - Download the themes you want and place the `.zip` files directly into the `MUOS/theme` folder on your whichever SD Card is used for your themes on your muOS device" >> Theme-Gallery/index.md
-          echo "   - If removed, Re-insert your SD Card into your muOS device" >> Theme-Gallery/index.md
-          echo "   - Open the **Theme Picker** from configuration and select your new theme" >> Theme-Gallery/index.md
-          echo "2. **Via Archive Manager**  " >> Theme-Gallery/index.md
-          echo "   - Download the themes you want and place the `.zip` files directly into the `ARCHIVE` folder on your whichever SD Card is used for your themes on your muOS device" >> Theme-Gallery/index.md
-          echo "   - If removed, Re-insert your SD Card into your muOS device" >> Theme-Gallery/index.md
-          echo "   - Open the **Archive Manager** from the Applications menu, on your muOS device and install the theme" >> Theme-Gallery/index.md
-          echo "   - Once installed, select it from the **Theme Picker**" >> Theme-Gallery/index.md
-          echo "" >> Theme-Gallery/index.md
-          echo "| Alt-Horizontal | Horizontal | Vertical |" >> Theme-Gallery/index.md
-          echo "| :---: | :---: | :---: |" >> Theme-Gallery/index.md
+          ### Installation Methods:
+          1. **Drag and Drop**
+             - Download the themes you want and place the `.zip` files directly into the `MUOS/theme` folder on your SD Card.
+             - Re-insert your SD Card into your muOS device.
+             - Open the **Theme Picker** from configuration and select your new theme.
+          2. **Via Archive Manager**
+             - Download the themes you want and place the `.zip` files into the `ARCHIVE` folder on your SD Card.
+             - Re-insert your SD Card into your muOS device.
+             - Open the **Archive Manager** from the Applications menu and install the theme.
+             - Once installed, select it from the **Theme Picker**.
 
-          # Start processing each asset from the release
+          | Alt-Horizontal | Horizontal | Vertical |
+          | :---: | :---: | :---: |
+          EOT
+
+          # Process assets
           while IFS= read -r line; do
-            filename=$(echo $line | awk '{print $1}')
-            url=$(echo $line | awk '{print $2}')
-            downloads=$(echo $line | awk '{print $3}')
+            filename=$(echo "$line" | awk '{print $1}')
+            url=$(echo "$line" | awk '{print $2}')
+            downloads=$(echo "$line" | awk '{print $3}')
             
             # Process preview image (.png)
             if [[ "$filename" == *".png" ]]; then
@@ -64,48 +68,38 @@ jobs:
 
             # Process theme zip file (.zip)
             if [[ "$filename" == *".zip" ]]; then
-            theme_zip="$url"
-            
-            # Check if this is the first item in the row
-            if [[ $theme_count -eq 0 ]]; then
-              # Start a new row
-              echo -n "| " >> Theme-Gallery/index.md
+              theme_zip="$url"
+
+              # Start a new row if necessary
+              if [[ $theme_count -eq 0 ]]; then
+                echo -n "| " >> Theme-Gallery/index.md
+              fi
+
+              # Add theme info
+              download_text="${downloads} download(s)"
+              echo -n "![${theme_name}](${preview_url}) <br> [Download](${theme_zip}) | " >> Theme-Gallery/index.md
+
+              # Increment theme count
+              theme_count=$((theme_count + 1))
+
+              # Close row after 3 themes
+              if [[ $theme_count -eq 3 ]]; then
+                echo "" >> Theme-Gallery/index.md
+                theme_count=0
+              fi
             fi
-
-            # Set the appropriate text for "download" vs "downloads"
-            if [[ $downloads -eq 1 ]]; then
-              download_text="1 download"
-            else
-              download_text="${downloads} downloads"
-            fi
-
-            # Add theme preview, name, and download count in the current cell
-            echo -n "![${theme_name}](${preview_url}) <br> [Download](${theme_zip}) | " >> Theme-Gallery/index.md
-
-            # Increment the theme count and check if we need to start a new row
-            theme_count=$((theme_count + 1))
-
-            if [[ $theme_count -eq 3 ]]; then
-              # If there are three themes in the row, close the row and reset the counter
-              echo "" >> Theme-Gallery/index.md
-              theme_count=0
-            fi
-          fi
-
           done < theme_assets.txt
 
-          # If the last row has fewer than 3 themes, close the row
+          # Close the last row if incomplete
           if [[ $theme_count -ne 0 ]]; then
             echo "" >> Theme-Gallery/index.md
           fi
-
 
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add Theme-Gallery/index.md
-          # Check if there are any changes to commit
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else

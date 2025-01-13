@@ -10,6 +10,8 @@
             "deselected_font_hex_entry": "efd6ac",
             "bubbleHexVar": "efd6ac",
             "bubble_hex_entry": "efd6ac",
+            "footerBubbleHexVar": "efd6ac",
+            "footer_bubble_hex_entry": "efd6ac",
             "iconHexVar": "efd6ac",
             "icon_hex_entry": "efd6ac"
         },
@@ -23,6 +25,8 @@
             "deselected_font_hex_entry": "ffffff",
             "bubbleHexVar": "ffffff",
             "bubble_hex_entry": "ffffff",
+            "footerBubbleHexVar": "ffffff",
+            "footer_bubble_hex_entry": "ffffff",
             "iconHexVar": "ffffff",
             "icon_hex_entry": "ffffff"
         },
@@ -36,6 +40,8 @@
             "deselected_font_hex_entry": "372b2b",
             "bubbleHexVar": "372b2b",
             "bubble_hex_entry": "372b2b",
+            "footerBubbleHexVar": "372b2b",
+            "footer_bubble_hex_entry": "372b2b",
             "iconHexVar": "372b2b",
             "icon_hex_entry": "372b2b"
         },
@@ -49,6 +55,8 @@
             "deselected_font_hex_entry": "ffffff",
             "bubbleHexVar": "ffffff",
             "bubble_hex_entry": "ffffff",
+            "footerBubbleHexVar": "ffffff",
+            "footer_bubble_hex_entry": "ffffff",
             "iconHexVar": "ffffff",
             "icon_hex_entry": "ffffff"
         },
@@ -62,6 +70,8 @@
             "deselected_font_hex_entry": "96b60f",
             "bubbleHexVar": "96b60f",
             "bubble_hex_entry": "96b60f",
+            "footerBubbleHexVar": "96b60f",
+            "footer_bubble_hex_entry": "96b60f",
             "iconHexVar": "96b60f",
             "icon_hex_entry": "96b60f"
         },
@@ -75,6 +85,8 @@
             "deselected_font_hex_entry": "2e5f2e",
             "bubbleHexVar": "2e5f2e",
             "bubble_hex_entry": "2e5f2e",
+            "footerBubbleHexVar": "2e5f2e",
+            "footer_bubble_hex_entry": "2e5f2e",
             "iconHexVar": "2e5f2e",
             "icon_hex_entry": "2e5f2e"
         },
@@ -88,8 +100,40 @@
             "deselected_font_hex_entry": "993a40",
             "bubbleHexVar": "993a40",
             "bubble_hex_entry": "993a40",
+            "footerBubbleHexVar": "993a40",
+            "footer_bubble_hex_entry": "993a40",
             "iconHexVar": "993a40",
             "icon_hex_entry": "993a40"
+        },
+        {
+            "theme_name_entry": "MinUIfied - GBA Purple Dark",
+            "bgHexVar": "5f5a93",
+            "background_hex_entry": "5f5a93",
+            "selectedFontHexVar": "5f5a93",
+            "selected_font_hex_entry": "5f5a93",
+            "deselectedFontHexVar": "dbdadf",
+            "deselected_font_hex_entry": "dbdadf",
+            "bubbleHexVar": "dbdadf",
+            "bubble_hex_entry": "dbdadf",
+            "footerBubbleHexVar": "dbdadf",
+            "footer_bubble_hex_entry": "dbdadf",
+            "iconHexVar": "dbdadf",
+            "icon_hex_entry": "dbdadf"
+        },
+        {
+            "theme_name_entry": "MinUIfied - GBA Purple Light",
+            "bgHexVar": "cdccd1",
+            "background_hex_entry": "cdccd1",
+            "selectedFontHexVar": "cdccd1",
+            "selected_font_hex_entry": "cdccd1",
+            "deselectedFontHexVar": "5e5992",
+            "deselected_font_hex_entry": "5e5992",
+            "bubbleHexVar": "5e5992",
+            "bubble_hex_entry": "5e5992",
+            "footerBubbleHexVar": "5e5992",
+            "footer_bubble_hex_entry": "5e5992",
+            "iconHexVar": "5e5992",
+            "icon_hex_entry": "5e5992"
         },
         {
             "theme_name_entry": "MinUIfied - Green",
@@ -101,6 +145,8 @@
             "deselected_font_hex_entry": "fefee3",
             "bubbleHexVar": "fefee3",
             "bubble_hex_entry": "fefee3",
+            "footerBubbleHexVar": "fefee3",
+            "footer_bubble_hex_entry": "fefee3",
             "iconHexVar": "fefee3",
             "icon_hex_entry": "fefee3"
         },
@@ -114,6 +160,8 @@
             "deselected_font_hex_entry": "ffffff",
             "bubbleHexVar": "ffffff",
             "bubble_hex_entry": "ffffff",
+            "footerBubbleHexVar": "ffffff",
+            "footer_bubble_hex_entry": "ffffff",
             "iconHexVar": "ffffff",
             "icon_hex_entry": "ffffff"
         },
@@ -127,6 +175,8 @@
             "deselected_font_hex_entry": "ffffff",
             "bubbleHexVar": "ffffff",
             "bubble_hex_entry": "ffffff",
+            "footerBubbleHexVar": "ffffff",
+            "footer_bubble_hex_entry": "ffffff",
             "iconHexVar": "ffffff",
             "icon_hex_entry": "ffffff"
         },
@@ -140,6 +190,8 @@
             "deselected_font_hex_entry": "ffffff",
             "bubbleHexVar": "ffffff",
             "bubble_hex_entry": "ffffff",
+            "footerBubbleHexVar": "ffffff",
+            "footer_bubble_hex_entry": "ffffff",
             "iconHexVar": "ffffff",
             "icon_hex_entry": "ffffff"
         },
@@ -153,6 +205,8 @@
             "deselected_font_hex_entry": "ffffff",
             "bubbleHexVar": "ffffff",
             "bubble_hex_entry": "ffffff",
+            "footerBubbleHexVar": "ffffff",
+            "footer_bubble_hex_entry": "ffffff",
             "iconHexVar": "ffffff",
             "icon_hex_entry": "ffffff"
         },
@@ -166,6 +220,8 @@
             "deselected_font_hex_entry": "b5b6e4",
             "bubbleHexVar": "b5b6e4",
             "bubble_hex_entry": "b5b6e4",
+            "footerBubbleHexVar": "b5b6e4",
+            "footer_bubble_hex_entry": "b5b6e4",
             "iconHexVar": "b5b6e4",
             "icon_hex_entry": "b5b6e4"
         },
@@ -179,8 +235,25 @@
             "deselected_font_hex_entry": "ffffff",
             "bubbleHexVar": "ffffff",
             "bubble_hex_entry": "ffffff",
+            "footerBubbleHexVar": "ffffff",
+            "footer_bubble_hex_entry": "ffffff",
             "iconHexVar": "ffffff",
             "icon_hex_entry": "ffffff"
+        },
+        {
+            "theme_name_entry": "MinUIfied - White",
+            "bgHexVar": "ffffff",
+            "background_hex_entry": "ffffff",
+            "selectedFontHexVar": "ffffff",
+            "selected_font_hex_entry": "ffffff",
+            "deselectedFontHexVar": "000000",
+            "deselected_font_hex_entry": "000000",
+            "bubbleHexVar": "000000",
+            "bubble_hex_entry": "000000",
+            "footerBubbleHexVar": "000000",
+            "footer_bubble_hex_entry": "000000",
+            "iconHexVar": "000000",
+            "icon_hex_entry": "000000"
         },
         {
             "theme_name_entry": "MinUIfied - Yellow",
@@ -192,6 +265,8 @@
             "deselected_font_hex_entry": "ffffff",
             "bubbleHexVar": "ffffff",
             "bubble_hex_entry": "ffffff",
+            "footerBubbleHexVar": "ffffff",
+            "footer_bubble_hex_entry": "ffffff",
             "iconHexVar": "ffffff",
             "icon_hex_entry": "ffffff"
         }

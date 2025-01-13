@@ -8,8 +8,7 @@ import os
 import sys
 import math
 import tkinter as tk
-from tkinter import font, PanedWindow, Scrollbar
-from tkinter import filedialog, simpledialog, messagebox, ttk
+from tkinter import font, PanedWindow, Scrollbar,filedialog, simpledialog, messagebox, ttk, colorchooser
 import shutil
 import re
 import traceback
@@ -24,6 +23,9 @@ import numpy as np
 import copy
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+
+
+Image.MAX_IMAGE_PIXELS = None
 
 ## TODO look into centre align and left align
 ## TODO make header resizable
@@ -74,6 +76,7 @@ class Config: # TODO delete unneeded variables
         self.deselectedFontHexVar = "ffffff"
         self.deselected_font_hex_entry = "ffffff"
         self.bubbleHexVar = "ffffff"
+        self.footerBubbleHexVar = "ffffff"
         self.bubble_hex_entry = "ffffff"
         self.iconHexVar = "ffffff"
         self.batteryChargingHexVar = "2eb774"
@@ -99,11 +102,14 @@ class Config: # TODO delete unneeded variables
         self.override_folder_box_art_padding_var = False
         self.page_by_page_var = False
         self.transparent_text_var = False
-        self.version_var = "muOS 2410.1 Banana"
+        self.version_var = "muOS 2410.3 AW BANANA"
         self.device_type_var = "Other [640x480]"
         self.global_alignment_var = "Left"
         self.selected_overlay_var = "muOS Default CRT Overlay"
+        self.physical_controler_layout_var = "Nintendo"
+        self.muos_button_swap_var = "Retro"
         self.main_menu_style_var = "Horizontal"
+        self.horizontal_menu_behaviour_var = "Wrap to Row"
         self.battery_charging_style_var = "Default"
         self.battery_style_var = "Default"
         self.clock_format_var = "24 Hour"
@@ -167,9 +173,12 @@ contentPaddingTop = 44
 textMF = 0.7
 
 
-def change_logo_color(input_path, hex_color):
+def change_logo_color(input, hex_color):
     # Load the image
-    img = Image.open(input_path).convert("RGBA")
+    if isinstance(input, Image.Image):
+        img = input
+    else:
+        img = Image.open(input).convert("RGBA")
     
     # Convert hex_color to RGBA
     r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
@@ -185,7 +194,7 @@ def change_logo_color(input_path, hex_color):
     
     return result_image
 
-def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,render_factor, button_height:int):
+def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,render_factor, button_height, physical_controller_layout):
     in_smaller_bubble_font_size = button_height*(20.1/40)*render_factor
     inSmallerBubbleFont = ImageFont.truetype(selected_font_path, in_smaller_bubble_font_size)
 
@@ -202,12 +211,32 @@ def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,rende
 
     horizontal_small_padding = button_height*(10/40)
 
-    if len(buttonText) == 1:
-        image = Image.new("RGBA", (button_height*render_factor, button_height*render_factor), (255, 255, 255, 0))
+    rendered_bubble_height = int(button_height*render_factor)
+
+    if buttonText.upper() in ["A", "B", "X", "Y"] and physical_controller_layout in ["PlayStation", "Xbox", "Universal"]:
+        buttonSize = (rendered_bubble_height, rendered_bubble_height)
+        if physical_controller_layout == "PlayStation":
+            image = Image.open(os.path.join(internal_files_dir, "Assets", "Button Glyphs", "PlayStation",f"{buttonText.upper()}.png")).convert("RGBA").resize(buttonSize, Image.LANCZOS)
+        if physical_controller_layout == "Universal":
+            image = Image.open(os.path.join(internal_files_dir, "Assets", "Button Glyphs", "Universal",f"{buttonText.upper()}.png")).convert("RGBA").resize(buttonSize, Image.LANCZOS)
+        elif physical_controller_layout == "Xbox":
+            if buttonText.upper() == "A":
+                image = generateIndividualButtonGlyph("B", selected_font_path, colour_hex, render_factor, button_height, "Nintendo")
+            elif buttonText.upper() == "B":
+                image = generateIndividualButtonGlyph("A", selected_font_path, colour_hex, render_factor, button_height, "Nintendo")
+            elif buttonText.upper() == "X":
+                image = generateIndividualButtonGlyph("Y", selected_font_path, colour_hex, render_factor, button_height, "Nintendo")
+            elif buttonText.upper() == "Y":
+                image = generateIndividualButtonGlyph("X", selected_font_path, colour_hex, render_factor, button_height, "Nintendo")
+
+
+
+    elif len(buttonText) == 1:
+        image = Image.new("RGBA", (rendered_bubble_height, rendered_bubble_height), (255, 255, 255, 0))
         draw = ImageDraw.Draw(image)
 
-        circleCentreX = ((button_height*render_factor)/2)
-        draw.ellipse((0, 0,button_height*render_factor, button_height*render_factor),fill=f"#{colour_hex}")
+        circleCentreX = ((rendered_bubble_height)/2)
+        draw.ellipse((0, 0,rendered_bubble_height, rendered_bubble_height),fill=f"#{colour_hex}")
         singleLetterWidth = sl_text_bbox[2]-sl_text_bbox[0]
         smallerTextX = circleCentreX-(singleLetterWidth/2)
         draw.text(( smallerTextX,single_letter_text_y), buttonText, font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
@@ -218,17 +247,19 @@ def generateIndividualButtonGlyph(buttonText,selected_font_path,colour_hex,rende
         smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
         smallerBubbleWidth = int(horizontal_small_padding+smallerTextWidth/render_factor+horizontal_small_padding)
 
-        image = Image.new("RGBA", (smallerBubbleWidth*render_factor, button_height*render_factor), (255, 255, 255, 0))
+        rendered_smallerBubbleWidth = int(smallerBubbleWidth*render_factor)
+
+        image = Image.new("RGBA", (rendered_smallerBubbleWidth, rendered_bubble_height), (255, 255, 255, 0))
         draw = ImageDraw.Draw(image)
 
         draw.rounded_rectangle([(0,0), #bottom left point
-                        (smallerBubbleWidth*render_factor,button_height*render_factor)], # Top right point
+                        (rendered_smallerBubbleWidth,rendered_bubble_height)], # Top right point
                         radius=(math.ceil(button_height/2))*render_factor,
                         fill = hex_to_rgb(colour_hex,alpha=1)
                         )
         smallerTextX = horizontal_small_padding*render_factor
         draw.text((smallerTextX,in_smaller_bubble_text_y),buttonText,font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-    return(image.resize((int(image.size[0]/render_factor),int(image.size[1]/render_factor)), Image.LANCZOS))
+    return(image)
 
 def getTimeWithWidth(selected_font_path, timeFormat, find="max"):
     TestFont = ImageFont.truetype(selected_font_path, 100)
@@ -586,9 +617,25 @@ def getRealFooterHeight(config:Config) -> int:
     footerHeight = int(config.deviceScreenHeightVar)-(individualItemHeight*int(config.itemsPerScreenVar))-int(config.contentPaddingTopVar)
     return(footerHeight)
 
-def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_factor,config:Config,lhsButtons=[["POWER","SLEEP"]]):
+def generateMenuHelperGuides(retro_rhs_buttons,selected_font_path,colour_hex,render_factor,config:Config,lhsButtons=[["POWER","SLEEP"]]):
     image = Image.new("RGBA", (int(config.deviceScreenWidthVar)*render_factor, int(config.deviceScreenHeightVar)*render_factor), (255, 255, 255, 0))
     draw = ImageDraw.Draw(image)
+
+    real_rhs_buttons = []
+    
+    if config.muos_button_swap_var == "Modern":
+        for pair in retro_rhs_buttons:
+            if pair[0].upper() == "A":
+                real_rhs_buttons.append(["B",pair[1]])
+            elif pair[0].upper() == "B":
+                real_rhs_buttons.append(["A",pair[1]])
+            elif pair[0].upper() == "X":
+                real_rhs_buttons.append(["Y",pair[1]])
+            elif pair[0].upper() == "Y":
+                real_rhs_buttons.append(["X",pair[1]])
+    else:
+        real_rhs_buttons = retro_rhs_buttons
+
     if not( config.remove_left_menu_guides_var and config.remove_right_menu_guides_var):
         required_padding_between_sides=15 # This is the maximum space between the two sides of the menu helper guides
         lhsTotalWidth = 0
@@ -655,7 +702,7 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
                 combined_width += lhsTotalWidth
 
             if not remove_right_menu_guides_var:
-                rhsTotalWidth += getTotalBubbleWidth(rhsButtons,inSmallerBubbleFont,inBubbleFont,horizontal_padding,horizontal_large_padding,horizontal_small_padding,guide_small_bubble_height,render_factor)
+                rhsTotalWidth += getTotalBubbleWidth(real_rhs_buttons,inSmallerBubbleFont,inBubbleFont,horizontal_padding,horizontal_large_padding,horizontal_small_padding,guide_small_bubble_height,render_factor)
                 combined_width += rhsTotalWidth
             iterations +=1
 
@@ -669,28 +716,11 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
                                     )
             realLhsPointer+=horizontal_padding*render_factor
             for pair in lhsButtons:
-                if len(pair[0]) == 1:
-                    circleCentreX = realLhsPointer+((guide_small_bubble_height*render_factor)/2)
-                    draw.ellipse((circleCentreX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCentreX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
-                    smallerTextBbox = singleLetterFont.getbbox(pair[0])
-                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                    smallerTextX = circleCentreX-(smallerTextWidth/2)
-                    draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                    realLhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
+                button_image = generateIndividualButtonGlyph(pair[0],selected_font_path,colour_hex,render_factor, guide_small_bubble_height, config.physical_controler_layout_var)
+                button_image = change_logo_color(button_image, colour_hex)
+                image.paste(button_image,(int(realLhsPointer),int(bottom_guide_middle_y*render_factor-(button_image.size[1]/2))),button_image)
+                realLhsPointer+=(button_image.size[0])+(horizontal_small_padding)*render_factor
 
-                else:
-                    ## Make the smaller bubble
-                    smallerTextBbox = inSmallerBubbleFont.getbbox(pair[0])
-                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                    smallerBubbleWidth = horizontal_small_padding+smallerTextWidth/render_factor+horizontal_small_padding
-                    draw.rounded_rectangle([(realLhsPointer,(bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), #bottom left point
-                                    (realLhsPointer+(smallerBubbleWidth*render_factor),(bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)], # Top right point
-                                    radius=(guide_small_bubble_height/2)*render_factor,
-                                    fill = hex_to_rgb(colour_hex,alpha=1)
-                                    )
-                    smallerTextX = realLhsPointer + horizontal_small_padding*render_factor
-                    draw.text((smallerTextX,in_smaller_bubble_text_y),pair[0],font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                    realLhsPointer+=(smallerBubbleWidth+horizontal_small_padding)*render_factor
                 textBbox = inBubbleFont.getbbox(pair[1])
                 textWidth = textBbox[2]-textBbox[0]
                 draw.text((realLhsPointer,in_bubble_text_y),pair[1],font=inBubbleFont,fill=f"#{colour_hex}")
@@ -705,29 +735,14 @@ def generateMenuHelperGuides(rhsButtons,selected_font_path,colour_hex,render_fac
                                     fill = hex_to_rgb(colour_hex,alpha=0.133)
                                     )
             realRhsPointer+=horizontal_padding*render_factor
-            for pair in rhsButtons:
-                if len(pair[0]) == 1:
-                    circleCentreX = realRhsPointer+((guide_small_bubble_height*render_factor)/2)
-                    draw.ellipse((circleCentreX-((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y-(guide_small_bubble_height/2))*render_factor,circleCentreX+((guide_small_bubble_height*render_factor)/2), (bottom_guide_middle_y+(guide_small_bubble_height/2))*render_factor),fill=f"#{colour_hex}")
-                    smallerTextBbox = singleLetterFont.getbbox(pair[0])
-                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                    smallerTextX = circleCentreX-(smallerTextWidth/2)
-                    draw.text(( smallerTextX,single_letter_text_y), pair[0], font=singleLetterFont, fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                    realRhsPointer+=(guide_small_bubble_height+horizontal_small_padding)*render_factor
+            for pair in real_rhs_buttons:
+                
+                button_image = generateIndividualButtonGlyph(pair[0],selected_font_path,colour_hex,render_factor, guide_small_bubble_height, config.physical_controler_layout_var)
+                button_image = change_logo_color(button_image, colour_hex)
+                    
+                image.paste(button_image,(int(realRhsPointer),int(bottom_guide_middle_y*render_factor-(button_image.size[1]/2))),button_image)
+                realRhsPointer+=(button_image.size[0])+(horizontal_small_padding)*render_factor
 
-                else:
-                    ## Make the smaller bubble
-                    smallerTextBbox = inSmallerBubbleFont.getbbox(pair[0])
-                    smallerTextWidth = smallerTextBbox[2]-smallerTextBbox[0]
-                    smallerBubbleWidth = horizontal_small_padding+smallerTextWidth/render_factor+horizontal_small_padding
-                    draw.rounded_rectangle([(realRhsPointer,(bottom_guide_middle_y-guide_small_bubble_height/2)*render_factor), #bottom left point
-                                    (realRhsPointer+(smallerBubbleWidth*render_factor),(bottom_guide_middle_y+guide_small_bubble_height/2)*render_factor)], # Top right point
-                                    radius=(guide_small_bubble_height/2)*render_factor,
-                                    fill = hex_to_rgb(colour_hex,alpha=1)
-                                    )
-                    smallerTextX = realRhsPointer + horizontal_small_padding*render_factor
-                    draw.text((smallerTextX,in_smaller_bubble_text_y),pair[0],font=inSmallerBubbleFont,fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255*0.593)))
-                    realRhsPointer+=(smallerBubbleWidth+horizontal_small_padding)*render_factor
                 textBbox = inBubbleFont.getbbox(pair[1])
                 textWidth = textBbox[2]-textBbox[0]
                 draw.text((realRhsPointer,in_bubble_text_y),pair[1],font=inBubbleFont,fill=f"#{colour_hex}")
@@ -795,17 +810,17 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
 
     if muOSSystemName == "muxlaunch":
-        menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo":
-        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxapp":
-        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxplore":
-        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxfavourite":
-        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxhistory":
-        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
 
     if config.show_file_counter_var == 1:
         in_bubble_font_size = 19*render_factor
@@ -1109,7 +1124,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
             selected_font_path = config.alt_font_path
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
-    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     
     
 
@@ -1469,7 +1484,7 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
             selected_font_path = config.alt_font_path
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
-    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     
 
     font_size = min((int(config.deviceScreenHeightVar)*24)/480,(int(config.deviceScreenWidthVar)*24)/640) * render_factor  ## CHANGE for adjustment
@@ -2225,9 +2240,9 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
     try:
         progress_bar['value'] = 0
         if config.main_menu_style_var == "Alt-Horizontal" or config.main_menu_style_var == "Horizontal":
-            progress_bar['maximum'] = 27*len(resolutions)
+            progress_bar['maximum'] = 28*len(resolutions)
         elif config.main_menu_style_var == "Vertical":
-            progress_bar['maximum'] = 19*len(resolutions)
+            progress_bar['maximum'] = 20*len(resolutions)
         else:
             raise ValueError("Something went wrong with your Main Menu Style")
 
@@ -2274,12 +2289,16 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
                     theme_dir = os.path.join(script_dir, "Generated Theme")
                 else:
                     theme_dir = config.theme_directory_path
-                systemIconsAmFileName = f"{themeName} AM System Icons [{width}x{height}]"
                 os.makedirs(os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}", "opt"), exist_ok=True)
                 shutil.copy2(os.path.join(internal_files_dir, "Assets", "AM - Scripts", "System Logo Load", "update.sh"),
                             os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}", "opt", "update.sh"))
-                shutil.make_archive(os.path.join(theme_dir, systemIconsAmFileName),"zip", os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
-                delete_folder(os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
+        if config.enable_grid_view_explore_var:
+            if config.theme_directory_path == "":
+                theme_dir = os.path.join(script_dir, "Generated Theme")
+            else:
+                theme_dir = config.theme_directory_path
+            shutil.make_archive(os.path.join(theme_dir, "MinUIfied AM System Icons"),"zip", os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
+            delete_folder(os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "font"),
                     os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "font"))
         shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "glyph"),
@@ -2510,6 +2529,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replacementStringMap["default"]["{bubble_padding_right}"] = config.bubblePaddingVar
     content_alignment_map = {"Left":0,"Centre":1,"Right":2}
     replacementStringMap["default"]["{content_alignment}"] = content_alignment_map[config.global_alignment_var] # TODO make this change for the different sections
+    replacementStringMap["default"]["{list_default_label_long_mode}"] = 1
     content_padding_left = int(config.textPaddingVar)-int(config.bubblePaddingVar)
     if config.global_alignment_var == "Centre":
         content_padding_left = 0
@@ -2591,7 +2611,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replacementStringMap["muxlaunch"]["{bubble_alpha}"] = 0
         replacementStringMap["muxlaunch"]["{list_glyph_alpha}"] = 0
         replacementStringMap["muxlaunch"]["{list_text_alpha}"] = 0
-        if "You want to wrap": #TODO Make this an actual option
+        if config.horizontal_menu_behaviour_var == "Wrap to Row":
             replacementStringMap["muxlaunch"]["{navigation_type}"] = 4
         else:
             replacementStringMap["muxlaunch"]["{navigation_type}"] = 2
@@ -2618,13 +2638,13 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     replacementStringMap["muxsearch"]["{footer_alpha}"] = 0 
     replacementStringMap["muxgov"]["{footer_alpha}"] = 0
 
-    # muxtheme - Cut text off before preview image
+    # muxpicker - Cut text off before preview image
     if config.version_var != "muOS 2410.1 Banana": 
-        replacementStringMap["muxtheme"] = {}
+        replacementStringMap["muxpicker"] = {}
         max_preview_size = int(int(config.deviceScreenWidthVar)*0.45)
         if int(config.deviceScreenWidthVar) == 720:
             max_preview_size = 340
-        replacementStringMap["muxtheme"]["{content_width}"] = int(config.deviceScreenWidthVar)-max_preview_size-(int(config.textPaddingVar)-int(config.bubblePaddingVar))
+        replacementStringMap["muxpicker"]["{content_width}"] = int(config.deviceScreenWidthVar)-max_preview_size-(int(config.textPaddingVar)-int(config.bubblePaddingVar))
      
      # muxplore - cut off text if needed for box art
     if int(config.maxBoxArtWidth) > 0:
@@ -2693,18 +2713,26 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     if config.enable_grid_view_explore_var:
         grid_total_height = (int(config.deviceScreenHeightVar)-getRealFooterHeight(config)-int(config.headerHeightVar))
         grid_total_width = int(config.deviceScreenWidthVar)
-        max_items_per_screen = 12
+        min_cell_size = min(160, int(grid_total_height/2), int(grid_total_width/4)) # 160 is the minimum size for a grid cell (excluding padding)
 
         diff_aspect_ratios = {}
         target_aspect_ratio = grid_total_width/grid_total_height
-        for columns in range(1,max_items_per_screen):
-            for rows in range(1,max_items_per_screen):
-                if columns*rows <= max_items_per_screen:
-                    if columns*rows >= 4:
-                        aspect_ratio = columns/rows
-                        diff_aspect_ratio = abs(aspect_ratio-target_aspect_ratio)
-                        
-                        diff_aspect_ratios[diff_aspect_ratio] = (columns,rows)
+        columns = 0
+        rows = 0
+        while True:
+            columns += 1
+            rows = 0
+            if grid_total_width/columns < min_cell_size:
+                break
+            while True:
+                rows += 1
+                if grid_total_height/rows < min_cell_size:
+                    break
+                if columns*rows >= 8:
+                    aspect_ratio = columns/rows
+                    diff_aspect_ratio = abs(aspect_ratio-target_aspect_ratio)
+                    
+                    diff_aspect_ratios[diff_aspect_ratio] = (columns,rows)
         closest_aspect_ratio = diff_aspect_ratios[min(diff_aspect_ratios.keys())]
         grid_column_count, grid_row_count = closest_aspect_ratio
 
@@ -2716,7 +2744,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         grid_cell_width = grid_column_width-2*cell_inner_padding
         grid_cell_height = grid_row_height-2*cell_inner_padding
         grid_cell_size = min(grid_cell_width,grid_cell_height)
-        replacementStringMap["muxplore"] = {}
+        if "muxplore" not in replacementStringMap:
+            replacementStringMap["muxplore"] = {}
         replacementStringMap["muxplore"]["{grid_location_x}"] = grid_location_x
         replacementStringMap["muxplore"]["{grid_location_y}"] = grid_location_y
         replacementStringMap["muxplore"]["{grid_column_count}"] = grid_column_count
@@ -2731,7 +2760,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
         system_logos_path = os.path.join(internal_files_dir,"Assets", "System Logos",f"png [5x]")
 
-        output_system_logos_path = os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}","run","muos","storage","info", "catalogue", "Folder", "grid")
+        output_system_logos_path = os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}","run","muos","storage","info", "catalogue", "Folder", "grid", "resolutions", f"{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}")
         os.makedirs(output_system_logos_path, exist_ok=True)
         resize_system_logos(system_logos_path, output_system_logos_path,grid_cell_size,grid_image_padding,circular_grid=False)
     if not "Generating for lanuage on muxlaunch":
@@ -2783,7 +2812,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall"), exist_ok=True)
 
     if config.include_overlay_var:
-        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{config.selected_overlay_var}.png"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","overlay.png"))
+        shutil.copy2(os.path.join(internal_files_dir,"Assets", "Overlays",f"{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}",f"{config.selected_overlay_var}.png"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","overlay.png"))
     
     ## GLYPH STUFF
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","footer"), exist_ok=True)
@@ -2796,7 +2825,9 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
     buttonsToGenerate = ["A","B","C","MENU","X","Y","Z"]
     for button in buttonsToGenerate:
-        generateIndividualButtonGlyph(button,selected_font_path,accent_hex,render_factor, button_height).save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","footer",f"{button.lower()}.png"), format='PNG')
+        button_image = generateIndividualButtonGlyph(button,selected_font_path,accent_hex,render_factor, button_height,config.physical_controler_layout_var)
+        button_image = button_image.resize((int(button_image.size[0]/render_factor),int(button_image.size[1]/render_factor)), Image.LANCZOS)
+        button_image.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","glyph","footer",f"{button.lower()}.png"), format='PNG')
     capacities = [0,10,20,30,40,50,60,70,80,90,100]
     networkGlyphNames = ["network_active", "network_normal"]
     if float(config.header_glyph_height_var) < 10:
@@ -2838,10 +2869,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     muxarchive_font_size = math.floor(muxarchive_font_size_640*(int(config.deviceScreenWidthVar)/640))
     if fontSize > muxarchive_font_size:
         shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(muxarchive_font_size)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxarchive.bin"))
-    muxtheme_font_size_640 = 18
-    muxtheme_font_size = math.floor(muxtheme_font_size_640*(int(config.deviceScreenWidthVar)/640))
-    if fontSize > muxtheme_font_size:
-        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(muxtheme_font_size)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxtheme.bin"))
+    muxpicker_font_size_640 = 18
+    muxpicker_font_size = math.floor(muxpicker_font_size_640*(int(config.deviceScreenWidthVar)/640))
+    if fontSize > muxpicker_font_size:
+        shutil.copy2(os.path.join(internal_files_dir,"Assets","Font","Binaries",f"BPreplayBold-unhinted-{int(muxpicker_font_size)}.bin"),os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","font","panel","muxpicker.bin"))
     
     if config.enable_game_switcher_var:
         gameSwitcherFontSize = bottom_bar_height_over_footer * 0.55
@@ -2904,15 +2935,25 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
     #TODO If implimented it would be great to only set these once as a default.png type thing, and then make it work in every menu
     
-    visualbuttonoverlay_B_BACK_A_SELECT = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_B_BACK_A_SELECT = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     
+
     if config.version_var == "muOS 2410.1 Banana":
         muxconfig_items = ["general", "theme", "network", "service", "clock", "language"]
     else:
-        muxconfig_items = ["general", "theme", "network", "service", "clock", "language", "storage"]
+        muxconfig_items = ["general", "custom", "network", "service", "clock", "language", "storage"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxconfig"), exist_ok=True)
     for item in muxconfig_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxconfig",f"{item}.png"), format='PNG')
+
+    if config.version_var == "muOS 2410.1 Banana":
+        muxcustom_items = []
+    else:
+        muxcustom_items = ["theme", "catalogue", "config"]
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxcustom"), exist_ok=True)
+    for item in muxcustom_items:
+        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxcustom",f"{item}.png"), format='PNG')
+
     if config.version_var == "muOS 2410.1 Banana":
         muxinfo_items = ["tracker", "tester", "system", "credit"]
     else:
@@ -2932,7 +2973,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
 
     
-    visualbuttonoverlay_A_SELECT = generateMuOSBackgroundOverlay([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_A_SELECT = generateMuOSBackgroundOverlay([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
 
     if config.version_var == "muOS 2410.1 Banana":
         muxlaunch_items = ["explore", "favourite", "history", "apps", "info", "config", "reboot", "shutdown"]
@@ -2943,7 +2984,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         visualbuttonoverlay_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch",f"{item}.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_B_BACK = generateMuOSBackgroundOverlay([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_B_BACK = generateMuOSBackgroundOverlay([["B", "BACK"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_B_SAVE = generateMuOSBackgroundOverlay([["B", "SAVE"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
 
     if config.version_var == "muOS 2410.1 Banana":
         muxtweakgen_items = ["hidden", "bgm", "sound", "startup", "colour", "brightness", "hdmi", "power", "interface", "advanced"]
@@ -2951,7 +2993,15 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         muxtweakgen_items = ["hidden", "bgm", "sound", "startup", "colour", "brightness", "hdmi", "power", "interface", "advanced"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakgen"), exist_ok=True)
     for item in muxtweakgen_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakgen",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakgen",f"{item}.png"), format='PNG')
+
+    if config.version_var == "muOS 2410.1 Banana":
+        muxhdmi_items = []
+    else:
+        muxhdmi_items = ["enable", "resolution", "space", "depth", "range", "scan", "audio"]
+    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxhdmi"), exist_ok=True)
+    for item in muxhdmi_items:
+        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxhdmi",f"{item}.png"), format='PNG')
 
     if config.version_var == "muOS 2410.1 Banana":
         muxpower_items = ["shutdown", "battery", "idle_display", "idle_sleep"]
@@ -2959,7 +3009,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         muxpower_items = ["shutdown", "battery", "idle_display", "idle_sleep"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxpower"), exist_ok=True)
     for item in muxpower_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxpower",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxpower",f"{item}.png"), format='PNG')
 
     if config.version_var == "muOS 2410.1 Banana":
         muxvisual_items = ["battery", "network", "bluetooth", "clock", "boxart", "boxartalign", "name", "dash", "friendlyfolder", "thetitleformat", "titleincluderootdrive", "folderitemcount", "counterfolder", "counterfile", "backgroundanimation"]
@@ -2967,15 +3017,15 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         muxvisual_items = ["battery", "network", "bluetooth", "clock", "boxart", "boxartalign", "name", "dash", "friendlyfolder", "thetitleformat", "titleincluderootdrive", "folderitemcount", "folderempty", "counterfolder", "counterfile", "backgroundanimation", "launchsplash", "blackfade"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxvisual"), exist_ok=True)
     for item in muxvisual_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxvisual",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxvisual",f"{item}.png"), format='PNG')
     
     if config.version_var == "muOS 2410.1 Banana":
         muxtweakadv_items = ["accelerate", "swap", "thermal", "font", "volume", "brightness", "offset", "lock", "led", "theme", "retrowait", "usbfunction", "state", "verbose", "rumble", "hdmi", "storage"]
     else:
-        muxtweakadv_items = ["accelerate", "swap", "thermal", "font", "volume", "brightness", "offset", "lock", "led", "theme", "retrowait", "usbfunction", "state", "verbose", "rumble", "hdmi", "userinit", "dpadswap"]
+        muxtweakadv_items = ["accelerate", "swap", "thermal", "font", "volume", "brightness", "offset", "lock", "led", "theme", "retrowait", "usbfunction", "state", "verbose", "rumble", "userinit", "dpadswap", "overdrive", "swapfile", "cardmode"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv"), exist_ok=True)
     for item in muxtweakadv_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv",f"{item}.png"), format='PNG')
 
     if config.version_var == "muOS 2410.1 Banana":
         muxwebserv_items = ["shell", "browser", "terminal", "sync", "resilio", "ntp"]
@@ -2983,7 +3033,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         muxwebserv_items = ["sshd", "sftpgo", "ttyd", "syncthing", "rslsync", "ntp", "tailscaled"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv"), exist_ok=True)
     for item in muxwebserv_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv",f"{item}.png"), format='PNG')
     
     if config.version_var == "muOS 2410.1 Banana":
         muxrtc_items = ["year", "month", "day", "hour", "minute", "notation", "timezone"]
@@ -2991,7 +3041,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         muxrtc_items = ["year", "month", "day", "hour", "minute", "notation", "timezone"]
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxrtc"), exist_ok=True)
     for item in muxrtc_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxrtc",f"{item}.png"), format='PNG')
+        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxrtc",f"{item}.png"), format='PNG')
     
     if config.version_var == "muOS 2410.1 Banana":
         muxsysinfo_items = ["version", "device", "kernel", "uptime", "cpu", "speed", "governor", "memory", "temp", "service", "capacity", "voltage"]
@@ -3012,18 +3062,18 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     background = background.resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
     
 
-    visualbuttonoverlay_muxapp = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxapp = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxapp)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxapp.png"), format='PNG')
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtask.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxplore = generateMuOSBackgroundOverlay([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxplore = generateMuOSBackgroundOverlay([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxplore)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxplore.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxfavourite = generateMuOSBackgroundOverlay([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxfavourite = generateMuOSBackgroundOverlay([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxfavourite)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxfavourite.png"), format='PNG')
     progress_bar['value'] +=1
@@ -3038,43 +3088,47 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         gameSwitcherOverlay.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxhistory.png"), format='PNG')
         progress_bar['value'] +=1
     else:
-        visualbuttonoverlay_muxhistory = generateMuOSBackgroundOverlay([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+        visualbuttonoverlay_muxhistory = generateMuOSBackgroundOverlay([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
         altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxhistory)
         altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxhistory.png"), format='PNG')
         progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxtimezone = generateMuOSBackgroundOverlay([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxtimezone = generateMuOSBackgroundOverlay([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxtimezone)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtimezone.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxtheme_muxlanguage = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxtheme_muxlanguage)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtheme.png"), format='PNG')
+    visualbuttonoverlay_muxpicker = generateMuOSBackgroundOverlay([["Y","SAVE"],["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxpicker)
+    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxpicker.png"), format='PNG')
+    progress_bar['value'] +=1
+
+    visualbuttonoverlay_muxlanguage = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxlanguage)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxlanguage.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxarchive = generateMuOSBackgroundOverlay([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxarchive = generateMuOSBackgroundOverlay([["B", "BACK"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxarchive)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxarchive.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxnetprofile = generateMuOSBackgroundOverlay([["Y", "REMOVE"],["X", "SAVE"],["B", "BACK"],["A", "LOAD"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxnetprofile = generateMuOSBackgroundOverlay([["Y", "REMOVE"],["X", "SAVE"],["B", "BACK"],["A", "LOAD"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetprofile)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxnetprofile.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxnetscan = generateMuOSBackgroundOverlay([["X", "RESCAN"],["B", "BACK"],["A", "USE"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxnetscan = generateMuOSBackgroundOverlay([["X", "RESCAN"],["B", "BACK"],["A", "USE"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetscan)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxnetscan.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxgov = generateMuOSBackgroundOverlay([["Y", "RECURSIVE"],["X", "DIRECTORY"],["A", "INDIVIDUAL"],["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxgov = generateMuOSBackgroundOverlay([["Y", "RECURSIVE"],["X", "DIRECTORY"],["A", "INDIVIDUAL"],["B", "BACK"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxgov)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxgov.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxsearch = generateMuOSBackgroundOverlay([["X", "CLEAR"],["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxsearch = generateMuOSBackgroundOverlay([["X", "CLEAR"],["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxsearch)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxsearch.png"), format='PNG')
     progress_bar['value'] +=1
@@ -3345,6 +3399,24 @@ def start_bulk_theme_task():
 def on_resize(event):
     right_pane_width = image_frame.winfo_width()
 
+def select_color(entry):
+    """Opens a color picker and sets the selected color to the given entry."""
+    current_color = "#"+entry.get()  # Get the current color from the entry
+    try:
+        # Validate the current color to ensure it's a valid hex color
+        if current_color:
+            color_code = colorchooser.askcolor(initialcolor=current_color, title="Choose Color")[1]
+        else:
+            color_code = colorchooser.askcolor(title="Choose Color")[1]
+    except Exception:
+        # Fallback in case the initial color is invalid
+        color_code = colorchooser.askcolor(title="Choose Color")[1]
+
+    if color_code:  # If a color was selected
+        entry.delete(0, tk.END)
+        entry.insert(0, color_code[1:])
+
+
 root = tk.Tk()
 root.title("MinUI Theme Generator")
 root.minsize(1080, 500)  # Set a minimum size for the window
@@ -3374,7 +3446,10 @@ version_var = tk.StringVar()
 device_type_var = tk.StringVar()
 global_alignment_var = tk.StringVar()
 selected_overlay_var = tk.StringVar()
+physical_controler_layout_var = tk.StringVar()
+muos_button_swap_var = tk.StringVar()
 main_menu_style_var = tk.StringVar()
+horizontal_menu_behaviour_var = tk.StringVar()
 battery_charging_style_var = tk.StringVar()
 battery_style_var = tk.StringVar()
 clock_format_var = tk.StringVar()
@@ -3443,9 +3518,6 @@ else:
 # Create the grid helper
 grid_helper = GridHelper(scrollable_frame)
 
-
-
-
 # Create the GUI components
 grid_helper.add(tk.Label(scrollable_frame, text="Configurations", font=title_font), colspan=3, sticky="w", next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="Device Configurations", font=subtitle_font), colspan=3, sticky="w", next_row=True)
@@ -3453,13 +3525,28 @@ deviceScreenWidthVar = tk.StringVar()
 deviceScreenHeightVar = tk.StringVar()
 
 grid_helper.add(tk.Label(scrollable_frame, text="Device Type"), sticky="w")
-deviceTypeOptions = ["Other [640x480]","RG CubeXX [720x720]"]
+"""
+deviceTypeOptions = ["Other [640x480]",
+                     "RG CubeXX [720x720]",
+                     "RG34XX [720x480]",
+                     "Full HD [1920x1080]",
+                     "HD [1280x720]",
+                     "TrimUI Brick [1024x768]"]
+"""
+
+deviceTypeOptions = ["Other [640x480]",
+                     "RG CubeXX [720x720]",
+                     "RG34XX [720x480]",
+                     "576p [720x576]",
+                     "HD [1280x720]",
+                     "Full HD [1920x1080]"]
+
 device_type_option_menu = tk.OptionMenu(scrollable_frame, device_type_var, *deviceTypeOptions)
 grid_helper.add(device_type_option_menu, colspan=3, sticky="w", next_row=True)
 
 
 grid_helper.add(tk.Label(scrollable_frame, text="muOS Version"), sticky="w")
-options = ["muOS 2410.1 Banana", "muOS 2410.2 BIGBANANA"]
+options = ["muOS 2410.1 Banana", "muOS 2410.3 AW BANANA"]
 option_menu = tk.OptionMenu(scrollable_frame, version_var, *options)
 grid_helper.add(option_menu, colspan=3, sticky="w", next_row=True)
 
@@ -3489,6 +3576,7 @@ bgHexVar = tk.StringVar()
 selectedFontHexVar = tk.StringVar()
 deselectedFontHexVar = tk.StringVar()
 bubbleHexVar = tk.StringVar()
+footerBubbleHexVar = tk.StringVar()
 iconHexVar = tk.StringVar()
 batteryChargingHexVar = tk.StringVar()
 maxBoxArtWidth = tk.StringVar()
@@ -3501,17 +3589,36 @@ grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="General Configurations", font=subtitle_font), sticky="w", next_row=True)
 
+grid_helper.add(tk.Label(scrollable_frame, text="Physical Controller Layout"), sticky="w")
+physicalControllerLayout = ["Nintendo", 
+           "Xbox",
+           "PlayStation",
+           "Universal"]
+physical_controller_layout_menu = tk.OptionMenu(scrollable_frame, physical_controler_layout_var, *physicalControllerLayout)
+grid_helper.add(physical_controller_layout_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="muOS Control Scheme"), sticky="w")
+muosButtonSwap = ["Retro", 
+           "Modern"]
+muos_button_swap_menu = tk.OptionMenu(scrollable_frame, muos_button_swap_var, *muosButtonSwap)
+grid_helper.add(muos_button_swap_menu, colspan=3, sticky="w", next_row=True)
+
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Game Switcher*", variable=enable_game_switcher_var), sticky="w", next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text="*Not recommended Very Experimental",fg="#f00"), sticky="w",next_row=True)
 
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Use Grid View in Explore*", variable=enable_grid_view_explore_var), sticky="w", next_row=True)
-grid_helper.add(tk.Label(scrollable_frame, text="*Test builds only",fg="#f40"), sticky="w",next_row=True)
+grid_helper.add(tk.Label(scrollable_frame, text="*Won't show in preview",fg="#f40"), sticky="w",next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Main Menu Style"), sticky="w")
 MainMenuStyleOptions = ["Horizontal", "Vertical", "Alt-Horizontal"]
 main_menu_style_option_menu = tk.OptionMenu(scrollable_frame, main_menu_style_var, *MainMenuStyleOptions)
 grid_helper.add(main_menu_style_option_menu, colspan=3, sticky="w", next_row=True)
+
+grid_helper.add(tk.Label(scrollable_frame, text="Horizontal Menu Behaviour"), sticky="w")
+HorizontalMenuBehaviourOptions = ["Wrap to Row", "Don't wrap to row"]
+horizontal_menu_behaviour_option_menu = tk.OptionMenu(scrollable_frame, horizontal_menu_behaviour_var, *HorizontalMenuBehaviourOptions)
+grid_helper.add(horizontal_menu_behaviour_option_menu, colspan=3, sticky="w", next_row=True)
 
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="Include Overlay", variable=include_overlay_var), sticky="w")
 overlayOptions = ["muOS Default CRT Overlay", 
@@ -3536,40 +3643,52 @@ grid_helper.add(tk.Label(scrollable_frame, text="*Will not show up in this progr
 # Spacer row
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
+# Section title
 grid_helper.add(tk.Label(scrollable_frame, text="Colour Configuration", font=subtitle_font), colspan=3, sticky="w", next_row=True)
-
 
 # Option for Background Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Background Hex Colour: #"), sticky="w")
 background_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=bgHexVar)
-grid_helper.add(background_hex_entry, next_row=True)
+grid_helper.add(background_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(background_hex_entry)), next_row=True)
 
 # Option for Selected Font Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Selected Font Hex Colour: #"), sticky="w")
 selected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=selectedFontHexVar)
-grid_helper.add(selected_font_hex_entry, next_row=True)
+grid_helper.add(selected_font_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(selected_font_hex_entry)), next_row=True)
 
 # Option for Deselected Font Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Deselected Font Hex Colour: #"), sticky="w")
 deselected_font_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=deselectedFontHexVar)
-grid_helper.add(deselected_font_hex_entry, next_row=True)
+grid_helper.add(deselected_font_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(deselected_font_hex_entry)), next_row=True)
 
 # Option for Bubble Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Bubble Hex Colour: #"), sticky="w")
 bubble_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubbleHexVar)
-grid_helper.add(bubble_hex_entry, next_row=True)
+grid_helper.add(bubble_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(bubble_hex_entry)), next_row=True)
+
+# Option for Footer Bubble Hex Colour
+grid_helper.add(tk.Label(scrollable_frame, text="Footer Bubble Hex Colour: #"), sticky="w")
+footer_bubble_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=footerBubbleHexVar)
+grid_helper.add(footer_bubble_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(footer_bubble_hex_entry)), next_row=True)
 
 # Option for Icon Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Icon Hex Colour: #"), sticky="w")
 icon_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=iconHexVar)
-grid_helper.add(icon_hex_entry, next_row=True)
+grid_helper.add(icon_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(icon_hex_entry)), next_row=True)
 
-# Option for Icon Hex Colour
+# Option for Battery Charging Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Battery Charging Colour: #"), sticky="w")
 battery_charging_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=batteryChargingHexVar)
-grid_helper.add(battery_charging_hex_entry, next_row=True)
+grid_helper.add(battery_charging_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(battery_charging_hex_entry)), next_row=True)
 
-
+# Additional options
 grid_helper.add(tk.Checkbutton(scrollable_frame, text="[Optional] Override background colour with image", variable=use_custom_background_var), sticky="w")
 grid_helper.add(tk.Entry(scrollable_frame, textvariable=background_image_path, width=50))
 grid_helper.add(tk.Button(scrollable_frame, text="Browse...", command=select_background_image_path), next_row=True)
@@ -3884,7 +4003,7 @@ def on_change(*args):
     global menuNameMap
     menuNameMap = getAlternateMenuNameDict()
     try:
-        preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{global_config.selected_overlay_var}.png")).convert("RGBA")
+        preview_overlay_image = Image.open(os.path.join(internal_files_dir, "Assets", "Overlays", f"{global_config.deviceScreenWidthVar}x{global_config.deviceScreenHeightVar}",f"{global_config.selected_overlay_var}.png")).convert("RGBA")
     except:
         pass
     global contentPaddingTop
@@ -4105,6 +4224,7 @@ def save_settings(config: Config):
     config.deselectedFontHexVar = deselectedFontHexVar.get()
     config.deselected_font_hex_entry = deselected_font_hex_entry.get()
     config.bubbleHexVar = bubbleHexVar.get()
+    config.footerBubbleHexVar = footerBubbleHexVar.get()
     config.bubble_hex_entry = bubble_hex_entry.get()
     config.iconHexVar = iconHexVar.get()
     config.batteryChargingHexVar =batteryChargingHexVar.get()
@@ -4131,6 +4251,7 @@ def save_settings(config: Config):
     config.boxArtPaddingVar = boxArtPaddingVar.get()
     config.folderBoxArtPaddingVar = folderBoxArtPaddingVar.get()
     config.main_menu_style_var = main_menu_style_var.get()
+    config.horizontal_menu_behaviour_var = horizontal_menu_behaviour_var.get()
     config.battery_charging_style_var = battery_charging_style_var.get()
     config.battery_style_var = battery_style_var.get()
     config.clock_format_var = clock_format_var.get()
@@ -4140,6 +4261,8 @@ def save_settings(config: Config):
     config.version_var = version_var.get()
     config.global_alignment_var = global_alignment_var.get()
     config.selected_overlay_var = selected_overlay_var.get()
+    config.physical_controler_layout_var = physical_controler_layout_var.get()
+    config.muos_button_swap_var = muos_button_swap_var.get()
     config.am_theme_directory_path = am_theme_directory_path.get()
     config.theme_directory_path = theme_directory_path.get()
     config.catalogue_directory_path = catalogue_directory_path.get()
@@ -4212,6 +4335,7 @@ def load_settings(config: Config):
     selectedFontHexVar.set(config.selectedFontHexVar)
     deselectedFontHexVar.set(config.deselectedFontHexVar)
     bubbleHexVar.set(config.bubbleHexVar)
+    footerBubbleHexVar.set(config.footerBubbleHexVar)
     iconHexVar.set(config.iconHexVar)
     batteryChargingHexVar.set(config.batteryChargingHexVar)
     include_overlay_var.set(config.include_overlay_var)
@@ -4236,7 +4360,10 @@ def load_settings(config: Config):
     version_var.set(config.version_var)
     global_alignment_var.set(config.global_alignment_var)
     selected_overlay_var.set(config.selected_overlay_var)
+    physical_controler_layout_var.set(config.physical_controler_layout_var)
+    muos_button_swap_var.set(config.muos_button_swap_var)
     main_menu_style_var.set(config.main_menu_style_var)
+    horizontal_menu_behaviour_var.set(config.horizontal_menu_behaviour_var)
     battery_charging_style_var.set(config.battery_charging_style_var)
     battery_style_var.set(config.battery_style_var)
     clock_format_var.set(config.clock_format_var)
@@ -4296,6 +4423,7 @@ bgHexVar.trace_add("write", lambda *args: save_settings(global_config))
 selectedFontHexVar.trace_add("write", lambda *args: save_settings(global_config))
 deselectedFontHexVar.trace_add("write", lambda *args: save_settings(global_config))
 bubbleHexVar.trace_add("write", lambda *args: save_settings(global_config))
+footerBubbleHexVar.trace_add("write", lambda *args: save_settings(global_config))
 iconHexVar.trace_add("write", lambda *args: save_settings(global_config))
 batteryChargingHexVar.trace_add("write", lambda *args: save_settings(global_config))
 show_file_counter_var.trace_add("write", lambda *args: save_settings(global_config))
@@ -4324,7 +4452,10 @@ version_var.trace_add("write", lambda *args: save_settings(global_config))
 device_type_var.trace_add("write", lambda *args: save_settings(global_config))
 global_alignment_var.trace_add("write", lambda *args: save_settings(global_config))
 selected_overlay_var.trace_add("write",lambda *args: save_settings(global_config))
+physical_controler_layout_var.trace_add("write",lambda *args: save_settings(global_config))
+muos_button_swap_var.trace_add("write",lambda *args: save_settings(global_config))
 main_menu_style_var.trace_add("write",lambda *args: save_settings(global_config))
+horizontal_menu_behaviour_var.trace_add("write",lambda *args: save_settings(global_config))
 battery_charging_style_var.trace_add("write",lambda *args: save_settings(global_config))
 battery_style_var.trace_add("write",lambda *args: save_settings(global_config))
 clock_format_var.trace_add("write",lambda *args: save_settings(global_config))
