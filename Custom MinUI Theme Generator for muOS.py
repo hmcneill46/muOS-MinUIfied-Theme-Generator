@@ -3689,7 +3689,7 @@ grid_helper.add(header_items_horizontal_right_padding_entry, next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Battery Glyph Style"), sticky="w")
-BatteryStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_"}
+BatteryStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_","Alt Percentage":"alt_percentage_capacity_"}
 BatteryStyleOptions = list(BatteryStyleOptionsDict.keys())
 battery_style_option_menu = tk.OptionMenu(scrollable_frame, battery_style_var, *BatteryStyleOptions)
 grid_helper.add(battery_style_option_menu, colspan=3, sticky="w", next_row=True)
@@ -3698,7 +3698,7 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Charging battery in 
 
 
 grid_helper.add(tk.Label(scrollable_frame, text="Battery Charging Glyph Style"), sticky="w")
-BatteryChargingStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_", "Percentage Lightning":"percentage_capacity_charging_", "Lightning 1":"capacity_charging_", "Lightning 2":"alt1_capacity_charging_", "Lightning 3":"alt2_capacity_charging_"}
+BatteryChargingStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_", "Percentage Lightning":"percentage_capacity_charging_", "Alt Percentage":"alt_percentage_capacity_", "Alt Percentage Lightning":"alt_percentage_capacity_charging_", "Lightning 1":"capacity_charging_", "Lightning 2":"alt1_capacity_charging_", "Lightning 3":"alt2_capacity_charging_"}
 BatteryChargingStyleOptions = list(BatteryChargingStyleOptionsDict.keys())
 battery_charging_style_option_menu = tk.OptionMenu(scrollable_frame, battery_charging_style_var, *BatteryChargingStyleOptions)
 grid_helper.add(battery_charging_style_option_menu, colspan=3, sticky="w", next_row=True)
