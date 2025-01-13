@@ -9,6 +9,7 @@ class Config:  # TODO delete unneeded variables
     PATH_KEYS = (
         "config_path",
         "theme_directory_path",
+        "background_image_path",
     )
 
     def __init__(self, config_path: Path = CONFIG_PATH):
@@ -89,7 +90,7 @@ class Config:  # TODO delete unneeded variables
         self.theme_directory_path = defaults.DEFAULT_THEME_PATH
         self.catalogue_directory_path = ""
         self.name_json_path = ""
-        self.background_image_path = ""
+        self.background_image_path = defaults.DEFAULT_BACKGROUND_IMAGE_PATH
         self.bootlogo_image_path = ""
         self.alt_font_filename = defaults.DEFAULT_FONT_FILENAME
         self.alt_text_filename = defaults.DEFAULT_ALT_TEXT_FILENAME

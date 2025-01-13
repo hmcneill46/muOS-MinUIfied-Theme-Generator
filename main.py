@@ -1,7 +1,6 @@
 import copy
 from datetime import datetime
 import json
-import os
 import math
 import numpy as np
 from pathlib import Path
@@ -35,6 +34,7 @@ from PIL import (
     ImageColor,
 )
 
+from generator import defaults
 from generator.config import Config
 from generator.constants import (
     BASE_DIR,
@@ -49,6 +49,13 @@ from generator.constants import (
     FONTS_DIR,
 )
 from generator.font import get_font_path
+from generator.utils import (
+    copy_contents,
+    delete_folder,
+    delete_file,
+    rename_file,
+    ensure_folder_exists,
+)
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -92,7 +99,7 @@ def change_logo_color(input, hex_color):
 
 def generateIndividualButtonGlyph(
     buttonText,
-    selected_font_path,
+    selected_font_path: Path,
     colour_hex,
     render_factor,
     button_height,
@@ -239,7 +246,7 @@ def generateIndividualButtonGlyph(
     return image
 
 
-def getTimeWithWidth(selected_font_path, timeFormat, find="max"):
+def getTimeWithWidth(selected_font_path: Path, timeFormat, find="max"):
     TestFont = ImageFont.truetype(selected_font_path, 100)
     stringsByActualSize = {
         "0": 0,
@@ -996,7 +1003,7 @@ def getRealFooterHeight(config: Config) -> int:
 
 def generateMenuHelperGuides(
     retro_rhs_buttons,
-    selected_font_path,
+    selected_font_path: Path,
     colour_hex,
     render_factor,
     config: Config,
@@ -1636,7 +1643,7 @@ def ContinuousFolderImageGen(
     deselected_font_hex,
     bubble_hex,
     render_factor,
-    outputDir,
+    outputDir: Path,
     config: Config,
     folderName=None,
     threadNumber=0,
@@ -1686,55 +1693,47 @@ def ContinuousFolderImageGen(
                 Image.LANCZOS,
             )
             if workingItem[1] == "File":
-                directory = os.path.dirname(
-                    f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png"
-                )
-                if not os.path.exists(directory):
-                    os.makedirs(directory)
-                image.save(f"{outputDir}/{muOSSystemName}/box/{workingItem[2]}.png")
+                directory = outputDir / muOSSystemName / "box"
+                ensure_folder_exists(directory)
+                image.save(directory / f"{workingItem[2]}.png")
             elif workingItem[1] == "Directory":
-                directory = os.path.dirname(
-                    f"{outputDir}/Folder/box/{workingItem[2]}.png"
-                )
-                if not os.path.exists(directory):
-                    os.makedirs(directory)
-                image.save(f"{outputDir}/Folder/box/{workingItem[2]}.png")
+                directory = outputDir / muOSSystemName / "Folder" / "box"
+                ensure_folder_exists(directory)
+                image.save(directory / f"{workingItem[2]}.png")
 
 
 def resize_system_logos(
-    system_logos_path,
-    output_system_logos_path,
+    system_logos_path: Path,
+    output_system_logos_path: Path,
     grid_cell_size,
     grid_image_padding,
     circular_grid,
 ):
-    system_logos = os.listdir(system_logos_path)
+    system_logos = system_logos_path.glob("*.png")
     if circular_grid:
         effective_circle_diameter = grid_cell_size - (grid_image_padding * 2)
     else:
         effective_grid_size = grid_cell_size - (grid_image_padding * 2)
     for system_logo in system_logos:
-        if system_logo.endswith(".png"):
-            system_logo_path = os.path.join(system_logos_path, system_logo)
-            system_logo_image = Image.open(system_logo_path).convert("RGBA")
-            if circular_grid:
-                old_size = system_logo_image.size
-                aspect_ratio = old_size[0] / old_size[1]
-                new_height = math.sqrt(
-                    math.pow(effective_circle_diameter, 2)
-                    / (1 + math.pow(aspect_ratio, 2))
-                )
-                new_size = int(new_height * aspect_ratio), int(new_height)
-            else:
-                width_multiplier = effective_grid_size / system_logo_image.size[0]
-                height_multiplier = effective_grid_size / system_logo_image.size[1]
-                multiplier = min(width_multiplier, height_multiplier)
-                new_size = (
-                    int(system_logo_image.size[0] * multiplier),
-                    int(system_logo_image.size[1] * multiplier),
-                )
-            system_logo_image = system_logo_image.resize(new_size, Image.LANCZOS)
-            system_logo_image.save(os.path.join(output_system_logos_path, system_logo))
+        system_logo_path = system_logos_path / system_logo
+        system_logo_image = Image.open(system_logo_path).convert("RGBA")
+        if circular_grid:
+            old_size = system_logo_image.size
+            aspect_ratio = old_size[0] / old_size[1]
+            new_height = math.sqrt(
+                math.pow(effective_circle_diameter, 2) / (1 + math.pow(aspect_ratio, 2))
+            )
+            new_size = int(new_height * aspect_ratio), int(new_height)
+        else:
+            width_multiplier = effective_grid_size / system_logo_image.size[0]
+            height_multiplier = effective_grid_size / system_logo_image.size[1]
+            multiplier = min(width_multiplier, height_multiplier)
+            new_size = (
+                int(system_logo_image.size[0] * multiplier),
+                int(system_logo_image.size[1] * multiplier),
+            )
+        system_logo_image = system_logo_image.resize(new_size, Image.LANCZOS)
+        system_logo_image.save(output_system_logos_path / system_logo)
 
 
 def cut_out_image(original_image, logo_image, coordinates):
@@ -1777,7 +1776,7 @@ def cut_out_image(original_image, logo_image, coordinates):
     return edited_image
 
 
-def getHorizontalLogoSize(path_to_logo, render_factor, config: Config):
+def getHorizontalLogoSize(path_to_logo: Path, render_factor, config: Config):
     exploreLogoColoured = change_logo_color(path_to_logo, config.iconHexVar)
     top_logo_size = (
         int(
@@ -3369,7 +3368,7 @@ def generatePilImageBootLogo(
         bg_rgb,
     )
     if config.use_custom_bootlogo_var:
-        if os.path.exists(config.bootlogo_image_path):
+        if config.bootlogo_image_path and config.bootlogo_image_path.exists():
             bootlogo_image = Image.open(config.bootlogo_image_path)
             image.paste(
                 bootlogo_image.resize(
@@ -3476,7 +3475,7 @@ def generatePilImageBootScreen(
     display_text,
     render_factor,
     config: Config,
-    icon_path=None,
+    icon_path: Path | None = None,
 ):
     bg_rgb = hex_to_rgb(bg_hex)
     image = Image.new(
@@ -3512,7 +3511,7 @@ def generatePilImageBootScreen(
     from_middle_padding = 0
 
     if icon_path != None:
-        if os.path.exists(icon_path):
+        if icon_path and icon_path.exists():
             from_middle_padding = 50 * render_factor
 
             logoColoured = change_logo_color(icon_path, icon_hex)
@@ -3589,7 +3588,7 @@ def HorizontalMenuGen(
     bubble_hex,
     icon_hex,
     render_factor,
-    outputDir,
+    outputDir: Path,
     variant,
     config: Config,
     threadNumber=0,
@@ -3630,25 +3629,19 @@ def HorizontalMenuGen(
             (int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)),
             Image.LANCZOS,
         )
+
         if workingItem[1] == "File":
-            directory = os.path.dirname(
-                f"{outputDir}/{muOSSystemName}/box/{workingItem[0]}.png"
-            )
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            image.save(f"{outputDir}/{muOSSystemName}/box/{workingItem[0]}.png")
+            directory = outputDir / muOSSystemName / "box"
+            ensure_folder_exists(directory)
+            image.save(directory / f"{workingItem[0]}.png")
         elif workingItem[1] == "Directory":
-            directory = os.path.dirname(f"{outputDir}/Folder/box/{workingItem[0]}.png")
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            image.save(f"{outputDir}/Folder/box/{workingItem[0]}.png")
+            directory = outputDir / muOSSystemName / "Folder" / "box"
+            ensure_folder_exists(directory)
+            image.save(directory / f"{workingItem[0]}.png")
         elif workingItem[1] == "Menu":
-            directory = os.path.dirname(
-                f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png"
-            )
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            image.save(f"{outputDir}/{muOSSystemName}/{workingItem[2]}.png")
+            directory = outputDir / muOSSystemName
+            ensure_folder_exists(directory)
+            image.save(directory / f"{workingItem[2]}.png")
 
 
 def getAlternateMenuNameDict():
@@ -3688,30 +3681,6 @@ def getDefaultAlternateMenuNameData():
                 defaultMenuNameMap[n[0].lower()] = n[0]
 
     return defaultMenuNameMap
-
-
-def copy_contents(src, dst):
-    if not os.path.exists(dst):
-        os.makedirs(dst)
-
-    for item in os.listdir(src):
-        src_path = os.path.join(src, item)
-        dst_path = os.path.join(dst, item)
-
-        if os.path.isdir(src_path):
-            if not os.path.exists(dst_path):
-                shutil.copytree(src_path, dst_path)
-            else:
-                copy_contents(src_path, dst_path)
-        else:
-            shutil.copy2(src_path, dst_path)
-
-
-def delete_folder(folder_path):
-    if os.path.exists(folder_path):
-        shutil.rmtree(folder_path)
-    else:
-        raise FileNotFoundError(f"Folder {folder_path} does not exist")
 
 
 def select_theme_directory():
@@ -4001,9 +3970,9 @@ menus2405_3 = [
 ]
 
 
-def replace_in_file(file_path, search_string, replace_string):
+def replace_in_file(file_path: Path, search_string, replace_string):
     # Read the content of the file in binary mode
-    with open(file_path, "rb") as file:
+    with file_path.open("rb") as file:
         file_contents = file.read()
 
     # Replace the occurrences of the search_string with replace_string in binary data
@@ -4012,7 +3981,7 @@ def replace_in_file(file_path, search_string, replace_string):
     new_contents = file_contents.replace(search_bytes, replace_bytes)
 
     # Write the new content back to the file in binary mode
-    with open(file_path, "wb") as file:
+    with file_path.open("wb") as file:
         file.write(new_contents)
 
 
@@ -4145,9 +4114,7 @@ def generate_theme(
 
             try:
                 for target in ["font", "glyph", "image", "scheme", "preview.png"]:
-                    shutil.move(
-                        str(temp_build_dir / target), str(temp_res_dir / target)
-                    )
+                    shutil.move(temp_build_dir / target, temp_res_dir / target)
             except Exception as e:
                 print(e)
                 pass
@@ -4155,10 +4122,7 @@ def generate_theme(
             if config.enable_grid_view_explore_var:
                 theme_dir = config.theme_directory_path
 
-                os.makedirs(
-                    str(temp_system_icons_dir / "opt"),
-                    exist_ok=True,
-                )
+                ensure_folder_exists(temp_system_icons_dir / "opt")
                 shutil.copy2(
                     ASSETS_DIR / "AM - Scripts" / "System Logo Load" / "update.sh",
                     temp_system_icons_dir / "opt" / "update.sh",
@@ -4171,20 +4135,19 @@ def generate_theme(
                 "zip",
                 str(temp_system_icons_dir),
             )
-            delete_folder(str(temp_system_icons_dir))
+            delete_folder(temp_system_icons_dir)
 
         for target in ["font", "glyph", "image", "scheme", "preview.png"]:
             shutil.move(assumed_res_dir / target, temp_build_dir / target)
 
-        if assumed_res_dir.exists():
-            os.rmdir(assumed_res_dir)
+        delete_folder(assumed_res_dir)
 
         theme_dir = config.theme_directory_path
 
         shutil.make_archive(str(theme_dir / themeName), "zip", temp_build_dir)
 
         if config.developer_preview_var:
-            os.makedirs(str(theme_dir), exist_ok=True)
+            ensure_folder_exists(theme_dir)
             for width, height in resolutions:
                 thread_and_res = f"{threadNumber}[{width}x{height}].png"
                 theme_and_res = f"{themeName}[{width}x{height}].png"
@@ -4192,18 +4155,12 @@ def generate_theme(
                 theme_preview_path = theme_dir / theme_and_res
                 preview_path = theme_dir / "preview" / f"TempPreview{thread_and_res}"
 
-                if theme_preview_path.exists():
-                    os.remove(theme_preview_path)
+                delete_file(temp_preview_path)
+                rename_file(temp_preview_path, theme_preview_path)
+                delete_file(temp_preview_path)
+                delete_file(preview_path)
 
-                os.rename(temp_preview_path, theme_preview_path)
-
-                if temp_preview_path.exists():
-                    os.remove(temp_preview_path)
-
-                if preview_path.exists():
-                    os.remove(preview_path)
-
-        delete_folder(str(temp_build_dir))
+        delete_folder(temp_build_dir)
         if threadNumber == -1:
             messagebox.showinfo("Success", "Theme generated successfully.")
         loading_window.destroy()
@@ -4221,18 +4178,15 @@ def generate_theme(
         else:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
 
-        delete_folder(str(temp_build_dir))
+        delete_folder(temp_build_dir)
         if config.developer_preview_var:
             for width, height in resolutions:
                 thread_and_res = f"{threadNumber}[{width}x{height}].png"
                 temp_preview_path = RESOURCES_DIR / f"TempPreview{thread_and_res}"
                 preview_path = theme_dir / "preview" / f"TempPreview{thread_and_res}"
 
-                if temp_preview_path.exists():
-                    os.remove(temp_preview_path)
-
-                if preview_path.exists():
-                    os.remove(preview_path)
+                delete_file(temp_preview_path)
+                delete_file(preview_path)
 
 
 def generate_themes(themes):
@@ -4305,7 +4259,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     copy_contents(THEME_SHELL_DIR, temp_build_dir)
 
     newSchemeDir = temp_build_dir / "scheme"
-    os.makedirs(newSchemeDir, exist_ok=True)
+    ensure_folder_exists(newSchemeDir)
 
     fontSize = int(config.font_size_var)
 
@@ -4773,7 +4727,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             / "resolutions"
             / f"{config.deviceScreenWidthVar}x{config.deviceScreenHeightVar}"
         )
-        os.makedirs(output_system_logos_path, exist_ok=True)
+        ensure_folder_exists(output_system_logos_path)
         resize_system_logos(
             system_logos_path,
             output_system_logos_path,
@@ -4843,7 +4797,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
                 str(replacement),
             )
 
-    os.makedirs(temp_build_dir / "image" / "wall", exist_ok=True)
+    ensure_folder_exists(temp_build_dir / "image" / "wall")
 
     if config.include_overlay_var:
         shutil.copy2(
@@ -4854,8 +4808,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         )
 
     ## GLYPH STUFF
-    os.makedirs(temp_build_dir / "glyph" / "footer", exist_ok=True)
-    os.makedirs(temp_build_dir / "glyph" / "header", exist_ok=True)
+    ensure_folder_exists(temp_build_dir / "glyph" / "footer")
+    ensure_folder_exists(temp_build_dir / "glyph" / "header")
 
     muosSpaceBetweenItems = 2
     footerHeight = (
@@ -4964,9 +4918,11 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     font_footer_path = font_path / "footer"
     font_header_path = font_path / "header"
     font_binary_path = FONTS_DIR / "Binaries"
-    os.makedirs(font_panel_path, exist_ok=True)
-    os.makedirs(temp_build_dir / "font" / "footer", exist_ok=True)
-    os.makedirs(temp_build_dir / "font" / "header", exist_ok=True)
+
+    ensure_folder_exists(font_panel_path)
+    ensure_folder_exists(temp_build_dir / "font" / "footer")
+    ensure_folder_exists(temp_build_dir / "font" / "header")
+
     shutil.copy2(
         font_binary_path / f"BPreplayBold-unhinted-{int(fontSize)}.bin",
         font_panel_path / "default.bin",
@@ -5165,10 +5121,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "language",
             "storage",
         ]
-    os.makedirs(
-        temp_image_dir / "static" / "muxconfig",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxconfig")
     for item in muxconfig_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(
             temp_image_dir / "static" / "muxconfig" / f"{item}.png",
@@ -5179,10 +5132,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         muxcustom_items = []
     else:
         muxcustom_items = ["theme", "catalogue", "config"]
-    os.makedirs(
-        temp_image_dir / "static" / "muxcustom",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxcustom")
     for item in muxcustom_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(
             temp_image_dir / "static" / "muxcustom" / f"{item}.png",
@@ -5193,10 +5143,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         muxinfo_items = ["tracker", "tester", "system", "credit"]
     else:
         muxinfo_items = ["tracker", "tester", "system", "credit"]
-    os.makedirs(
-        temp_image_dir / "static" / "muxinfo",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxinfo")
     for item in muxinfo_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(
             temp_image_dir / "static" / "muxinfo" / f"{item}.png",
@@ -5207,10 +5154,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         muxoption_items = ["core", "governor"]
     else:
         muxoption_items = ["search", "core", "governor"]
-    os.makedirs(
-        temp_image_dir / "static" / "muxoption",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxoption")
     for item in muxoption_items:
         visualbuttonoverlay_B_BACK_A_SELECT.save(
             temp_image_dir / "static" / "muxoption" / f"{item}.png",
@@ -5252,10 +5196,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "reboot",
             "shutdown",
         ]
-    os.makedirs(
-        temp_image_dir / "static" / "muxlaunch",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxlaunch")
     for item in muxlaunch_items:
         visualbuttonoverlay_A_SELECT.save(
             temp_image_dir / "static" / "muxlaunch" / f"{item}.png",
@@ -5312,10 +5253,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "interface",
             "advanced",
         ]
-    os.makedirs(
-        temp_image_dir / "static" / "muxtweakgen",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxtweakgen")
     for item in muxtweakgen_items:
         visualbuttonoverlay_B_SAVE.save(
             temp_image_dir / "static" / "muxtweakgen" / f"{item}.png",
@@ -5334,10 +5272,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "scan",
             "audio",
         ]
-    os.makedirs(
-        temp_image_dir / "static" / "muxhdmi",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxhdmi")
     for item in muxhdmi_items:
         visualbuttonoverlay_B_SAVE.save(
             temp_image_dir / "static" / "muxhdmi" / f"{item}.png",
@@ -5348,10 +5283,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         muxpower_items = ["shutdown", "battery", "idle_display", "idle_sleep"]
     else:
         muxpower_items = ["shutdown", "battery", "idle_display", "idle_sleep"]
-    os.makedirs(
-        temp_image_dir / "static" / "muxpower",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxpower")
     for item in muxpower_items:
         visualbuttonoverlay_B_SAVE.save(
             temp_image_dir / "static" / "muxpower" / f"{item}.png",
@@ -5397,10 +5329,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "launchsplash",
             "blackfade",
         ]
-    os.makedirs(
-        temp_image_dir / "static" / "muxvisual",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxvisual")
     for item in muxvisual_items:
         visualbuttonoverlay_B_SAVE.save(
             temp_image_dir / "static" / "muxvisual" / f"{item}.png",
@@ -5450,10 +5379,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "swapfile",
             "cardmode",
         ]
-    os.makedirs(
-        temp_image_dir / "static" / "muxtweakadv",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxtweakadv")
     for item in muxtweakadv_items:
         visualbuttonoverlay_B_SAVE.save(
             temp_image_dir / "static" / "muxtweakadv" / f"{item}.png",
@@ -5472,10 +5398,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "ntp",
             "tailscaled",
         ]
-    os.makedirs(
-        temp_image_dir / "static" / "muxwebserv",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxwebserv")
     for item in muxwebserv_items:
         visualbuttonoverlay_B_SAVE.save(
             temp_image_dir / "static" / "muxwebserv" / f"{item}.png",
@@ -5502,10 +5425,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "notation",
             "timezone",
         ]
-    os.makedirs(
-        temp_image_dir / "static" / "muxrtc",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxrtc")
     for item in muxrtc_items:
         visualbuttonoverlay_B_SAVE.save(
             temp_image_dir / "static" / "muxrtc" / f"{item}.png",
@@ -5542,10 +5462,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
             "capacity",
             "voltage",
         ]
-    os.makedirs(
-        temp_image_dir / "static" / "muxsysinfo",
-        exist_ok=True,
-    )
+    ensure_folder_exists(temp_image_dir / "static" / "muxsysinfo")
     for item in muxsysinfo_items:
         visualbuttonoverlay_B_BACK.save(
             temp_image_dir / "static" / "muxsysinfo" / f"{item}.png",
@@ -7307,8 +7224,10 @@ def on_change(*args):
 
     global background_image
 
-    if (global_config.use_custom_background_var) and os.path.exists(
-        global_config.background_image_path
+    if (
+        global_config.use_custom_background_var
+        and global_config.background_image_path
+        and global_config.background_image_path.exists()
     ):
         background_image = Image.open(global_config.background_image_path)
     else:
@@ -7639,7 +7558,7 @@ def save_settings(config: Config):
     config.theme_directory_path = Path(theme_directory_path.get())
     config.catalogue_directory_path = catalogue_directory_path.get()
     config.name_json_path = name_json_path.get()
-    config.background_image_path = background_image_path.get()
+    config.background_image_path = Path(background_image_path.get())
     config.bootlogo_image_path = bootlogo_image_path.get()
     config.alt_font_filename = alt_font_filename.get()
     config.alt_text_filename = alt_text_filename.get()
@@ -7748,10 +7667,10 @@ def load_settings(config: Config):
     header_glyph_alignment_var.set(config.header_glyph_alignment_var)
     page_title_alignment_var.set(config.page_title_alignment_var)
     # am_theme_directory_path.set(config.am_theme_directory_path)
-    theme_directory_path.set(config.theme_directory_path)
+    theme_directory_path.set(str(config.theme_directory_path))
     catalogue_directory_path.set(config.catalogue_directory_path)
     name_json_path.set(config.name_json_path)
-    background_image_path.set(config.background_image_path)
+    background_image_path.set(str(config.background_image_path) or "")
     bootlogo_image_path.set(config.bootlogo_image_path)
     alt_font_filename.set(config.alt_font_filename)
     alt_text_filename.set(config.alt_text_filename)
