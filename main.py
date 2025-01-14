@@ -1714,8 +1714,7 @@ def resize_system_logos(
         effective_circle_diameter = grid_cell_size - (grid_image_padding * 2)
     else:
         effective_grid_size = grid_cell_size - (grid_image_padding * 2)
-    for system_logo in system_logos:
-        system_logo_path = system_logos_path / system_logo
+    for system_logo_path in system_logos:
         system_logo_image = Image.open(system_logo_path).convert("RGBA")
         if circular_grid:
             old_size = system_logo_image.size
@@ -1733,7 +1732,7 @@ def resize_system_logos(
                 int(system_logo_image.size[1] * multiplier),
             )
         system_logo_image = system_logo_image.resize(new_size, Image.LANCZOS)
-        system_logo_image.save(output_system_logos_path / system_logo)
+        system_logo_image.save(output_system_logos_path / system_logo_path.name)
 
 
 def cut_out_image(original_image, logo_image, coordinates):
