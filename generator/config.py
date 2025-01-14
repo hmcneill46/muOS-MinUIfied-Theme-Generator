@@ -93,7 +93,7 @@ class Config:  # TODO delete unneeded variables
         self.background_image_path = defaults.DEFAULT_BACKGROUND_IMAGE_PATH
         self.bootlogo_image_path = ""
         self.alt_font_filename = defaults.DEFAULT_FONT_FILENAME
-        self.alt_text_filename = defaults.DEFAULT_ALT_TEXT_FILENAME
+        # self.alt_text_filename = defaults.DEFAULT_ALT_TEXT_FILENAME
         self.use_alt_font_var = False
         self.use_custom_background_var = False
         self.use_custom_bootlogo_var = False

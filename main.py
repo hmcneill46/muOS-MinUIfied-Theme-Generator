@@ -5976,13 +5976,13 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         )
 
 
-def select_alternate_menu_names():
-    ALT_TEXT_PATH = BASE_DIR / global_config.alt_text_filename
-
-    menu_names_grid = MenuNamesGrid(root, menuNameMap, ALT_TEXT_PATH)
-
-    root.wait_window(menu_names_grid)
-    on_change()
+# def select_alternate_menu_names():
+#     ALT_TEXT_PATH = BASE_DIR / global_config.alt_text_filename
+#
+#     menu_names_grid = MenuNamesGrid(root, menuNameMap, ALT_TEXT_PATH)
+#
+#     root.wait_window(menu_names_grid)
+#     on_change()
 
 
 class GridHelper:
@@ -6006,80 +6006,80 @@ class GridHelper:
             self.column += colspan
 
 
-class MenuNamesGrid(tk.Toplevel):
-    def __init__(self, parent, data, alt_text_path):
-        super().__init__(parent)
-        self.title("Alternate Menu Names Editor")
-
-        self.data = data
-        self.entries = {}
-        self.alt_text_path = alt_text_path
-        self.create_widgets()
-        self.centre_on_parent(parent)
-        self.grab_set()
-
-    def create_widgets(self):
-        # Split data into two halves
-        items = list(self.data.items())
-        half_index = len(items) // 2
-        first_half = items[:half_index]
-        second_half = items[half_index:]
-
-        # Populate the first half
-        for i, (key, value) in enumerate(first_half):
-            # Create read-only key label
-            key_label = ttk.Label(self, text=key)
-            key_label.grid(row=i, column=0, padx=5, pady=5, sticky="w")
-
-            # Create editable value entry
-            value_entry = ttk.Entry(self, width="50")
-            value_entry.insert(0, value)
-            value_entry.grid(row=i, column=1, padx=5, pady=5, sticky="w")
-            self.entries[key] = value_entry
-
-        # Add space between the two halves
-        spacer_label = ttk.Label(self, text="")
-        spacer_label.grid(row=0, column=2, padx=20, pady=5)
-
-        # Populate the second half
-        for i, (key, value) in enumerate(second_half):
-            # Create read-only key label
-            key_label = ttk.Label(self, text=key)
-            key_label.grid(row=i, column=3, padx=5, pady=5, sticky="w")
-
-            # Create editable value entry
-            value_entry = ttk.Entry(self, width="50")
-            value_entry.insert(0, value)
-            value_entry.grid(row=i, column=4, padx=5, pady=5, sticky="w")
-            self.entries[key] = value_entry
-
-        # Save button
-        save_button = ttk.Button(self, text="Save", command=self.save)
-        save_button.grid(
-            row=max(len(first_half), len(second_half)), column=0, columnspan=5, pady=10
-        )
-
-    def centre_on_parent(self, parent):
-        self.update_idletasks()
-        x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
-
-        self.geometry(f"{self.winfo_width()}x{self.winfo_height()}+{x}+{y}")
-
-    def save(self):
-        for key, entry in self.entries.items():
-            self.data[key] = entry.get()
-
-        if self.alt_text_path.exists():
-            with self.alt_text_path.open(
-                "w",
-                newline="\n",
-                encoding="utf-8",
-            ) as json_file:
-                json.dump(menuNameMap, json_file, indent=2)
-
-        self.grab_release()
-        self.destroy()
+# class MenuNamesGrid(tk.Toplevel):
+#     def __init__(self, parent, data, alt_text_path):
+#         super().__init__(parent)
+#         self.title("Alternate Menu Names Editor")
+#
+#         self.data = data
+#         self.entries = {}
+#         self.alt_text_path = alt_text_path
+#         self.create_widgets()
+#         self.centre_on_parent(parent)
+#         self.grab_set()
+#
+#     def create_widgets(self):
+#         # Split data into two halves
+#         items = list(self.data.items())
+#         half_index = len(items) // 2
+#         first_half = items[:half_index]
+#         second_half = items[half_index:]
+#
+#         # Populate the first half
+#         for i, (key, value) in enumerate(first_half):
+#             # Create read-only key label
+#             key_label = ttk.Label(self, text=key)
+#             key_label.grid(row=i, column=0, padx=5, pady=5, sticky="w")
+#
+#             # Create editable value entry
+#             value_entry = ttk.Entry(self, width="50")
+#             value_entry.insert(0, value)
+#             value_entry.grid(row=i, column=1, padx=5, pady=5, sticky="w")
+#             self.entries[key] = value_entry
+#
+#         # Add space between the two halves
+#         spacer_label = ttk.Label(self, text="")
+#         spacer_label.grid(row=0, column=2, padx=20, pady=5)
+#
+#         # Populate the second half
+#         for i, (key, value) in enumerate(second_half):
+#             # Create read-only key label
+#             key_label = ttk.Label(self, text=key)
+#             key_label.grid(row=i, column=3, padx=5, pady=5, sticky="w")
+#
+#             # Create editable value entry
+#             value_entry = ttk.Entry(self, width="50")
+#             value_entry.insert(0, value)
+#             value_entry.grid(row=i, column=4, padx=5, pady=5, sticky="w")
+#             self.entries[key] = value_entry
+#
+#         # Save button
+#         save_button = ttk.Button(self, text="Save", command=self.save)
+#         save_button.grid(
+#             row=max(len(first_half), len(second_half)), column=0, columnspan=5, pady=10
+#         )
+#
+#     def centre_on_parent(self, parent):
+#         self.update_idletasks()
+#         x = parent.winfo_x() + (parent.winfo_width() - self.winfo_width()) // 2
+#         y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
+#
+#         self.geometry(f"{self.winfo_width()}x{self.winfo_height()}+{x}+{y}")
+#
+#     def save(self):
+#         for key, entry in self.entries.items():
+#             self.data[key] = entry.get()
+#
+#         if self.alt_text_path.exists():
+#             with self.alt_text_path.open(
+#                 "w",
+#                 newline="\n",
+#                 encoding="utf-8",
+#             ) as json_file:
+#                 json.dump(menuNameMap, json_file, indent=2)
+#
+#         self.grab_release()
+#         self.destroy()
 
 
 def on_mousewheel(event, canvas):
@@ -6104,10 +6104,6 @@ def on_shiftmousewheel(event, canvas):
             canvas.xview_scroll(-1, "units")
         elif event.num == 5:
             canvas.xview_scroll(1, "units")
-
-
-def update_slider_label():
-    pass
 
 
 def start_theme_task():
@@ -6206,7 +6202,7 @@ name_json_path = tk.StringVar()
 background_image_path = tk.StringVar()
 bootlogo_image_path = tk.StringVar()
 alt_font_filename = tk.StringVar()
-alt_text_filename = tk.StringVar()
+# alt_text_filename = tk.StringVar()
 box_art_directory_path = tk.StringVar()
 catalogue_directory_path = tk.StringVar()
 theme_directory_path = tk.StringVar()
@@ -7560,7 +7556,7 @@ def save_settings(config: Config):
     config.background_image_path = Path(background_image_path.get())
     config.bootlogo_image_path = bootlogo_image_path.get()
     config.alt_font_filename = alt_font_filename.get()
-    config.alt_text_filename = alt_text_filename.get()
+    # config.alt_text_filename = alt_text_filename.get()
     config.use_alt_font_var = use_alt_font_var.get()
     config.use_custom_background_var = use_custom_background_var.get()
     config.use_custom_bootlogo_var = use_custom_bootlogo_var.get()
@@ -7672,7 +7668,7 @@ def load_settings(config: Config):
     background_image_path.set(str(config.background_image_path) or "")
     bootlogo_image_path.set(config.bootlogo_image_path)
     alt_font_filename.set(config.alt_font_filename)
-    alt_text_filename.set(config.alt_text_filename)
+    # alt_text_filename.set(config.alt_text_filename)
     use_alt_font_var.set(config.use_alt_font_var)
     use_custom_background_var.set(config.use_custom_background_var)
     use_custom_bootlogo_var.set(config.use_custom_bootlogo_var)
@@ -7802,7 +7798,7 @@ use_alt_font_var.trace_add("write", lambda *args: save_settings(global_config))
 use_custom_background_var.trace_add("write", lambda *args: save_settings(global_config))
 use_custom_bootlogo_var.trace_add("write", lambda *args: save_settings(global_config))
 alt_font_filename.trace_add("write", lambda *args: save_settings(global_config))
-alt_text_filename.trace_add("write", lambda *args: save_settings(global_config))
+# alt_text_filename.trace_add("write", lambda *args: save_settings(global_config))
 
 resize_event_id = None
 
