@@ -4292,83 +4292,33 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         - int(config.contentPaddingTopVar)
     )
 
-    stringsToReplace = []
+    replacementStringMap = {
+        "default": {},
+        "muxlaunch": {},
+        "muxnetwork": {},
+        "muxassign": {},
+        "muxgov": {},
+        "muxsearch": {},
+        "muxpicker": {},
+        "muxplore": {},
+        "muxfavourite": {},
+        "muxhistory": {},
+        "muxstorage": {},
+    }
 
-    # Read the template file and search for all instances of strings enclosed in {}
-    with open(TEMPLATE_SCHEME_PATH, "r") as file:
-        content = file.read()
-        # Find all occurrences of patterns like {some_string}
-        matches = re.findall(r"\{[^}]+\}", content)
-        # Convert matches to a set to keep only unique values, then back to a list
-        stringsToReplace = list(set(matches))
-
-    replacementStringMap = {}
-
-    replacementStringMap["default"] = {}
-    for n in stringsToReplace:
-        replacementStringMap["default"][n] = None
-
-    # Set up default colours that should be the same everywhere
-    replacementStringMap["default"]["{accent_hex}"] = accent_hex
-    replacementStringMap["default"]["{base_hex}"] = base_hex
-    replacementStringMap["default"]["{blend_hex}"] = blend_hex
-    replacementStringMap["default"]["{muted_hex}"] = muted_hex
-    replacementStringMap["default"]["{battery_charging_hex}"] = (
-        config.batteryChargingHexVar
-    )
-    replacementStringMap["default"]["{bubble_hex}"] = config.bubbleHexVar
-
-    # More Global Settings
     glyph_width = 20
     glyph_to_text_pad = int(config.bubblePaddingVar)
-    replacementStringMap["default"]["{boot_text_y_pos}"] = int(
-        int(config.deviceScreenHeightVar) * (165 / 480)
-    )
-    replacementStringMap["default"]["{glyph_padding_left}"] = int(
-        int(config.bubblePaddingVar) + (glyph_width / 2)
-    )
-    replacementStringMap["default"]["{image_overlay}"] = config.include_overlay_var
-    replacementStringMap["default"]["{footer_height}"] = footerHeight
-    if config.show_console_name_var:
-        replacementStringMap["default"]["{header_text_alpha}"] = 255
-    else:
-        replacementStringMap["default"]["{header_text_alpha}"] = 0
     page_title_alignment_map = {"Auto": 0, "Left": 1, "Centre": 2, "Right": 3}
-    replacementStringMap["default"]["{page_title_text_align}"] = (
-        page_title_alignment_map[config.page_title_alignment_var]
-    )
-    replacementStringMap["default"]["{page_title_padding}"] = int(
-        config.pageTitlePaddingVar
-    )
-
-    replacementStringMap["default"]["{bar_height}"] = 42
-    replacementStringMap["default"]["{bar_progress_width}"] = (
-        int(config.deviceScreenWidthVar) - 90
-    )
-    replacementStringMap["default"]["{bar_y_pos}"] = int(
-        config.deviceScreenHeightVar
-    ) - (30 + getRealFooterHeight(config))
-    replacementStringMap["default"]["{bar_width}"] = (
-        int(config.deviceScreenWidthVar) - 25
-    )
-    replacementStringMap["default"]["{bar_progress_height}"] = 16
-
-    content_height = individualItemHeight * int(config.itemsPerScreenVar)
-
     counter_alignment_map = {"Left": 0, "Centre": 1, "Right": 2}
-    replacementStringMap["default"]["{counter_alignment}"] = counter_alignment_map[
-        counter_alignment
-    ]
-    replacementStringMap["default"]["{counter_padding_top}"] = counter_padding_top
-    replacementStringMap["default"]["{default_radius}"] = default_radius
-
-    # Global Header Settings:
     datetime_alignment_map = {"Auto": 0, "Left": 1, "Centre": 2, "Right": 3}
-    replacementStringMap["default"]["{datetime_align}"] = datetime_alignment_map[
-        datetime_alignment
-    ]
-    replacementStringMap["default"]["{datetime_padding_left}"] = datetime_left_padding
-    replacementStringMap["default"]["{datetime_padding_right}"] = datetime_right_padding
+    content_alignment_map = {"Left": 0, "Centre": 1, "Right": 2}
+    content_height = individualItemHeight * int(config.itemsPerScreenVar)
+    content_padding_left = int(config.textPaddingVar) - int(config.bubblePaddingVar)
+    if config.global_alignment_var == "Centre":
+        content_padding_left = 0
+    elif config.global_alignment_var == "Right":
+        content_padding_left = -content_padding_left
+
     status_alignment_map = {
         "Left": 0,
         "Right": 1,
@@ -4377,122 +4327,109 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         "icons evenly distributed with equal space around them": 4,
         "First icon aligned left last icon aligned right all other icons evenly distributed": 5,
     }
-    replacementStringMap["default"]["{status_align}"] = status_alignment_map[
-        header_glyph_alignment
-    ]
-    replacementStringMap["default"]["{status_padding_left}"] = status_padding_left
-    replacementStringMap["default"]["{status_padding_right}"] = status_padding_right
-    replacementStringMap["default"]["{header_height}"] = int(header_height)
 
-    # Rest of the settings
-    replacementStringMap["default"]["{content_height}"] = content_height
-    replacementStringMap["default"]["{content_item_height}"] = individualItemHeight - 2
-    replacementStringMap["default"]["{content_item_count}"] = config.itemsPerScreenVar
-    replacementStringMap["default"]["{background_alpha}"] = 0
-    replacementStringMap["default"]["{selected_font_hex}"] = config.selectedFontHexVar
-    replacementStringMap["default"]["{deselected_font_hex}"] = (
-        config.deselectedFontHexVar
-    )
-    replacementStringMap["default"]["{bubble_alpha}"] = 255
-    replacementStringMap["default"]["{bubble_padding_right}"] = config.bubblePaddingVar
-    content_alignment_map = {"Left": 0, "Centre": 1, "Right": 2}
-    replacementStringMap["default"]["{content_alignment}"] = content_alignment_map[
-        config.global_alignment_var
-    ]  # TODO make this change for the different sections
-    replacementStringMap["default"]["{list_default_label_long_mode}"] = 1
-    content_padding_left = int(config.textPaddingVar) - int(config.bubblePaddingVar)
-    if config.global_alignment_var == "Centre":
-        content_padding_left = 0
-    elif config.global_alignment_var == "Right":
-        content_padding_left = -content_padding_left
-    replacementStringMap["default"]["{content_padding_left}"] = content_padding_left
-    if config.version_var == "muOS 2410.1 Banana":
-        replacementStringMap["default"]["{content_width}"] = (
+    # Set up default colours that should be the same everywhere
+    replacementStringMap["default"] = {
+        "accent_hex": accent_hex,
+        "base_hex": base_hex,
+        "blend_hex": blend_hex,
+        "muted_hex": muted_hex,
+        "battery_charging_hex": config.batteryChargingHexVar,
+        "bubble_hex": config.bubbleHexVar,
+        "boot_text_y_pos": int(int(config.deviceScreenHeightVar) * (165 / 480)),
+        "glyph_padding_left": int(int(config.bubblePaddingVar) + (glyph_width / 2)),
+        "image_overlay": config.include_overlay_var,
+        "footer_height": footerHeight,
+        "header_text_alpha": 255 if config.show_console_name_var else 0,
+        "page_title_text_align": page_title_alignment_map[
+            config.page_title_alignment_var
+        ],
+        "page_title_padding": int(config.pageTitlePaddingVar),
+        "bar_height": 42,
+        "bar_progress_width": int(config.deviceScreenWidthVar) - 90,
+        "bar_y_pos": int(config.deviceScreenHeightVar)
+        - (30 + getRealFooterHeight(config)),
+        "bar_width": int(config.deviceScreenWidthVar) - 25,
+        "bar_progress_height": 16,
+        "counter_alignment": counter_alignment_map[counter_alignment],
+        "counter_padding_top": counter_padding_top,
+        "default_radius": default_radius,
+        "datetime_align": datetime_alignment_map[datetime_alignment],
+        "datetime_padding_left": datetime_left_padding,
+        "datetime_padding_right": datetime_right_padding,
+        "status_align": status_alignment_map[header_glyph_alignment],
+        "status_padding_left": status_padding_left,
+        "status_padding_right": status_padding_right,
+        "header_height": int(header_height),
+        "content_height": content_height,
+        "content_item_height": individualItemHeight - 2,
+        "content_item_count": config.itemsPerScreenVar,
+        "background_alpha": 0,
+        "selected_font_hex": config.selectedFontHexVar,
+        "deselected_font_hex": config.deselectedFontHexVar,
+        "bubble_alpha": 255,
+        "bubble_padding_right": config.bubblePaddingVar,
+        "content_alignment": content_alignment_map[
+            config.global_alignment_var
+        ],  # TODO make this change for the different sections
+        "list_default_label_long_mode": 1,
+        "content_padding_left": content_padding_left,
+        "content_width": (
             int(config.deviceScreenWidthVar)
-            - 10
+            - (10 if config.version_var == "muOS 2410.1 Banana" else 0)
             - 2 * (int(config.textPaddingVar) - int(config.bubblePaddingVar))
-        )
-    else:
-        replacementStringMap["default"]["{content_width}"] = int(
-            config.deviceScreenWidthVar
-        ) - 2 * (int(config.textPaddingVar) - int(config.bubblePaddingVar))
-    replacementStringMap["default"]["{footer_alpha}"] = 0
-    replacementStringMap["default"]["{footer_background_alpha}"] = 0
-    replacementStringMap["default"]["{footer_pad_top}"] = 0
-    replacementStringMap["default"]["{footer_pad_bottom}"] = 0
-    if config.show_glyphs_var:
-        replacementStringMap["default"]["{bubble_padding_left}"] = int(
+        ),
+        "footer_alpha": 0,
+        "footer_background_alpha": 0,
+        "footer_pad_top": 0,
+        "footer_pad_bottom": 0,
+        "bubble_padding_left": int(
             int(config.bubblePaddingVar) + (glyph_width / 2) + glyph_to_text_pad
         )
-        replacementStringMap["default"]["{list_glyph_alpha}"] = 255
-    else:
-        replacementStringMap["default"]["{bubble_padding_left}"] = (
-            config.bubblePaddingVar
-        )
-        replacementStringMap["default"]["{list_glyph_alpha}"] = 0
-    replacementStringMap["default"]["{list_text_alpha}"] = 255
-    replacementStringMap["default"]["{navigation_type}"] = 0
-    replacementStringMap["default"]["{content_padding_top}"] = int(
-        contentPaddingTop
-    ) - (int(header_height) + 2)
+        if config.show_glyphs_var
+        else config.bubblePaddingVar,
+        "list_glyph_alpha": 255 if config.show_glyphs_var else 0,
+        "list_text_alpha": 255,
+        "navigation_type": 0,
+        "content_padding_top": int(contentPaddingTop) - (int(header_height) + 2),
+        "grid_navigation_type": 4,
+        "grid_background": config.bgHexVar,
+        "grid_background_alpha": 0,
+        "grid_location_x": 0,
+        "grid_location_y": 0,
+        "grid_column_count": 0,
+        "grid_row_count": 0,
+        "grid_row_height": 0,
+        "grid_column_width": 0,
+        "grid_cell_width": 200,
+        "grid_cell_height": 200,
+        "grid_cell_radius": 10,
+        "grid_cell_border_width": 0,
+        "grid_cell_image_padding_top": 0,
+        "grid_cell_text_padding_bottom": 0,
+        "grid_cell_text_padding_side": 0,
+        "grid_cell_text_line_spacing": 0,
+        "grid_cell_default_background": config.bgHexVar,
+        "grid_cell_default_background_alpha": 0,
+        "grid_cell_default_border": config.bgHexVar,
+        "grid_cell_default_border_alpha": 0,
+        "grid_cell_default_image_alpha": 255,
+        "grid_cell_default_image_recolour": config.iconHexVar,
+        "grid_cell_default_image_recolour_alpha": 255,
+        "grid_cell_default_text": config.deselectedFontHexVar,
+        "grid_cell_default_text_alpha": 0,
+        "grid_cell_focus_background": config.deselectedFontHexVar,
+        "grid_cell_focus_background_alpha": int(255 * 0.133),
+        "grid_cell_focus_border": (config.deselectedFontHexVar),
+        "grid_cell_focus_border_alpha": 0,
+        "grid_cell_focus_image_alpha": 255,
+        "grid_cell_focus_image_recolour": (config.iconHexVar),
+        "grid_cell_focus_image_recolour_alpha": 255,
+        "grid_cell_focus_text": (config.selected_font_hex_entry),
+        "grid_cell_focus_text_alpha": 0,
+    }
 
-    # Grid Settings
-
-    replacementStringMap["default"]["{grid_navigation_type}"] = 4
-    replacementStringMap["default"]["{grid_background}"] = config.bgHexVar
-    replacementStringMap["default"]["{grid_background_alpha}"] = 0
-    replacementStringMap["default"]["{grid_location_x}"] = 0
-    replacementStringMap["default"]["{grid_location_y}"] = 0
-    replacementStringMap["default"]["{grid_column_count}"] = 0
-    replacementStringMap["default"]["{grid_row_count}"] = 0
-    replacementStringMap["default"]["{grid_row_height}"] = 0
-    replacementStringMap["default"]["{grid_column_width}"] = 0
-    replacementStringMap["default"]["{grid_cell_width}"] = 200
-    replacementStringMap["default"]["{grid_cell_height}"] = 200
-    replacementStringMap["default"]["{grid_cell_radius}"] = 10
-    replacementStringMap["default"]["{grid_cell_border_width}"] = 0
-    replacementStringMap["default"]["{grid_cell_image_padding_top}"] = 0
-    replacementStringMap["default"]["{grid_cell_text_padding_bottom}"] = 0
-    replacementStringMap["default"]["{grid_cell_text_padding_side}"] = 0
-    replacementStringMap["default"]["{grid_cell_text_line_spacing}"] = 0
-    replacementStringMap["default"]["{grid_cell_default_background}"] = config.bgHexVar
-    replacementStringMap["default"]["{grid_cell_default_background_alpha}"] = 0
-    replacementStringMap["default"]["{grid_cell_default_border}"] = config.bgHexVar
-    replacementStringMap["default"]["{grid_cell_default_border_alpha}"] = 0
-    replacementStringMap["default"]["{grid_cell_default_image_alpha}"] = 255
-    replacementStringMap["default"]["{grid_cell_default_image_recolour}"] = (
-        config.iconHexVar
-    )
-    replacementStringMap["default"]["{grid_cell_default_image_recolour_alpha}"] = 255
-    replacementStringMap["default"]["{grid_cell_default_text}"] = (
-        config.deselectedFontHexVar
-    )
-    replacementStringMap["default"]["{grid_cell_default_text_alpha}"] = 0
-    replacementStringMap["default"]["{grid_cell_focus_background}"] = (
-        config.deselectedFontHexVar
-    )
-    replacementStringMap["default"]["{grid_cell_focus_background_alpha}"] = int(
-        255 * 0.133
-    )
-    replacementStringMap["default"]["{grid_cell_focus_border}"] = (
-        config.deselectedFontHexVar
-    )
-    replacementStringMap["default"]["{grid_cell_focus_border_alpha}"] = 0
-    replacementStringMap["default"]["{grid_cell_focus_image_alpha}"] = 255
-    replacementStringMap["default"]["{grid_cell_focus_image_recolour}"] = (
-        config.iconHexVar
-    )
-    replacementStringMap["default"]["{grid_cell_focus_image_recolour_alpha}"] = 255
-    replacementStringMap["default"]["{grid_cell_focus_text}"] = (
-        config.selected_font_hex_entry
-    )
-    replacementStringMap["default"]["{grid_cell_focus_text_alpha}"] = 0
-
-    missingValues = []
-
-    for n in replacementStringMap["default"].keys():
-        if replacementStringMap["default"][n] == None:
-            missingValues.append(n)
+    missingValues = [k for k, v in replacementStringMap["default"].items() if v is None]
     if missingValues:
         missingValuesString = ""
         for n in missingValues:
@@ -4503,53 +4440,50 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
 
     # horizontal muxlaunch specific options - basically remove all text content and set naviagtion type
     if config.main_menu_style_var != "Vertical":
-        replacementStringMap["muxlaunch"] = {}
-        replacementStringMap["muxlaunch"]["{bubble_alpha}"] = 0
-        replacementStringMap["muxlaunch"]["{list_glyph_alpha}"] = 0
-        replacementStringMap["muxlaunch"]["{list_text_alpha}"] = 0
-        if config.horizontal_menu_behaviour_var == "Wrap to Row":
-            replacementStringMap["muxlaunch"]["{navigation_type}"] = 4
-        else:
-            replacementStringMap["muxlaunch"]["{navigation_type}"] = 2
+        replacementStringMap["muxlaunch"] = {
+            "bubble_alpha": 0,
+            "list_glyph_alpha": 0,
+            "list_text_alpha": 0,
+            "navigation_type": 4
+            if config.horizontal_menu_behaviour_var == "Wrap to Row"
+            else 2,
+        }
 
     # muxnetwork Specific settings - account for status at the bottom and show footer
+
     if config.version_var == "muOS 2410.1 Banana":
-        replacementStringMap["muxnetwork"] = {}
-        replacementStringMap["muxnetwork"]["{content_height}"] = int(
-            (content_height / int(config.itemsPerScreenVar))
-            * (int(config.itemsPerScreenVar) - 2)
-        )
-        replacementStringMap["muxnetwork"]["{content_item_count}"] = (
-            int(config.itemsPerScreenVar) - 2
-        )
-        replacementStringMap["muxnetwork"]["{footer_alpha}"] = 255
+        replacementStringMap["muxnetwork"] = {
+            "content_height": int(
+                (content_height / int(config.itemsPerScreenVar))
+                * (int(config.itemsPerScreenVar) - 2)
+            ),
+            "content_item_count": int(config.itemsPerScreenVar) - 2,
+            "footer_alpha": 255,
+        }
     else:  ## muxnetwork - show the footer
-        replacementStringMap["muxnetwork"] = {}
-        replacementStringMap["muxnetwork"]["{footer_alpha}"] = 255
+        replacementStringMap["muxnetwork"]["footer_alpha"] = 255
 
     # muxassign - Force Glyphs on and show footer
-    replacementStringMap["muxassign"] = {}
-    replacementStringMap["muxassign"]["{bubble_padding_left}"] = int(
-        int(config.bubblePaddingVar) + (glyph_width / 2) + glyph_to_text_pad
-    )  # for glyph support
-    replacementStringMap["muxassign"]["{list_glyph_alpha}"] = 255  # for glyph support
-    replacementStringMap["muxassign"]["{footer_alpha}"] = (
-        255  ## Show footer in muxassign as can't generate custom one
-    )
+    replacementStringMap["muxassign"] = {
+        "bubble_padding_left": int(
+            int(config.bubblePaddingVar) + (glyph_width / 2) + glyph_to_text_pad
+        ),  # for glyph support
+        "list_glyph_alpha": 255,  # for glyph support
+        "footer_alpha": 255,
+    }
 
     # muxgov - same as muxassign, but hide footer
-    replacementStringMap["muxgov"] = replacementStringMap["muxassign"].copy()
-    replacementStringMap["muxsearch"] = replacementStringMap["muxassign"].copy()
-    replacementStringMap["muxsearch"]["{footer_alpha}"] = 0
-    replacementStringMap["muxgov"]["{footer_alpha}"] = 0
+    for map in ["muxgov", "muxsearch"]:
+        replacementStringMap[map] = replacementStringMap["muxassign"].copy()
+        replacementStringMap[map]["footer_alpha"] = 0
 
     # muxpicker - Cut text off before preview image
     if config.version_var != "muOS 2410.1 Banana":
-        replacementStringMap["muxpicker"] = {}
         max_preview_size = int(int(config.deviceScreenWidthVar) * 0.45)
         if int(config.deviceScreenWidthVar) == 720:
             max_preview_size = 340
-        replacementStringMap["muxpicker"]["{content_width}"] = (
+
+        replacementStringMap["muxpicker"]["content_width"] = (
             int(config.deviceScreenWidthVar)
             - max_preview_size
             - (int(config.textPaddingVar) - int(config.bubblePaddingVar))
@@ -4557,9 +4491,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
 
     # muxplore - cut off text if needed for box art
     if int(config.maxBoxArtWidth) > 0:
-        replacementStringMap["muxplore"] = {}
-
-        replacementStringMap["muxplore"]["{content_width}"] = (
+        replacementStringMap["muxplore"]["content_width"] = (
             int(config.deviceScreenWidthVar)
             - int(config.maxBoxArtWidth)
             - (int(config.textPaddingVar) - int(config.bubblePaddingVar))
@@ -4650,8 +4582,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
     if int(config.maxBoxArtWidth) > 0:
         replacementStringMap["muxhistory"] = replacementStringMap["muxplore"].copy()
 
-    replacementStringMap["muxstorage"] = {}
-    replacementStringMap["muxstorage"]["{footer_alpha}"] = 255
+    replacementStringMap["muxstorage"]["footer_alpha"] = 255
 
     if config.enable_grid_view_explore_var:
         grid_total_height = (
@@ -4693,19 +4624,18 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         grid_cell_width = grid_column_width - 2 * cell_inner_padding
         grid_cell_height = grid_row_height - 2 * cell_inner_padding
         grid_cell_size = min(grid_cell_width, grid_cell_height)
-        if "muxplore" not in replacementStringMap:
-            replacementStringMap["muxplore"] = {}
-        replacementStringMap["muxplore"]["{grid_location_x}"] = grid_location_x
-        replacementStringMap["muxplore"]["{grid_location_y}"] = grid_location_y
-        replacementStringMap["muxplore"]["{grid_column_count}"] = grid_column_count
-        replacementStringMap["muxplore"]["{grid_row_count}"] = grid_row_count
-        replacementStringMap["muxplore"]["{grid_row_height}"] = grid_row_height
-        replacementStringMap["muxplore"]["{grid_column_width}"] = grid_column_width
-        replacementStringMap["muxplore"]["{grid_cell_width}"] = grid_cell_size
-        replacementStringMap["muxplore"]["{grid_cell_height}"] = grid_cell_size
-        replacementStringMap["muxplore"]["{grid_cell_radius}"] = math.ceil(
-            grid_cell_size / 2.0
-        )
+
+        replacementStringMap["muxplore"] = {
+            "grid_location_x": grid_location_x,
+            "grid_location_y": grid_location_y,
+            "grid_column_count": grid_column_count,
+            "grid_row_count": grid_row_count,
+            "grid_row_height": grid_row_height,
+            "grid_column_width": grid_column_width,
+            "grid_cell_width": grid_cell_size,
+            "grid_cell_height": grid_cell_size,
+            "grid_cell_radius": math.ceil(grid_cell_size / 2.0),
+        }
 
         grid_image_padding = 10
 
@@ -4765,36 +4695,29 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         grid_location_y = 0
         grid_cell_width = grid_column_width - 2 * cell_inner_padding
         grid_cell_height = grid_row_height - 2 * cell_inner_padding
-        replacementStringMap["muxlaunch"]["{grid_location_x}"] = grid_location_x
-        replacementStringMap["muxlaunch"]["{grid_location_y}"] = grid_location_y
-        replacementStringMap["muxlaunch"]["{grid_column_count}"] = grid_column_count
-        replacementStringMap["muxlaunch"]["{grid_row_count}"] = grid_row_count
-        replacementStringMap["muxlaunch"]["{grid_row_height}"] = grid_row_height
-        replacementStringMap["muxlaunch"]["{grid_column_width}"] = grid_column_width
-        replacementStringMap["muxlaunch"]["{grid_cell_width}"] = grid_cell_width
-        replacementStringMap["muxlaunch"]["{grid_cell_height}"] = grid_cell_height
-        replacementStringMap["muxlaunch"]["{grid_cell_radius}"] = 0
-        replacementStringMap["muxlaunch"]["{grid_cell_focus_background_alpha}"] = 0
-        replacementStringMap["muxlaunch"]["{grid_cell_default_image_alpha}"] = 0
-        replacementStringMap["muxlaunch"][
-            "{grid_cell_default_image_recolour_alpha}"
-        ] = 0
-        replacementStringMap["muxlaunch"]["{grid_cell_default_text_alpha}"] = 255
-        replacementStringMap["muxlaunch"]["{grid_cell_focus_image_alpha}"] = 0
-        replacementStringMap["muxlaunch"]["{grid_cell_focus_image_recolour_alpha}"] = 0
-        replacementStringMap["muxlaunch"]["{grid_cell_focus_text_alpha}"] = 255
+
+        replacementStringMap["muxlaunch"] = {
+            "grid_location_x": grid_location_x,
+            "grid_location_y": grid_location_y,
+            "grid_column_count": grid_column_count,
+            "grid_row_count": grid_row_count,
+            "grid_row_height": grid_row_height,
+            "grid_column_width": grid_column_width,
+            "grid_cell_width": grid_cell_width,
+            "grid_cell_height": grid_cell_height,
+            "grid_cell_radius": 0,
+            "grid_cell_focus_background_alpha": 0,
+            "grid_cell_default_image_alpha": 0,
+            "grid_cell_default_image_recolour_alpha": 0,
+            "grid_cell_default_text_alpha": 255,
+            "grid_cell_focus_image_alpha": 0,
+            "grid_cell_focus_image_recolour_alpha": 0,
+            "grid_cell_focus_text_alpha": 255,
+        }
 
     for fileName in replacementStringMap.keys():
         shutil.copy2(TEMPLATE_SCHEME_PATH, newSchemeDir / f"{fileName}.txt")
-        for stringToBeReplaced in replacementStringMap["default"].keys():
-            replacement = replacementStringMap[fileName].get(
-                stringToBeReplaced, replacementStringMap["default"][stringToBeReplaced]
-            )
-            replace_in_file(
-                newSchemeDir / f"{fileName}.txt",
-                stringToBeReplaced,
-                str(replacement),
-            )
+        replace_scheme_options(newSchemeDir, fileName, replacementStringMap)
 
     ensure_folder_exists(temp_build_dir / "image" / "wall")
 
@@ -7801,6 +7724,26 @@ alt_font_filename.trace_add("write", lambda *args: save_settings(global_config))
 # alt_text_filename.trace_add("write", lambda *args: save_settings(global_config))
 
 resize_event_id = None
+
+
+def replace_scheme_options(newSchemeDir, fileName, replacementStringMap):
+    file_path = newSchemeDir / f"{fileName}.txt"
+    replacements = {
+        stringToBeReplaced: replacementStringMap[fileName].get(
+            stringToBeReplaced, defaultValue
+        )
+        for stringToBeReplaced, defaultValue in replacementStringMap["default"].items()
+    }
+
+    with file_path.open("rb") as file:
+        file_contents = file.read()
+
+    # Replace the occurrences of the search_string with replace_string in binary data
+    new_contents = file_contents.decode().format(**replacements)
+
+    # Write the new content back to the file in binary mode
+    with file_path.open("wb") as file:
+        file.write(new_contents.encode())
 
 
 # Function to call after resizing is finished
