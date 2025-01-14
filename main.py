@@ -4486,7 +4486,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         replacementStringMap["muxpicker"]["content_width"] = (
             int(config.deviceScreenWidthVar)
             - max_preview_size
-            - (int(config.textPaddingVar) - int(config.bubblePaddingVar))
+            - 2 * (int(config.textPaddingVar) - int(config.bubblePaddingVar))
         )
 
     # muxplore - cut off text if needed for box art
@@ -4625,17 +4625,19 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
         grid_cell_height = grid_row_height - 2 * cell_inner_padding
         grid_cell_size = min(grid_cell_width, grid_cell_height)
 
-        replacementStringMap["muxplore"] = {
-            "grid_location_x": grid_location_x,
-            "grid_location_y": grid_location_y,
-            "grid_column_count": grid_column_count,
-            "grid_row_count": grid_row_count,
-            "grid_row_height": grid_row_height,
-            "grid_column_width": grid_column_width,
-            "grid_cell_width": grid_cell_size,
-            "grid_cell_height": grid_cell_size,
-            "grid_cell_radius": math.ceil(grid_cell_size / 2.0),
-        }
+        replacementStringMap["muxplore"].update(
+            {
+                "grid_location_x": grid_location_x,
+                "grid_location_y": grid_location_y,
+                "grid_column_count": grid_column_count,
+                "grid_row_count": grid_row_count,
+                "grid_row_height": grid_row_height,
+                "grid_column_width": grid_column_width,
+                "grid_cell_width": grid_cell_size,
+                "grid_cell_height": grid_cell_size,
+                "grid_cell_radius": math.ceil(grid_cell_size / 2.0),
+            }
+        )
 
         grid_image_padding = 10
 
