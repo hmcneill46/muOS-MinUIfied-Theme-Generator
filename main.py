@@ -34,7 +34,6 @@ from PIL import (
     ImageColor,
 )
 
-from generator import defaults
 from generator.config import Config
 from generator.constants import (
     BASE_DIR,
@@ -49,6 +48,7 @@ from generator.constants import (
     FONTS_DIR,
 )
 from generator.font import get_font_path
+from generator.gui.grid_helper import GridHelper
 from generator.utils import (
     copy_contents,
     delete_folder,
@@ -5908,27 +5908,6 @@ def FillTempThemeFolder(progress_bar, threadNumber, config: Config):
 #
 #     root.wait_window(menu_names_grid)
 #     on_change()
-
-
-class GridHelper:
-    def __init__(self, root):
-        self.root = root
-        self.row = 0
-        self.column = 0
-
-    def add(self, widget, colspan=1, rowspan=1, next_row=False, **kwargs):
-        widget.grid(
-            row=self.row,
-            column=self.column,
-            columnspan=colspan,
-            rowspan=rowspan,
-            **kwargs,
-        )
-        if next_row:
-            self.row += 1
-            self.column = 0
-        else:
-            self.column += colspan
 
 
 # class MenuNamesGrid(tk.Toplevel):
