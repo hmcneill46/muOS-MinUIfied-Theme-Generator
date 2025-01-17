@@ -1,0 +1,625 @@
+{
+  "sections": [
+    {
+      "title": "Device Configuration",
+      "fields": [
+        {
+          "label": "Device Type",
+          "widget_type": "optionmenu",
+          "var_name": "device_type_var",
+          "default_value": "Other [640x480]",
+          "var_type": "string",
+          "options": [
+            "Other [640x480]",
+            "RG CubeXX [720x720]",
+            "RG34XX [720x480]",
+            "576p [720x576]",
+            "HD [1280x720]",
+            "Full HD [1920x1080]"
+          ]
+        },
+        {
+          "label": "muOS Version",
+          "widget_type": "optionmenu",
+          "var_name": "version_var",
+          "default_value": "muOS 2410.3 AW BANANA",
+          "var_type": "string",
+          "options": [
+            "muOS 2410.1 Banana",
+            "muOS 2410.3 AW BANANA"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "General Configuration",
+      "fields": [
+        {
+          "label": "Physical Controller Layout",
+          "widget_type": "optionmenu",
+          "var_name": "physical_controller_layout_var",
+          "default_value": "Nintendo",
+          "var_type": "string",
+          "options": [
+            "Nintendo",
+            "Xbox",
+            "PlayStation",
+            "Universal"
+          ]
+        },
+        {
+          "label": "muOS Control Scheme",
+          "widget_type": "optionmenu",
+          "var_name": "muos_button_swap_var",
+          "default_value": "Retro",
+          "var_type": "string",
+          "options": [
+            "Retro",
+            "Modern"
+          ]
+        },
+        {
+          "label": "Use Grid View in Explore",
+          "widget_type": "checkbox",
+          "var_name": "enable_grid_view_explore_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Main Menu Style",
+          "widget_type": "optionmenu",
+          "var_name": "main_menu_style_var",
+          "default_value": "Horizontal",
+          "var_type": "string",
+          "options": [
+            "Horizontal",
+            "Vertical",
+            "Alt-Horizontal"
+          ]
+        },
+        {
+          "label": "Horizontal Menu Behaviour",
+          "widget_type": "optionmenu",
+          "var_name": "horizontal_menu_behaviour_var",
+          "default_value": "Wrap to Row",
+          "var_type": "string",
+          "options": [
+            "Wrap to Row",
+            "Don't wrap to row"
+          ]
+        },
+        {
+          "label": "Include Overlay",
+          "widget_type": "checkbox",
+          "var_name": "include_overlay_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Overlay Style",
+          "widget_type": "optionmenu",
+          "var_name": "selected_overlay_var",
+          "default_value": "muOS Default CRT Overlay",
+          "var_type": "string",
+          "options": [
+            "muOS Default CRT Overlay",
+            "Grid_2px_10",
+            "Grid_2px_20",
+            "Grid_2px_30",
+            "Grid_Thin_2px_10",
+            "Grid_Thin_2px_20",
+            "Grid_Thin_2px_30",
+            "Perfect_CRT-noframe",
+            "Perfect_CRT"
+          ]
+        },
+        {
+          "label": "Use Custom Bootlogo Image",
+          "widget_type": "checkbox",
+          "var_name": "use_custom_bootlogo_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Bootlogo Image Path",
+          "widget_type": "entry",
+          "var_name": "bootlogo_image_path",
+          "var_type": "path",
+          "default_value": ""
+        },
+        {
+          "label": "Browse",
+          "widget_type": "button",
+          "var_name": "bootlogo_image_path",
+          "command": "select_bootlogo_image_path"
+        }
+      ]
+    },
+    {
+      "title": "Color Configuration",
+      "fields": [
+        {
+          "label": "Background Color",
+          "widget_type": "entry",
+          "var_name": "bgHexVar",
+          "default_value": "000000",
+          "var_type": "string"
+        },
+        {
+          "label": "Pick Color",
+          "widget_type": "button",
+          "var_name": "bgHexVar",
+          "command": "select_color"
+        },
+        {
+          "label": "Selected Font Color",
+          "widget_type": "entry",
+          "var_name": "selectedFontHexVar",
+          "default_value": "ffffff",
+          "var_type": "string"
+        },
+        {
+          "label": "Pick Color",
+          "widget_type": "button",
+          "var_name": "selectedFontHexVar",
+          "command": "select_color"
+        },
+        {
+          "label": "Unselected Font Color",
+          "widget_type": "entry",
+          "var_name": "deselectedFontHexVar",
+          "default_value": "ffffff",
+          "var_type": "string"
+        },
+        {
+          "label": "Pick Color",
+          "widget_type": "button",
+          "var_name": "deselectedFontHexVar",
+          "command": "select_color"
+        },
+        {
+          "label": "Bubble Color",
+          "widget_type": "entry",
+          "var_name": "bubbleHexVar",
+          "default_value": "ffffff",
+          "var_type": "string"
+        },
+        {
+          "label": "Pick Color",
+          "widget_type": "button",
+          "var_name": "bubbleHexVar",
+          "command": "select_color"
+        },
+        {
+          "label": "Footer Bubble Color",
+          "widget_type": "entry",
+          "var_name": "footerBubbleHexVar",
+          "default_value": "ffffff",
+          "var_type": "string"
+        },
+        {
+          "label": "Pick Color",
+          "widget_type": "button",
+          "var_name": "footerBubbleHexVar",
+          "command": "select_color"
+        },
+        {
+          "label": "Icon Color",
+          "widget_type": "entry",
+          "var_name": "iconHexVar",
+          "default_value": "ffffff",
+          "var_type": "string"
+        },
+        {
+          "label": "Pick Color",
+          "widget_type": "button",
+          "var_name": "iconHexVar",
+          "command": "select_color"
+        },
+        {
+          "label": "Battery Charging Color",
+          "widget_type": "entry",
+          "var_name": "batteryChargingHexVar",
+          "default_value": "2eb774",
+          "var_type": "string"
+        },
+        {
+          "label": "Pick Color",
+          "widget_type": "button",
+          "var_name": "batteryChargingHexVar",
+          "command": "select_color"
+        },
+        {
+          "label": "Use Background Image",
+          "widget_type": "checkbox",
+          "var_name": "use_custom_background_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Background Image Path",
+          "widget_type": "entry",
+          "var_name": "background_image_path",
+          "var_type": "path",
+          "default_value": ""
+        },
+        {
+          "label": "Browse",
+          "widget_type": "button",
+          "var_name": "background_image_path",
+          "command": "select_background_image_path"
+        },
+        {
+          "label": "Show Background through Text on Launch Menu",
+          "widget_type": "checkbox",
+          "var_name": "transparent_text_var",
+          "var_type": "boolean",
+          "default_value": false
+        }
+      ]
+    },
+    {
+      "title": "Text Configuration",
+      "fields": [
+        {
+          "label": "Global Text Alignment",
+          "widget_type": "optionmenu",
+          "var_name": "global_alignment_var",
+          "default_value": "Left",
+          "var_type": "string",
+          "options": [
+            "Left",
+            "Centre",
+            "Right"
+          ]
+        },
+        {
+          "label": "Font Size (10-55 inclusive)",
+          "widget_type": "entry",
+          "var_name": "font_size_var",
+          "default_value": 24,
+          "var_type": "int"
+        },
+        {
+          "label": "Use Custom Font",
+          "widget_type": "checkbox",
+          "var_name": "use_alt_font_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Custom Font Path",
+          "widget_type": "entry",
+          "var_name": "alt_font_filename",
+          "var_type": "path",
+          "default_value": ""
+        },
+        {
+          "label": "Browse",
+          "widget_type": "button",
+          "var_name": "alt_font_filename",
+          "command": "select_alt_font_path"
+        }
+      ]
+    },
+    {
+      "title": "Header Configuration",
+      "fields": [
+        {
+          "label": "Header Height",
+          "widget_type": "entry",
+          "var_name": "headerHeightVar",
+          "default_value": 44,
+          "var_type": "int"
+        },
+        {
+          "label": "Header Text Height",
+          "widget_type": "entry",
+          "var_name": "header_text_height_var",
+          "default_value": 20,
+          "var_type": "int"
+        },
+        {
+          "label": "Header Text Bubble Height",
+          "widget_type": "entry",
+          "var_name": "header_text_bubble_height_var",
+          "default_value": 35,
+          "var_type": "int"
+        },
+        {
+          "label": "Header - Top Padding",
+          "widget_type": "entry",
+          "var_name": "contentPaddingTopVar",
+          "default_value": 44,
+          "var_type": "int"
+        },
+        {
+          "label": "Join Header Bubbles",
+          "widget_type": "checkbox",
+          "var_name": "join_header_bubbles_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Clock Format",
+          "widget_type": "optionmenu",
+          "var_name": "clock_format_var",
+          "default_value": "24 Hour",
+          "var_type": "string",
+          "options": [
+            "12 Hour",
+            "24 Hour"
+          ]
+        },
+        {
+          "label": "Clock Alignment",
+          "widget_type": "optionmenu",
+          "var_name": "clock_alignment_var",
+          "default_value": "Left",
+          "var_type": "string",
+          "options": [
+            "Left",
+            "Centre",
+            "Right"
+          ]
+        },
+        {
+          "label": "Clock - Left Padding",
+          "widget_type": "entry",
+          "var_name": "clockHorizontalLeftPaddingVar",
+          "default_value": 10,
+          "var_type": "int"
+        },
+        {
+          "label": "Clock - Right Padding",
+          "widget_type": "entry",
+          "var_name": "clockHorizontalRightPaddingVar",
+          "default_value": 10,
+          "var_type": "int"
+        },
+        {
+          "label": "Show Bubble Behind Clock",
+          "widget_type": "checkbox",
+          "var_name": "show_clock_bubbles_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Show Page Title in Header",
+          "widget_type": "checkbox",
+          "var_name": "show_console_name_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Page Title Alignment",
+          "widget_type": "optionmenu",
+          "var_name": "page_title_alignment_var",
+          "default_value": "Left",
+          "var_type": "string",
+          "options": [
+            "Left",
+            "Centre",
+            "Right"
+          ]
+        },
+        {
+          "label": "Page Title - Horizontal Padding",
+          "widget_type": "entry",
+          "var_name": "pageTitlePaddingVar",
+          "default_value": 10,
+          "var_type": "int"
+        },
+        {
+          "label": "Glyphs Alignment",
+          "widget_type": "optionmenu",
+          "var_name": "header_glyph_alignment_var",
+          "default_value": "Right",
+          "var_type": "string",
+          "options": [
+            "Left",
+            "Centre",
+            "Right"
+          ]
+        },
+        {
+          "label": "Glyphs Height",
+          "widget_type": "entry",
+          "var_name": "header_glyph_height_var",
+          "default_value": 20,
+          "var_type": "int"
+        },
+        {
+          "label": "Glyphs - Left Padding",
+          "widget_type": "entry",
+          "var_name": "header_glyph_horizontal_left_padding_var",
+          "default_value": 10,
+          "var_type": "int"
+        },
+        {
+          "label": "Glyphs - Right Padding",
+          "widget_type": "entry",
+          "var_name": "header_glyph_horizontal_right_padding_var",
+          "default_value": 10,
+          "var_type": "int"
+        },
+        {
+          "label": "Show Bubble Behind Glyphs",
+          "widget_type": "checkbox",
+          "var_name": "show_glyphs_bubbles_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Glyph Bubble Height",
+          "widget_type": "entry",
+          "var_name": "header_glyph_bubble_height_var",
+          "default_value": 35,
+          "var_type": "int"
+        },
+        {
+          "label": "Battery Glyph Style",
+          "widget_type": "optionmenu",
+          "var_name": "battery_style_var",
+          "default_value": "Default",
+          "var_type": "string",
+          "options": [
+            "Default",
+            "Percentage"
+          ]
+        },
+        {
+          "label": "Battery Glyph Style - Charging",
+          "widget_type": "optionmenu",
+          "var_name": "battery_charging_style_var",
+          "default_value": "Default",
+          "var_type": "string",
+          "options": [
+            "Default",
+            "Percentage",
+            "Percentage Lightning",
+            "Lightning 1",
+            "Lightning 2",
+            "Lightning 3"
+          ]
+        },
+        {
+          "label": "Show Battery Charging in Preview",
+          "widget_type": "checkbox",
+          "var_name": "show_charing_battery_var",
+          "var_type": "boolean",
+          "default_value": false
+        }
+      ]
+    },
+    {
+      "title": "Content List Configuration",
+      "fields": [
+        {
+          "label": "Show Glyphs",
+          "widget_type": "checkbox",
+          "var_name": "show_glyphs_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Items per Screen (5-13 inclusive)",
+          "widget_type": "entry",
+          "var_name": "itemsPerScreenVar",
+          "default_value": 7,
+          "var_type": "int"
+        },
+        {
+          "label": "Text Padding",
+          "widget_type": "entry",
+          "var_name": "textPaddingVar",
+          "default_value": 40,
+          "var_type": "int"
+        },
+        {
+          "label": "Bubble Padding",
+          "widget_type": "entry",
+          "var_name": "bubblePaddingVar",
+          "default_value": 20,
+          "var_type": "int"
+        },
+        {
+          "label": "Boxart Max Width (px)",
+          "widget_type": "entry",
+          "var_name": "maxBoxArtWidth",
+          "default_value": 0,
+          "var_type": "int"
+        }
+      ]
+    },
+    {
+      "title": "Footer Configuration",
+      "fields": [
+        {
+          "label": "Footer Height",
+          "widget_type": "entry",
+          "var_name": "approxFooterHeightVar",
+          "default_value": 80,
+          "var_type": "int"
+        },
+        {
+          "label": "Button Guides - Horizontal Padding",
+          "widget_type": "entry",
+          "var_name": "VBG_Horizontal_Padding_var",
+          "default_value": 15,
+          "var_type": "int"
+        },
+        {
+          "label": "Button Guides - Vertical Padding",
+          "widget_type": "entry",
+          "var_name": "VBG_Vertical_Padding_var",
+          "default_value": 15,
+          "var_type": "int"
+        },
+        {
+          "label": "Remove Left Button Guides",
+          "widget_type": "checkbox",
+          "var_name": "remove_left_menu_guides_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Remove Right Button Guides",
+          "widget_type": "checkbox",
+          "var_name": "remove_right_menu_guides_var",
+          "var_type": "boolean",
+          "default_value": false
+        }
+      ]
+    },
+    {
+      "title": "Generation Configuration",
+      "fields": [
+        {
+          "label": "Theme Name",
+          "widget_type": "entry",
+          "var_name": "theme_name_var",
+          "default_value": "MinUIfied - Default Theme",
+          "var_type": "string"
+        },
+        {
+          "label": "Theme Output Directory",
+          "widget_type": "entry",
+          "var_name": "theme_directory_path",
+          "var_type": "path",
+          "default_value": "Generated Theme"
+        },
+        {
+          "label": "Browse",
+          "widget_type": "button",
+          "var_name": "theme_directory_path",
+          "command": "select_theme_directory_path"
+        },
+        {
+          "label": "Generate Theme",
+          "widget_type": "button",
+          "command": "start_theme_task"
+        }
+      ]
+    },
+    {
+      "title": "Developer Options",
+      "fields": [
+        {
+          "label": "Developer Preview Image Generation",
+          "widget_type": "checkbox",
+          "var_name": "developer_preview_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Show Advanced Errors",
+          "widget_type": "checkbox",
+          "var_name": "advanced_error_var",
+          "var_type": "boolean",
+          "default_value": false
+        }
+      ]
+    }
+  ]
+}

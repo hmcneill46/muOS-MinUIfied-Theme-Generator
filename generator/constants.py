@@ -19,3 +19,22 @@ CONFIG_PATH = BASE_DIR / CONFIG_FILENAME
 
 PREMADE_THEMES_FILENAME = "PremadeThemes.json"
 PREMADE_THEMES_PATH = BASE_DIR / PREMADE_THEMES_FILENAME
+
+BASE_SETTINGS_PATH = ASSETS_DIR / "base_settings.json"
+USER_SETTINGS_PATH = BASE_DIR / "settings.json"
+
+BatteryStyleOptionsDict = {
+    "Default": "capacity_",
+    "Percentage": "percentage_capacity_",
+    "Alt Percentage": "alt_percentage_capacity_",
+}
+BatteryChargingStyleOptionsDict = {
+    "Default": "capacity_",
+    "Percentage": "percentage_capacity_",
+    "Percentage Lightning": "percentage_capacity_charging_",
+    "Alt Percentage": "alt_percentage_capacity_",
+    "Alt Percentage Lightning": "alt_percentage_capacity_charging_",
+    "Lightning 1": "capacity_charging_",
+    "Lightning 2": "alt1_capacity_charging_",
+    "Lightning 3": "alt2_capacity_charging_",
+}
