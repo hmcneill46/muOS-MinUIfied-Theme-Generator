@@ -3,6 +3,7 @@ from datetime import datetime
 from functools import partial
 import json
 import math
+from typing import Any
 import numpy as np
 from pathlib import Path
 import queue
@@ -34,7 +35,6 @@ from PIL import (
 )
 
 from generator.app import ThemeGeneratorApp
-from generator.config import Config
 from generator.constants import (
     BASE_DIR,
     RESOURCES_DIR,
@@ -77,7 +77,7 @@ contentPaddingTop = 44
 textMF = 0.7
 
 
-def change_logo_color(input: Path | Image.Image, hex_color):
+def change_logo_color(input: Path | Image.Image, hex_color) -> Image.Image:
     # Load the image
     if isinstance(input, Image.Image):
         img = input
@@ -85,7 +85,7 @@ def change_logo_color(input: Path | Image.Image, hex_color):
         img = Image.open(input).convert("RGBA")
 
     # Convert hex_color to RGBA
-    r, g, b, a = hex_to_rgb(hex_color)
+    r, g, b, _ = hex_to_rgba(hex_color)
 
     # Create a new image with the same size and the specified color
     color_image = Image.new("RGBA", img.size, (r, g, b, 255))
@@ -102,12 +102,12 @@ def change_logo_color(input: Path | Image.Image, hex_color):
 
 
 def generateIndividualButtonGlyph(
-    buttonText,
+    buttonText: str,
     selected_font_path: Path,
-    colour_hex,
-    render_factor,
-    button_height,
-    physical_controller_layout,
+    colour_hex: str,
+    render_factor: int,
+    button_height: int,
+    physical_controller_layout: str,
 ) -> Image.Image:
     if colour_hex.startswith("#"):
         colour_hex = colour_hex[1:]
@@ -241,7 +241,7 @@ def generateIndividualButtonGlyph(
                 (rendered_smallerBubbleWidth, rendered_bubble_height),
             ],  # Top right point
             radius=(math.ceil(button_height / 2)) * render_factor,
-            fill=hex_to_rgb(colour_hex, alpha=1),
+            fill=hex_to_rgba(colour_hex, alpha=1),
         )
         smallerTextX = horizontal_small_padding * render_factor
         draw.text(
@@ -253,7 +253,7 @@ def generateIndividualButtonGlyph(
     return image
 
 
-def getTimeWithWidth(selected_font_path: Path, timeFormat, find="max"):
+def getTimeWithWidth(selected_font_path: Path, timeFormat: str, find: str = "max"):
     TestFont = ImageFont.truetype(selected_font_path, 100)
     stringsByActualSize = {
         "0": 0,
@@ -354,8 +354,11 @@ def getTimeWithWidth(selected_font_path: Path, timeFormat, find="max"):
 
 
 def generateHeaderBubbles(
-    manager: Config, render_factor, accent_colour=None, bubble_alpha=0.133
-):
+    manager: SettingsManager,
+    render_factor: int,
+    accent_colour: str | None = None,
+    bubble_alpha: float = 0.133,
+) -> Image.Image:
     image = Image.new(
         "RGBA",
         (
@@ -365,7 +368,7 @@ def generateHeaderBubbles(
         (255, 255, 255, 0),
     )
     draw = ImageDraw.Draw(image)
-    if accent_colour == None:
+    if accent_colour is None:
         accent_colour = manager.deselectedFontHexVar
     if accent_colour.startswith("#"):
         accent_colour = accent_colour[1:]
@@ -578,7 +581,7 @@ def generateHeaderBubbles(
                 (right_x, top_y),
             ],  # Top right point
             radius=math.ceil((top_y - bottom_y) / 2),
-            fill=hex_to_rgb(accent_colour, alpha=bubble_alpha),
+            fill=hex_to_rgba(accent_colour, alpha=bubble_alpha),
         )
     else:
         for key in bottom_y_points.keys():
@@ -588,13 +591,15 @@ def generateHeaderBubbles(
                     (right_x_points[key], top_y_points[key]),
                 ],  # Top right point
                 radius=math.ceil((top_y_points[key] - bottom_y_points[key]) / 2),
-                fill=hex_to_rgb(accent_colour, alpha=bubble_alpha),
+                fill=hex_to_rgba(accent_colour, alpha=bubble_alpha),
             )
 
     return image
 
 
-def generatePilImageMuOSOverlay(manager: Config, muOSpageName, render_factor):
+def generatePilImageMuOSOverlay(
+    manager: SettingsManager, muOSpageName: int, render_factor: int
+) -> Image.Image:
     muOSpageNameDict = {
         "muxlaunch": "MAIN MENU",
         "muxconfig": "CONFIGURATION",
@@ -849,31 +854,33 @@ def generatePilImageMuOSOverlay(manager: Config, muOSpageName, render_factor):
     return image
 
 
-def getRealFooterHeight(manager: Config) -> int:
+def getRealFooterHeight(manager: SettingsManager) -> int:
+    items_per_screen = manager.itemsPerScreenVar
+    device_screen_height = manager.deviceScreenHeightVar
+    content_padding_top = manager.contentPaddingTopVar
+    approx_footer_height = manager.approxFooterHeightVar
+
     individualItemHeight = round(
-        (
-            int(manager.deviceScreenHeightVar)
-            - int(manager.approxFooterHeightVar)
-            - int(manager.contentPaddingTopVar)
-        )
-        / int(manager.itemsPerScreenVar)
+        (device_screen_height - approx_footer_height - content_padding_top)
+        / items_per_screen
     )
     footerHeight = (
-        int(manager.deviceScreenHeightVar)
-        - (individualItemHeight * int(manager.itemsPerScreenVar))
-        - int(manager.contentPaddingTopVar)
+        device_screen_height
+        - (individualItemHeight * items_per_screen)
+        - content_padding_top
     )
+
     return footerHeight
 
 
 def generateMenuHelperGuides(
-    retro_rhs_buttons,
+    retro_rhs_buttons: list[tuple[str, str]],
     selected_font_path: Path,
-    colour_hex,
-    render_factor,
-    manager: Config,
-    lhsButtons=[["POWER", "SLEEP"]],
-):
+    colour_hex: str,
+    render_factor: int,
+    manager: SettingsManager,
+    lhsButtons: list[tuple[str, str]] = [("POWER", "SLEEP")],
+) -> Image.Image:
     if colour_hex.startswith("#"):
         colour_hex = colour_hex[1:]
 
@@ -955,7 +962,8 @@ def generateMenuHelperGuides(
                 menu_helper_guide_height * (20.1 / 60) * render_factor
             )
             inSmallerBubbleFont = ImageFont.truetype(
-                selected_font_path, in_smaller_bubble_font_size
+                selected_font_path,
+                in_smaller_bubble_font_size,
             )
 
             in_bubble_font_size = menu_helper_guide_height * (24 / 60) * render_factor
@@ -1054,7 +1062,7 @@ def generateMenuHelperGuides(
                     ),
                 ],  # Top right point
                 radius=(menu_helper_guide_height / 2) * render_factor,
-                fill=hex_to_rgb(colour_hex, alpha=0.133),
+                fill=hex_to_rgba(colour_hex, alpha=0.133),
             )
             realLhsPointer += horizontal_padding * render_factor
             for pair in lhsButtons:
@@ -1111,7 +1119,7 @@ def generateMenuHelperGuides(
                     ),
                 ],  # Top right point
                 radius=(menu_helper_guide_height / 2) * render_factor,
-                fill=hex_to_rgb(colour_hex, alpha=0.133),
+                fill=hex_to_rgba(colour_hex, alpha=0.133),
             )
             realRhsPointer += horizontal_padding * render_factor
             for pair in real_rhs_buttons:
@@ -1154,13 +1162,13 @@ def generateMenuHelperGuides(
 
 
 def generateMuOSBackgroundOverlay(
-    rhsButtons,
-    selected_font_path,
-    colour_hex,
-    render_factor,
-    manager: Config,
-    lhsButtons=[["POWER", "SLEEP"]],
-):
+    rhsButtons: list[tuple[str, str]],
+    selected_font_path: Path,
+    colour_hex: str,
+    render_factor: int,
+    manager: SettingsManager,
+    lhsButtons: list[tuple[str, str]] = [("POWER", "SLEEP")],
+) -> Image.Image:
     if colour_hex.startswith("#"):
         colour_hex = colour_hex[1:]
 
@@ -1192,15 +1200,15 @@ def generateMuOSBackgroundOverlay(
 
 
 def getTotalBubbleWidth(
-    buttons,
-    internalBubbleFont,
-    bubbleFont,
-    initalPadding,
-    largerPadding,
-    smallerPadding,
-    circleWidth,
-    render_factor,
-):
+    buttons: list[tuple[str, str]],
+    internalBubbleFont: ImageFont.FreeTypeFont,
+    bubbleFont: ImageFont.FreeTypeFont,
+    initalPadding: float,
+    largerPadding: float,
+    smallerPadding: float,
+    circleWidth: float,
+    render_factor: float,
+) -> float:
     totalWidth = initalPadding
     for pair in buttons:
         # pair[0] might be MENU, POWER, or ABXY
@@ -1222,26 +1230,26 @@ def getTotalBubbleWidth(
 
 
 def generatePilImageVertical(
-    progress_bar,
-    workingIndex,
-    muOSSystemName,
-    listItems,
-    textPadding,
-    rectanglePadding,
-    ItemsPerScreen,
-    bg_hex,
-    selected_font_hex,
-    deselected_font_hex,
-    bubble_hex,
-    render_factor,
-    manager: Config,
-    numScreens=0,
-    screenIndex=0,
-    fileCounter="",
-    folderName=None,
-    transparent=False,
-    forPreview=False,
-):
+    progress_bar: ttk.Progressbar,
+    workingIndex: int,
+    muOSSystemName: str,
+    listItems: list[str],
+    textPadding: int,
+    rectanglePadding: int,
+    ItemsPerScreen: int,
+    bg_hex: str,
+    selected_font_hex: str,
+    deselected_font_hex: str,
+    bubble_hex: str,
+    render_factor: int,
+    manager: SettingsManager,
+    numScreens: int = 0,
+    screenIndex: int = 0,
+    fileCounter: str = "",
+    folderName: Path | None = None,
+    transparent: bool = False,
+    forPreview: bool = False,
+) -> Image.Image:
     (
         bg_hex,
         selected_font_hex,
@@ -1258,7 +1266,7 @@ def generatePilImageVertical(
     ]
 
     progress_bar["value"] += 1
-    bg_rgb = hex_to_rgb(bg_hex)
+    bg_rgb = hex_to_rgba(bg_hex)
     if not transparent:
         image = Image.new(
             "RGBA",
@@ -1302,69 +1310,69 @@ def generatePilImageVertical(
 
     if muOSSystemName == "muxlaunch":
         menuHelperGuides = generateMenuHelperGuides(
-            [["A", "SELECT"]],
+            [("A", "SELECT")],
             selected_font_path,
             manager.footerBubbleHexVar,
             render_factor,
             manager,
-            lhsButtons=[["POWER", "SLEEP"]],
+            lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo":
         menuHelperGuides = generateMenuHelperGuides(
-            [["B", "BACK"], ["A", "SELECT"]],
+            [("B", "BACK"), ("A", "SELECT")],
             selected_font_path,
             manager.footerBubbleHexVar,
             render_factor,
             manager,
-            lhsButtons=[["POWER", "SLEEP"]],
+            lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxapp":
         menuHelperGuides = generateMenuHelperGuides(
-            [["B", "BACK"], ["A", "LAUNCH"]],
+            [("B", "BACK"), ("A", "LAUNCH")],
             selected_font_path,
             manager.footerBubbleHexVar,
             render_factor,
             manager,
-            lhsButtons=[["POWER", "SLEEP"]],
+            lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxplore":
         menuHelperGuides = generateMenuHelperGuides(
             [
-                ["MENU", "INFO"],
-                ["Y", "FAVOURITE"],
-                ["X", "REFRESH"],
-                ["B", "BACK"],
-                ["A", "OPEN"],
+                ("MENU", "INFO"),
+                ("Y", "FAVOURITE"),
+                ("X", "REFRESH"),
+                ("B", "BACK"),
+                ("A", "OPEN"),
             ],
             selected_font_path,
             manager.footerBubbleHexVar,
             render_factor,
             manager,
-            lhsButtons=[["POWER", "SLEEP"]],
+            lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxfavourite":
         menuHelperGuides = generateMenuHelperGuides(
-            [["MENU", "INFO"], ["X", "REMOVE"], ["B", "BACK"], ["A", "OPEN"]],
+            [("MENU", "INFO"), ("X", "REMOVE"), ("B", "BACK"), ("A", "OPEN")],
             selected_font_path,
             manager.footerBubbleHexVar,
             render_factor,
             manager,
-            lhsButtons=[["POWER", "SLEEP"]],
+            lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxhistory":
         menuHelperGuides = generateMenuHelperGuides(
             [
-                ["MENU", "INFO"],
-                ["Y", "FAVOURITE"],
-                ["X", "REMOVE"],
-                ["B", "BACK"],
-                ["A", "OPEN"],
+                ("MENU", "INFO"),
+                ("Y", "FAVOURITE"),
+                ("X", "REMOVE"),
+                ("B", "BACK"),
+                ("A", "OPEN"),
             ],
             selected_font_path,
             manager.footerBubbleHexVar,
             render_factor,
             manager,
-            lhsButtons=[["POWER", "SLEEP"]],
+            lhsButtons=[("POWER", "SLEEP")],
         )
 
     if manager.show_file_counter_var == 1:
@@ -1526,22 +1534,22 @@ def generatePilImageVertical(
 
 
 def ContinuousFolderImageGen(
-    progress_bar,
-    muOSSystemName,
-    listItems,
-    textPadding,
-    rectanglePadding,
-    ItemsPerScreen,
-    bg_hex,
-    selected_font_hex,
-    deselected_font_hex,
-    bubble_hex,
-    render_factor,
+    progress_bar: ttk.Progressbar,
+    muOSSystemName: str,
+    listItems: list[str],
+    textPadding: int,
+    rectanglePadding: int,
+    ItemsPerScreen: int,
+    bg_hex: str,
+    selected_font_hex: str,
+    deselected_font_hex: str,
+    bubble_hex: str,
+    render_factor: int,
     outputDir: Path,
-    manager: Config,
-    folderName=None,
-    threadNumber=0,
-):
+    manager: SettingsManager,
+    folderName: Path | None = None,
+    threadNumber: int = 0,
+) -> None:
     (
         bg_hex,
         selected_font_hex,
@@ -1614,10 +1622,10 @@ def ContinuousFolderImageGen(
 def resize_system_logos(
     system_logos_path: Path,
     output_system_logos_path: Path,
-    grid_cell_size,
-    grid_image_padding,
-    circular_grid,
-):
+    grid_cell_size: int,
+    grid_image_padding: int,
+    circular_grid: bool,
+) -> None:
     system_logos = system_logos_path.glob("*.png")
     if circular_grid:
         effective_circle_diameter = grid_cell_size - (grid_image_padding * 2)
@@ -1644,7 +1652,9 @@ def resize_system_logos(
         system_logo_image.save(output_system_logos_path / system_logo_path.name)
 
 
-def cut_out_image(original_image, logo_image, coordinates):
+def cut_out_image(
+    original_image: Image.Image, logo_image: Image.Image, coordinates: tuple[int, int]
+) -> Image.Image:
     x, y = coordinates
 
     # Ensure the images are in RGBA mode
@@ -1684,7 +1694,9 @@ def cut_out_image(original_image, logo_image, coordinates):
     return edited_image
 
 
-def getHorizontalLogoSize(path_to_logo: Path, render_factor, manager: Config):
+def getHorizontalLogoSize(
+    path_to_logo: Path, render_factor: int, manager: SettingsManager
+):
     exploreLogoColoured = change_logo_color(path_to_logo, manager.iconHexVar)
     top_logo_size = (
         int(
@@ -1714,19 +1726,19 @@ def getHorizontalLogoSize(path_to_logo: Path, render_factor, manager: Config):
 
 
 def generatePilImageHorizontal(
-    progress_bar,
-    workingIndex,
-    bg_hex,
-    selected_font_hex,
-    deselected_font_hex,
-    bubble_hex,
-    icon_hex,
-    render_factor,
-    manager: Config,
-    transparent=False,
-    forPreview=False,
-    generateText=True,
-):
+    progress_bar: ttk.Progressbar,
+    workingIndex: int,
+    bg_hex: str,
+    selected_font_hex: str,
+    deselected_font_hex: str,
+    bubble_hex: str,
+    icon_hex: str,
+    render_factor: int,
+    manager: SettingsManager,
+    transparent: bool = False,
+    forPreview: bool = False,
+    generateText: bool = True,
+) -> Image.Image:
     (
         bg_hex,
         selected_font_hex,
@@ -1745,7 +1757,7 @@ def generatePilImageHorizontal(
     ]
 
     progress_bar["value"] += 1
-    bg_rgb = hex_to_rgb(bg_hex)
+    bg_rgb = hex_to_rgba(bg_hex)
 
     # Create image
 
@@ -1898,12 +1910,12 @@ def generatePilImageHorizontal(
     )
 
     menuHelperGuides = generateMenuHelperGuides(
-        [["A", "SELECT"]],
+        [("A", "SELECT")],
         selected_font_path,
         manager.footerBubbleHexVar,
         render_factor,
         manager,
-        lhsButtons=[["POWER", "SLEEP"]],
+        lhsButtons=[("POWER", "SLEEP")],
     )
 
     font_size = (
@@ -2492,18 +2504,18 @@ def generatePilImageHorizontal(
 
 
 def generatePilImageAltHorizontal(
-    progress_bar,
-    workingIndex,
-    bg_hex,
-    selected_font_hex,
-    deselected_font_hex,
-    bubble_hex,
-    icon_hex,
-    render_factor,
-    manager: Config,
-    transparent=False,
-    forPreview=False,
-):
+    progress_bar: ttk.Progressbar,
+    workingIndex: int,
+    bg_hex: str,
+    selected_font_hex: str,
+    deselected_font_hex: str,
+    bubble_hex: str,
+    icon_hex: str,
+    render_factor: int,
+    manager: SettingsManager,
+    transparent: bool = False,
+    forPreview: bool = False,
+) -> Image.Image:
     (
         bg_hex,
         selected_font_hex,
@@ -2522,7 +2534,7 @@ def generatePilImageAltHorizontal(
     ]
 
     progress_bar["value"] += 1
-    bg_rgb = hex_to_rgb(bg_hex)
+    bg_rgb = hex_to_rgba(bg_hex)
 
     # Create image
 
@@ -2708,12 +2720,12 @@ def generatePilImageAltHorizontal(
     )
 
     menuHelperGuides = generateMenuHelperGuides(
-        [["A", "SELECT"]],
+        [("A", "SELECT")],
         selected_font_path,
         manager.footerBubbleHexVar,
         render_factor,
         manager,
-        lhsButtons=[["POWER", "SLEEP"]],
+        lhsButtons=[("POWER", "SLEEP")],
     )
 
     font_size = (
@@ -3298,8 +3310,12 @@ def generatePilImageAltHorizontal(
 
 
 def generatePilImageBootLogo(
-    bg_hex, deselected_font_hex, bubble_hex, render_factor, manager: Config
-):
+    bg_hex: str,
+    deselected_font_hex: str,
+    bubble_hex: str,
+    render_factor: int,
+    manager: SettingsManager,
+) -> Image.Image:
     (
         bg_hex,
         deselected_font_hex,
@@ -3313,7 +3329,7 @@ def generatePilImageBootLogo(
         ]
     ]
 
-    bg_rgb = hex_to_rgb(bg_hex)
+    bg_rgb = hex_to_rgba(bg_hex)
     image = Image.new(
         "RGBA",
         (
@@ -3424,14 +3440,14 @@ def generatePilImageBootLogo(
 
 
 def generatePilImageBootScreen(
-    bg_hex,
-    deselected_font_hex,
-    icon_hex,
-    display_text,
-    render_factor,
-    manager: Config,
+    bg_hex: str,
+    deselected_font_hex: str,
+    icon_hex: str,
+    display_text: str,
+    render_factor: int,
+    manager: SettingsManager,
     icon_path: Path | None = None,
-):
+) -> Image.Image:
     (
         bg_hex,
         deselected_font_hex,
@@ -3445,7 +3461,7 @@ def generatePilImageBootScreen(
         ]
     ]
 
-    bg_rgb = hex_to_rgb(bg_hex)
+    bg_rgb = hex_to_rgba(bg_hex)
     image = Image.new(
         "RGBA",
         (
@@ -3454,7 +3470,7 @@ def generatePilImageBootScreen(
         ),
         bg_rgb,
     )
-    if background_image != None:
+    if background_image is not None:
         image.paste(
             background_image.resize(
                 (
@@ -3523,11 +3539,13 @@ def generatePilImageBootScreen(
     return image
 
 
-def generatePilImageDefaultScreen(bg_hex, render_factor, manager: Config):
+def generatePilImageDefaultScreen(
+    bg_hex: str, render_factor: int, manager: SettingsManager
+) -> Image.Image:
     if bg_hex.startswith("#"):
         bg_hex = bg_hex[1:]
 
-    bg_rgb = hex_to_rgb(bg_hex)
+    bg_rgb = hex_to_rgba(bg_hex)
     image = Image.new(
         "RGBA",
         (
@@ -3550,19 +3568,19 @@ def generatePilImageDefaultScreen(bg_hex, render_factor, manager: Config):
 
 
 def HorizontalMenuGen(
-    progress_bar,
-    muOSSystemName,
-    listItems,
-    bg_hex,
-    selected_font_hex,
-    deselected_font_hex,
-    bubble_hex,
-    icon_hex,
-    render_factor,
+    progress_bar: ttk.Progressbar,
+    muOSSystemName: str,
+    listItems: list[str],
+    bg_hex: str,
+    selected_font_hex: str,
+    deselected_font_hex: str,
+    bubble_hex: str,
+    icon_hex: str,
+    render_factor: int,
     outputDir: Path,
-    variant,
-    manager: Config,
-    threadNumber=0,
+    variant: str,
+    manager: SettingsManager,
+    threadNumber: int = 0,
 ):
     (
         bg_hex,
@@ -3671,7 +3689,9 @@ def getDefaultAlternateMenuNameData():
     return defaultMenuNameMap
 
 
-def select_color(manager, var_name, tk_variables):
+def select_color(
+    manager: SettingsManager, var_name: str, tk_variables: dict[str, tk.Variable]
+) -> None:
     """Opens a color picker and sets the selected color to the given entry."""
     current_hex = tk_variables[var_name].get()
     if current_hex and not current_hex.startswith("#"):
@@ -3692,7 +3712,9 @@ def select_color(manager, var_name, tk_variables):
         tk_variables[var_name].set(color_code)
 
 
-def select_theme_directory_path(manager, var_name, tk_variables):
+def select_theme_directory_path(
+    manager: SettingsManager, var_name: str, tk_variables: dict[str, tk.Variable]
+) -> None:
     dir_path = filedialog.askdirectory()
 
     if dir_path:
@@ -3700,7 +3722,9 @@ def select_theme_directory_path(manager, var_name, tk_variables):
         tk_variables[var_name].set(dir_path)
 
 
-def select_background_image_path(manager, var_name, tk_variables):
+def select_background_image_path(
+    manager: SettingsManager, var_name: str, tk_variables: dict[str, tk.Variable]
+) -> None:
     # File dialog to select a file, with specific types of files allowed
     file_path = filedialog.askopenfilename(
         filetypes=[
@@ -3719,7 +3743,9 @@ def select_background_image_path(manager, var_name, tk_variables):
         tk_variables[var_name].set(file_path)
 
 
-def select_bootlogo_image_path(manager, var_name, tk_variables):
+def select_bootlogo_image_path(
+    manager: SettingsManager, var_name: str, tk_variables: dict[str, tk.Variable]
+) -> None:
     # File dialog to select a file, with specific types of files allowed
     file_path = filedialog.askopenfilename(
         filetypes=[
@@ -3738,7 +3764,9 @@ def select_bootlogo_image_path(manager, var_name, tk_variables):
         tk_variables[var_name].set(file_path)
 
 
-def select_alt_font_path(manager, var_name, tk_variables):
+def select_alt_font_path(
+    manager: SettingsManager, var_name: str, tk_variables: dict[str, tk.Variable]
+) -> None:
     # File dialog to select a file, with specific types of files allowed
     file_path = filedialog.askopenfilename(
         filetypes=[
@@ -3984,7 +4012,7 @@ menus2405_3 = [
 ]
 
 
-def hex_to_rgb(hex_color: str, alpha=1.0):
+def hex_to_rgba(hex_color: str, alpha=1.0) -> tuple[int, int, int, int]:
     # Convert hex to RGB
     if hex_color.startswith("#"):
         hex_color = hex_color[1:]
@@ -3992,20 +4020,20 @@ def hex_to_rgb(hex_color: str, alpha=1.0):
     return (rgb[0], rgb[1], rgb[2], int(alpha * 255))
 
 
-def rgb_to_hex(rgb_color):
+def rgb_to_hex(rgb_color: tuple[int, int, int]) -> str:
     # Convert RGB to hex
     return "{:02x}{:02x}{:02x}".format(*rgb_color)
 
 
-def interpolate_color_component(c1, c2, factor):
+def interpolate_color_component(c1: int, c2: int, factor: float) -> int:
     # Interpolate a single color component
     return int(c1 + (c2 - c1) * factor)
 
 
-def percentage_color(hex1, hex2, percentage):
+def percentage_color(hex1: str, hex2: str, percentage: float):
     # Convert hex colors to RGB
-    rgb1 = hex_to_rgb(hex1)
-    rgb2 = hex_to_rgb(hex2)
+    rgb1 = hex_to_rgba(hex1)
+    rgb2 = hex_to_rgba(hex2)
 
     # Calculate the interpolated color for each component
     interp_rgb = tuple(
@@ -4016,7 +4044,7 @@ def percentage_color(hex1, hex2, percentage):
     return rgb_to_hex(interp_rgb)
 
 
-def round_to_nearest_odd(number):
+def round_to_nearest_odd(number: float | int) -> int:
     high_odd = (number // 2) * 2 + 1
     low_odd = high_odd - 2
     return (
@@ -4027,14 +4055,14 @@ def round_to_nearest_odd(number):
 
 
 def generate_theme(
-    progress_bar,
-    loading_window,
-    threadNumber,
-    manager: Config,
-    barrier,
-    resolutions,
-    assumed_res,
-):
+    progress_bar: ttk.Progressbar,
+    loading_window: tk.Toplevel,
+    threadNumber: int,
+    manager: SettingsManager,
+    barrier: threading.Barrier,
+    resolutions: tuple[int, int],
+    assumed_res: tuple[int, int],
+) -> None:
     temp_build_dir = RESOURCES_DIR / f".TempBuildTheme{threadNumber}"
     temp_system_icons_dir = RESOURCES_DIR / f".TempBuildSystemIconsAMFile{threadNumber}"
     assumed_res_dir = temp_build_dir / f"{assumed_res[0]}x{assumed_res[1]}"
@@ -4190,7 +4218,7 @@ def generate_theme(
                 delete_file(preview_path)
 
 
-def generate_themes(themes):
+def generate_themes(themes: list[Any]) -> None:
     if themes:
         barrier = threading.Barrier(
             len(themes) + 1
@@ -4212,9 +4240,9 @@ def generate_themes(themes):
 
             # Start a thread for each theme generation
             match = re.search(r"\[(\d+)x(\d+)\]", thread_manager.device_type_var)
-            assumed_res = [640, 480]
+            assumed_res = (640, 480)
             if match:
-                assumed_res = [int(match.group(1)), int(match.group(2))]
+                assumed_res = (int(match.group(1)), int(match.group(2)))
             else:
                 raise ValueError(
                     "Invalid device type format, cannot find screen dimensions"
@@ -4223,7 +4251,7 @@ def generate_themes(themes):
             for device_type in deviceTypeOptions:
                 match = re.search(r"\[(\d+)x(\d+)\]", device_type)
                 if match:
-                    all_resolutions.append([int(match.group(1)), int(match.group(2))])
+                    all_resolutions.append((int(match.group(1)), int(match.group(2))))
             threading.Thread(
                 target=generate_theme,
                 args=(
@@ -4242,7 +4270,9 @@ def generate_themes(themes):
         messagebox.showinfo("Success", "Themes generated successfully.")
 
 
-def FillTempThemeFolder(progress_bar, threadNumber, manager: Config):
+def FillTempThemeFolder(
+    progress_bar: ttk.Progressbar, threadNumber: int, manager: SettingsManager
+) -> None:
     textPadding = int(manager.textPaddingVar)
     rectanglePadding = int(manager.bubblePaddingVar)
     ItemsPerScreen = int(manager.itemsPerScreenVar)
@@ -5318,7 +5348,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, manager: Config):
     # TODO REMOVE THIS AS IT DOESNT ALLOW BACKGROUND REPLACEMENT (When Alternative is avaliable)
     # TODO wifi would be cool to have footers for once its possible
 
-    bg_rgb = hex_to_rgb(bg_hex)
+    bg_rgb = hex_to_rgba(bg_hex)
     background = Image.new(
         "RGBA",
         (
@@ -5759,7 +5789,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, manager: Config):
         )
 
 
-def start_theme_task():
+def start_theme_task() -> None:
     barrier = threading.Barrier(2)
     # Create a new Toplevel window for the loading bar
     loading_window = tk.Toplevel(root)
@@ -5773,16 +5803,16 @@ def start_theme_task():
     progress_bar.pack(pady=20)
 
     match = re.search(r"\[(\d+)x(\d+)\]", manager.device_type_var)
-    assumed_res = [640, 480]
+    assumed_res = (640, 480)
     if match:
-        assumed_res = [int(match.group(1)), int(match.group(2))]
+        assumed_res = (int(match.group(1)), int(match.group(2)))
     else:
         raise ValueError("Invalid device type format, cannot find screen dimensions")
     all_resolutions = []
     for device_type in deviceTypeOptions:
         match = re.search(r"\[(\d+)x(\d+)\]", device_type)
         if match:
-            all_resolutions.append([int(match.group(1)), int(match.group(2))])
+            all_resolutions.append((int(match.group(1)), int(match.group(2))))
 
     input_queue = queue.Queue()
     output_queue = queue.Queue()
@@ -5802,7 +5832,7 @@ def start_theme_task():
     ).start()
 
 
-def start_bulk_theme_task():
+def start_bulk_theme_task() -> None:
     # Create a new Toplevel window for the loading bar
     themes = manager.load_premade_themes()
 
@@ -5813,18 +5843,18 @@ def start_bulk_theme_task():
 # title_font = font.Font(family="Helvetica", size=20, weight="bold")
 
 
-def update_image_label(image_label, pil_image):
+def update_image_label(image_label: ttk.Label, pil_image: Image.Image) -> None:
     tk_image = ImageTk.PhotoImage(pil_image)
     image_label.config(image=tk_image)
     image_label.image = tk_image
     # image_label.clear()
 
 
-def remove_image_from_label(image_label):
+def remove_image_from_label(image_label: ttk.Label) -> None:
     image_label.config(image="")
 
 
-def get_current_image(image_label):
+def get_current_image(image_label: ttk.Label) -> Image.Image:
     # Retrieve the PhotoImage object from the label
     try:
         tk_image = image_label.image
@@ -5843,7 +5873,10 @@ def get_current_image(image_label):
 
 
 def outline_image_with_inner_gap(
-    image, outline_color=(255, 0, 0), outline_width=5, gap=5
+    image: Image.Image,
+    outline_color: tuple[int, int, int] = (255, 0, 0),
+    outline_width: int = 5,
+    gap: int = 5,
 ):
     # Calculate the size of the new image with the outline and the gap
     new_width = image.width + 2 * (outline_width + gap)
@@ -5873,7 +5906,13 @@ def outline_image_with_inner_gap(
 valid_params = True
 
 
-def map_value(value, x_min, x_max, y_min, y_max):
+def map_value(
+    value: float | int,
+    x_min: float | int,
+    x_max: float | int,
+    y_min: float | int,
+    y_max: float | int,
+) -> float | int:
     # Calculate the proportion of the value within the input range
     proportion = (value - x_min) / (x_max - x_min)
 
@@ -5883,7 +5922,7 @@ def map_value(value, x_min, x_max, y_min, y_max):
     return mapped_value
 
 
-def on_change(app, *args):
+def on_change(app: ThemeGeneratorApp, *args) -> None:
     # global menuNameMap
     # menuNameMap = getAlternateMenuNameDict()
     try:
@@ -6140,7 +6179,9 @@ def on_change(app, *args):
 # menuNameMap = getAlternateMenuNameDict()
 
 
-def replace_scheme_options(newSchemeDir, fileName, replacementStringMap):
+def replace_scheme_options(
+    newSchemeDir: Path, fileName: str, replacementStringMap: dict[str, Any]
+) -> None:
     file_path = newSchemeDir / f"{fileName}.txt"
     replacements = {
         stringToBeReplaced: replacementStringMap[fileName].get(
