@@ -35,30 +35,6 @@
       "title": "General Configuration",
       "fields": [
         {
-          "label": "Physical Controller Layout",
-          "widget_type": "optionmenu",
-          "var_name": "physical_controller_layout_var",
-          "default_value": "Nintendo",
-          "var_type": "string",
-          "options": [
-            "Nintendo",
-            "Xbox",
-            "PlayStation",
-            "Universal"
-          ]
-        },
-        {
-          "label": "muOS Control Scheme",
-          "widget_type": "optionmenu",
-          "var_name": "muos_button_swap_var",
-          "default_value": "Retro",
-          "var_type": "string",
-          "options": [
-            "Retro",
-            "Modern"
-          ]
-        },
-        {
           "label": "Use Grid View in Explore",
           "widget_type": "checkbox",
           "var_name": "enable_grid_view_explore_var",
@@ -555,6 +531,30 @@
           "var_name": "VBG_Vertical_Padding_var",
           "default_value": 15,
           "var_type": "int"
+        },
+        {
+          "label": "Physical Controller Layout",
+          "widget_type": "optionmenu",
+          "var_name": "physical_controller_layout_var",
+          "default_value": "Nintendo",
+          "var_type": "string",
+          "options": [
+            "Nintendo",
+            "Xbox",
+            "PlayStation",
+            "Universal"
+          ]
+        },
+        {
+          "label": "muOS Control Scheme",
+          "widget_type": "optionmenu",
+          "var_name": "muos_button_swap_var",
+          "default_value": "Retro",
+          "var_type": "string",
+          "options": [
+            "Retro",
+            "Modern"
+          ]
         },
         {
           "label": "Remove Left Button Guides",
