@@ -87,17 +87,12 @@ def change_logo_color(input: Path | Image.Image, hex_color) -> Image.Image:
     # Convert hex_color to RGBA
     r, g, b, _ = hex_to_rgba(hex_color)
 
-    # Create a new image with the same size and the specified color
+    alpha_image = img.split()[3]
+    black_image = Image.new("RGBA", img.size, (0, 0, 0, 0))
     color_image = Image.new("RGBA", img.size, (r, g, b, 255))
 
-    # Get the alpha channel from the original image
-    alpha = img.split()[3]
-
     # Composite the color image with the alpha channel
-    result_image = Image.composite(
-        color_image, Image.new("RGBA", img.size, (0, 0, 0, 0)), alpha
-    )
-
+    result_image = Image.composite(color_image, black_image, alpha_image)
     return result_image
 
 
