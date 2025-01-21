@@ -3,6 +3,8 @@ from pathlib import Path
 import shutil
 import sys
 
+from PIL import ImageFont
+
 
 def find_base_dirs() -> tuple[Path, Path]:
     frozen: bool = getattr(sys, "frozen", False)
@@ -74,3 +76,54 @@ def rename_file(src: Path, dst: Path):
             print(f"Error renaming file {src} to {dst}: {e}")
     else:
         raise FileNotFoundError(f"File {src} does not exist")
+
+
+def get_time_string_widths(time_font: ImageFont.FreeTypeFont) -> dict[str, int]:
+    time_strings = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "AM", "PM"]
+    time_string_widths = {}
+
+    # Calculate the width of each character by repeating it
+    for time_string in time_strings:
+        time_string_bbox = time_font.getbbox(time_string * 100)
+        time_string_width = time_string_bbox[2] - time_string_bbox[0]
+        time_string_widths[time_string] = time_string_width
+
+    return time_string_widths
+
+
+def get_max_length_time_string(font: ImageFont.FreeTypeFont, time_format: str):
+    time_string_sizes = get_time_string_widths(font)
+
+    last_digit = max(
+        (s for s in time_string_sizes if any(char.isdigit() for char in s)),
+        key=lambda s: time_string_sizes[s],
+    )
+    second_last_digit = max(
+        (s for s in time_string_sizes if s.isdigit() and int(s) < 6),
+        key=lambda s: time_string_sizes[s],
+    )
+
+    firstDigits = None
+    widthResult = 0
+    hour_values = range(1, 13) if time_format == "12 Hour" else range(0, 24)
+
+    for hour in hour_values:
+        hour_string = str(hour).zfill(2)
+        digit1, digit2 = hour_string[:]
+        width1, width2 = (time_string_sizes[digit1], time_string_sizes[digit2])
+        hour_width = width1 + width2
+
+        if hour_width > widthResult:
+            widthResult = hour_width
+            firstDigits = hour_string
+
+    if time_format == "12 Hour":
+        am_or_pm = max(
+            (s for s in time_string_sizes if not any(char.isdigit() for char in s)),
+            key=lambda s: time_string_sizes[s],
+        )
+        timeText = f"{firstDigits}:{second_last_digit}{last_digit} {am_or_pm}"
+    else:
+        timeText = f"{firstDigits}:{second_last_digit}{last_digit}"
+
+    return timeText

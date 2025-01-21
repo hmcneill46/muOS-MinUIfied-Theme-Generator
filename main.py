@@ -20,6 +20,7 @@ from tkinter import (
 import traceback
 
 from generator.settings import SettingsManager
+from generator.theme import ThemeGenerator
 
 try:
     from bidi import get_display as bidi_get_display
@@ -35,11 +36,11 @@ from PIL import (
 )
 
 from generator.app import ThemeGeneratorApp
+from generator.color_utils import *
 from generator.constants import (
     BASE_DIR,
     RESOURCES_DIR,
     ASSETS_DIR,
-    BUTTON_GLYPHS_DIR,
     GLYPHS_DIR,
     HORIZONTAL_LOGOS_DIR,
     THEME_SHELL_DIR,
@@ -77,523 +78,8 @@ contentPaddingTop = 44
 textMF = 0.7
 
 
-def change_logo_color(input: Path | Image.Image, hex_color) -> Image.Image:
-    # Load the image
-    if isinstance(input, Image.Image):
-        img = input
-    else:
-        img = Image.open(input).convert("RGBA")
-
-    # Convert hex_color to RGBA
-    r, g, b, _ = hex_to_rgba(hex_color)
-
-    alpha_image = img.split()[3]
-    black_image = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    color_image = Image.new("RGBA", img.size, (r, g, b, 255))
-
-    # Composite the color image with the alpha channel
-    result_image = Image.composite(color_image, black_image, alpha_image)
-    return result_image
-
-
-def generateIndividualButtonGlyph(
-    buttonText: str,
-    selected_font_path: Path,
-    colour_hex: str,
-    render_factor: int,
-    button_height: int,
-    physical_controller_layout: str,
-) -> Image.Image:
-    if colour_hex.startswith("#"):
-        colour_hex = colour_hex[1:]
-
-    in_smaller_bubble_font_size = button_height * (20.1 / 40) * render_factor
-    inSmallerBubbleFont = ImageFont.truetype(
-        selected_font_path, in_smaller_bubble_font_size
-    )
-
-    single_letter_font_size = button_height * (28 / 40) * render_factor
-    singleLetterFont = ImageFont.truetype(selected_font_path, single_letter_font_size)
-
-    isb_text_bbox = inSmallerBubbleFont.getbbox(buttonText)
-    isb_text_height = isb_text_bbox[3] - isb_text_bbox[1]
-    in_smaller_bubble_text_y = (
-        ((button_height * render_factor) / 2) - (isb_text_height / 2) - isb_text_bbox[1]
-    )
-
-    sl_text_bbox = singleLetterFont.getbbox(buttonText)
-    sl_text_height = sl_text_bbox[3] - sl_text_bbox[1]
-    single_letter_text_y = (
-        ((button_height * render_factor) / 2) - (sl_text_height / 2) - sl_text_bbox[1]
-    )
-
-    horizontal_small_padding = button_height * (10 / 40)
-
-    rendered_bubble_height = int(button_height * render_factor)
-
-    if buttonText.upper() in ["A", "B", "X", "Y"] and physical_controller_layout in [
-        "PlayStation",
-        "Xbox",
-        "Universal",
-    ]:
-        buttonSize = (rendered_bubble_height, rendered_bubble_height)
-        if physical_controller_layout == "PlayStation":
-            image = (
-                Image.open(
-                    BUTTON_GLYPHS_DIR / "PlayStation" / f"{buttonText.upper()}.png"
-                )
-                .convert("RGBA")
-                .resize(buttonSize, Image.LANCZOS)
-            )
-        if physical_controller_layout == "Universal":
-            image = (
-                Image.open(
-                    BUTTON_GLYPHS_DIR / "Universal" / f"{buttonText.upper()}.png"
-                )
-                .convert("RGBA")
-                .resize(buttonSize, Image.LANCZOS)
-            )
-        elif physical_controller_layout == "Xbox":
-            if buttonText.upper() == "A":
-                image = generateIndividualButtonGlyph(
-                    "B",
-                    selected_font_path,
-                    colour_hex,
-                    render_factor,
-                    button_height,
-                    "Nintendo",
-                )
-            elif buttonText.upper() == "B":
-                image = generateIndividualButtonGlyph(
-                    "A",
-                    selected_font_path,
-                    colour_hex,
-                    render_factor,
-                    button_height,
-                    "Nintendo",
-                )
-            elif buttonText.upper() == "X":
-                image = generateIndividualButtonGlyph(
-                    "Y",
-                    selected_font_path,
-                    colour_hex,
-                    render_factor,
-                    button_height,
-                    "Nintendo",
-                )
-            elif buttonText.upper() == "Y":
-                image = generateIndividualButtonGlyph(
-                    "X",
-                    selected_font_path,
-                    colour_hex,
-                    render_factor,
-                    button_height,
-                    "Nintendo",
-                )
-
-    elif len(buttonText) == 1:
-        image = Image.new(
-            "RGBA", (rendered_bubble_height, rendered_bubble_height), (255, 255, 255, 0)
-        )
-        draw = ImageDraw.Draw(image)
-
-        circleCentreX = (rendered_bubble_height) / 2
-        draw.ellipse(
-            (0, 0, rendered_bubble_height, rendered_bubble_height),
-            fill=f"#{colour_hex}",
-        )
-        singleLetterWidth = sl_text_bbox[2] - sl_text_bbox[0]
-        smallerTextX = circleCentreX - (singleLetterWidth / 2)
-        draw.text(
-            (smallerTextX, single_letter_text_y),
-            buttonText,
-            font=singleLetterFont,
-            fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255 * 0.593)),
-        )
-
-    else:
-        ## Make the smaller bubble
-        smallerTextBbox = inSmallerBubbleFont.getbbox(buttonText)
-        smallerTextWidth = smallerTextBbox[2] - smallerTextBbox[0]
-        smallerBubbleWidth = int(
-            horizontal_small_padding
-            + smallerTextWidth / render_factor
-            + horizontal_small_padding
-        )
-
-        rendered_smallerBubbleWidth = int(smallerBubbleWidth * render_factor)
-
-        image = Image.new(
-            "RGBA",
-            (rendered_smallerBubbleWidth, rendered_bubble_height),
-            (255, 255, 255, 0),
-        )
-        draw = ImageDraw.Draw(image)
-
-        draw.rounded_rectangle(
-            [
-                (0, 0),  # bottom left point
-                (rendered_smallerBubbleWidth, rendered_bubble_height),
-            ],  # Top right point
-            radius=(math.ceil(button_height / 2)) * render_factor,
-            fill=hex_to_rgba(colour_hex, alpha=1),
-        )
-        smallerTextX = horizontal_small_padding * render_factor
-        draw.text(
-            (smallerTextX, in_smaller_bubble_text_y),
-            buttonText,
-            font=inSmallerBubbleFont,
-            fill=(*ImageColor.getrgb(f"#{colour_hex}"), int(255 * 0.593)),
-        )
-    return image
-
-
-def getTimeWithWidth(selected_font_path: Path, timeFormat: str, find: str = "max"):
-    TestFont = ImageFont.truetype(selected_font_path, 100)
-    stringsByActualSize = {
-        "0": 0,
-        "1": 0,
-        "2": 0,
-        "3": 0,
-        "4": 0,
-        "5": 0,
-        "6": 0,
-        "7": 0,
-        "8": 0,
-        "9": 0,
-        "AM": 0,
-        "PM": 0,
-    }
-
-    # Calculate the width of each character by repeating it
-    for n in stringsByActualSize.keys():
-        numberMultiplier = 100
-        stringsByActualSizeBbox = TestFont.getbbox(f"{str(n) * numberMultiplier}")
-        stringsByActualSizeWidth = (
-            stringsByActualSizeBbox[2] - stringsByActualSizeBbox[0]
-        )
-        stringsByActualSize[n] = stringsByActualSizeWidth
-
-    # Sort by width to easily find min or max
-    sortedStringsByActualSize = dict(
-        sorted(stringsByActualSize.items(), key=lambda item: item[1])
-    )
-
-    # Set the criteria for finding the desired width based on `find` argument
-    if find == "max":
-        lastDigit = max(
-            (s for s in sortedStringsByActualSize if any(char.isdigit() for char in s)),
-            key=sortedStringsByActualSize.get,
-        )
-        secondLastDigit = max(
-            (s for s in sortedStringsByActualSize if s.isdigit() and int(s) < 6),
-            key=sortedStringsByActualSize.get,
-        )
-    elif find == "min":
-        lastDigit = min(
-            (s for s in sortedStringsByActualSize if any(char.isdigit() for char in s)),
-            key=sortedStringsByActualSize.get,
-        )
-        secondLastDigit = min(
-            (s for s in sortedStringsByActualSize if s.isdigit() and int(s) < 6),
-            key=sortedStringsByActualSize.get,
-        )
-    else:
-        raise ValueError("Invalid option for 'find'. Choose 'max' or 'min'.")
-
-    firstDigits = None
-    widthResult = 0 if find == "max" else float("inf")
-    possibleFirstDigits = range(1, 13) if timeFormat == "12 Hour" else range(0, 24)
-
-    # Adjust search logic for max or min width
-    for n in possibleFirstDigits:
-        currentString = str(n).zfill(2)
-        digit1, digit2 = currentString[0], currentString[1]
-        width1, width2 = (
-            sortedStringsByActualSize[digit1],
-            sortedStringsByActualSize[digit2],
-        )
-        currentWidth = width1 + width2
-
-        if (find == "max" and currentWidth > widthResult) or (
-            find == "min" and currentWidth < widthResult
-        ):
-            widthResult = currentWidth
-            firstDigits = currentString
-
-    if timeFormat == "12 Hour":
-        suffex = (
-            max(
-                (
-                    s
-                    for s in sortedStringsByActualSize
-                    if not any(char.isdigit() for char in s)
-                ),
-                key=sortedStringsByActualSize.get,
-            )
-            if find == "max"
-            else min(
-                (
-                    s
-                    for s in sortedStringsByActualSize
-                    if not any(char.isdigit() for char in s)
-                ),
-                key=sortedStringsByActualSize.get,
-            )
-        )
-        timeText = f"{firstDigits}:{secondLastDigit}{lastDigit} {suffex}"
-    else:
-        timeText = f"{firstDigits}:{secondLastDigit}{lastDigit}"
-
-    return timeText
-
-
-def generateHeaderBubbles(
-    manager: SettingsManager,
-    render_factor: int,
-    accent_colour: str | None = None,
-    bubble_alpha: float = 0.133,
-) -> Image.Image:
-    image = Image.new(
-        "RGBA",
-        (
-            int(manager.deviceScreenWidthVar) * render_factor,
-            int(manager.deviceScreenHeightVar) * render_factor,
-        ),
-        (255, 255, 255, 0),
-    )
-    draw = ImageDraw.Draw(image)
-    if accent_colour is None:
-        accent_colour = manager.deselectedFontHexVar
-    if accent_colour.startswith("#"):
-        accent_colour = accent_colour[1:]
-
-    if int(manager.header_text_height_var) < 10:
-        raise ValueError("Header Text Height Too Small!")
-    elif int(manager.header_text_height_var) > int(manager.headerHeightVar):
-        raise ValueError("Header Text Height Too Large!")
-    else:
-        heightOfText = int(int(manager.header_text_height_var) * render_factor)
-
-    fontHeight = int(
-        int((heightOfText * (4 / 3)) / render_factor) * render_factor
-    )  ## TODO Make this not specific to BPreplay
-    headerFont = ImageFont.truetype(
-        get_font_path(manager.use_alt_font_var, manager.alt_font_filename), fontHeight
-    )
-
-    if (
-        int(manager.header_text_bubble_height_var) - int(manager.header_text_height_var)
-        >= 0
-    ):
-        headerTextPadding = int(
-            (
-                int(manager.header_text_bubble_height_var)
-                - int(manager.header_text_height_var)
-            )
-            / 2
-        )
-    else:
-        raise ValueError("Header Glyph Height Too Large!")
-
-    headerMiddleY = (int(manager.headerHeightVar) * render_factor) / 2
-
-    bottom_y_points = {}
-    top_y_points = {}
-    left_x_points = {}
-    right_x_points = {}
-
-    if manager.show_clock_bubbles_var:
-        clock_left_padding = int(manager.clockHorizontalLeftPaddingVar)
-        clock_right_padding = int(manager.clockHorizontalRightPaddingVar)
-
-        timeText = getTimeWithWidth(
-            get_font_path(manager.use_alt_font_var, manager.alt_font_filename),
-            manager.clock_format_var,
-            find="max",
-        )
-        maxTimeTextWidth = (
-            headerFont.getbbox(timeText)[2] - headerFont.getbbox(timeText)[0]
-        )
-
-        if manager.clock_alignment_var == "Left":
-            timeText_X = clock_left_padding * render_factor
-        elif manager.clock_alignment_var == "Centre":
-            timeText_X = (
-                int(
-                    (int(manager.deviceScreenWidthVar) * render_factor) / 2
-                    - (
-                        (
-                            maxTimeTextWidth
-                            + (
-                                clock_right_padding * render_factor
-                                + clock_left_padding * render_factor
-                            )
-                        )
-                        / 2
-                    )
-                )
-                + clock_left_padding * render_factor
-            )
-        elif manager.clock_alignment_var == "Right":
-            timeText_X = int(int(manager.deviceScreenWidthVar) * render_factor) - (
-                maxTimeTextWidth + clock_right_padding * render_factor
-            )
-        else:
-            raise ValueError("Invalid clock alignment")
-
-        bottom_y_points["clock"] = headerMiddleY - (
-            (int(manager.header_text_bubble_height_var) * render_factor) / 2
-        )
-        top_y_points["clock"] = headerMiddleY + (
-            (int(manager.header_text_bubble_height_var) * render_factor) / 2
-        )
-        left_x_points["clock"] = timeText_X - (headerTextPadding * render_factor)
-        right_x_points["clock"] = (
-            timeText_X + maxTimeTextWidth + (headerTextPadding * render_factor)
-        )
-
-    if float(manager.header_glyph_height_var) < 10:
-        raise ValueError("Header Glyph Height Too Small!")
-    elif float(manager.header_glyph_height_var) > int(manager.headerHeightVar):
-        raise ValueError("Header Glyph Height Too Large!")
-    else:
-        heightOfGlyph = int(float(manager.header_glyph_height_var) * render_factor)
-
-    if (
-        int(manager.header_glyph_bubble_height_var)
-        - int(manager.header_glyph_height_var)
-        >= 0
-    ):
-        headerGlyphPadding = int(
-            (
-                int(manager.header_glyph_bubble_height_var)
-                - int(manager.header_glyph_height_var)
-            )
-            / 2
-        )
-    else:
-        raise ValueError("Header Glyph Height Too Large!")
-    if manager.show_glyphs_bubbles_var:
-        # Battery not charging stuff
-        capacityGlyph = "capacity_30.png"
-        capacity_image_path = GLYPHS_DIR / f"{capacityGlyph[:-4]}[5x].png"
-
-        capacity_image_coloured = change_logo_color(capacity_image_path, accent_colour)
-        capacity_image_coloured = capacity_image_coloured.resize(
-            (
-                int(
-                    heightOfGlyph
-                    * (
-                        capacity_image_coloured.size[0]
-                        / capacity_image_coloured.size[1]
-                    )
-                ),
-                heightOfGlyph,
-            ),
-            Image.LANCZOS,
-        )
-        glyph_left_side_padding = int(manager.header_glyph_horizontal_left_padding_var)
-        glyph_right_side_padding = int(
-            manager.header_glyph_horizontal_right_padding_var
-        )
-        glyph_between_padding = 5
-
-        networkGlyph = "network_active"
-        network_image_path = GLYPHS_DIR / f"{networkGlyph}[5x].png"
-
-        network_image_coloured = change_logo_color(network_image_path, accent_colour)
-        network_image_coloured = network_image_coloured.resize(
-            (
-                int(
-                    heightOfGlyph
-                    * (network_image_coloured.size[0] / network_image_coloured.size[1])
-                ),
-                heightOfGlyph,
-            ),
-            Image.LANCZOS,
-        )
-
-        glyphTotalWidth = (
-            capacity_image_coloured.size[0]
-            + glyph_between_padding * render_factor
-            + network_image_coloured.size[0]
-        )
-
-        if manager.header_glyph_alignment_var == "Left":
-            current_x_pos = glyph_left_side_padding * render_factor
-        elif manager.header_glyph_alignment_var == "Centre":
-            current_x_pos = (
-                int(
-                    (int(manager.deviceScreenWidthVar) * render_factor) / 2
-                    - (
-                        (
-                            glyphTotalWidth
-                            + (
-                                glyph_right_side_padding * render_factor
-                                + glyph_left_side_padding * render_factor
-                            )
-                        )
-                        / 2
-                    )
-                )
-                + glyph_left_side_padding * render_factor
-            )
-        elif manager.header_glyph_alignment_var == "Right":
-            current_x_pos = int(
-                int(manager.deviceScreenWidthVar) * render_factor
-                - (glyph_right_side_padding * render_factor + glyphTotalWidth)
-            )
-        else:
-            raise ValueError("Invalid clock alignment")
-
-        glyphBubbleXPos = int(int(manager.deviceScreenWidthVar) * render_factor) - (
-            glyphTotalWidth + glyph_left_side_padding * render_factor
-        )
-
-        bottom_y_points["glyphs"] = headerMiddleY - (
-            (int(manager.header_glyph_bubble_height_var) * render_factor) / 2
-        )
-        top_y_points["glyphs"] = headerMiddleY + (
-            (int(manager.header_glyph_bubble_height_var) * render_factor) / 2
-        )
-        left_x_points["glyphs"] = current_x_pos - (headerGlyphPadding * render_factor)
-        right_x_points["glyphs"] = (
-            current_x_pos + glyphTotalWidth + (headerGlyphPadding * render_factor)
-        )
-
-    if manager.join_header_bubbles_var and (
-        manager.show_glyphs_bubbles_var or manager.show_clock_bubbles_var
-    ):
-        bottom_y = min(bottom_y_points.values())
-        top_y = max(top_y_points.values())
-        left_x = min(left_x_points.values())
-        right_x = max(right_x_points.values())
-
-        draw.rounded_rectangle(
-            [
-                (left_x, bottom_y),  # bottom left point
-                (right_x, top_y),
-            ],  # Top right point
-            radius=math.ceil((top_y - bottom_y) / 2),
-            fill=hex_to_rgba(accent_colour, alpha=bubble_alpha),
-        )
-    else:
-        for key in bottom_y_points.keys():
-            draw.rounded_rectangle(
-                [
-                    (left_x_points[key], bottom_y_points[key]),  # bottom left point
-                    (right_x_points[key], top_y_points[key]),
-                ],  # Top right point
-                radius=math.ceil((top_y_points[key] - bottom_y_points[key]) / 2),
-                fill=hex_to_rgba(accent_colour, alpha=bubble_alpha),
-            )
-
-    return image
-
-
 def generatePilImageMuOSOverlay(
-    manager: SettingsManager, muOSpageName: int, render_factor: int
+    manager: SettingsManager, muOSpageName: str, render_factor: int
 ) -> Image.Image:
     muOSpageNameDict = {
         "muxlaunch": "MAIN MENU",
@@ -771,9 +257,6 @@ def generatePilImageMuOSOverlay(
         else:
             timeText = current_time.strftime("%H:%M")
 
-        # timeText = getTimeWithWidth(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),manager.clock_format_var,find="max")
-        # timeText = getTimeWithWidth(os.path.join(internal_files_dir,"Assets","Font","BPreplayBold-unhinted.otf"),manager.clock_format_var,find="min")
-
         timeTextBbox = headerFont.getbbox(timeText)
         timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
         if manager.clock_alignment_var == "Left":
@@ -868,294 +351,6 @@ def getRealFooterHeight(manager: SettingsManager) -> int:
     return footerHeight
 
 
-def generateMenuHelperGuides(
-    retro_rhs_buttons: list[tuple[str, str]],
-    selected_font_path: Path,
-    colour_hex: str,
-    render_factor: int,
-    manager: SettingsManager,
-    lhsButtons: list[tuple[str, str]] = [("POWER", "SLEEP")],
-) -> Image.Image:
-    if colour_hex.startswith("#"):
-        colour_hex = colour_hex[1:]
-
-    image = Image.new(
-        "RGBA",
-        (
-            int(manager.deviceScreenWidthVar) * render_factor,
-            int(manager.deviceScreenHeightVar) * render_factor,
-        ),
-        (255, 255, 255, 0),
-    )
-    draw = ImageDraw.Draw(image)
-
-    real_rhs_buttons = []
-
-    if manager.muos_button_swap_var == "Modern":
-        for pair in retro_rhs_buttons:
-            if pair[0].upper() == "A":
-                real_rhs_buttons.append(["B", pair[1]])
-            elif pair[0].upper() == "B":
-                real_rhs_buttons.append(["A", pair[1]])
-            elif pair[0].upper() == "X":
-                real_rhs_buttons.append(["Y", pair[1]])
-            elif pair[0].upper() == "Y":
-                real_rhs_buttons.append(["X", pair[1]])
-    else:
-        real_rhs_buttons = retro_rhs_buttons
-
-    if not (
-        manager.remove_left_menu_guides_var and manager.remove_right_menu_guides_var
-    ):
-        required_padding_between_sides = 15  # This is the maximum space between the two sides of the menu helper guides
-        lhsTotalWidth = 0
-        rhsTotalWidth = int(manager.deviceScreenWidthVar)
-        iterations = 0
-        from_sides_padding = int(manager.VBG_Horizontal_Padding_var)
-        remove_left_menu_guides_var = manager.remove_left_menu_guides_var
-        remove_right_menu_guides_var = manager.remove_right_menu_guides_var
-        if remove_left_menu_guides_var or remove_right_menu_guides_var:
-            required_padding_between_sides = 0
-        while (
-            from_sides_padding
-            + lhsTotalWidth
-            + required_padding_between_sides
-            + rhsTotalWidth
-            + from_sides_padding
-            > int(manager.deviceScreenWidthVar)
-        ):
-            if iterations == 0:
-                from_sides_padding = int(manager.VBG_Horizontal_Padding_var)
-            if False:  # TODO an option for this
-                remove_left_menu_guides_var = True
-                required_padding_between_sides = 0
-            from_bottom_padding = int(manager.VBG_Vertical_Padding_var) + iterations
-
-            individualItemHeight = round(
-                (
-                    int(manager.deviceScreenHeightVar)
-                    - int(manager.approxFooterHeightVar)
-                    - int(manager.contentPaddingTopVar)
-                )
-                / int(manager.itemsPerScreenVar)
-            )
-
-            muosSpaceBetweenItems = 2
-
-            footerHeight = (
-                int(manager.deviceScreenHeightVar)
-                - (individualItemHeight * int(manager.itemsPerScreenVar))
-                - int(manager.contentPaddingTopVar)
-                + muosSpaceBetweenItems
-            )
-
-            menu_helper_guide_height = footerHeight - (
-                from_bottom_padding * 2
-            )  # Change this if overlayed
-
-            in_smaller_bubble_font_size = (
-                menu_helper_guide_height * (20.1 / 60) * render_factor
-            )
-            inSmallerBubbleFont = ImageFont.truetype(
-                selected_font_path,
-                in_smaller_bubble_font_size,
-            )
-
-            in_bubble_font_size = menu_helper_guide_height * (24 / 60) * render_factor
-            inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
-
-            single_letter_font_size = (
-                menu_helper_guide_height * (28 / 60) * render_factor
-            )
-            singleLetterFont = ImageFont.truetype(
-                selected_font_path, single_letter_font_size
-            )
-
-            horizontal_small_padding = menu_helper_guide_height * (10 / 60)
-            horizontal_padding = menu_helper_guide_height * (10 / 60)
-            horizontal_large_padding = menu_helper_guide_height * (
-                20 / 60
-            )  # Testing here
-
-            bottom_guide_middle_y = (
-                int(manager.deviceScreenHeightVar)
-                - from_bottom_padding
-                - (menu_helper_guide_height / 2)
-            )
-
-            guide_small_bubble_height = menu_helper_guide_height - (
-                horizontal_padding * 2
-            )
-
-            isb_ascent, isb_descent = inSmallerBubbleFont.getmetrics()
-            isb_text_height = isb_ascent + isb_descent
-            in_smaller_bubble_text_y = bottom_guide_middle_y * render_factor - (
-                isb_text_height / 2
-            )
-
-            ib_ascent, ib_descent = inBubbleFont.getmetrics()
-            ib_text_height = ib_ascent + ib_descent
-            in_bubble_text_y = bottom_guide_middle_y * render_factor - (
-                ib_text_height / 2
-            )
-
-            sl_text_bbox = singleLetterFont.getbbox("ABXY")
-            sl_text_height = sl_text_bbox[3] - sl_text_bbox[1]
-            single_letter_text_y = (
-                bottom_guide_middle_y * render_factor
-                - (sl_text_height / 2)
-                - sl_text_bbox[1]
-            )
-
-            ##TODO convert buttons at this point to lanuage of choice in their respective arrays
-
-            combined_width = 0
-            lhsTotalWidth = 0
-            rhsTotalWidth = 0
-
-            if not remove_left_menu_guides_var:
-                lhsTotalWidth += getTotalBubbleWidth(
-                    lhsButtons,
-                    inSmallerBubbleFont,
-                    inBubbleFont,
-                    horizontal_padding,
-                    horizontal_large_padding,
-                    horizontal_small_padding,
-                    guide_small_bubble_height,
-                    render_factor,
-                )
-                combined_width += lhsTotalWidth
-
-            if not remove_right_menu_guides_var:
-                rhsTotalWidth += getTotalBubbleWidth(
-                    real_rhs_buttons,
-                    inSmallerBubbleFont,
-                    inBubbleFont,
-                    horizontal_padding,
-                    horizontal_large_padding,
-                    horizontal_small_padding,
-                    guide_small_bubble_height,
-                    render_factor,
-                )
-                combined_width += rhsTotalWidth
-            iterations += 1
-
-        if not remove_left_menu_guides_var:
-            realLhsPointer = from_sides_padding * render_factor
-            ## Make the main long bubble
-            draw.rounded_rectangle(
-                [
-                    (
-                        realLhsPointer,
-                        (bottom_guide_middle_y - menu_helper_guide_height / 2)
-                        * render_factor,
-                    ),  # bottom left point
-                    (
-                        realLhsPointer + (lhsTotalWidth * render_factor),
-                        (bottom_guide_middle_y + menu_helper_guide_height / 2)
-                        * render_factor,
-                    ),
-                ],  # Top right point
-                radius=(menu_helper_guide_height / 2) * render_factor,
-                fill=hex_to_rgba(colour_hex, alpha=0.133),
-            )
-            realLhsPointer += horizontal_padding * render_factor
-            for pair in lhsButtons:
-                button_image = generateIndividualButtonGlyph(
-                    pair[0],
-                    selected_font_path,
-                    colour_hex,
-                    render_factor,
-                    guide_small_bubble_height,
-                    manager.physical_controler_layout_var,
-                )
-                button_image = change_logo_color(button_image, colour_hex)
-                image.paste(
-                    button_image,
-                    (
-                        int(realLhsPointer),
-                        int(
-                            bottom_guide_middle_y * render_factor
-                            - (button_image.size[1] / 2)
-                        ),
-                    ),
-                    button_image,
-                )
-                realLhsPointer += (
-                    (button_image.size[0]) + (horizontal_small_padding) * render_factor
-                )
-
-                textBbox = inBubbleFont.getbbox(pair[1])
-                textWidth = textBbox[2] - textBbox[0]
-                draw.text(
-                    (realLhsPointer, in_bubble_text_y),
-                    pair[1],
-                    font=inBubbleFont,
-                    fill=f"#{colour_hex}",
-                )
-                realLhsPointer += textWidth
-                realLhsPointer += horizontal_large_padding * render_factor
-        if not remove_right_menu_guides_var:
-            realRhsPointer = (
-                int(manager.deviceScreenWidthVar) - from_sides_padding - rhsTotalWidth
-            ) * render_factor
-            ## Make the main long bubble
-            draw.rounded_rectangle(
-                [
-                    (
-                        realRhsPointer,
-                        (bottom_guide_middle_y - menu_helper_guide_height / 2)
-                        * render_factor,
-                    ),  # bottom left point
-                    (
-                        realRhsPointer + (rhsTotalWidth * render_factor),
-                        (bottom_guide_middle_y + menu_helper_guide_height / 2)
-                        * render_factor,
-                    ),
-                ],  # Top right point
-                radius=(menu_helper_guide_height / 2) * render_factor,
-                fill=hex_to_rgba(colour_hex, alpha=0.133),
-            )
-            realRhsPointer += horizontal_padding * render_factor
-            for pair in real_rhs_buttons:
-                button_image = generateIndividualButtonGlyph(
-                    pair[0],
-                    selected_font_path,
-                    colour_hex,
-                    render_factor,
-                    guide_small_bubble_height,
-                    manager.physical_controler_layout_var,
-                )
-                button_image = change_logo_color(button_image, colour_hex)
-
-                image.paste(
-                    button_image,
-                    (
-                        int(realRhsPointer),
-                        int(
-                            bottom_guide_middle_y * render_factor
-                            - (button_image.size[1] / 2)
-                        ),
-                    ),
-                    button_image,
-                )
-                realRhsPointer += (
-                    (button_image.size[0]) + (horizontal_small_padding) * render_factor
-                )
-
-                textBbox = inBubbleFont.getbbox(pair[1])
-                textWidth = textBbox[2] - textBbox[0]
-                draw.text(
-                    (realRhsPointer, in_bubble_text_y),
-                    pair[1],
-                    font=inBubbleFont,
-                    fill=f"#{colour_hex}",
-                )
-                realRhsPointer += textWidth
-                realRhsPointer += horizontal_large_padding * render_factor
-    return image
-
-
 def generateMuOSBackgroundOverlay(
     rhsButtons: list[tuple[str, str]],
     selected_font_path: Path,
@@ -1177,51 +372,20 @@ def generateMuOSBackgroundOverlay(
     )
     draw = ImageDraw.Draw(image)
 
-    menuHelperGuides = generateMenuHelperGuides(
+    theme_generator = ThemeGenerator(manager, render_factor)
+    menuHelperGuides = theme_generator.generate_footer_guides(
         rhsButtons,
         selected_font_path,
         colour_hex,
-        render_factor,
-        manager,
         lhsButtons=lhsButtons,
     )
 
     image = Image.alpha_composite(image, menuHelperGuides)
-    headerBubbles = generateHeaderBubbles(manager, render_factor)
+    headerBubbles = theme_generator.generate_header_bubbles(render_factor=render_factor)
 
     image = Image.alpha_composite(image, headerBubbles)
 
     return image
-
-
-def getTotalBubbleWidth(
-    buttons: list[tuple[str, str]],
-    internalBubbleFont: ImageFont.FreeTypeFont,
-    bubbleFont: ImageFont.FreeTypeFont,
-    initalPadding: float,
-    largerPadding: float,
-    smallerPadding: float,
-    circleWidth: float,
-    render_factor: float,
-) -> float:
-    totalWidth = initalPadding
-    for pair in buttons:
-        # pair[0] might be MENU, POWER, or ABXY
-        if len(pair[0]) == 1:
-            totalWidth += circleWidth
-        else:
-            totalWidth += smallerPadding
-            smallerTextBbox = internalBubbleFont.getbbox(pair[0])
-            smallerTextWidth = smallerTextBbox[2] - smallerTextBbox[0]
-            totalWidth += smallerTextWidth / render_factor
-            totalWidth += smallerPadding
-        totalWidth += smallerPadding
-        # pair[1] might be something like INFO, FAVOURITE, REFRESH etc...
-        textBbox = bubbleFont.getbbox(pair[1])
-        textWidth = textBbox[2] - textBbox[0]
-        totalWidth += textWidth / render_factor
-        totalWidth += largerPadding
-    return totalWidth
 
 
 def generatePilImageVertical(
@@ -1303,35 +467,30 @@ def generatePilImageVertical(
         manager.use_alt_font_var, manager.alt_font_filename
     )
 
+    theme_generator = ThemeGenerator(manager, render_factor)
     if muOSSystemName == "muxlaunch":
-        menuHelperGuides = generateMenuHelperGuides(
+        menuHelperGuides = theme_generator.generate_footer_guides(
             [("A", "SELECT")],
             selected_font_path,
             manager.footerBubbleHexVar,
-            render_factor,
-            manager,
             lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo":
-        menuHelperGuides = generateMenuHelperGuides(
+        menuHelperGuides = theme_generator.generate_footer_guides(
             [("B", "BACK"), ("A", "SELECT")],
             selected_font_path,
             manager.footerBubbleHexVar,
-            render_factor,
-            manager,
             lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxapp":
-        menuHelperGuides = generateMenuHelperGuides(
+        menuHelperGuides = theme_generator.generate_footer_guides(
             [("B", "BACK"), ("A", "LAUNCH")],
             selected_font_path,
             manager.footerBubbleHexVar,
-            render_factor,
-            manager,
             lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxplore":
-        menuHelperGuides = generateMenuHelperGuides(
+        menuHelperGuides = theme_generator.generate_footer_guides(
             [
                 ("MENU", "INFO"),
                 ("Y", "FAVOURITE"),
@@ -1341,21 +500,17 @@ def generatePilImageVertical(
             ],
             selected_font_path,
             manager.footerBubbleHexVar,
-            render_factor,
-            manager,
             lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxfavourite":
-        menuHelperGuides = generateMenuHelperGuides(
+        menuHelperGuides = theme_generator.generate_footer_guides(
             [("MENU", "INFO"), ("X", "REMOVE"), ("B", "BACK"), ("A", "OPEN")],
             selected_font_path,
             manager.footerBubbleHexVar,
-            render_factor,
-            manager,
             lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxhistory":
-        menuHelperGuides = generateMenuHelperGuides(
+        menuHelperGuides = theme_generator.generate_footer_guides(
             [
                 ("MENU", "INFO"),
                 ("Y", "FAVOURITE"),
@@ -1365,8 +520,6 @@ def generatePilImageVertical(
             ],
             selected_font_path,
             manager.footerBubbleHexVar,
-            render_factor,
-            manager,
             lhsButtons=[("POWER", "SLEEP")],
         )
 
@@ -1517,7 +670,7 @@ def generatePilImageVertical(
     ):
         image = Image.alpha_composite(image, menuHelperGuides)
 
-    headerBubbles = generateHeaderBubbles(manager, render_factor)
+    headerBubbles = theme_generator.generate_header_bubbles(render_factor=render_factor)
     image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
@@ -1904,12 +1057,11 @@ def generatePilImageHorizontal(
         manager.use_alt_font_var, manager.alt_font_filename
     )
 
-    menuHelperGuides = generateMenuHelperGuides(
+    theme_generator = ThemeGenerator(manager, render_factor)
+    menuHelperGuides = theme_generator.generate_footer_guides(
         [("A", "SELECT")],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[("POWER", "SLEEP")],
     )
 
@@ -2489,7 +1641,7 @@ def generatePilImageHorizontal(
 
     ## Show what header items will actually look like
 
-    headerBubbles = generateHeaderBubbles(manager, render_factor)
+    headerBubbles = theme_generator.generate_header_bubbles(render_factor=render_factor)
     image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
@@ -2714,12 +1866,11 @@ def generatePilImageAltHorizontal(
         manager.use_alt_font_var, manager.alt_font_filename
     )
 
-    menuHelperGuides = generateMenuHelperGuides(
+    theme_generator = ThemeGenerator(manager, render_factor)
+    menuHelperGuides = theme_generator.generate_footer_guides(
         [("A", "SELECT")],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[("POWER", "SLEEP")],
     )
 
@@ -3294,7 +2445,7 @@ def generatePilImageAltHorizontal(
         image = Image.alpha_composite(image, transparent_text_image)
     image = Image.alpha_composite(image, menuHelperGuides)
 
-    headerBubbles = generateHeaderBubbles(manager, render_factor)
+    headerBubbles = theme_generator.generate_header_bubbles(render_factor=render_factor)
     image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
@@ -4007,38 +3158,6 @@ menus2405_3 = [
 ]
 
 
-def hex_to_rgba(hex_color: str, alpha=1.0) -> tuple[int, int, int, int]:
-    # Convert hex to RGB
-    if hex_color.startswith("#"):
-        hex_color = hex_color[1:]
-    rgb = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
-    return (rgb[0], rgb[1], rgb[2], int(alpha * 255))
-
-
-def rgb_to_hex(rgb_color: tuple[int, int, int]) -> str:
-    # Convert RGB to hex
-    return "{:02x}{:02x}{:02x}".format(*rgb_color)
-
-
-def interpolate_color_component(c1: int, c2: int, factor: float) -> int:
-    # Interpolate a single color component
-    return int(c1 + (c2 - c1) * factor)
-
-
-def percentage_color(hex1: str, hex2: str, percentage: float):
-    # Convert hex colors to RGB
-    rgb1 = hex_to_rgba(hex1)
-    rgb2 = hex_to_rgba(hex2)
-
-    # Calculate the interpolated color for each component
-    interp_rgb = tuple(
-        interpolate_color_component(c1, c2, percentage) for c1, c2 in zip(rgb1, rgb2)
-    )
-
-    # Convert interpolated RGB back to hex
-    return rgb_to_hex(interp_rgb)
-
-
 def round_to_nearest_odd(number: float | int) -> int:
     high_odd = (number // 2) * 2 + 1
     low_odd = high_odd - 2
@@ -4713,14 +3832,15 @@ def FillTempThemeFolder(
     in_bubble_font_size = round(button_height * (24 / 40))
 
     buttonsToGenerate = ["A", "B", "C", "MENU", "X", "Y", "Z"]
+    theme_generator = ThemeGenerator(manager, render_factor)
     for button in buttonsToGenerate:
-        button_image = generateIndividualButtonGlyph(
+        button_image = theme_generator.generate_button_glyph(
             button,
             selected_font_path,
             accent_hex,
-            render_factor,
             button_height,
-            manager.physical_controler_layout_var,
+            manager.physical_controller_layout_var,
+            render_factor,
         )
         button_image = button_image.resize(
             (
@@ -5935,6 +5055,7 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
         contentPaddingTop = 40
 
     global background_image
+    theme_generator = ThemeGenerator(manager, render_factor)
 
     if (
         manager.use_custom_background_var
@@ -5957,7 +5078,7 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
             if n[0] == "muxapp":
                 index = i
                 break
-        if index != None:
+        if index is not None:
             previewApplicationList = [
                 [x[0], "menu", x[0]] for x in menus2405_3[index][1]
             ]
@@ -5985,25 +5106,14 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
             ),
         ]
     try:
-        if int(manager.deviceScreenHeightVar) < 240:
-            raise ValueError("Device Screen Height must be at least 240")
-        if int(manager.deviceScreenWidthVar) < 320:
-            raise ValueError("Device Screen Width must be at least 320")
-        if int(manager.deviceScreenHeightVar) > 4320:
-            raise ValueError("Device Screen Height must be at most 4320")
-        if int(manager.deviceScreenWidthVar) > 7680:
-            raise ValueError("Device Screen Width must be at most 7680")
-
         if app.right_pane.winfo_width() < 100:
             preview_size = [
-                int(int(manager.deviceScreenWidthVar) / 2),
-                int(int(manager.deviceScreenHeightVar) / 2),
+                manager.deviceScreenWidthVar // 2,
+                manager.deviceScreenHeightVar // 2,
             ]
         else:
             previewRenderFactor = (
-                math.ceil(
-                    app.right_pane.winfo_width() / int(manager.deviceScreenWidthVar)
-                )
+                math.ceil(app.right_pane.winfo_width() / manager.deviceScreenWidthVar)
                 + 1
             )  # Affectively anti aliasing in the preview
 
@@ -6011,13 +5121,10 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
                 int(app.right_pane.winfo_width()),
                 int(
                     app.right_pane.winfo_width()
-                    * (
-                        int(manager.deviceScreenHeightVar)
-                        / int(manager.deviceScreenWidthVar)
-                    )
+                    * manager.deviceScreenHeightVar
+                    / manager.deviceScreenWidthVar
                 ),
             ]
-        # preview_size = [int(640/2),int(480/2)]
 
         # This function will run whenever any traced variable changes
 
@@ -6211,7 +5318,8 @@ def main():
         settings_manager=manager,
         commands_map=commands_map,
     )
-    app.build_sections_from_settings(partial(on_change, app))
+    app.add_change_listener(partial(on_change, app))
+    app.build_sections_from_settings()
 
     app.run()
 

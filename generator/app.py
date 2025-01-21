@@ -32,6 +32,7 @@ class ThemeGeneratorApp:
         self.root = tk.Tk()
         self.settings_manager = settings_manager
         self.commands_map = commands_map
+        self.on_change_settings = None
 
         self.tk_variables: dict[str, tk.Variable] = {}
         self._current_row = 0
@@ -135,7 +136,7 @@ class ThemeGeneratorApp:
             self.canvas.bind_all("<Button-4>", self._on_mousewheel_linux)
             self.canvas.bind_all("<Button-5>", self._on_mousewheel_linux)
 
-    def build_sections_from_settings(self, on_change_settings=None) -> None:
+    def build_sections_from_settings(self) -> None:
         for section_data in self.settings_manager.get_sections():
             if section_title := section_data.get("title", ""):
                 heading_label = ttk.Label(
@@ -167,16 +168,16 @@ class ThemeGeneratorApp:
                         self.tk_variables[var_name] = create_tk_variable(
                             var_type_str, start_val
                         )
-                    self.tk_variables[var_name].trace_add(
-                        "write",
-                        lambda *_, name=var_name: self._on_var_change(
-                            name, on_change_settings
-                        ),
-                    )
+                    if self.on_change_settings:
+                        self.tk_variables[var_name].trace_add(
+                            "write",
+                            lambda *_, name=var_name: self._on_var_change(name),
+                        )
 
                 self._create_widget_for_field(widget_type, field_info)
 
-        on_change_settings()
+        if self.on_change_settings:
+            self.on_change_settings()
 
     def _create_widget_for_field(self, widget_type, field_info) -> None:
         label_text = field_info.get("label", "")
@@ -301,10 +302,11 @@ class ThemeGeneratorApp:
 
             self._current_row += 1
 
-    def _on_var_change(self, var_name: str, on_change_settings: Callable):
+    def _on_var_change(self, var_name: str):
         new_val = self.tk_variables[var_name].get()
         self.settings_manager.set_value(var_name, new_val)
-        on_change_settings()
+        if self.on_change_settings:
+            self.on_change_settings()
 
     def _on_resize(self, event: tk.Event) -> None:
         if self.resize_event_id is not None:
@@ -312,7 +314,8 @@ class ThemeGeneratorApp:
         self.resize_event_id = self.root.after(100, self.on_resize_complete)
 
     def on_resize_complete(self) -> None:
-        pass
+        if self.on_change_settings:
+            self.on_change_settings()
 
     def _on_mousewheel_win_linux(self, event: tk.Event) -> None:
         self.canvas.yview_scroll(-1 * int(event.delta / 120), "units")
@@ -335,6 +338,9 @@ class ThemeGeneratorApp:
     def on_app_close(self):
         self.settings_manager.save_user_values()
         self.root.destroy()
+
+    def add_change_listener(self, on_change_settings: Callable):
+        self.on_change_settings = on_change_settings
 
     def run(self) -> None:
         self.root.mainloop()
