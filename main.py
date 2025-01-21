@@ -67,6 +67,7 @@ Image.MAX_IMAGE_PIXELS = None
 ## TODO make header resizable
 
 background_image = None
+preview_overlay_image = None
 
 manager = SettingsManager(BASE_SETTINGS_PATH, USER_SETTINGS_PATH)
 manager.load()
@@ -5052,21 +5053,27 @@ def map_value(
 def on_change(app: ThemeGeneratorApp, *args) -> None:
     # global menuNameMap
     # menuNameMap = getAlternateMenuNameDict()
-    try:
-        preview_overlay_image = Image.open(
-            OVERLAY_DIR
-            / f"{manager.deviceScreenWidthVar}x{manager.deviceScreenHeightVar}"
-            / f"{manager.selected_overlay_var}.png",
-        ).convert("RGBA")
-    except:
-        pass
-    global contentPaddingTop
-    try:
-        contentPaddingTop = int(manager.contentPaddingTopVar)
-    except:
-        contentPaddingTop = 40
-
     global background_image
+    global preview_overlay_image
+    global contentPaddingTop
+
+    contentPaddingTop = manager.contentPaddingTopVar
+    screen_width = manager.deviceScreenWidthVar
+    screen_height = manager.deviceScreenHeightVar
+    preview_width = app.get_preview_width()
+
+    if manager.include_overlay_var and manager.selected_overlay_var:
+        preview_overlay_path = (
+            OVERLAY_DIR
+            / f"{screen_width}x{screen_height}"
+            / f"{manager.selected_overlay_var}.png"
+        )
+        if preview_overlay_path.exists():
+            preview_overlay_image = Image.open(preview_overlay_path)
+        else:
+            preview_overlay_image = None
+    else:
+        preview_overlay_path = None
 
     if (
         manager.use_custom_background_var
@@ -5076,11 +5083,6 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
         background_image = Image.open(manager.background_image_path)
     else:
         background_image = None
-
-    global menus2405
-    global menus2405_1  ## NOT GLOBALS AHH SORRY HACKY SHOULD REMOVE
-    global menus2405_2
-    global menus2405_3
 
     previewApplicationList = []
     if manager.version_var[0:9] == "muOS 2410":
@@ -5104,36 +5106,29 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
     if get_current_image(app.image_label1) is not None:
         current_image_size = get_current_image(app.image_label1).size
     preview_size = [current_image_size[0] / 2, current_image_size[1] / 2]
-    if app.get_preview_width() > 100:
+    if preview_width > 100:
         previewRenderFactor = (
-            math.ceil(app.get_preview_width() / current_image_size[1]) + 1
+            math.ceil(preview_width / current_image_size[1]) + 1
         )  # Affectively anti aliasing in the preview
 
         preview_size = [
-            int(app.get_preview_width()),
-            int(
-                app.get_preview_width()
-                * (current_image_size[1] / current_image_size[0])
-            ),
+            int(preview_width),
+            int(preview_width * (current_image_size[1] / current_image_size[0])),
         ]
     try:
-        if app.get_preview_width() < 100:
+        if preview_width < 100:
             preview_size = [
-                manager.deviceScreenWidthVar // 2,
-                manager.deviceScreenHeightVar // 2,
+                screen_width // 2,
+                screen_height // 2,
             ]
         else:
             previewRenderFactor = (
-                math.ceil(app.get_preview_width() / manager.deviceScreenWidthVar) + 1
+                math.ceil(preview_width / screen_width) + 1
             )  # Affectively anti aliasing in the preview
 
             preview_size = [
-                int(app.get_preview_width()),
-                int(
-                    app.get_preview_width()
-                    * manager.deviceScreenHeightVar
-                    / manager.deviceScreenWidthVar
-                ),
+                int(preview_width),
+                int(preview_width * screen_height / screen_width),
             ]
 
         # This function will run whenever any traced variable changes
