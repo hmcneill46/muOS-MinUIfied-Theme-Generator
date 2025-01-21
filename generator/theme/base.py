@@ -10,8 +10,8 @@ from generator.settings import SettingsManager
 from generator.utils import get_max_length_time_string
 
 
-class ThemeGenerator:
-    def __init__(self, manager: SettingsManager, render_factor: int = 1):
+class BaseThemeGenerator:
+    def __init__(self, manager: SettingsManager, render_factor: int):
         self.manager = manager
         self.render_factor = render_factor
 
@@ -22,19 +22,16 @@ class ThemeGenerator:
         colour_hex: str,
         button_height: int = 0,
         physical_controller_layout: str = "Nintendo",
-        render_factor: int | None = None,
     ) -> Image.Image:
         if colour_hex.startswith("#"):
             colour_hex = colour_hex[1:]
 
-        render_factor = render_factor or self.render_factor
-
-        in_smaller_bubble_font_size = button_height * (20.1 / 40) * render_factor
+        in_smaller_bubble_font_size = button_height * (20.1 / 40) * self.render_factor
         inSmallerBubbleFont = ImageFont.truetype(
             selected_font_path, in_smaller_bubble_font_size
         )
 
-        single_letter_font_size = button_height * (28 / 40) * render_factor
+        single_letter_font_size = button_height * (28 / 40) * self.render_factor
         singleLetterFont = ImageFont.truetype(
             selected_font_path, single_letter_font_size
         )
@@ -42,7 +39,7 @@ class ThemeGenerator:
         isb_text_bbox = inSmallerBubbleFont.getbbox(buttonText)
         isb_text_height = isb_text_bbox[3] - isb_text_bbox[1]
         in_smaller_bubble_text_y = (
-            ((button_height * render_factor) / 2)
+            ((button_height * self.render_factor) / 2)
             - (isb_text_height / 2)
             - isb_text_bbox[1]
         )
@@ -50,14 +47,14 @@ class ThemeGenerator:
         sl_text_bbox = singleLetterFont.getbbox(buttonText)
         sl_text_height = sl_text_bbox[3] - sl_text_bbox[1]
         single_letter_text_y = (
-            ((button_height * render_factor) / 2)
+            ((button_height * self.render_factor) / 2)
             - (sl_text_height / 2)
             - sl_text_bbox[1]
         )
 
         horizontal_small_padding = button_height * (10 / 40)
 
-        rendered_bubble_height = int(button_height * render_factor)
+        rendered_bubble_height = int(button_height * self.render_factor)
 
         if buttonText.upper() in [
             "A",
@@ -94,7 +91,6 @@ class ThemeGenerator:
                         colour_hex,
                         button_height,
                         "Nintendo",
-                        render_factor,
                     )
                 elif buttonText.upper() == "B":
                     image = self.generate_button_glyph(
@@ -103,7 +99,6 @@ class ThemeGenerator:
                         colour_hex,
                         button_height,
                         "Nintendo",
-                        render_factor,
                     )
                 elif buttonText.upper() == "X":
                     image = self.generate_button_glyph(
@@ -112,7 +107,6 @@ class ThemeGenerator:
                         colour_hex,
                         button_height,
                         "Nintendo",
-                        render_factor,
                     )
                 elif buttonText.upper() == "Y":
                     image = self.generate_button_glyph(
@@ -121,7 +115,6 @@ class ThemeGenerator:
                         colour_hex,
                         button_height,
                         "Nintendo",
-                        render_factor,
                     )
 
         elif len(buttonText) == 1:
@@ -152,11 +145,11 @@ class ThemeGenerator:
             smallerTextWidth = smallerTextBbox[2] - smallerTextBbox[0]
             smallerBubbleWidth = int(
                 horizontal_small_padding
-                + smallerTextWidth / render_factor
+                + smallerTextWidth / self.render_factor
                 + horizontal_small_padding
             )
 
-            rendered_smallerBubbleWidth = int(smallerBubbleWidth * render_factor)
+            rendered_smallerBubbleWidth = int(smallerBubbleWidth * self.render_factor)
 
             image = Image.new(
                 "RGBA",
@@ -170,10 +163,10 @@ class ThemeGenerator:
                     (0, 0),  # bottom left point
                     (rendered_smallerBubbleWidth, rendered_bubble_height),
                 ],  # Top right point
-                radius=(math.ceil(button_height / 2)) * render_factor,
+                radius=(math.ceil(button_height / 2)) * self.render_factor,
                 fill=hex_to_rgba(colour_hex, alpha=1),
             )
-            smallerTextX = horizontal_small_padding * render_factor
+            smallerTextX = horizontal_small_padding * self.render_factor
             draw.text(
                 (smallerTextX, in_smaller_bubble_text_y),
                 buttonText,
@@ -186,14 +179,12 @@ class ThemeGenerator:
         self,
         accent_colour: str | None = None,
         bubble_alpha: float = 0.133,
-        render_factor: int | None = None,
     ) -> Image.Image:
-        render_factor = render_factor or self.render_factor
         image = Image.new(
             "RGBA",
             (
-                int(self.manager.deviceScreenWidthVar) * render_factor,
-                int(self.manager.deviceScreenHeightVar) * render_factor,
+                int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                int(self.manager.deviceScreenHeightVar) * self.render_factor,
             ),
             (255, 255, 255, 0),
         )
@@ -210,10 +201,12 @@ class ThemeGenerator:
         ):
             raise ValueError("Header Text Height Too Large!")
         else:
-            heightOfText = int(int(self.manager.header_text_height_var) * render_factor)
+            heightOfText = int(
+                int(self.manager.header_text_height_var) * self.render_factor
+            )
 
         fontHeight = int(
-            int((heightOfText * (4 / 3)) / render_factor) * render_factor
+            int((heightOfText * (4 / 3)) / self.render_factor) * self.render_factor
         )  ## TODO Make this not specific to BPreplay
         headerFont = ImageFont.truetype(
             get_font_path(
@@ -237,7 +230,7 @@ class ThemeGenerator:
         else:
             raise ValueError("Header Glyph Height Too Large!")
 
-        headerMiddleY = (int(self.manager.headerHeightVar) * render_factor) / 2
+        headerMiddleY = (int(self.manager.headerHeightVar) * self.render_factor) / 2
 
         bottom_y_points = {}
         top_y_points = {}
@@ -257,40 +250,45 @@ class ThemeGenerator:
             )
 
             if self.manager.clock_alignment_var == "Left":
-                timeText_X = clock_left_padding * render_factor
+                timeText_X = clock_left_padding * self.render_factor
             elif self.manager.clock_alignment_var == "Centre":
                 timeText_X = (
                     int(
-                        (int(self.manager.deviceScreenWidthVar) * render_factor) / 2
+                        (int(self.manager.deviceScreenWidthVar) * self.render_factor)
+                        / 2
                         - (
                             (
                                 maxTimeTextWidth
                                 + (
-                                    clock_right_padding * render_factor
-                                    + clock_left_padding * render_factor
+                                    clock_right_padding * self.render_factor
+                                    + clock_left_padding * self.render_factor
                                 )
                             )
                             / 2
                         )
                     )
-                    + clock_left_padding * render_factor
+                    + clock_left_padding * self.render_factor
                 )
             elif self.manager.clock_alignment_var == "Right":
                 timeText_X = int(
-                    int(self.manager.deviceScreenWidthVar) * render_factor
-                ) - (maxTimeTextWidth + clock_right_padding * render_factor)
+                    int(self.manager.deviceScreenWidthVar) * self.render_factor
+                ) - (maxTimeTextWidth + clock_right_padding * self.render_factor)
             else:
                 raise ValueError("Invalid clock alignment")
 
             bottom_y_points["clock"] = headerMiddleY - (
-                (int(self.manager.header_text_bubble_height_var) * render_factor) / 2
+                (int(self.manager.header_text_bubble_height_var) * self.render_factor)
+                / 2
             )
             top_y_points["clock"] = headerMiddleY + (
-                (int(self.manager.header_text_bubble_height_var) * render_factor) / 2
+                (int(self.manager.header_text_bubble_height_var) * self.render_factor)
+                / 2
             )
-            left_x_points["clock"] = timeText_X - (headerTextPadding * render_factor)
+            left_x_points["clock"] = timeText_X - (
+                headerTextPadding * self.render_factor
+            )
             right_x_points["clock"] = (
-                timeText_X + maxTimeTextWidth + (headerTextPadding * render_factor)
+                timeText_X + maxTimeTextWidth + (headerTextPadding * self.render_factor)
             )
 
         if float(self.manager.header_glyph_height_var) < 10:
@@ -301,7 +299,7 @@ class ThemeGenerator:
             raise ValueError("Header Glyph Height Too Large!")
         else:
             heightOfGlyph = int(
-                float(self.manager.header_glyph_height_var) * render_factor
+                float(self.manager.header_glyph_height_var) * self.render_factor
             )
 
         if (
@@ -369,52 +367,57 @@ class ThemeGenerator:
 
             glyphTotalWidth = (
                 capacity_image_coloured.size[0]
-                + glyph_between_padding * render_factor
+                + glyph_between_padding * self.render_factor
                 + network_image_coloured.size[0]
             )
 
             if self.manager.header_glyph_alignment_var == "Left":
-                current_x_pos = glyph_left_side_padding * render_factor
+                current_x_pos = glyph_left_side_padding * self.render_factor
             elif self.manager.header_glyph_alignment_var == "Centre":
                 current_x_pos = (
                     int(
-                        (int(self.manager.deviceScreenWidthVar) * render_factor) / 2
+                        (int(self.manager.deviceScreenWidthVar) * self.render_factor)
+                        / 2
                         - (
                             (
                                 glyphTotalWidth
                                 + (
-                                    glyph_right_side_padding * render_factor
-                                    + glyph_left_side_padding * render_factor
+                                    glyph_right_side_padding * self.render_factor
+                                    + glyph_left_side_padding * self.render_factor
                                 )
                             )
                             / 2
                         )
                     )
-                    + glyph_left_side_padding * render_factor
+                    + glyph_left_side_padding * self.render_factor
                 )
             elif self.manager.header_glyph_alignment_var == "Right":
                 current_x_pos = int(
-                    int(self.manager.deviceScreenWidthVar) * render_factor
-                    - (glyph_right_side_padding * render_factor + glyphTotalWidth)
+                    int(self.manager.deviceScreenWidthVar) * self.render_factor
+                    - (glyph_right_side_padding * self.render_factor + glyphTotalWidth)
                 )
             else:
                 raise ValueError("Invalid clock alignment")
 
             glyphBubbleXPos = int(
-                int(self.manager.deviceScreenWidthVar) * render_factor
-            ) - (glyphTotalWidth + glyph_left_side_padding * render_factor)
+                int(self.manager.deviceScreenWidthVar) * self.render_factor
+            ) - (glyphTotalWidth + glyph_left_side_padding * self.render_factor)
 
             bottom_y_points["glyphs"] = headerMiddleY - (
-                (int(self.manager.header_glyph_bubble_height_var) * render_factor) / 2
+                (int(self.manager.header_glyph_bubble_height_var) * self.render_factor)
+                / 2
             )
             top_y_points["glyphs"] = headerMiddleY + (
-                (int(self.manager.header_glyph_bubble_height_var) * render_factor) / 2
+                (int(self.manager.header_glyph_bubble_height_var) * self.render_factor)
+                / 2
             )
             left_x_points["glyphs"] = current_x_pos - (
-                headerGlyphPadding * render_factor
+                headerGlyphPadding * self.render_factor
             )
             right_x_points["glyphs"] = (
-                current_x_pos + glyphTotalWidth + (headerGlyphPadding * render_factor)
+                current_x_pos
+                + glyphTotalWidth
+                + (headerGlyphPadding * self.render_factor)
             )
 
         if self.manager.join_header_bubbles_var and (
@@ -455,10 +458,7 @@ class ThemeGenerator:
         largerPadding: float,
         smallerPadding: float,
         circleWidth: float,
-        render_factor: int | None = None,
     ) -> float:
-        render_factor = render_factor or self.render_factor
-
         totalWidth = initalPadding
         for pair in buttons:
             # pair[0] might be MENU, POWER, or ABXY
@@ -468,13 +468,13 @@ class ThemeGenerator:
                 totalWidth += smallerPadding
                 smallerTextBbox = internalBubbleFont.getbbox(pair[0])
                 smallerTextWidth = smallerTextBbox[2] - smallerTextBbox[0]
-                totalWidth += smallerTextWidth / render_factor
+                totalWidth += smallerTextWidth / self.render_factor
                 totalWidth += smallerPadding
             totalWidth += smallerPadding
             # pair[1] might be something like INFO, FAVOURITE, REFRESH etc...
             textBbox = bubbleFont.getbbox(pair[1])
             textWidth = textBbox[2] - textBbox[0]
-            totalWidth += textWidth / render_factor
+            totalWidth += textWidth / self.render_factor
             totalWidth += largerPadding
         return totalWidth
 
@@ -484,18 +484,15 @@ class ThemeGenerator:
         selected_font_path: Path,
         colour_hex: str,
         lhsButtons: list[tuple[str, str]] = [("POWER", "SLEEP")],
-        render_factor: int | None = None,
     ) -> Image.Image:
         if colour_hex.startswith("#"):
             colour_hex = colour_hex[1:]
 
-        render_factor = render_factor or self.render_factor
-
         image = Image.new(
             "RGBA",
             (
-                int(self.manager.deviceScreenWidthVar) * render_factor,
-                int(self.manager.deviceScreenHeightVar) * render_factor,
+                int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                int(self.manager.deviceScreenHeightVar) * self.render_factor,
             ),
             (255, 255, 255, 0),
         )
@@ -569,7 +566,7 @@ class ThemeGenerator:
                 )  # Change this if overlayed
 
                 in_smaller_bubble_font_size = (
-                    menu_helper_guide_height * (20.1 / 60) * render_factor
+                    menu_helper_guide_height * (20.1 / 60) * self.render_factor
                 )
                 inSmallerBubbleFont = ImageFont.truetype(
                     selected_font_path,
@@ -577,14 +574,14 @@ class ThemeGenerator:
                 )
 
                 in_bubble_font_size = (
-                    menu_helper_guide_height * (24 / 60) * render_factor
+                    menu_helper_guide_height * (24 / 60) * self.render_factor
                 )
                 inBubbleFont = ImageFont.truetype(
                     selected_font_path, in_bubble_font_size
                 )
 
                 single_letter_font_size = (
-                    menu_helper_guide_height * (28 / 60) * render_factor
+                    menu_helper_guide_height * (28 / 60) * self.render_factor
                 )
                 singleLetterFont = ImageFont.truetype(
                     selected_font_path, single_letter_font_size
@@ -608,20 +605,20 @@ class ThemeGenerator:
 
                 isb_ascent, isb_descent = inSmallerBubbleFont.getmetrics()
                 isb_text_height = isb_ascent + isb_descent
-                in_smaller_bubble_text_y = bottom_guide_middle_y * render_factor - (
-                    isb_text_height / 2
+                in_smaller_bubble_text_y = (
+                    bottom_guide_middle_y * self.render_factor - (isb_text_height / 2)
                 )
 
                 ib_ascent, ib_descent = inBubbleFont.getmetrics()
                 ib_text_height = ib_ascent + ib_descent
-                in_bubble_text_y = bottom_guide_middle_y * render_factor - (
+                in_bubble_text_y = bottom_guide_middle_y * self.render_factor - (
                     ib_text_height / 2
                 )
 
                 sl_text_bbox = singleLetterFont.getbbox("ABXY")
                 sl_text_height = sl_text_bbox[3] - sl_text_bbox[1]
                 single_letter_text_y = (
-                    bottom_guide_middle_y * render_factor
+                    bottom_guide_middle_y * self.render_factor
                     - (sl_text_height / 2)
                     - sl_text_bbox[1]
                 )
@@ -641,7 +638,6 @@ class ThemeGenerator:
                         horizontal_large_padding,
                         horizontal_small_padding,
                         guide_small_bubble_height,
-                        render_factor,
                     )
                     combined_width += lhsTotalWidth
 
@@ -654,31 +650,30 @@ class ThemeGenerator:
                         horizontal_large_padding,
                         horizontal_small_padding,
                         guide_small_bubble_height,
-                        render_factor,
                     )
                     combined_width += rhsTotalWidth
                 iterations += 1
 
             if not remove_left_menu_guides_var:
-                realLhsPointer = from_sides_padding * render_factor
+                realLhsPointer = from_sides_padding * self.render_factor
                 ## Make the main long bubble
                 draw.rounded_rectangle(
                     [
                         (
                             realLhsPointer,
                             (bottom_guide_middle_y - menu_helper_guide_height / 2)
-                            * render_factor,
+                            * self.render_factor,
                         ),  # bottom left point
                         (
-                            realLhsPointer + (lhsTotalWidth * render_factor),
+                            realLhsPointer + (lhsTotalWidth * self.render_factor),
                             (bottom_guide_middle_y + menu_helper_guide_height / 2)
-                            * render_factor,
+                            * self.render_factor,
                         ),
                     ],  # Top right point
-                    radius=(menu_helper_guide_height / 2) * render_factor,
+                    radius=(menu_helper_guide_height / 2) * self.render_factor,
                     fill=hex_to_rgba(colour_hex, alpha=0.133),
                 )
-                realLhsPointer += horizontal_padding * render_factor
+                realLhsPointer += horizontal_padding * self.render_factor
                 for pair in lhsButtons:
                     button_image = self.generate_button_glyph(
                         pair[0],
@@ -693,7 +688,7 @@ class ThemeGenerator:
                         (
                             int(realLhsPointer),
                             int(
-                                bottom_guide_middle_y * render_factor
+                                bottom_guide_middle_y * self.render_factor
                                 - (button_image.size[1] / 2)
                             ),
                         ),
@@ -701,7 +696,7 @@ class ThemeGenerator:
                     )
                     realLhsPointer += (
                         (button_image.size[0])
-                        + (horizontal_small_padding) * render_factor
+                        + (horizontal_small_padding) * self.render_factor
                     )
 
                     textBbox = inBubbleFont.getbbox(pair[1])
@@ -713,31 +708,31 @@ class ThemeGenerator:
                         fill=f"#{colour_hex}",
                     )
                     realLhsPointer += textWidth
-                    realLhsPointer += horizontal_large_padding * render_factor
+                    realLhsPointer += horizontal_large_padding * self.render_factor
             if not remove_right_menu_guides_var:
                 realRhsPointer = (
                     int(self.manager.deviceScreenWidthVar)
                     - from_sides_padding
                     - rhsTotalWidth
-                ) * render_factor
+                ) * self.render_factor
                 ## Make the main long bubble
                 draw.rounded_rectangle(
                     [
                         (
                             realRhsPointer,
                             (bottom_guide_middle_y - menu_helper_guide_height / 2)
-                            * render_factor,
+                            * self.render_factor,
                         ),  # bottom left point
                         (
-                            realRhsPointer + (rhsTotalWidth * render_factor),
+                            realRhsPointer + (rhsTotalWidth * self.render_factor),
                             (bottom_guide_middle_y + menu_helper_guide_height / 2)
-                            * render_factor,
+                            * self.render_factor,
                         ),
                     ],  # Top right point
-                    radius=(menu_helper_guide_height / 2) * render_factor,
+                    radius=(menu_helper_guide_height / 2) * self.render_factor,
                     fill=hex_to_rgba(colour_hex, alpha=0.133),
                 )
-                realRhsPointer += horizontal_padding * render_factor
+                realRhsPointer += horizontal_padding * self.render_factor
                 for pair in real_rhs_buttons:
                     button_image = self.generate_button_glyph(
                         pair[0],
@@ -753,7 +748,7 @@ class ThemeGenerator:
                         (
                             int(realRhsPointer),
                             int(
-                                bottom_guide_middle_y * render_factor
+                                bottom_guide_middle_y * self.render_factor
                                 - (button_image.size[1] / 2)
                             ),
                         ),
@@ -761,7 +756,7 @@ class ThemeGenerator:
                     )
                     realRhsPointer += (
                         (button_image.size[0])
-                        + (horizontal_small_padding) * render_factor
+                        + (horizontal_small_padding) * self.render_factor
                     )
 
                     textBbox = inBubbleFont.getbbox(pair[1])
@@ -773,7 +768,7 @@ class ThemeGenerator:
                         fill=f"#{colour_hex}",
                     )
                     realRhsPointer += textWidth
-                    realRhsPointer += horizontal_large_padding * render_factor
+                    realRhsPointer += horizontal_large_padding * self.render_factor
         return image
 
     def generate_background_with_overlay(

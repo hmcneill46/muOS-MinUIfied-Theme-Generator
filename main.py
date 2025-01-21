@@ -20,7 +20,7 @@ from tkinter import (
 import traceback
 
 from generator.settings import SettingsManager
-from generator.theme import ThemeGenerator
+from generator.theme import DeviceThemeGenerator, PreviewThemeGenerator
 
 try:
     from bidi import get_display as bidi_get_display
@@ -372,7 +372,7 @@ def generateMuOSBackgroundOverlay(
     )
     draw = ImageDraw.Draw(image)
 
-    theme_generator = ThemeGenerator(manager, render_factor)
+    theme_generator = DeviceThemeGenerator(manager, render_factor)
     menuHelperGuides = theme_generator.generate_footer_guides(
         rhsButtons,
         selected_font_path,
@@ -381,7 +381,7 @@ def generateMuOSBackgroundOverlay(
     )
 
     image = Image.alpha_composite(image, menuHelperGuides)
-    headerBubbles = theme_generator.generate_header_bubbles(render_factor=render_factor)
+    headerBubbles = theme_generator.generate_header_bubbles()
 
     image = Image.alpha_composite(image, headerBubbles)
 
@@ -467,7 +467,11 @@ def generatePilImageVertical(
         manager.use_alt_font_var, manager.alt_font_filename
     )
 
-    theme_generator = ThemeGenerator(manager, render_factor)
+    theme_generator = (
+        PreviewThemeGenerator(manager, render_factor)
+        if forPreview
+        else DeviceThemeGenerator(manager)
+    )
     if muOSSystemName == "muxlaunch":
         menuHelperGuides = theme_generator.generate_footer_guides(
             [("A", "SELECT")],
@@ -670,7 +674,7 @@ def generatePilImageVertical(
     ):
         image = Image.alpha_composite(image, menuHelperGuides)
 
-    headerBubbles = theme_generator.generate_header_bubbles(render_factor=render_factor)
+    headerBubbles = theme_generator.generate_header_bubbles()
     image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
@@ -1057,7 +1061,11 @@ def generatePilImageHorizontal(
         manager.use_alt_font_var, manager.alt_font_filename
     )
 
-    theme_generator = ThemeGenerator(manager, render_factor)
+    theme_generator = (
+        PreviewThemeGenerator(manager, render_factor)
+        if forPreview
+        else DeviceThemeGenerator(manager)
+    )
     menuHelperGuides = theme_generator.generate_footer_guides(
         [("A", "SELECT")],
         selected_font_path,
@@ -1641,7 +1649,7 @@ def generatePilImageHorizontal(
 
     ## Show what header items will actually look like
 
-    headerBubbles = theme_generator.generate_header_bubbles(render_factor=render_factor)
+    headerBubbles = theme_generator.generate_header_bubbles()
     image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
@@ -1866,7 +1874,11 @@ def generatePilImageAltHorizontal(
         manager.use_alt_font_var, manager.alt_font_filename
     )
 
-    theme_generator = ThemeGenerator(manager, render_factor)
+    theme_generator = (
+        PreviewThemeGenerator(manager, render_factor)
+        if forPreview
+        else DeviceThemeGenerator(manager)
+    )
     menuHelperGuides = theme_generator.generate_footer_guides(
         [("A", "SELECT")],
         selected_font_path,
@@ -2445,7 +2457,7 @@ def generatePilImageAltHorizontal(
         image = Image.alpha_composite(image, transparent_text_image)
     image = Image.alpha_composite(image, menuHelperGuides)
 
-    headerBubbles = theme_generator.generate_header_bubbles(render_factor=render_factor)
+    headerBubbles = theme_generator.generate_header_bubbles()
     image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
@@ -3832,7 +3844,7 @@ def FillTempThemeFolder(
     in_bubble_font_size = round(button_height * (24 / 40))
 
     buttonsToGenerate = ["A", "B", "C", "MENU", "X", "Y", "Z"]
-    theme_generator = ThemeGenerator(manager, render_factor)
+    theme_generator = DeviceThemeGenerator(manager, render_factor)
     for button in buttonsToGenerate:
         button_image = theme_generator.generate_button_glyph(
             button,
@@ -5055,7 +5067,6 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
         contentPaddingTop = 40
 
     global background_image
-    theme_generator = ThemeGenerator(manager, render_factor)
 
     if (
         manager.use_custom_background_var
