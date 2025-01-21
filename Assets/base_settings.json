@@ -90,6 +90,33 @@
           ]
         },
         {
+          "label": "Use Background Image",
+          "widget_type": "checkbox",
+          "var_name": "use_custom_background_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
+          "label": "Background Image Path",
+          "widget_type": "entry",
+          "var_name": "background_image_path",
+          "var_type": "path",
+          "default_value": ""
+        },
+        {
+          "label": "Browse",
+          "widget_type": "button",
+          "var_name": "background_image_path",
+          "command": "select_background_image_path"
+        },
+        {
+          "label": "Show Background through Text on Launch Menu",
+          "widget_type": "checkbox",
+          "var_name": "transparent_text_var",
+          "var_type": "boolean",
+          "default_value": false
+        },
+        {
           "label": "Use Custom Bootlogo Image",
           "widget_type": "checkbox",
           "var_name": "use_custom_bootlogo_var",
@@ -154,7 +181,7 @@
           "command": "select_color"
         },
         {
-          "label": "Bubble Color",
+          "label": "Selected Bubble Color",
           "widget_type": "entry",
           "var_name": "bubbleHexVar",
           "default_value": "ffffff",
@@ -167,7 +194,7 @@
           "command": "select_color"
         },
         {
-          "label": "Footer Bubble Color",
+          "label": "Footer Foreground Color",
           "widget_type": "entry",
           "var_name": "footerBubbleHexVar",
           "default_value": "ffffff",
@@ -204,33 +231,6 @@
           "widget_type": "button",
           "var_name": "batteryChargingHexVar",
           "command": "select_color"
-        },
-        {
-          "label": "Use Background Image",
-          "widget_type": "checkbox",
-          "var_name": "use_custom_background_var",
-          "var_type": "boolean",
-          "default_value": false
-        },
-        {
-          "label": "Background Image Path",
-          "widget_type": "entry",
-          "var_name": "background_image_path",
-          "var_type": "path",
-          "default_value": ""
-        },
-        {
-          "label": "Browse",
-          "widget_type": "button",
-          "var_name": "background_image_path",
-          "command": "select_background_image_path"
-        },
-        {
-          "label": "Show Background through Text on Launch Menu",
-          "widget_type": "checkbox",
-          "var_name": "transparent_text_var",
-          "var_type": "boolean",
-          "default_value": false
         }
       ]
     },
