@@ -5104,34 +5104,33 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
     if get_current_image(app.image_label1) is not None:
         current_image_size = get_current_image(app.image_label1).size
     preview_size = [current_image_size[0] / 2, current_image_size[1] / 2]
-    if app.right_pane.winfo_width() > 100:
+    if app.get_preview_width() > 100:
         previewRenderFactor = (
-            math.ceil(app.right_pane.winfo_width() / current_image_size[1]) + 1
+            math.ceil(app.get_preview_width() / current_image_size[1]) + 1
         )  # Affectively anti aliasing in the preview
 
         preview_size = [
-            int(app.right_pane.winfo_width()),
+            int(app.get_preview_width()),
             int(
-                app.right_pane.winfo_width()
+                app.get_preview_width()
                 * (current_image_size[1] / current_image_size[0])
             ),
         ]
     try:
-        if app.right_pane.winfo_width() < 100:
+        if app.get_preview_width() < 100:
             preview_size = [
                 manager.deviceScreenWidthVar // 2,
                 manager.deviceScreenHeightVar // 2,
             ]
         else:
             previewRenderFactor = (
-                math.ceil(app.right_pane.winfo_width() / manager.deviceScreenWidthVar)
-                + 1
+                math.ceil(app.get_preview_width() / manager.deviceScreenWidthVar) + 1
             )  # Affectively anti aliasing in the preview
 
             preview_size = [
-                int(app.right_pane.winfo_width()),
+                int(app.get_preview_width()),
                 int(
-                    app.right_pane.winfo_width()
+                    app.get_preview_width()
                     * manager.deviceScreenHeightVar
                     / manager.deviceScreenWidthVar
                 ),

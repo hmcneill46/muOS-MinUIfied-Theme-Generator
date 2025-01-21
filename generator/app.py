@@ -136,6 +136,9 @@ class ThemeGeneratorApp:
             self.canvas.bind_all("<Button-4>", self._on_mousewheel_linux)
             self.canvas.bind_all("<Button-5>", self._on_mousewheel_linux)
 
+    def get_preview_width(self) -> int:
+        return self.right_pane.winfo_width()
+
     def build_sections_from_settings(self) -> None:
         for section_data in self.settings_manager.get_sections():
             if section_title := section_data.get("title", ""):
