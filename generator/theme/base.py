@@ -1,10 +1,16 @@
+from datetime import datetime
 import math
 from pathlib import Path
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 from generator.color_utils import hex_to_rgba, change_logo_color
-from generator.constants import BUTTON_GLYPHS_DIR, GLYPHS_DIR
+from generator.constants import (
+    BUTTON_GLYPHS_DIR,
+    GLYPHS_DIR,
+    BatteryStyleOptionsDict,
+    BatteryChargingStyleOptionsDict,
+)
 from generator.font import get_font_path
 from generator.settings import SettingsManager
 from generator.utils import get_max_length_time_string
@@ -179,6 +185,8 @@ class BaseThemeGenerator:
         self,
         accent_colour: str | None = None,
         bubble_alpha: float = 0.133,
+        *args,
+        **kwargs,
     ) -> Image.Image:
         image = Image.new(
             "RGBA",
