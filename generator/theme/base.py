@@ -762,8 +762,35 @@ class BaseThemeGenerator:
         selected_font_path: Path,
         colour_hex: str,
         lhsButtons: list[tuple[str, str]] = [("POWER", "SLEEP")],
+        *args,
+        **kwargs,
     ) -> Image.Image:
-        pass
+        if colour_hex.startswith("#"):
+            colour_hex = colour_hex[1:]
+
+        image = Image.new(
+            "RGBA",
+            (
+                int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                int(self.manager.deviceScreenHeightVar) * self.render_factor,
+            ),
+            (255, 255, 255, 0),
+        )
+        draw = ImageDraw.Draw(image)
+
+        menuHelperGuides = self.generate_footer_overlay_image(
+            rhsButtons,
+            selected_font_path,
+            colour_hex,
+            lhsButtons=lhsButtons,
+        )
+
+        image = Image.alpha_composite(image, menuHelperGuides)
+        headerBubbles = self.generate_header_overlay_image(*args, **kwargs)
+
+        image = Image.alpha_composite(image, headerBubbles)
+
+        return image
 
     def generate_boot_screen(
         self,

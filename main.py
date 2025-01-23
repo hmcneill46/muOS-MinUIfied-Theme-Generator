@@ -99,43 +99,6 @@ def getRealFooterHeight(manager: SettingsManager) -> int:
     return footerHeight
 
 
-def generateMuOSBackgroundOverlay(
-    rhsButtons: list[tuple[str, str]],
-    selected_font_path: Path,
-    colour_hex: str,
-    render_factor: int,
-    manager: SettingsManager,
-    lhsButtons: list[tuple[str, str]] = [("POWER", "SLEEP")],
-) -> Image.Image:
-    if colour_hex.startswith("#"):
-        colour_hex = colour_hex[1:]
-
-    image = Image.new(
-        "RGBA",
-        (
-            int(manager.deviceScreenWidthVar) * render_factor,
-            int(manager.deviceScreenHeightVar) * render_factor,
-        ),
-        (255, 255, 255, 0),
-    )
-    draw = ImageDraw.Draw(image)
-
-    theme_generator = DeviceThemeGenerator(manager, render_factor)
-    menuHelperGuides = theme_generator.generate_footer_guides(
-        rhsButtons,
-        selected_font_path,
-        colour_hex,
-        lhsButtons=lhsButtons,
-    )
-
-    image = Image.alpha_composite(image, menuHelperGuides)
-    headerBubbles = theme_generator.generate_header_bubbles()
-
-    image = Image.alpha_composite(image, headerBubbles)
-
-    return image
-
-
 def generatePilImageVertical(
     progress_bar: ttk.Progressbar,
     workingIndex: int,
@@ -3617,12 +3580,10 @@ def FillTempThemeFolder(
 
     # TODO If implimented it would be great to only set these once as a default.png type thing, and then make it work in every menu
 
-    visualbuttonoverlay_B_BACK_A_SELECT = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_B_BACK_A_SELECT = theme_generator.generate_static_overlay_image(
         [["B", "BACK"], ["A", "SELECT"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -3689,12 +3650,10 @@ def FillTempThemeFolder(
         )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_A_SELECT = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_A_SELECT = theme_generator.generate_static_overlay_image(
         [["A", "SELECT"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -3731,23 +3690,19 @@ def FillTempThemeFolder(
         )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_B_BACK = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_B_BACK = theme_generator.generate_static_overlay_image(
         [["B", "BACK"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
         Image.LANCZOS,
     )
-    visualbuttonoverlay_B_SAVE = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_B_SAVE = theme_generator.generate_static_overlay_image(
         [["B", "SAVE"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4024,12 +3979,10 @@ def FillTempThemeFolder(
         Image.LANCZOS,
     )
 
-    visualbuttonoverlay_muxapp = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxapp = theme_generator.generate_static_overlay_image(
         [["B", "BACK"], ["A", "LAUNCH"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4046,7 +3999,7 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_muxplore = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxplore = theme_generator.generate_static_overlay_image(
         [
             ["MENU", "INFO"],
             ["Y", "FAVOURITE"],
@@ -4056,8 +4009,6 @@ def FillTempThemeFolder(
         ],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4070,12 +4021,10 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_muxfavourite = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxfavourite = theme_generator.generate_static_overlay_image(
         [["MENU", "INFO"], ["X", "REMOVE"], ["B", "BACK"], ["A", "OPEN"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4090,7 +4039,7 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_muxhistory = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxhistory = theme_generator.generate_static_overlay_image(
         [
             ["MENU", "INFO"],
             ["Y", "FAVOURITE"],
@@ -4100,8 +4049,6 @@ def FillTempThemeFolder(
         ],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4116,12 +4063,10 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_muxtimezone = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxtimezone = theme_generator.generate_static_overlay_image(
         [["A", "SELECT"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4136,12 +4081,10 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_muxpicker = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxpicker = theme_generator.generate_static_overlay_image(
         [["Y", "SAVE"], ["B", "BACK"], ["A", "SELECT"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4156,12 +4099,10 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_muxlanguage = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxlanguage = theme_generator.generate_static_overlay_image(
         [["B", "BACK"], ["A", "SELECT"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4176,12 +4117,10 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_muxarchive = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxarchive = theme_generator.generate_static_overlay_image(
         [["B", "BACK"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4196,12 +4135,10 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_muxnetprofile = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxnetprofile = theme_generator.generate_static_overlay_image(
         [["Y", "REMOVE"], ["X", "SAVE"], ["B", "BACK"], ["A", "LOAD"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4216,12 +4153,10 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_muxnetscan = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxnetscan = theme_generator.generate_static_overlay_image(
         [["X", "RESCAN"], ["B", "BACK"], ["A", "USE"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4236,12 +4171,10 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_muxgov = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxgov = theme_generator.generate_static_overlay_image(
         [["Y", "RECURSIVE"], ["X", "DIRECTORY"], ["A", "INDIVIDUAL"], ["B", "BACK"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -4254,12 +4187,10 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    visualbuttonoverlay_muxsearch = generateMuOSBackgroundOverlay(
+    visualbuttonoverlay_muxsearch = theme_generator.generate_static_overlay_image(
         [["X", "CLEAR"], ["B", "BACK"], ["A", "SELECT"]],
         selected_font_path,
         manager.footerBubbleHexVar,
-        render_factor,
-        manager,
         lhsButtons=[["POWER", "SLEEP"]],
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),

@@ -270,5 +270,15 @@ class PreviewThemeGenerator(BaseThemeGenerator):
 
         return image
 
+    def generate_static_overlay_image(
+        self,
+        rhsButtons: list[tuple[str, str]],
+        selected_font_path: Path,
+        colour_hex: str,
+        lhsButtons: list[tuple[str, str]] = [("POWER", "SLEEP")],
+        muOSpageName: str = "muxlaunch",
+    ) -> Image.Image:
+        return self.generate_static_overlay_image(rhsButtons,selected_font_path, colour_hex,lhsButtons,muOSpageName=muOSpageName)
+
     def generate_theme(self):
         raise NotImplementedError("PreviewThemeGenerator only generates previews!")
