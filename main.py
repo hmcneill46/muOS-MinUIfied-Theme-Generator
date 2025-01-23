@@ -51,6 +51,7 @@ from generator.constants import (
     USER_SETTINGS_PATH,
     BatteryStyleOptionsDict,
     BatteryChargingStyleOptionsDict,
+    MENU_LISTING_2410_X,
 )
 from generator.font import get_font_path
 from generator.utils import (
@@ -663,16 +664,16 @@ def generatePilImageVertical(
             )
         draw.text((text_x, text_y), text, font=font, fill=text_color)
 
-    if (
-        muOSSystemName == "muxdevice"
-        or muOSSystemName == "muxlaunch"
-        or muOSSystemName == "muxconfig"
-        or muOSSystemName == "muxinfo"
-        or muOSSystemName == "muxapp"
-        or muOSSystemName == "muxplore"
-        or muOSSystemName == "muxfavourite"
-        or muOSSystemName == "muxhistory"
-    ):
+    if muOSSystemName in [
+        "muxdevice",
+        "muxlaunch",
+        "muxconfig",
+        "muxinfo",
+        "muxapp",
+        "muxplore",
+        "muxfavourite",
+        "muxhistory",
+    ]:
         image = Image.alpha_composite(image, menuHelperGuides)
 
     headerBubbles = theme_generator.generate_header_bubbles()
@@ -2840,7 +2841,7 @@ def getDefaultAlternateMenuNameData():
         "shutting down...": "Shutting Down...",
     }
 
-    for section in menus2405_2:
+    for section in MENU_LISTING_2410_X:
         if section[0].startswith("mux"):
             for n in section[1]:
                 defaultMenuNameMap[n[0].lower()] = n[0]
@@ -2942,233 +2943,6 @@ def select_alt_font_path(
 
 # INFO FOR BELOW LIST
 #        FOLDER NAME      DISPLAYED NAME     FILE NAME
-
-menus2405 = [
-    [
-        "muxapps",
-        [
-            ["Archive Manager", "archive"],
-            ["Backup Manager", "backup"],
-            ["Portmaster", "portmaster"],
-            ["Retroarch", "retroarch"],
-            ["Dingux Commander", "dingux"],
-            ["Gmu Music Player", "gmu"],
-        ],
-    ],
-    [
-        "muxconfig",
-        [
-            ["General Settings", "general"],
-            ["Theme Picker", "theme"],
-            ["Wi-Fi Settings", "network"],
-            ["Web Services", "service"],
-            ["Date and Time", "clock"],
-            ["Device Type", "device"],
-            ["System Refresh", "refresh"],
-        ],
-    ],
-    [
-        "muxdevice",
-        [
-            ["RG35XX - H", "rg35xx-h"],
-            ["RG35XX - Plus", "rg35xx-plus"],
-            ["RG35XX - 2024", "rg35xx-2024"],
-        ],
-    ],
-    [
-        "muxinfo",
-        [
-            ["Input Tester", "tester"],
-            ["System Details", "system"],
-            ["Supporters", "credit"],
-        ],
-    ],
-    [
-        "muxlaunch",
-        [
-            ["Content Explorer", "explore"],
-            ["Favourites", "favourite"],
-            ["History", "history"],
-            ["Applications", "apps"],
-            ["Information", "info"],
-            ["Configuration", "config"],
-            ["Reboot Device", "reboot"],
-            ["Shutdown Device", "shutdown"],
-        ],
-    ],
-]
-
-menus2405_1 = [
-    [
-        "muxapp",
-        [
-            ["Archive Manager", "Archive Manager"],
-            ["Dingux Commander", "Dingux Commander"],
-            ["GMU Music Player", "GMU Music Player"],
-            ["PortMaster", "PortMaster"],
-            ["RetroArch", "RetroArch"],
-            ["Simple Terminal", "Simple Terminal"],
-            ["Task Toolkit", "Task Toolkit"],
-        ],
-    ],
-    [
-        "muxconfig",
-        [
-            ["General Settings", "general"],
-            ["Theme Picker", "theme"],
-            ["Wi-Fi Settings", "network"],
-            ["Web Services", "service"],
-            ["Date and Time", "clock"],
-            ["Device Type", "device"],
-        ],
-    ],
-    [
-        "muxdevice",
-        [
-            ["RG35XX - H", "rg35xx-h"],
-            ["RG35XX - Plus", "rg35xx-plus"],
-            ["RG35XX - SP", "rg35xx-sp"],
-            ["RG35XX - 2024", "rg35xx-2024"],
-        ],
-    ],
-    [
-        "muxinfo",
-        [
-            ["Input Tester", "tester"],
-            ["System Details", "system"],
-            ["Supporters", "credit"],
-        ],
-    ],
-    [
-        "muxlaunch",
-        [
-            ["Content Explorer", "explore"],
-            ["Favourites", "favourite"],
-            ["History", "history"],
-            ["Applications", "apps"],
-            ["Information", "info"],
-            ["Configuration", "config"],
-            ["Reboot Device", "reboot"],
-            ["Shutdown Device", "shutdown"],
-        ],
-    ],
-]
-menus2405_2 = [
-    [
-        "muxapp",
-        [
-            ["Archive Manager", "Archive Manager"],
-            ["Dingux Commander", "Dingux Commander"],
-            ["Flip Clock", "Flip Clock"],
-            ["GMU Music Player", "GMU Music Player"],
-            ["Moonlight", "Moonlight"],
-            ["PortMaster", "PortMaster"],
-            ["PPSSPP", "PPSSPP"],
-            ["RetroArch", "RetroArch"],
-            ["Simple Terminal", "Simple Terminal"],
-            ["Task Toolkit", "Task Toolkit"],
-        ],
-    ],
-    [
-        "muxconfig",
-        [
-            ["General Settings", "general"],
-            ["Theme Picker", "theme"],
-            ["Wi-Fi Settings", "network"],
-            ["Web Services", "service"],
-            ["Date and Time", "clock"],
-            ["Device Type", "device"],
-        ],
-    ],
-    [
-        "muxdevice",
-        [
-            ["RG35XX - H", "rg35xx-h"],
-            ["RG35XX - Plus", "rg35xx-plus"],
-            ["RG35XX - SP", "rg35xx-sp"],
-            ["RG35XX - 2024", "rg35xx-2024"],
-        ],
-    ],
-    [
-        "muxinfo",
-        [
-            ["Input Tester", "tester"],
-            ["System Details", "system"],
-            ["Supporters", "credit"],
-        ],
-    ],
-    [
-        "muxlaunch",
-        [
-            ["Content Explorer", "explore"],
-            ["Favourites", "favourite"],
-            ["History", "history"],
-            ["Applications", "apps"],
-            ["Information", "info"],
-            ["Configuration", "config"],
-            ["Reboot Device", "reboot"],
-            ["Shutdown Device", "shutdown"],
-        ],
-    ],
-]
-menus2405_3 = [
-    [
-        "muxapp",
-        [
-            ["Archive Manager", "Archive Manager"],
-            ["Dingux Commander", "Dingux Commander"],
-            ["Flip Clock", "Flip Clock"],
-            ["GMU Music Player", "GMU Music Player"],
-            ["Moonlight", "Moonlight"],
-            ["PortMaster", "PortMaster"],
-            ["PPSSPP", "PPSSPP"],
-            ["RetroArch", "RetroArch"],
-            ["Simple Terminal", "Simple Terminal"],
-            ["Task Toolkit", "Task Toolkit"],
-        ],
-    ],
-    [
-        "muxconfig",
-        [
-            ["General Settings", "general"],
-            ["Theme Picker", "theme"],
-            ["Wi-Fi Settings", "network"],
-            ["Web Services", "service"],
-            ["Date and Time", "clock"],
-            ["Device Type", "device"],
-        ],
-    ],
-    [
-        "muxdevice",
-        [
-            ["RG35XX - H", "rg35xx-h"],
-            ["RG35XX - Plus", "rg35xx-plus"],
-            ["RG35XX - SP", "rg35xx-sp"],
-            ["RG35XX - 2024", "rg35xx-2024"],
-        ],
-    ],
-    [
-        "muxinfo",
-        [
-            ["Input Tester", "tester"],
-            ["System Details", "system"],
-            ["Supporters", "credit"],
-        ],
-    ],
-    [
-        "muxlaunch",
-        [
-            ["Content Explorer", "explore"],
-            ["Favourites", "favourite"],
-            ["History", "history"],
-            ["Applications", "apps"],
-            ["Information", "info"],
-            ["Configuration", "config"],
-            ["Reboot Device", "reboot"],
-            ["Shutdown Device", "shutdown"],
-        ],
-    ],
-]
 
 
 def round_to_nearest_odd(number: float | int) -> int:
@@ -4752,7 +4526,7 @@ def FillTempThemeFolder(
 
     itemsList = []
     if manager.version_var[0:9] == "muOS 2410":
-        workingMenus = menus2405_3
+        workingMenus = MENU_LISTING_2410_X
 
     else:
         raise ValueError("You Haven't Selected a muOS Version")
@@ -5087,13 +4861,13 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
     previewApplicationList = []
     if manager.version_var[0:9] == "muOS 2410":
         index = None
-        for i, n in enumerate(menus2405_3):
+        for i, n in enumerate(MENU_LISTING_2410_X):
             if n[0] == "muxapp":
                 index = i
                 break
         if index is not None:
             previewApplicationList = [
-                [x[0], "menu", x[0]] for x in menus2405_3[index][1]
+                [x[0], "menu", x[0]] for x in MENU_LISTING_2410_X[index][1]
             ]
 
     global valid_params

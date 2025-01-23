@@ -38,3 +38,66 @@ BatteryChargingStyleOptionsDict = {
     "Lightning 2": "alt1_capacity_charging_",
     "Lightning 3": "alt2_capacity_charging_",
 }
+
+MENU_LISTING_2410_X: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
+    (
+        "muxapp",
+        (
+            ("Archive Manager", "Archive Manager"),
+            ("Dingux Commander", "Dingux Commander"),
+            ("Flip Clock", "Flip Clock"),
+            ("GMU Music Player", "GMU Music Player"),
+            ("Moonlight", "Moonlight"),
+            ("PortMaster", "PortMaster"),
+            ("PPSSPP", "PPSSPP"),
+            ("RetroArch", "RetroArch"),
+            ("Simple Terminal", "Simple Terminal"),
+            ("Task Toolkit", "Task Toolkit"),
+        ),
+    ),
+    (
+        "muxconfig",
+        (
+            ("General Settings", "general"),
+            ("Theme Picker", "theme"),
+            ("Wi-Fi Settings", "network"),
+            ("Web Services", "service"),
+            ("Date and Time", "clock"),
+            ("Device Type", "device"),
+        ),
+    ),
+    (
+        "muxdevice",
+        (
+            ("RG35XX - H", "rg35xx-h"),
+            ("RG35XX - Plus", "rg35xx-plus"),
+            ("RG35XX - SP", "rg35xx-sp"),
+            ("RG35XX - 2024", "rg35xx-2024"),
+        ),
+    ),
+    (
+        "muxinfo",
+        (
+            ("Input Tester", "tester"),
+            ("System Details", "system"),
+            ("Supporters", "credit"),
+        ),
+    ),
+    (
+        "muxlaunch",
+        (
+            ("Content Explorer", "explore"),
+            ("Favourites", "favourite"),
+            ("History", "history"),
+            ("Applications", "apps"),
+            ("Information", "info"),
+            ("Configuration", "config"),
+            ("Reboot Device", "reboot"),
+            ("Shutdown Device", "shutdown"),
+        ),
+    ),
+)
+
+MENU_LISTING_MAP: dict[str, tuple[tuple[str, tuple[tuple[str, str], ...]], ...]] = {
+    "2410": MENU_LISTING_2410_X,
+}

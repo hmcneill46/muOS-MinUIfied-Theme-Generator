@@ -3,6 +3,8 @@ from pathlib import Path
 import re
 from typing import Any
 
+from generator.constants import MENU_LISTING_MAP
+
 
 def ensure_file_exists(path: Path, default_data: dict | None = None):
     if not path.exists():
@@ -112,6 +114,13 @@ class SettingsManager:
 
     def get_value(self, var_name: str, fallback: Any = None):
         return self.merged_values.get(var_name, fallback)
+
+    def get_menu_listing(
+        self, var_name: str
+    ) -> tuple[tuple[str, tuple[tuple[str, str], ...]], ...] | None:
+        if version := self.get_value(var_name):
+            version_number = version[5:9]
+            return MENU_LISTING_MAP.get(version_number)
 
     def _parse_screen_dimensions(self, device_type: str):
         match = re.search(r"\[(\d+)x(\d+)\]", device_type)
