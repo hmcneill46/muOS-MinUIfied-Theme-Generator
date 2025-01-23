@@ -475,28 +475,28 @@ def generatePilImageVertical(
         else DeviceThemeGenerator(manager)
     )
     if muOSSystemName == "muxlaunch":
-        menuHelperGuides = theme_generator.generate_footer_guides(
+        menuHelperGuides = theme_generator.generate_footer_overlay_image(
             [("A", "SELECT")],
             selected_font_path,
             manager.footerBubbleHexVar,
             lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo":
-        menuHelperGuides = theme_generator.generate_footer_guides(
+        menuHelperGuides = theme_generator.generate_footer_overlay_image(
             [("B", "BACK"), ("A", "SELECT")],
             selected_font_path,
             manager.footerBubbleHexVar,
             lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxapp":
-        menuHelperGuides = theme_generator.generate_footer_guides(
+        menuHelperGuides = theme_generator.generate_footer_overlay_image(
             [("B", "BACK"), ("A", "LAUNCH")],
             selected_font_path,
             manager.footerBubbleHexVar,
             lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxplore":
-        menuHelperGuides = theme_generator.generate_footer_guides(
+        menuHelperGuides = theme_generator.generate_footer_overlay_image(
             [
                 ("MENU", "INFO"),
                 ("Y", "FAVOURITE"),
@@ -509,14 +509,14 @@ def generatePilImageVertical(
             lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxfavourite":
-        menuHelperGuides = theme_generator.generate_footer_guides(
+        menuHelperGuides = theme_generator.generate_footer_overlay_image(
             [("MENU", "INFO"), ("X", "REMOVE"), ("B", "BACK"), ("A", "OPEN")],
             selected_font_path,
             manager.footerBubbleHexVar,
             lhsButtons=[("POWER", "SLEEP")],
         )
     elif muOSSystemName == "muxhistory":
-        menuHelperGuides = theme_generator.generate_footer_guides(
+        menuHelperGuides = theme_generator.generate_footer_overlay_image(
             [
                 ("MENU", "INFO"),
                 ("Y", "FAVOURITE"),
@@ -676,7 +676,7 @@ def generatePilImageVertical(
     ]:
         image = Image.alpha_composite(image, menuHelperGuides)
 
-    headerBubbles = theme_generator.generate_header_bubbles()
+    headerBubbles = theme_generator.generate_header_overlay_image()
     image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
@@ -1068,7 +1068,7 @@ def generatePilImageHorizontal(
         if forPreview
         else DeviceThemeGenerator(manager)
     )
-    menuHelperGuides = theme_generator.generate_footer_guides(
+    menuHelperGuides = theme_generator.generate_footer_overlay_image(
         [("A", "SELECT")],
         selected_font_path,
         manager.footerBubbleHexVar,
@@ -1651,7 +1651,7 @@ def generatePilImageHorizontal(
 
     ## Show what header items will actually look like
 
-    headerBubbles = theme_generator.generate_header_bubbles()
+    headerBubbles = theme_generator.generate_header_overlay_image()
     image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
@@ -1881,7 +1881,7 @@ def generatePilImageAltHorizontal(
         if forPreview
         else DeviceThemeGenerator(manager)
     )
-    menuHelperGuides = theme_generator.generate_footer_guides(
+    menuHelperGuides = theme_generator.generate_footer_overlay_image(
         [("A", "SELECT")],
         selected_font_path,
         manager.footerBubbleHexVar,
@@ -2459,7 +2459,7 @@ def generatePilImageAltHorizontal(
         image = Image.alpha_composite(image, transparent_text_image)
     image = Image.alpha_composite(image, menuHelperGuides)
 
-    headerBubbles = theme_generator.generate_header_bubbles()
+    headerBubbles = theme_generator.generate_header_overlay_image()
     image = Image.alpha_composite(image, headerBubbles)
 
     if forPreview:
@@ -3619,9 +3619,9 @@ def FillTempThemeFolder(
     in_bubble_font_size = round(button_height * (24 / 40))
 
     buttonsToGenerate = ["A", "B", "C", "MENU", "X", "Y", "Z"]
-    theme_generator = DeviceThemeGenerator(manager, render_factor)
+    theme_generator = DeviceThemeGenerator(manager)
     for button in buttonsToGenerate:
-        button_image = theme_generator.generate_button_glyph(
+        button_image = theme_generator.generate_button_glyph_image(
             button,
             selected_font_path,
             accent_hex,

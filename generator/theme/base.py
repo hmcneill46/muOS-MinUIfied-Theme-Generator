@@ -15,7 +15,7 @@ class BaseThemeGenerator:
         self.manager = manager
         self.render_factor = render_factor
 
-    def generate_button_glyph(
+    def generate_button_glyph_image(
         self,
         buttonText: str,
         selected_font_path: Path,
@@ -85,7 +85,7 @@ class BaseThemeGenerator:
                 )
             elif physical_controller_layout == "Xbox":
                 if buttonText.upper() == "A":
-                    image = self.generate_button_glyph(
+                    image = self.generate_button_glyph_image(
                         "B",
                         selected_font_path,
                         colour_hex,
@@ -93,7 +93,7 @@ class BaseThemeGenerator:
                         "Nintendo",
                     )
                 elif buttonText.upper() == "B":
-                    image = self.generate_button_glyph(
+                    image = self.generate_button_glyph_image(
                         "A",
                         selected_font_path,
                         colour_hex,
@@ -101,7 +101,7 @@ class BaseThemeGenerator:
                         "Nintendo",
                     )
                 elif buttonText.upper() == "X":
-                    image = self.generate_button_glyph(
+                    image = self.generate_button_glyph_image(
                         "Y",
                         selected_font_path,
                         colour_hex,
@@ -109,7 +109,7 @@ class BaseThemeGenerator:
                         "Nintendo",
                     )
                 elif buttonText.upper() == "Y":
-                    image = self.generate_button_glyph(
+                    image = self.generate_button_glyph_image(
                         "X",
                         selected_font_path,
                         colour_hex,
@@ -175,7 +175,7 @@ class BaseThemeGenerator:
             )
         return image
 
-    def generate_header_bubbles(
+    def generate_header_overlay_image(
         self,
         accent_colour: str | None = None,
         bubble_alpha: float = 0.133,
@@ -449,36 +449,7 @@ class BaseThemeGenerator:
 
         return image
 
-    def _get_total_bubble_width(
-        self,
-        buttons: list[tuple[str, str]],
-        internalBubbleFont: ImageFont.FreeTypeFont,
-        bubbleFont: ImageFont.FreeTypeFont,
-        initalPadding: float,
-        largerPadding: float,
-        smallerPadding: float,
-        circleWidth: float,
-    ) -> float:
-        totalWidth = initalPadding
-        for pair in buttons:
-            # pair[0] might be MENU, POWER, or ABXY
-            if len(pair[0]) == 1:
-                totalWidth += circleWidth
-            else:
-                totalWidth += smallerPadding
-                smallerTextBbox = internalBubbleFont.getbbox(pair[0])
-                smallerTextWidth = smallerTextBbox[2] - smallerTextBbox[0]
-                totalWidth += smallerTextWidth / self.render_factor
-                totalWidth += smallerPadding
-            totalWidth += smallerPadding
-            # pair[1] might be something like INFO, FAVOURITE, REFRESH etc...
-            textBbox = bubbleFont.getbbox(pair[1])
-            textWidth = textBbox[2] - textBbox[0]
-            totalWidth += textWidth / self.render_factor
-            totalWidth += largerPadding
-        return totalWidth
-
-    def generate_footer_guides(
+    def generate_footer_overlay_image(
         self,
         retro_rhs_buttons: list[tuple[str, str]],
         selected_font_path: Path,
@@ -675,7 +646,7 @@ class BaseThemeGenerator:
                 )
                 realLhsPointer += horizontal_padding * self.render_factor
                 for pair in lhsButtons:
-                    button_image = self.generate_button_glyph(
+                    button_image = self.generate_button_glyph_image(
                         pair[0],
                         selected_font_path,
                         colour_hex,
@@ -734,7 +705,7 @@ class BaseThemeGenerator:
                 )
                 realRhsPointer += horizontal_padding * self.render_factor
                 for pair in real_rhs_buttons:
-                    button_image = self.generate_button_glyph(
+                    button_image = self.generate_button_glyph_image(
                         pair[0],
                         selected_font_path,
                         colour_hex,
@@ -771,7 +742,13 @@ class BaseThemeGenerator:
                     realRhsPointer += horizontal_large_padding * self.render_factor
         return image
 
-    def generate_background_with_overlay(
+    def generate_background_image(self) -> Image.Image:
+        pass
+
+    def generate_wall_image(self) -> Image.Image:
+        pass
+
+    def generate_static_overlay_image(
         self,
         rhsButtons: list[tuple[str, str]],
         selected_font_path: Path,
@@ -786,7 +763,7 @@ class BaseThemeGenerator:
         deselected_font_hex: str,
         bubble_hex: str,
         icon_hex: str,
-        display_text: str,
+        display_text: str | None = None,
         icon_path: Path | None = None,
     ) -> Image.Image:
         pass
@@ -809,3 +786,46 @@ class BaseThemeGenerator:
         display_text: str,
     ) -> Image.Image:
         pass
+
+    def generate_horizontal_menu(self) -> Image.Image:
+        pass
+
+    def generate_vertical_menu(self) -> Image.Image:
+        pass
+
+    def generate_alt_horizontal_menu(self) -> Image.Image:
+        pass
+
+    def _get_total_bubble_width(
+        self,
+        buttons: list[tuple[str, str]],
+        internalBubbleFont: ImageFont.FreeTypeFont,
+        bubbleFont: ImageFont.FreeTypeFont,
+        initalPadding: float,
+        largerPadding: float,
+        smallerPadding: float,
+        circleWidth: float,
+    ) -> float:
+        totalWidth = initalPadding
+        for pair in buttons:
+            # pair[0] might be MENU, POWER, or ABXY
+            if len(pair[0]) == 1:
+                totalWidth += circleWidth
+            else:
+                totalWidth += smallerPadding
+                smallerTextBbox = internalBubbleFont.getbbox(pair[0])
+                smallerTextWidth = smallerTextBbox[2] - smallerTextBbox[0]
+                totalWidth += smallerTextWidth / self.render_factor
+                totalWidth += smallerPadding
+            totalWidth += smallerPadding
+            # pair[1] might be something like INFO, FAVOURITE, REFRESH etc...
+            textBbox = bubbleFont.getbbox(pair[1])
+            textWidth = textBbox[2] - textBbox[0]
+            totalWidth += textWidth / self.render_factor
+            totalWidth += largerPadding
+        return totalWidth
+
+    def generate_theme(self):
+        raise NotImplementedError(
+            "Subclasses of BaseThemeGenerator must implement generate_theme"
+        )
