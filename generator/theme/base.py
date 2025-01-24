@@ -8,6 +8,7 @@ except ImportError:  # otherwise use the Python-based package
     from bidi.algorithm import get_display as bidi_get_display
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont
+from PIL.Image import Resampling
 
 from generator.color_utils import hex_to_rgba, change_logo_color
 from generator.constants import (
@@ -87,7 +88,7 @@ class BaseThemeGenerator:
                         BUTTON_GLYPHS_DIR / "PlayStation" / f"{buttonText.upper()}.png"
                     )
                     .convert("RGBA")
-                    .resize(buttonSize, Image.LANCZOS)
+                    .resize(buttonSize, Resampling.LANCZOS)
                 )
             elif physical_controller_layout == "Universal":
                 image = (
@@ -95,7 +96,7 @@ class BaseThemeGenerator:
                         BUTTON_GLYPHS_DIR / "Universal" / f"{buttonText.upper()}.png"
                     )
                     .convert("RGBA")
-                    .resize(buttonSize, Image.LANCZOS)
+                    .resize(buttonSize, Resampling.LANCZOS)
                 )
             elif physical_controller_layout == "Xbox":
                 if buttonText.upper() == "A":
@@ -348,7 +349,7 @@ class BaseThemeGenerator:
                     ),
                     heightOfGlyph,
                 ),
-                Image.LANCZOS,
+                Resampling.LANCZOS,
             )
             glyph_left_side_padding = int(
                 self.manager.header_glyph_horizontal_left_padding_var
@@ -375,7 +376,7 @@ class BaseThemeGenerator:
                     ),
                     heightOfGlyph,
                 ),
-                Image.LANCZOS,
+                Resampling.LANCZOS,
             )
 
             glyphTotalWidth = (
@@ -1001,7 +1002,7 @@ class BaseThemeGenerator:
                         int((logoColoured.size[0] / 5) * self.render_factor),
                         int((logoColoured.size[1] / 5) * self.render_factor),
                     ),
-                    Image.LANCZOS,
+                    Resampling.LANCZOS,
                 )
 
                 logo_y_location = int(
@@ -1122,12 +1123,16 @@ class BaseThemeGenerator:
             HORIZONTAL_LOGOS_DIR / "explore.png", self.render_factor, self.manager
         )
 
-        exploreLogoColoured = exploreLogoColoured.resize((top_logo_size), Image.LANCZOS)
-        favouriteLogoColoured = favouriteLogoColoured.resize(
-            (top_logo_size), Image.LANCZOS
+        exploreLogoColoured = exploreLogoColoured.resize(
+            (top_logo_size), Resampling.LANCZOS
         )
-        historyLogoColoured = historyLogoColoured.resize((top_logo_size), Image.LANCZOS)
-        appsLogoColoured = appsLogoColoured.resize((top_logo_size), Image.LANCZOS)
+        favouriteLogoColoured = favouriteLogoColoured.resize(
+            (top_logo_size), Resampling.LANCZOS
+        )
+        historyLogoColoured = historyLogoColoured.resize(
+            (top_logo_size), Resampling.LANCZOS
+        )
+        appsLogoColoured = appsLogoColoured.resize((top_logo_size), Resampling.LANCZOS)
 
         combined_top_logos_width = (
             exploreLogoColoured.size[0]
@@ -1571,11 +1576,15 @@ class BaseThemeGenerator:
             ),
         )
 
-        infoLogoColoured = infoLogoColoured.resize(bottom_logo_size, Image.LANCZOS)
-        configLogoColoured = configLogoColoured.resize(bottom_logo_size, Image.LANCZOS)
-        rebootLogoColoured = rebootLogoColoured.resize(bottom_logo_size, Image.LANCZOS)
+        infoLogoColoured = infoLogoColoured.resize(bottom_logo_size, Resampling.LANCZOS)
+        configLogoColoured = configLogoColoured.resize(
+            bottom_logo_size, Resampling.LANCZOS
+        )
+        rebootLogoColoured = rebootLogoColoured.resize(
+            bottom_logo_size, Resampling.LANCZOS
+        )
         shutdownLogoColoured = shutdownLogoColoured.resize(
-            bottom_logo_size, Image.LANCZOS
+            bottom_logo_size, Resampling.LANCZOS
         )
 
         combined_bottom_logos_width = (
@@ -2256,12 +2265,16 @@ class BaseThemeGenerator:
             ),
         )
 
-        exploreLogoColoured = exploreLogoColoured.resize((top_logo_size), Image.LANCZOS)
-        favouriteLogoColoured = favouriteLogoColoured.resize(
-            (top_logo_size), Image.LANCZOS
+        exploreLogoColoured = exploreLogoColoured.resize(
+            (top_logo_size), Resampling.LANCZOS
         )
-        historyLogoColoured = historyLogoColoured.resize((top_logo_size), Image.LANCZOS)
-        appsLogoColoured = appsLogoColoured.resize((top_logo_size), Image.LANCZOS)
+        favouriteLogoColoured = favouriteLogoColoured.resize(
+            (top_logo_size), Resampling.LANCZOS
+        )
+        historyLogoColoured = historyLogoColoured.resize(
+            (top_logo_size), Resampling.LANCZOS
+        )
+        appsLogoColoured = appsLogoColoured.resize((top_logo_size), Resampling.LANCZOS)
 
         combined_top_logos_width = (
             exploreLogoColoured.size[0]
@@ -2652,15 +2665,17 @@ class BaseThemeGenerator:
             ),
         )
 
-        infoLogoColoured = infoLogoColoured.resize((bottom_logo_size), Image.LANCZOS)
+        infoLogoColoured = infoLogoColoured.resize(
+            (bottom_logo_size), Resampling.LANCZOS
+        )
         configLogoColoured = configLogoColoured.resize(
-            (bottom_logo_size), Image.LANCZOS
+            (bottom_logo_size), Resampling.LANCZOS
         )
         rebootLogoColoured = rebootLogoColoured.resize(
-            (bottom_logo_size), Image.LANCZOS
+            (bottom_logo_size), Resampling.LANCZOS
         )
         shutdownLogoColoured = shutdownLogoColoured.resize(
-            (bottom_logo_size), Image.LANCZOS
+            (bottom_logo_size), Resampling.LANCZOS
         )
 
         combined_bottom_logos_width = (
