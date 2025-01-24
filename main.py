@@ -98,303 +98,6 @@ def getRealFooterHeight(manager: SettingsManager) -> int:
     return footerHeight
 
 
-def generatePilImageVertical(
-    progress_bar: ttk.Progressbar,
-    workingIndex: int,
-    muOSSystemName: str,
-    listItems: list[str],
-    textPadding: int,
-    rectanglePadding: int,
-    ItemsPerScreen: int,
-    bg_hex: str,
-    selected_font_hex: str,
-    deselected_font_hex: str,
-    bubble_hex: str,
-    render_factor: int,
-    manager: SettingsManager,
-    numScreens: int = 0,
-    screenIndex: int = 0,
-    fileCounter: str = "",
-    folderName: Path | None = None,
-    transparent: bool = False,
-    forPreview: bool = False,
-) -> Image.Image:
-    (
-        bg_hex,
-        selected_font_hex,
-        deselected_font_hex,
-        bubble_hex,
-    ) = [
-        val[1:] if val.startswith("#") else val
-        for val in [
-            bg_hex,
-            selected_font_hex,
-            deselected_font_hex,
-            bubble_hex,
-        ]
-    ]
-
-    progress_bar["value"] += 1
-    bg_rgb = hex_to_rgba(bg_hex)
-    if not transparent:
-        image = Image.new(
-            "RGBA",
-            (
-                int(manager.deviceScreenWidthVar) * render_factor,
-                int(manager.deviceScreenHeightVar) * render_factor,
-            ),
-            bg_rgb,
-        )
-
-        if background_image != None:
-            image.paste(
-                background_image.resize(
-                    (
-                        int(manager.deviceScreenWidthVar) * render_factor,
-                        int(manager.deviceScreenHeightVar) * render_factor,
-                    )
-                ),
-                (0, 0),
-            )
-    else:
-        image = Image.new(
-            "RGBA",
-            (
-                int(manager.deviceScreenWidthVar) * render_factor,
-                int(manager.deviceScreenHeightVar) * render_factor,
-            ),
-            (0, 0, 0, 0),
-        )
-
-    draw = ImageDraw.Draw(image)
-
-    boxArtDrawn = False
-    boxArtWidth = 0
-    if len(listItems) == 0:
-        return image
-
-    selected_font_path = get_font_path(
-        manager.use_alt_font_var, manager.alt_font_filename
-    )
-
-    theme_generator = (
-        PreviewThemeGenerator(manager, render_factor)
-        if forPreview
-        else DeviceThemeGenerator(manager)
-    )
-    if muOSSystemName == "muxlaunch":
-        menuHelperGuides = theme_generator.generate_footer_overlay_image(
-            [("A", "SELECT")],
-            selected_font_path,
-            manager.footerBubbleHexVar,
-            lhsButtons=[("POWER", "SLEEP")],
-        )
-    elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo":
-        menuHelperGuides = theme_generator.generate_footer_overlay_image(
-            [("B", "BACK"), ("A", "SELECT")],
-            selected_font_path,
-            manager.footerBubbleHexVar,
-            lhsButtons=[("POWER", "SLEEP")],
-        )
-    elif muOSSystemName == "muxapp":
-        menuHelperGuides = theme_generator.generate_footer_overlay_image(
-            [("B", "BACK"), ("A", "LAUNCH")],
-            selected_font_path,
-            manager.footerBubbleHexVar,
-            lhsButtons=[("POWER", "SLEEP")],
-        )
-    elif muOSSystemName == "muxplore":
-        menuHelperGuides = theme_generator.generate_footer_overlay_image(
-            [
-                ("MENU", "INFO"),
-                ("Y", "FAVOURITE"),
-                ("X", "REFRESH"),
-                ("B", "BACK"),
-                ("A", "OPEN"),
-            ],
-            selected_font_path,
-            manager.footerBubbleHexVar,
-            lhsButtons=[("POWER", "SLEEP")],
-        )
-    elif muOSSystemName == "muxfavourite":
-        menuHelperGuides = theme_generator.generate_footer_overlay_image(
-            [("MENU", "INFO"), ("X", "REMOVE"), ("B", "BACK"), ("A", "OPEN")],
-            selected_font_path,
-            manager.footerBubbleHexVar,
-            lhsButtons=[("POWER", "SLEEP")],
-        )
-    elif muOSSystemName == "muxhistory":
-        menuHelperGuides = theme_generator.generate_footer_overlay_image(
-            [
-                ("MENU", "INFO"),
-                ("Y", "FAVOURITE"),
-                ("X", "REMOVE"),
-                ("B", "BACK"),
-                ("A", "OPEN"),
-            ],
-            selected_font_path,
-            manager.footerBubbleHexVar,
-            lhsButtons=[("POWER", "SLEEP")],
-        )
-
-    if manager.show_file_counter_var == 1:
-        in_bubble_font_size = 19 * render_factor
-        inBubbleFont = ImageFont.truetype(selected_font_path, in_bubble_font_size)
-        bbox = inBubbleFont.getbbox(fileCounter)
-        text_width = bbox[2] - bbox[0]
-        right_aligned_position = 620 * render_factor
-        x = right_aligned_position - text_width
-        y = 447 * render_factor
-        draw.text((x, y), fileCounter, font=inBubbleFont, fill=f"#{bubble_hex}")
-
-    textAlignment = None
-    individualItemHeight = round(
-        (
-            int(manager.deviceScreenHeightVar)
-            - int(manager.approxFooterHeightVar)
-            - int(manager.contentPaddingTopVar)
-        )
-        / int(manager.itemsPerScreenVar)
-    )
-
-    if muOSSystemName.startswith("mux"):
-        textAlignment = manager.global_alignment_var
-    else:
-        textAlignment = manager.global_alignment_var
-
-    try:
-        font_size = int(manager.font_size_var) * render_factor
-    except Exception as e:
-        print(e)
-        font_size = int(individualItemHeight * render_factor * textMF)
-
-    font = ImageFont.truetype(selected_font_path, font_size)
-
-    availableHeight = (
-        (individualItemHeight * int(manager.itemsPerScreenVar)) * render_factor
-    ) / ItemsPerScreen
-
-    smallestValidText_bbox = font.getbbox("_...")
-    smallestValidTest_width = smallestValidText_bbox[2] - smallestValidText_bbox[0]
-
-    for index, item in enumerate(listItems):
-        noLettersCut = 0
-        text_width = float("inf")
-        if manager.alternate_menu_names_var and muOSSystemName.startswith("mux"):
-            text = bidi_get_display(menuNameMap.get(item[0][:].lower(), item[0][:]))
-        else:
-            text = item[0][:]
-        text_color = (
-            f"#{selected_font_hex}"
-            if index == workingIndex
-            else f"#{deselected_font_hex}"
-        )
-        maxBubbleLength = int(manager.deviceScreenWidthVar) - int(
-            manager.maxBoxArtWidth
-        )
-        if (
-            maxBubbleLength * render_factor
-            < textPadding * render_factor
-            + smallestValidTest_width
-            + rectanglePadding * render_factor
-            + 5 * render_factor
-        ):  # Make sure there won't be a bubble error
-            maxBubbleLength = int(manager.deviceScreenWidthVar)
-
-        if workingIndex == index:
-            totalCurrentLength = (
-                textPadding * render_factor
-                + text_width
-                + rectanglePadding * render_factor
-            )
-        else:
-            totalCurrentLength = textPadding * render_factor + text_width
-        while totalCurrentLength > (int(maxBubbleLength) * render_factor):
-            if manager.alternate_menu_names_var and muOSSystemName.startswith("mux"):
-                text = bidi_get_display(menuNameMap.get(item[0][:].lower(), item[0][:]))
-            else:
-                text = item[0][:]
-            if noLettersCut > 0:
-                text = text[: -(noLettersCut + 3)]
-                text = text + "..."
-
-            text_bbox = font.getbbox(text)
-            text_width = text_bbox[2] - text_bbox[0]
-            if workingIndex == index:
-                totalCurrentLength = (
-                    textPadding * render_factor
-                    + text_width
-                    + rectanglePadding * render_factor
-                )
-            else:
-                totalCurrentLength = textPadding * render_factor + text_width
-            noLettersCut += 1
-            if text == "...":
-                raise ValueError(
-                    "'Cut bubble off at' too low\n\nPlease use a different custom 'cut bubble off' at value"
-                )
-
-        if textAlignment == "Left":
-            text_x = textPadding * render_factor
-        elif textAlignment == "Right":
-            text_x = (
-                int(manager.deviceScreenWidthVar) - textPadding
-            ) * render_factor - text_width
-        elif textAlignment == "Centre":
-            text_x = (
-                int(manager.deviceScreenWidthVar) * render_factor - text_width
-            ) / 2
-        # text_y = contentPaddingTop * render_factor + availableHeight * index
-
-        rectangle_x0 = text_x - (rectanglePadding * render_factor)
-        rectangle_y0 = contentPaddingTop * render_factor + availableHeight * index
-        rectangle_x1 = (
-            rectangle_x0
-            + rectanglePadding * render_factor
-            + text_width
-            + rectanglePadding * render_factor
-        )
-        rectangle_y1 = contentPaddingTop * render_factor + availableHeight * (index + 1)
-        middle_y = (rectangle_y0 + rectangle_y1) / 2
-        ascent, descent = font.getmetrics()
-        text_height = ascent + descent
-
-        # Calculate the text's y-position by centreing it vertically within the rectangle
-        text_y = middle_y - (text_height / 2)
-
-        corner_radius = availableHeight // 2
-
-        if workingIndex == index:
-            draw.rounded_rectangle(
-                [(rectangle_x0, rectangle_y0), (rectangle_x1, rectangle_y1)],
-                radius=corner_radius,
-                fill=f"#{bubble_hex}",
-            )
-        draw.text((text_x, text_y), text, font=font, fill=text_color)
-
-    if muOSSystemName in [
-        "muxdevice",
-        "muxlaunch",
-        "muxconfig",
-        "muxinfo",
-        "muxapp",
-        "muxplore",
-        "muxfavourite",
-        "muxhistory",
-    ]:
-        image = Image.alpha_composite(image, menuHelperGuides)
-
-    headerBubbles = theme_generator.generate_header_overlay_image()
-    image = Image.alpha_composite(image, headerBubbles)
-
-    if forPreview:
-        muOSOverlay = theme_generator.generate_header_overlay_image(
-            muOSpageName=muOSSystemName
-        )
-        image = Image.alpha_composite(image, muOSOverlay)
-    return image
-
-
 def ContinuousFolderImageGen(
     progress_bar: ttk.Progressbar,
     muOSSystemName: str,
@@ -427,6 +130,7 @@ def ContinuousFolderImageGen(
         ]
     ]
 
+    theme_generator = DeviceThemeGenerator(manager)
     totalItems = len(listItems)
     for workingIndex, workingItem in enumerate(listItems):
         if workingItem[1] == "Directory" or workingItem[1] == "Menu":
@@ -449,7 +153,7 @@ def ContinuousFolderImageGen(
                 focusIndex = workingIndex
             fileCounter = str(workingIndex + 1) + " / " + str(totalItems)
 
-            image = generatePilImageVertical(
+            image = theme_generator.generate_vertical_menu_image(
                 progress_bar,
                 focusIndex,
                 muOSSystemName,
@@ -461,10 +165,7 @@ def ContinuousFolderImageGen(
                 selected_font_hex,
                 deselected_font_hex,
                 bubble_hex,
-                render_factor,
-                manager,
                 fileCounter=fileCounter,
-                folderName=folderName,
                 transparent=True,
             )
             image = image.resize(
@@ -3962,6 +3663,7 @@ def FillTempThemeFolder(
         for item in menu[1]:
             (itemsList[index].append([item[0], "Menu", item[1]]),)
 
+    theme_generator = PreviewThemeGenerator(manager, render_factor)
     for index, menu in enumerate(workingMenus):
         if menu[0] == "muxdevice":
             ContinuousFolderImageGen(
@@ -4062,7 +3764,7 @@ def FillTempThemeFolder(
             forPreview=True,
         )
     elif manager.main_menu_style_var == "Vertical":
-        previewImage = generatePilImageVertical(
+        previewImage = preview_theme_generator.generate_vertical_menu_image(
             fakeprogressbar,
             0,
             "muxlaunch",
@@ -4074,10 +3776,7 @@ def FillTempThemeFolder(
             manager.selectedFontHexVar,
             manager.deselectedFontHexVar,
             manager.bubbleHexVar,
-            render_factor,
-            manager,
             transparent=False,
-            forPreview=True,
         )
     preview_size = (
         int(0.45 * int(manager.deviceScreenWidthVar)),
@@ -4328,6 +4027,7 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
             ["Shutdown Device", "Menu", "shutdown"],
         ]
 
+        theme_generator = PreviewThemeGenerator(manager, previewRenderFactor)
         if manager.main_menu_style_var == "Horizontal":
             image1 = generatePilImageHorizontal(
                 fakeprogressbar,
@@ -4357,7 +4057,7 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
                 forPreview=True,
             ).resize(preview_size, Image.LANCZOS)
         elif manager.main_menu_style_var == "Vertical":
-            image1 = generatePilImageVertical(
+            image1 = preview_theme_generator.generate_vertical_menu_image(
                 fakeprogressbar,
                 0,
                 "muxlaunch",
@@ -4369,13 +4069,10 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
                 manager.selectedFontHexVar,
                 manager.deselectedFontHexVar,
                 manager.bubbleHexVar,
-                previewRenderFactor,
-                manager,
                 transparent=False,
-                forPreview=True,
             ).resize(preview_size, Image.LANCZOS)
 
-        image2 = generatePilImageVertical(
+        image2 = preview_theme_generator.generate_vertical_menu_image(
             fakeprogressbar,
             0,
             "muxapp",
@@ -4387,11 +4084,8 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
             manager.selectedFontHexVar,
             manager.deselectedFontHexVar,
             manager.bubbleHexVar,
-            previewRenderFactor,
-            manager,
             fileCounter=f"1 / {manager.itemsPerScreenVar}",
             transparent=False,
-            forPreview=True,
         ).resize(preview_size, Image.LANCZOS)
 
         if manager.main_menu_style_var == "Horizontal":
