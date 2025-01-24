@@ -1052,8 +1052,819 @@ class BaseThemeGenerator:
 
         return image
 
-    def generate_horizontal_menu(self) -> Image.Image:
-        pass
+    def generate_horizontal_menu_image(
+        self,
+        progress_bar: ttk.Progressbar,
+        workingIndex: int,
+        bg_hex: str,
+        selected_font_hex: str,
+        deselected_font_hex: str,
+        bubble_hex: str,
+        icon_hex: str,
+        transparent: bool = False,
+        generateText: bool = True,
+    ) -> Image.Image:
+        (
+            bg_hex,
+            selected_font_hex,
+            deselected_font_hex,
+            bubble_hex,
+            icon_hex,
+        ) = [
+            val[1:] if val.startswith("#") else val
+            for val in [
+                bg_hex,
+                selected_font_hex,
+                deselected_font_hex,
+                bubble_hex,
+                icon_hex,
+            ]
+        ]
+
+        progress_bar["value"] += 1
+        bg_rgb = hex_to_rgba(bg_hex)
+
+        # Create image
+
+        if not transparent:
+            image = Image.new(
+                "RGBA",
+                (
+                    int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                    int(self.manager.deviceScreenHeightVar) * self.render_factor,
+                ),
+                bg_rgb,
+            )
+
+            if background_image != None:
+                image.paste(
+                    background_image.resize(
+                        (
+                            int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                            int(self.manager.deviceScreenHeightVar)
+                            * self.render_factor,
+                        )
+                    ),
+                    (0, 0),
+                )
+        else:
+            image = Image.new(
+                "RGBA",
+                (
+                    int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                    int(self.manager.deviceScreenHeightVar) * self.render_factor,
+                ),
+                (0, 0, 0, 0),
+            )
+
+        exploreLogoColoured = change_logo_color(
+            HORIZONTAL_LOGOS_DIR / "explore.png", icon_hex
+        )
+        favouriteLogoColoured = change_logo_color(
+            HORIZONTAL_LOGOS_DIR / "favourite.png", icon_hex
+        )
+        historyLogoColoured = change_logo_color(
+            HORIZONTAL_LOGOS_DIR / "history.png", icon_hex
+        )
+        appsLogoColoured = change_logo_color(
+            HORIZONTAL_LOGOS_DIR / "apps.png", icon_hex
+        )
+
+        top_logo_size = getHorizontalLogoSize(
+            HORIZONTAL_LOGOS_DIR / "explore.png", self.render_factor, self.manager
+        )
+
+        exploreLogoColoured = exploreLogoColoured.resize((top_logo_size), Image.LANCZOS)
+        favouriteLogoColoured = favouriteLogoColoured.resize(
+            (top_logo_size), Image.LANCZOS
+        )
+        historyLogoColoured = historyLogoColoured.resize((top_logo_size), Image.LANCZOS)
+        appsLogoColoured = appsLogoColoured.resize((top_logo_size), Image.LANCZOS)
+
+        combined_top_logos_width = (
+            exploreLogoColoured.size[0]
+            + favouriteLogoColoured.size[0]
+            + historyLogoColoured.size[0]
+            + appsLogoColoured.size[0]
+        )
+
+        icons_to_bubble_padding = (
+            min(
+                (int(self.manager.deviceScreenHeightVar) * 0) / 480,
+                (int(self.manager.deviceScreenWidthVar) * 0) / 640,
+            )
+            * self.render_factor
+        )  ## CHANGE for adjustment
+
+        bubble_height = (
+            min(
+                (int(self.manager.deviceScreenHeightVar) * 36.3) / 480,
+                (int(self.manager.deviceScreenWidthVar) * 36.3) / 640,
+            )
+            * self.render_factor
+        )  ## CHANGE for adjustment
+
+        screen_y_middle = (
+            int(self.manager.deviceScreenHeightVar) * self.render_factor
+        ) / 2
+
+        combined_top_row_height = (
+            max(
+                exploreLogoColoured.size[1],
+                favouriteLogoColoured.size[1],
+                historyLogoColoured.size[1],
+                appsLogoColoured.size[1],
+            )
+            + icons_to_bubble_padding
+            + bubble_height
+        )
+
+        top_row_icon_y = int(screen_y_middle - (combined_top_row_height / 2))
+
+        top_row_bubble_middle = int(
+            screen_y_middle + (combined_top_row_height / 2) - (bubble_height) / 2
+        )
+
+        padding_between_top_logos = (
+            int(self.manager.deviceScreenWidthVar) * self.render_factor
+            - combined_top_logos_width
+        ) / (4 + 1)  # 4 logos plus 1
+
+        explore_middle = int(
+            padding_between_top_logos + (exploreLogoColoured.size[0]) / 2
+        )
+        favourite_middle = int(
+            padding_between_top_logos
+            + favouriteLogoColoured.size[0]
+            + padding_between_top_logos
+            + (favouriteLogoColoured.size[0]) / 2
+        )
+        history_middle = int(
+            padding_between_top_logos
+            + historyLogoColoured.size[0]
+            + padding_between_top_logos
+            + favouriteLogoColoured.size[0]
+            + padding_between_top_logos
+            + (historyLogoColoured.size[0]) / 2
+        )
+        apps_middle = int(
+            padding_between_top_logos
+            + appsLogoColoured.size[0]
+            + padding_between_top_logos
+            + favouriteLogoColoured.size[0]
+            + padding_between_top_logos
+            + historyLogoColoured.size[0]
+            + padding_between_top_logos
+            + (appsLogoColoured.size[0]) / 2
+        )
+
+        explore_logo_x = int(explore_middle - (exploreLogoColoured.size[0]) / 2)
+        favourite_logo_x = int(favourite_middle - (favouriteLogoColoured.size[0]) / 2)
+        history_logo_x = int(history_middle - (historyLogoColoured.size[0]) / 2)
+        apps_logo_x = int(apps_middle - (appsLogoColoured.size[0]) / 2)
+
+        image.paste(
+            exploreLogoColoured, (explore_logo_x, top_row_icon_y), exploreLogoColoured
+        )
+        image.paste(
+            favouriteLogoColoured,
+            (favourite_logo_x, top_row_icon_y),
+            favouriteLogoColoured,
+        )
+        image.paste(
+            historyLogoColoured, (history_logo_x, top_row_icon_y), historyLogoColoured
+        )
+        image.paste(appsLogoColoured, (apps_logo_x, top_row_icon_y), appsLogoColoured)
+
+        draw = ImageDraw.Draw(image)
+        if self.manager.transparent_text_var:
+            transparent_text_image = Image.new("RGBA", image.size, (255, 255, 255, 0))
+            draw_transparent = ImageDraw.Draw(transparent_text_image)
+            transparency = 0
+
+        selected_font_path = get_font_path(
+            self.manager.use_alt_font_var, self.manager.alt_font_filename
+        )
+
+        menuHelperGuides = self.generate_footer_overlay_image(
+            [("A", "SELECT")],
+            selected_font_path,
+            self.manager.footerBubbleHexVar,
+            lhsButtons=[("POWER", "SLEEP")],
+        )
+
+        font_size = (
+            min(
+                (int(self.manager.deviceScreenHeightVar) * 24) / 480,
+                (int(self.manager.deviceScreenWidthVar) * 24) / 640,
+            )
+            * self.render_factor
+        )  ## CHANGE for adjustment
+        font = ImageFont.truetype(selected_font_path, font_size)
+        if workingIndex == 0:
+            current_x_midpoint = explore_middle
+        elif workingIndex == 1:
+            current_x_midpoint = favourite_middle
+        elif workingIndex == 2:
+            current_x_midpoint = history_middle
+        elif workingIndex == 3:
+            current_x_midpoint = apps_middle
+        else:
+            current_x_midpoint = 104 + (144 * workingIndex)
+        betweenBubblePadding = 5 * self.render_factor
+        maxBubbleLength = int(
+            (
+                (
+                    (int(self.manager.deviceScreenWidthVar) * self.render_factor)
+                    - padding_between_top_logos
+                )
+                / 4
+            )
+            - betweenBubblePadding / 2
+        )
+
+        horizontalBubblePadding = (
+            min(
+                (int(self.manager.deviceScreenHeightVar) * 40) / 480,
+                (int(self.manager.deviceScreenWidthVar) * 40) / 640,
+            )
+            * self.render_factor
+        )  ## CHANGE for adjustment
+
+        if self.manager.alternate_menu_names_var:
+            textString = bidi_get_display(
+                menuNameMap.get("content explorer", "Content")
+            )
+        else:
+            textString = "Content"
+        text_bbox = font.getbbox(textString)
+        text_width = text_bbox[2] - text_bbox[0]
+        ascent, descent = font.getmetrics()
+        text_height = ascent + descent
+
+        text_y = top_row_bubble_middle - (text_height / 2)
+
+        bubble_centre_x = explore_middle
+        textColour = selected_font_hex if workingIndex == 0 else deselected_font_hex
+        text_x = bubble_centre_x - (text_width / 2)
+        if workingIndex == 0:
+            if generateText:
+                bubbleLength = text_width + horizontalBubblePadding
+            else:
+                bubbleLength = maxBubbleLength
+            if self.manager.transparent_text_var:
+                draw_transparent.rounded_rectangle(
+                    [
+                        (
+                            (current_x_midpoint - (bubbleLength / 2)),
+                            int(top_row_bubble_middle - bubble_height / 2),
+                        ),
+                        (
+                            (current_x_midpoint + (bubbleLength / 2)),
+                            int(top_row_bubble_middle + bubble_height / 2),
+                        ),
+                    ],
+                    radius=(bubble_height / 2),
+                    fill=f"#{bubble_hex}",
+                )
+            else:
+                draw.rounded_rectangle(
+                    [
+                        (
+                            (current_x_midpoint - (bubbleLength / 2)),
+                            int(top_row_bubble_middle - bubble_height / 2),
+                        ),
+                        (
+                            (current_x_midpoint + (bubbleLength / 2)),
+                            int(top_row_bubble_middle + bubble_height / 2),
+                        ),
+                    ],
+                    radius=(bubble_height / 2),
+                    fill=f"#{bubble_hex}",
+                )
+        if generateText:
+            if self.manager.transparent_text_var and workingIndex == 0:
+                draw_transparent.text(
+                    (text_x, text_y),
+                    textString,
+                    font=font,
+                    fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency),
+                )
+            else:
+                draw.text(
+                    (text_x, text_y), textString, font=font, fill=f"#{textColour}"
+                )
+
+        if self.manager.alternate_menu_names_var:
+            textString = bidi_get_display(menuNameMap.get("favourites", "Favourites"))
+        else:
+            textString = "Favourites"
+        text_bbox = font.getbbox(textString)
+        text_width = text_bbox[2] - text_bbox[0]
+        bubble_centre_x = favourite_middle
+        textColour = selected_font_hex if workingIndex == 1 else deselected_font_hex
+        text_x = bubble_centre_x - (text_width / 2)
+        if workingIndex == 1:
+            if generateText:
+                bubbleLength = text_width + horizontalBubblePadding
+            else:
+                bubbleLength = maxBubbleLength
+            if self.manager.transparent_text_var:
+                draw_transparent.rounded_rectangle(
+                    [
+                        (
+                            (current_x_midpoint - (bubbleLength / 2)),
+                            int(top_row_bubble_middle - bubble_height / 2),
+                        ),
+                        (
+                            (current_x_midpoint + (bubbleLength / 2)),
+                            int(top_row_bubble_middle + bubble_height / 2),
+                        ),
+                    ],
+                    radius=(bubble_height / 2),
+                    fill=f"#{bubble_hex}",
+                )
+            else:
+                draw.rounded_rectangle(
+                    [
+                        (
+                            (current_x_midpoint - (bubbleLength / 2)),
+                            int(top_row_bubble_middle - bubble_height / 2),
+                        ),
+                        (
+                            (current_x_midpoint + (bubbleLength / 2)),
+                            int(top_row_bubble_middle + bubble_height / 2),
+                        ),
+                    ],
+                    radius=(bubble_height / 2),
+                    fill=f"#{bubble_hex}",
+                )
+        if generateText:
+            if self.manager.transparent_text_var and workingIndex == 1:
+                draw_transparent.text(
+                    (text_x, text_y),
+                    textString,
+                    font=font,
+                    fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency),
+                )
+            else:
+                draw.text(
+                    (text_x, text_y), textString, font=font, fill=f"#{textColour}"
+                )
+
+        if self.manager.alternate_menu_names_var:
+            textString = bidi_get_display(menuNameMap.get("history", "History"))
+        else:
+            textString = "History"
+        text_bbox = font.getbbox(textString)
+        text_width = text_bbox[2] - text_bbox[0]
+        bubble_centre_x = history_middle
+        textColour = selected_font_hex if workingIndex == 2 else deselected_font_hex
+        text_x = bubble_centre_x - (text_width / 2)
+        if workingIndex == 2:
+            if generateText:
+                bubbleLength = text_width + horizontalBubblePadding
+            else:
+                bubbleLength = maxBubbleLength
+            if self.manager.transparent_text_var:
+                draw_transparent.rounded_rectangle(
+                    [
+                        (
+                            (current_x_midpoint - (bubbleLength / 2)),
+                            int((top_row_bubble_middle - bubble_height / 2)),
+                        ),
+                        (
+                            (current_x_midpoint + (bubbleLength / 2)),
+                            int((top_row_bubble_middle + bubble_height / 2)),
+                        ),
+                    ],
+                    radius=(bubble_height / 2),
+                    fill=f"#{bubble_hex}",
+                )
+            else:
+                draw.rounded_rectangle(
+                    [
+                        (
+                            (current_x_midpoint - (bubbleLength / 2)),
+                            int((top_row_bubble_middle - bubble_height / 2)),
+                        ),
+                        (
+                            (current_x_midpoint + (bubbleLength / 2)),
+                            int((top_row_bubble_middle + bubble_height / 2)),
+                        ),
+                    ],
+                    radius=(bubble_height / 2),
+                    fill=f"#{bubble_hex}",
+                )
+        if generateText:
+            if self.manager.transparent_text_var and workingIndex == 2:
+                draw_transparent.text(
+                    (text_x, text_y),
+                    textString,
+                    font=font,
+                    fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency),
+                )
+            else:
+                draw.text(
+                    (text_x, text_y), textString, font=font, fill=f"#{textColour}"
+                )
+        if self.manager.alternate_menu_names_var:
+            textString = bidi_get_display(menuNameMap.get("applications", "Utilities"))
+        else:
+            textString = "Utilities"
+        text_bbox = font.getbbox(textString)
+        text_width = text_bbox[2] - text_bbox[0]
+        bubble_centre_x = apps_middle
+        textColour = selected_font_hex if workingIndex == 3 else deselected_font_hex
+        text_x = bubble_centre_x - (text_width / 2)
+        if workingIndex == 3:
+            if generateText:
+                bubbleLength = text_width + horizontalBubblePadding
+            else:
+                bubbleLength = maxBubbleLength
+            if self.manager.transparent_text_var:
+                draw_transparent.rounded_rectangle(
+                    [
+                        (
+                            (current_x_midpoint - (bubbleLength / 2)),
+                            int((top_row_bubble_middle - bubble_height / 2)),
+                        ),
+                        (
+                            (current_x_midpoint + (bubbleLength / 2)),
+                            int((top_row_bubble_middle + bubble_height / 2)),
+                        ),
+                    ],
+                    radius=(bubble_height / 2),
+                    fill=f"#{bubble_hex}",
+                )
+            else:
+                draw.rounded_rectangle(
+                    [
+                        (
+                            (current_x_midpoint - (bubbleLength / 2)),
+                            int((top_row_bubble_middle - bubble_height / 2)),
+                        ),
+                        (
+                            (current_x_midpoint + (bubbleLength / 2)),
+                            int((top_row_bubble_middle + bubble_height / 2)),
+                        ),
+                    ],
+                    radius=(bubble_height / 2),
+                    fill=f"#{bubble_hex}",
+                )
+        if generateText:
+            if self.manager.transparent_text_var and workingIndex == 3:
+                draw_transparent.text(
+                    (text_x, text_y),
+                    textString,
+                    font=font,
+                    fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency),
+                )
+            else:
+                draw.text(
+                    (text_x, text_y), textString, font=font, fill=f"#{textColour}"
+                )
+
+        if workingIndex == 4:
+            infoLogoColoured = change_logo_color(
+                HORIZONTAL_LOGOS_DIR / "info.png", selected_font_hex
+            )
+        else:
+            infoLogoColoured = change_logo_color(
+                HORIZONTAL_LOGOS_DIR / "info.png", deselected_font_hex
+            )
+        if workingIndex == 5:
+            configLogoColoured = change_logo_color(
+                HORIZONTAL_LOGOS_DIR / "config.png", selected_font_hex
+            )
+        else:
+            configLogoColoured = change_logo_color(
+                HORIZONTAL_LOGOS_DIR / "config.png", deselected_font_hex
+            )
+        if workingIndex == 6:
+            rebootLogoColoured = change_logo_color(
+                HORIZONTAL_LOGOS_DIR / "reboot.png", selected_font_hex
+            )
+        else:
+            rebootLogoColoured = change_logo_color(
+                HORIZONTAL_LOGOS_DIR / "reboot.png", deselected_font_hex
+            )
+        if workingIndex == 7:
+            shutdownLogoColoured = change_logo_color(
+                HORIZONTAL_LOGOS_DIR / "shutdown.png", selected_font_hex
+            )
+        else:
+            shutdownLogoColoured = change_logo_color(
+                HORIZONTAL_LOGOS_DIR / "shutdown.png", deselected_font_hex
+            )
+
+        bottom_logo_size = (
+            int(
+                (
+                    infoLogoColoured.size[0]
+                    * self.render_factor
+                    * min(
+                        int(self.manager.deviceScreenHeightVar) / 480,
+                        int(self.manager.deviceScreenWidthVar) / 640,
+                    )
+                )
+                / 5
+            ),
+            int(
+                (
+                    infoLogoColoured.size[1]
+                    * self.render_factor
+                    * min(
+                        int(self.manager.deviceScreenHeightVar) / 480,
+                        int(self.manager.deviceScreenWidthVar) / 640,
+                    )
+                )
+                / 5
+            ),
+        )
+
+        infoLogoColoured = infoLogoColoured.resize(bottom_logo_size, Image.LANCZOS)
+        configLogoColoured = configLogoColoured.resize(bottom_logo_size, Image.LANCZOS)
+        rebootLogoColoured = rebootLogoColoured.resize(bottom_logo_size, Image.LANCZOS)
+        shutdownLogoColoured = shutdownLogoColoured.resize(
+            bottom_logo_size, Image.LANCZOS
+        )
+
+        combined_bottom_logos_width = (
+            infoLogoColoured.size[0]
+            + configLogoColoured.size[0]
+            + rebootLogoColoured.size[0]
+            + shutdownLogoColoured.size[0]
+        )
+
+        circle_padding = (
+            min(
+                (int(self.manager.deviceScreenHeightVar) * 15) / 480,
+                (int(self.manager.deviceScreenWidthVar) * 15) / 640,
+            )
+            * self.render_factor
+        )  ## CHANGE to adjust
+
+        combined_bottom_row_height = (
+            max(
+                infoLogoColoured.size[1],
+                configLogoColoured.size[1],
+                rebootLogoColoured.size[1],
+                shutdownLogoColoured.size[1],
+            )
+            + circle_padding * 2
+        )
+
+        circle_radius = combined_bottom_row_height / 2
+
+        top_row_to_bottom_row_padding = (
+            min(
+                (int(self.manager.deviceScreenHeightVar) * 20) / 480,
+                (int(self.manager.deviceScreenWidthVar) * 20) / 640,
+            )
+            * self.render_factor
+        )  ## CHANGE to adjust
+
+        bottom_row_middle_y = int(
+            screen_y_middle
+            + (combined_top_row_height / 2)
+            + top_row_to_bottom_row_padding
+            + circle_radius
+        )
+
+        padding_from_screen_bottom_logos = (
+            int(self.manager.deviceScreenWidthVar) * (175 / 640) * self.render_factor
+        )  ##CHANGE to adjust
+
+        padding_between_bottom_logos = (
+            int(self.manager.deviceScreenWidthVar) * self.render_factor
+            - padding_from_screen_bottom_logos
+            - combined_bottom_logos_width
+            - padding_from_screen_bottom_logos
+        ) / (4 - 1)  # 4 logos minus 1
+
+        info_middle = int(
+            padding_from_screen_bottom_logos + (infoLogoColoured.size[0]) / 2
+        )
+        config_middle = int(
+            info_middle
+            + (infoLogoColoured.size[0]) / 2
+            + padding_between_bottom_logos
+            + (configLogoColoured.size[0]) / 2
+        )
+        reboot_middle = int(
+            config_middle
+            + (configLogoColoured.size[0]) / 2
+            + padding_between_bottom_logos
+            + (rebootLogoColoured.size[0]) / 2
+        )
+        shutdown_middle = int(
+            reboot_middle
+            + (rebootLogoColoured.size[0]) / 2
+            + padding_between_bottom_logos
+            + (shutdownLogoColoured.size[0]) / 2
+        )
+
+        info_logo_x = int(info_middle - (infoLogoColoured.size[0]) / 2)
+        config_logo_x = int(config_middle - (configLogoColoured.size[0]) / 2)
+        reboot_logo_x = int(reboot_middle - (rebootLogoColoured.size[0]) / 2)
+        shutdown_logo_x = int(shutdown_middle - (shutdownLogoColoured.size[0]) / 2)
+
+        if workingIndex == 4:
+            centre_x = info_middle
+            if self.manager.transparent_text_var:
+                draw_transparent.ellipse(
+                    (
+                        int(centre_x - circle_radius),
+                        int(bottom_row_middle_y - circle_radius),
+                        int(centre_x + circle_radius),
+                        int(bottom_row_middle_y + circle_radius),
+                    ),
+                    fill=f"#{bubble_hex}",
+                )
+            else:
+                draw.ellipse(
+                    (
+                        int(centre_x - circle_radius),
+                        int(bottom_row_middle_y - circle_radius),
+                        int(centre_x + circle_radius),
+                        int(bottom_row_middle_y + circle_radius),
+                    ),
+                    fill=f"#{bubble_hex}",
+                )
+        elif workingIndex == 5:
+            centre_x = config_middle
+            if self.manager.transparent_text_var:
+                draw_transparent.ellipse(
+                    (
+                        int(centre_x - circle_radius),
+                        int(bottom_row_middle_y - circle_radius),
+                        int(centre_x + circle_radius),
+                        int(bottom_row_middle_y + circle_radius),
+                    ),
+                    fill=f"#{bubble_hex}",
+                )
+            else:
+                draw.ellipse(
+                    (
+                        int(centre_x - circle_radius),
+                        int(bottom_row_middle_y - circle_radius),
+                        int(centre_x + circle_radius),
+                        int(bottom_row_middle_y + circle_radius),
+                    ),
+                    fill=f"#{bubble_hex}",
+                )
+        elif workingIndex == 6:
+            centre_x = reboot_middle
+            if self.manager.transparent_text_var:
+                draw_transparent.ellipse(
+                    (
+                        int(centre_x - circle_radius),
+                        int(bottom_row_middle_y - circle_radius),
+                        int(centre_x + circle_radius),
+                        int(bottom_row_middle_y + circle_radius),
+                    ),
+                    fill=f"#{bubble_hex}",
+                )
+            else:
+                draw.ellipse(
+                    (
+                        int(centre_x - circle_radius),
+                        int(bottom_row_middle_y - circle_radius),
+                        int(centre_x + circle_radius),
+                        int(bottom_row_middle_y + circle_radius),
+                    ),
+                    fill=f"#{bubble_hex}",
+                )
+        elif workingIndex == 7:
+            centre_x = shutdown_middle
+            if self.manager.transparent_text_var:
+                draw_transparent.ellipse(
+                    (
+                        int(centre_x - circle_radius),
+                        int(bottom_row_middle_y - circle_radius),
+                        int(centre_x + circle_radius),
+                        int(bottom_row_middle_y + circle_radius),
+                    ),
+                    fill=f"#{bubble_hex}",
+                )
+            else:
+                draw.ellipse(
+                    (
+                        int(centre_x - circle_radius),
+                        int(bottom_row_middle_y - circle_radius),
+                        int(centre_x + circle_radius),
+                        int(bottom_row_middle_y + circle_radius),
+                    ),
+                    fill=f"#{bubble_hex}",
+                )
+
+        info_logo_y = int(bottom_row_middle_y - (infoLogoColoured.size[1] / 2))
+        config_logo_y = int(bottom_row_middle_y - (configLogoColoured.size[1] / 2))
+        reboot_logo_y = int(bottom_row_middle_y - (rebootLogoColoured.size[1] / 2))
+        shutdown_logo_y = int(bottom_row_middle_y - (shutdownLogoColoured.size[1] / 2))
+        if self.manager.transparent_text_var and workingIndex > 3:
+            if workingIndex == 4:
+                transparent_text_image = cut_out_image(
+                    transparent_text_image, infoLogoColoured, (info_logo_x, info_logo_y)
+                )
+                image.paste(
+                    configLogoColoured,
+                    (config_logo_x, config_logo_y),
+                    configLogoColoured,
+                )
+                image.paste(
+                    rebootLogoColoured,
+                    (reboot_logo_x, reboot_logo_y),
+                    rebootLogoColoured,
+                )
+                image.paste(
+                    shutdownLogoColoured,
+                    (shutdown_logo_x, shutdown_logo_y),
+                    shutdownLogoColoured,
+                )
+            elif workingIndex == 5:
+                image.paste(
+                    infoLogoColoured, (info_logo_x, info_logo_y), infoLogoColoured
+                )
+                transparent_text_image = cut_out_image(
+                    transparent_text_image,
+                    configLogoColoured,
+                    (config_logo_x, config_logo_y),
+                )
+                image.paste(
+                    rebootLogoColoured,
+                    (reboot_logo_x, reboot_logo_y),
+                    rebootLogoColoured,
+                )
+                image.paste(
+                    shutdownLogoColoured,
+                    (shutdown_logo_x, shutdown_logo_y),
+                    shutdownLogoColoured,
+                )
+            elif workingIndex == 6:
+                image.paste(
+                    infoLogoColoured, (info_logo_x, info_logo_y), infoLogoColoured
+                )
+                image.paste(
+                    configLogoColoured,
+                    (config_logo_x, config_logo_y),
+                    configLogoColoured,
+                )
+                transparent_text_image = cut_out_image(
+                    transparent_text_image,
+                    rebootLogoColoured,
+                    (reboot_logo_x, reboot_logo_y),
+                )
+                image.paste(
+                    shutdownLogoColoured,
+                    (shutdown_logo_x, shutdown_logo_y),
+                    shutdownLogoColoured,
+                )
+            elif workingIndex == 7:
+                image.paste(
+                    infoLogoColoured, (info_logo_x, info_logo_y), infoLogoColoured
+                )
+                image.paste(
+                    configLogoColoured,
+                    (config_logo_x, config_logo_y),
+                    configLogoColoured,
+                )
+                image.paste(
+                    rebootLogoColoured,
+                    (reboot_logo_x, reboot_logo_y),
+                    rebootLogoColoured,
+                )
+                transparent_text_image = cut_out_image(
+                    transparent_text_image,
+                    shutdownLogoColoured,
+                    (shutdown_logo_x, shutdown_logo_y),
+                )
+
+        else:
+            image.paste(infoLogoColoured, (info_logo_x, info_logo_y), infoLogoColoured)
+            image.paste(
+                configLogoColoured, (config_logo_x, config_logo_y), configLogoColoured
+            )
+            image.paste(
+                rebootLogoColoured, (reboot_logo_x, reboot_logo_y), rebootLogoColoured
+            )
+            image.paste(
+                shutdownLogoColoured,
+                (shutdown_logo_x, shutdown_logo_y),
+                shutdownLogoColoured,
+            )
+
+        if self.manager.transparent_text_var:
+            image = Image.alpha_composite(image, transparent_text_image)
+        image = Image.alpha_composite(image, menuHelperGuides)
+
+        ## Show what header items will actually look like
+
+        headerBubbles = self.generate_header_overlay_image(muOSpageName="muxlaunch")
+        image = Image.alpha_composite(image, headerBubbles)
+
+        return image
 
     def generate_vertical_menu_image(
         self,
