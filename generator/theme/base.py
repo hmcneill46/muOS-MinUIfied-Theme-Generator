@@ -1,6 +1,10 @@
-from datetime import datetime
 import math
 from pathlib import Path
+
+try:  # try to use the Rust-based package if possible
+    from bidi import get_display as bidi_get_display
+except ImportError:  # otherwise use the Python-based package
+    from bidi.algorithm import get_display as bidi_get_display
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
@@ -8,8 +12,6 @@ from generator.color_utils import hex_to_rgba, change_logo_color
 from generator.constants import (
     BUTTON_GLYPHS_DIR,
     GLYPHS_DIR,
-    BatteryStyleOptionsDict,
-    BatteryChargingStyleOptionsDict,
 )
 from generator.font import get_font_path
 from generator.settings import SettingsManager
@@ -792,35 +794,240 @@ class BaseThemeGenerator:
 
         return image
 
-    def generate_boot_screen(
-        self,
-        bg_hex: str,
-        deselected_font_hex: str,
-        bubble_hex: str,
-        icon_hex: str,
-        display_text: str | None = None,
-        icon_path: Path | None = None,
-    ) -> Image.Image:
-        pass
-
     def generate_boot_screen_with_logo(
         self,
         bg_hex: str,
         deselected_font_hex: str,
         bubble_hex: str,
-        icon_hex: str,
-        icon_path: Path | None = None,
     ) -> Image.Image:
-        pass
+        (
+            bg_hex,
+            deselected_font_hex,
+            bubble_hex,
+        ) = [
+            val[1:] if val.startswith("#") else val
+            for val in [
+                bg_hex,
+                deselected_font_hex,
+                bubble_hex,
+            ]
+        ]
+
+        bg_rgb = hex_to_rgba(bg_hex)
+        image = Image.new(
+            "RGBA",
+            (
+                int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                int(self.manager.deviceScreenHeightVar) * self.render_factor,
+            ),
+            bg_rgb,
+        )
+        if self.manager.use_custom_bootlogo_var:
+            if (
+                self.manager.bootlogo_image_path
+                and self.manager.bootlogo_image_path.exists()
+            ):
+                bootlogo_image = Image.open(self.manager.bootlogo_image_path)
+                image.paste(
+                    bootlogo_image.resize(
+                        (
+                            int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                            int(self.manager.deviceScreenHeightVar)
+                            * self.render_factor,
+                        )
+                    ),
+                    (0, 0),
+                )
+                return image
+        elif background_image != None:
+            image.paste(
+                background_image.resize(
+                    (
+                        int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                        int(self.manager.deviceScreenHeightVar) * self.render_factor,
+                    )
+                ),
+                (0, 0),
+            )
+
+        draw = ImageDraw.Draw(image)
+        transparent_text_image = Image.new("RGBA", image.size, (255, 255, 255, 0))
+        draw_transparent = ImageDraw.Draw(transparent_text_image)
+
+        selected_font_path = get_font_path(
+            self.manager.use_alt_font_var, self.manager.alt_font_filename
+        )
+
+        mu_font_size = 130 * self.render_factor
+        mu_font = ImageFont.truetype(selected_font_path, mu_font_size)
+        os_font_size = 98 * self.render_factor
+        os_font = ImageFont.truetype(selected_font_path, os_font_size)
+
+        screen_x_middle, screen_y_middle = (
+            (int(self.manager.deviceScreenWidthVar) / 2) * self.render_factor,
+            (int(self.manager.deviceScreenHeightVar) / 2) * self.render_factor,
+        )
+
+        from_middle_padding = 20 * self.render_factor
+
+        muText = "mu"
+
+        osText = "OS"
+
+        muTextBbox = mu_font.getbbox(muText)
+        osTextBbox = os_font.getbbox(osText)
+
+        muTextWidth = muTextBbox[2] - muTextBbox[0]
+        muTextHeight = muTextBbox[3] - muTextBbox[1]
+        mu_y_location = screen_y_middle - muTextHeight / 2 - muTextBbox[1]
+        mu_x_location = screen_x_middle - from_middle_padding - muTextWidth
+
+        osTextWidth = osTextBbox[2] - osTextBbox[0]
+        osTextHeight = osTextBbox[3] - osTextBbox[1]
+        os_y_location = screen_y_middle - osTextHeight / 2 - osTextBbox[1]
+        os_x_location = screen_x_middle + from_middle_padding
+
+        bubble_x_padding = 30 * self.render_factor
+        bubble_y_padding = 25 * self.render_factor
+        bubble_x_mid_point = screen_x_middle + from_middle_padding + (osTextWidth / 2)
+        bubble_width = bubble_x_padding + osTextWidth + bubble_x_padding
+        bubble_height = bubble_y_padding + osTextHeight + bubble_y_padding
+        transparency = 0
+
+        draw_transparent.rounded_rectangle(
+            [
+                (
+                    bubble_x_mid_point - (bubble_width / 2),
+                    screen_y_middle - (bubble_height / 2),
+                ),
+                (
+                    bubble_x_mid_point + (bubble_width / 2),
+                    screen_y_middle + (bubble_height / 2),
+                ),
+            ],
+            radius=bubble_height / 2,
+            fill=f"#{bubble_hex}",
+        )
+
+        draw.text(
+            (mu_x_location, mu_y_location),
+            muText,
+            font=mu_font,
+            fill=f"#{deselected_font_hex}",
+        )
+        draw_transparent.text(
+            (os_x_location, os_y_location),
+            osText,
+            font=os_font,
+            fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency),
+        )
+
+        combined_image = Image.alpha_composite(image, transparent_text_image)
+
+        return combined_image
 
     def generate_boot_screen_with_text(
         self,
         bg_hex: str,
         deselected_font_hex: str,
-        bubble_hex: str,
+        icon_hex: str,
         display_text: str,
+        icon_path: Path | None = None,
     ) -> Image.Image:
-        pass
+        (
+            bg_hex,
+            deselected_font_hex,
+            icon_hex,
+        ) = [
+            val[1:] if val.startswith("#") else val
+            for val in [
+                bg_hex,
+                deselected_font_hex,
+                icon_hex,
+            ]
+        ]
+
+        bg_rgb = hex_to_rgba(bg_hex)
+        image = Image.new(
+            "RGBA",
+            (
+                int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                int(self.manager.deviceScreenHeightVar) * self.render_factor,
+            ),
+            bg_rgb,
+        )
+        if background_image is not None:
+            image.paste(
+                background_image.resize(
+                    (
+                        int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                        int(self.manager.deviceScreenHeightVar) * self.render_factor,
+                    )
+                ),
+                (0, 0),
+            )
+
+        draw = ImageDraw.Draw(image)
+
+        selected_font_path = get_font_path(
+            self.manager.use_alt_font_var, self.manager.alt_font_filename
+        )
+
+        screen_x_middle, screen_y_middle = (
+            int((int(self.manager.deviceScreenWidthVar) / 2) * self.render_factor),
+            int((int(self.manager.deviceScreenHeightVar) / 2) * self.render_factor),
+        )
+
+        from_middle_padding = 0
+
+        if icon_path != None:
+            if icon_path and icon_path.exists():
+                from_middle_padding = 50 * self.render_factor
+
+                logoColoured = change_logo_color(icon_path, icon_hex)
+                logoColoured = logoColoured.resize(
+                    (
+                        int((logoColoured.size[0] / 5) * self.render_factor),
+                        int((logoColoured.size[1] / 5) * self.render_factor),
+                    ),
+                    Image.LANCZOS,
+                )
+
+                logo_y_location = int(
+                    screen_y_middle - logoColoured.size[1] / 2 - from_middle_padding
+                )
+                logo_x_location = int(screen_x_middle - logoColoured.size[0] / 2)
+
+                image.paste(
+                    logoColoured, (logo_x_location, logo_y_location), logoColoured
+                )
+
+        font_size = int(57.6 * self.render_factor)
+        font = ImageFont.truetype(selected_font_path, font_size)
+
+        displayText = display_text
+        if self.manager.alternate_menu_names_var:
+            displayText = bidi_get_display(
+                menuNameMap.get(display_text.lower(), display_text)
+            )
+
+        textBbox = font.getbbox(displayText)
+
+        textWidth = int(textBbox[2] - textBbox[0])
+        textHeight = int(textBbox[3] - textBbox[1])
+        y_location = int(
+            screen_y_middle - textHeight / 2 - textBbox[1] + from_middle_padding
+        )
+        x_location = int(screen_x_middle - textWidth / 2)
+
+        draw.text(
+            (x_location, y_location),
+            displayText,
+            font=font,
+            fill=f"#{deselected_font_hex}",
+        )
+
+        return image
 
     def generate_horizontal_menu(self) -> Image.Image:
         pass

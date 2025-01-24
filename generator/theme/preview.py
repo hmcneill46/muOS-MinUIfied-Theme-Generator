@@ -4,7 +4,11 @@ from pathlib import Path
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 from generator.color_utils import change_logo_color
-from generator.constants import GLYPHS_DIR, BatteryStyleOptionsDict, BatteryChargingStyleOptionsDict
+from generator.constants import (
+    GLYPHS_DIR,
+    BatteryStyleOptionsDict,
+    BatteryChargingStyleOptionsDict,
+)
 from generator.font import get_font_path
 from generator.settings import SettingsManager
 from generator.theme.base import BaseThemeGenerator
@@ -41,16 +45,21 @@ class PreviewThemeGenerator(BaseThemeGenerator):
         draw = ImageDraw.Draw(image)
         if float(self.manager.header_glyph_height_var) < 10:
             raise ValueError("Header Glyph Height Too Small!")
-        elif float(self.manager.header_glyph_height_var) > int(self.manager.headerHeightVar):
+        elif float(self.manager.header_glyph_height_var) > int(
+            self.manager.headerHeightVar
+        ):
             raise ValueError("Header Glyph Height Too Large!")
         else:
-            heightOfGlyph = int(float(self.manager.header_glyph_height_var) * self.render_factor)
+            heightOfGlyph = int(
+                float(self.manager.header_glyph_height_var) * self.render_factor
+            )
         accent_colour = self.manager.deselectedFontHexVar
         if accent_colour.startswith("#"):
             accent_colour = accent_colour[1:]
         if "showing battery and network":
             glyphYPos = int(
-                ((int(self.manager.headerHeightVar) * self.render_factor) / 2) - (heightOfGlyph / 2)
+                ((int(self.manager.headerHeightVar) * self.render_factor) / 2)
+                - (heightOfGlyph / 2)
             )
 
             # Battery not charging stuff
@@ -60,7 +69,9 @@ class PreviewThemeGenerator(BaseThemeGenerator):
                 / f"{BatteryStyleOptionsDict[self.manager.battery_style_var]}{capacityGlyph}[5x].png"
             )
 
-            capacity_image_coloured = change_logo_color(capacity_image_path, accent_colour)
+            capacity_image_coloured = change_logo_color(
+                capacity_image_path, accent_colour
+            )
             capacity_image_coloured = capacity_image_coloured.resize(
                 (
                     int(
@@ -101,19 +112,26 @@ class PreviewThemeGenerator(BaseThemeGenerator):
             networkGlyph = "network_active"
             network_image_path = GLYPHS_DIR / f"{networkGlyph}[5x].png"
 
-            network_image_coloured = change_logo_color(network_image_path, accent_colour)
+            network_image_coloured = change_logo_color(
+                network_image_path, accent_colour
+            )
             network_image_coloured = network_image_coloured.resize(
                 (
                     int(
                         heightOfGlyph
-                        * (network_image_coloured.size[0] / network_image_coloured.size[1])
+                        * (
+                            network_image_coloured.size[0]
+                            / network_image_coloured.size[1]
+                        )
                     ),
                     heightOfGlyph,
                 ),
                 Image.LANCZOS,
             )
 
-            glyph_left_side_padding = int(self.manager.header_glyph_horizontal_left_padding_var)
+            glyph_left_side_padding = int(
+                self.manager.header_glyph_horizontal_left_padding_var
+            )
             glyph_right_side_padding = int(
                 self.manager.header_glyph_horizontal_right_padding_var
             )
@@ -129,7 +147,8 @@ class PreviewThemeGenerator(BaseThemeGenerator):
             elif self.manager.header_glyph_alignment_var == "Centre":
                 current_x_pos = (
                     int(
-                        (int(self.manager.deviceScreenWidthVar) * self.render_factor) / 2
+                        (int(self.manager.deviceScreenWidthVar) * self.render_factor)
+                        / 2
                         - (
                             (
                                 totalGlyphWidth
@@ -152,11 +171,14 @@ class PreviewThemeGenerator(BaseThemeGenerator):
                 raise ValueError("Invalid clock alignment")
 
             image.paste(
-                network_image_coloured, (current_x_pos, glyphYPos), network_image_coloured
+                network_image_coloured,
+                (current_x_pos, glyphYPos),
+                network_image_coloured,
             )
 
             current_x_pos += (
-                network_image_coloured.size[0] + glyph_between_padding * self.render_factor
+                network_image_coloured.size[0]
+                + glyph_between_padding * self.render_factor
             )
 
             if not self.manager.show_charging_battery_var:
@@ -175,16 +197,22 @@ class PreviewThemeGenerator(BaseThemeGenerator):
 
         if int(self.manager.header_text_height_var) < 10:
             raise ValueError("Header Text Height Too Small!")
-        elif int(self.manager.header_text_height_var) > int(self.manager.headerHeightVar):
+        elif int(self.manager.header_text_height_var) > int(
+            self.manager.headerHeightVar
+        ):
             raise ValueError("Header Text Height Too Large!")
         else:
-            heightOfText = int(int(self.manager.header_text_height_var) * self.render_factor)
+            heightOfText = int(
+                int(self.manager.header_text_height_var) * self.render_factor
+            )
 
         fontSize = int(
             int((heightOfText * (4 / 3)) / self.render_factor) * self.render_factor
         )  ## TODO Make this not specific to BPreplay
         headerFont = ImageFont.truetype(
-            get_font_path(self.manager.use_alt_font_var, self.manager.alt_font_filename),
+            get_font_path(
+                self.manager.use_alt_font_var, self.manager.alt_font_filename
+            ),
             fontSize,
         )
         if "showing time":
@@ -203,7 +231,8 @@ class PreviewThemeGenerator(BaseThemeGenerator):
             elif self.manager.clock_alignment_var == "Centre":
                 timeText_X = (
                     int(
-                        (int(self.manager.deviceScreenWidthVar) * self.render_factor) / 2
+                        (int(self.manager.deviceScreenWidthVar) * self.render_factor)
+                        / 2
                         - (
                             (
                                 timeTextWidth
@@ -218,9 +247,9 @@ class PreviewThemeGenerator(BaseThemeGenerator):
                     + clock_left_padding * self.render_factor
                 )
             elif self.manager.clock_alignment_var == "Right":
-                timeText_X = int(int(self.manager.deviceScreenWidthVar) * self.render_factor) - (
-                    timeTextWidth + clock_right_padding * self.render_factor
-                )
+                timeText_X = int(
+                    int(self.manager.deviceScreenWidthVar) * self.render_factor
+                ) - (timeTextWidth + clock_right_padding * self.render_factor)
             else:
                 raise ValueError("Invalid clock alignment")
             timeText_Y = (
@@ -249,9 +278,9 @@ class PreviewThemeGenerator(BaseThemeGenerator):
                     - (pageTitleWidth / 2)
                 )
             elif self.manager.page_title_alignment_var == "Right":
-                pageTitle_X = int(int(self.manager.deviceScreenWidthVar) * self.render_factor) - (
-                    pageTitleWidth + page_title_padding * self.render_factor
-                )
+                pageTitle_X = int(
+                    int(self.manager.deviceScreenWidthVar) * self.render_factor
+                ) - (pageTitleWidth + page_title_padding * self.render_factor)
             else:
                 raise ValueError("Invalid page title alignment")
             pageTitle_Y = (
@@ -278,7 +307,13 @@ class PreviewThemeGenerator(BaseThemeGenerator):
         lhsButtons: list[tuple[str, str]] = [("POWER", "SLEEP")],
         muOSpageName: str = "muxlaunch",
     ) -> Image.Image:
-        return self.generate_static_overlay_image(rhsButtons,selected_font_path, colour_hex,lhsButtons,muOSpageName=muOSpageName)
+        return self.generate_static_overlay_image(
+            rhsButtons,
+            selected_font_path,
+            colour_hex,
+            lhsButtons,
+            muOSpageName=muOSpageName,
+        )
 
     def generate_theme(self):
         raise NotImplementedError("PreviewThemeGenerator only generates previews!")

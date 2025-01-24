@@ -1,5 +1,4 @@
 import copy
-from datetime import datetime
 from functools import partial
 import json
 import math
@@ -2182,236 +2181,6 @@ def generatePilImageAltHorizontal(
     return image
 
 
-def generatePilImageBootLogo(
-    bg_hex: str,
-    deselected_font_hex: str,
-    bubble_hex: str,
-    render_factor: int,
-    manager: SettingsManager,
-) -> Image.Image:
-    (
-        bg_hex,
-        deselected_font_hex,
-        bubble_hex,
-    ) = [
-        val[1:] if val.startswith("#") else val
-        for val in [
-            bg_hex,
-            deselected_font_hex,
-            bubble_hex,
-        ]
-    ]
-
-    bg_rgb = hex_to_rgba(bg_hex)
-    image = Image.new(
-        "RGBA",
-        (
-            int(manager.deviceScreenWidthVar) * render_factor,
-            int(manager.deviceScreenHeightVar) * render_factor,
-        ),
-        bg_rgb,
-    )
-    if manager.use_custom_bootlogo_var:
-        if manager.bootlogo_image_path and manager.bootlogo_image_path.exists():
-            bootlogo_image = Image.open(manager.bootlogo_image_path)
-            image.paste(
-                bootlogo_image.resize(
-                    (
-                        int(manager.deviceScreenWidthVar) * render_factor,
-                        int(manager.deviceScreenHeightVar) * render_factor,
-                    )
-                ),
-                (0, 0),
-            )
-            return image
-    elif background_image != None:
-        image.paste(
-            background_image.resize(
-                (
-                    int(manager.deviceScreenWidthVar) * render_factor,
-                    int(manager.deviceScreenHeightVar) * render_factor,
-                )
-            ),
-            (0, 0),
-        )
-
-    draw = ImageDraw.Draw(image)
-    transparent_text_image = Image.new("RGBA", image.size, (255, 255, 255, 0))
-    draw_transparent = ImageDraw.Draw(transparent_text_image)
-
-    selected_font_path = get_font_path(
-        manager.use_alt_font_var, manager.alt_font_filename
-    )
-
-    mu_font_size = 130 * render_factor
-    mu_font = ImageFont.truetype(selected_font_path, mu_font_size)
-    os_font_size = 98 * render_factor
-    os_font = ImageFont.truetype(selected_font_path, os_font_size)
-
-    screen_x_middle, screen_y_middle = (
-        (int(manager.deviceScreenWidthVar) / 2) * render_factor,
-        (int(manager.deviceScreenHeightVar) / 2) * render_factor,
-    )
-
-    from_middle_padding = 20 * render_factor
-
-    muText = "mu"
-
-    osText = "OS"
-
-    muTextBbox = mu_font.getbbox(muText)
-    osTextBbox = os_font.getbbox(osText)
-
-    muTextWidth = muTextBbox[2] - muTextBbox[0]
-    muTextHeight = muTextBbox[3] - muTextBbox[1]
-    mu_y_location = screen_y_middle - muTextHeight / 2 - muTextBbox[1]
-    mu_x_location = screen_x_middle - from_middle_padding - muTextWidth
-
-    osTextWidth = osTextBbox[2] - osTextBbox[0]
-    osTextHeight = osTextBbox[3] - osTextBbox[1]
-    os_y_location = screen_y_middle - osTextHeight / 2 - osTextBbox[1]
-    os_x_location = screen_x_middle + from_middle_padding
-
-    bubble_x_padding = 30 * render_factor
-    bubble_y_padding = 25 * render_factor
-    bubble_x_mid_point = screen_x_middle + from_middle_padding + (osTextWidth / 2)
-    bubble_width = bubble_x_padding + osTextWidth + bubble_x_padding
-    bubble_height = bubble_y_padding + osTextHeight + bubble_y_padding
-    transparency = 0
-
-    draw_transparent.rounded_rectangle(
-        [
-            (
-                bubble_x_mid_point - (bubble_width / 2),
-                screen_y_middle - (bubble_height / 2),
-            ),
-            (
-                bubble_x_mid_point + (bubble_width / 2),
-                screen_y_middle + (bubble_height / 2),
-            ),
-        ],
-        radius=bubble_height / 2,
-        fill=f"#{bubble_hex}",
-    )
-
-    draw.text(
-        (mu_x_location, mu_y_location),
-        muText,
-        font=mu_font,
-        fill=f"#{deselected_font_hex}",
-    )
-    draw_transparent.text(
-        (os_x_location, os_y_location),
-        osText,
-        font=os_font,
-        fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency),
-    )
-
-    combined_image = Image.alpha_composite(image, transparent_text_image)
-
-    return combined_image
-
-
-def generatePilImageBootScreen(
-    bg_hex: str,
-    deselected_font_hex: str,
-    icon_hex: str,
-    display_text: str,
-    render_factor: int,
-    manager: SettingsManager,
-    icon_path: Path | None = None,
-) -> Image.Image:
-    (
-        bg_hex,
-        deselected_font_hex,
-        icon_hex,
-    ) = [
-        val[1:] if val.startswith("#") else val
-        for val in [
-            bg_hex,
-            deselected_font_hex,
-            icon_hex,
-        ]
-    ]
-
-    bg_rgb = hex_to_rgba(bg_hex)
-    image = Image.new(
-        "RGBA",
-        (
-            int(manager.deviceScreenWidthVar) * render_factor,
-            int(manager.deviceScreenHeightVar) * render_factor,
-        ),
-        bg_rgb,
-    )
-    if background_image is not None:
-        image.paste(
-            background_image.resize(
-                (
-                    int(manager.deviceScreenWidthVar) * render_factor,
-                    int(manager.deviceScreenHeightVar) * render_factor,
-                )
-            ),
-            (0, 0),
-        )
-
-    draw = ImageDraw.Draw(image)
-
-    selected_font_path = get_font_path(
-        manager.use_alt_font_var, manager.alt_font_filename
-    )
-
-    screen_x_middle, screen_y_middle = (
-        int((int(manager.deviceScreenWidthVar) / 2) * render_factor),
-        int((int(manager.deviceScreenHeightVar) / 2) * render_factor),
-    )
-
-    from_middle_padding = 0
-
-    if icon_path != None:
-        if icon_path and icon_path.exists():
-            from_middle_padding = 50 * render_factor
-
-            logoColoured = change_logo_color(icon_path, icon_hex)
-            logoColoured = logoColoured.resize(
-                (
-                    int((logoColoured.size[0] / 5) * render_factor),
-                    int((logoColoured.size[1] / 5) * render_factor),
-                ),
-                Image.LANCZOS,
-            )
-
-            logo_y_location = int(
-                screen_y_middle - logoColoured.size[1] / 2 - from_middle_padding
-            )
-            logo_x_location = int(screen_x_middle - logoColoured.size[0] / 2)
-
-            image.paste(logoColoured, (logo_x_location, logo_y_location), logoColoured)
-
-    font_size = int(57.6 * render_factor)
-    font = ImageFont.truetype(selected_font_path, font_size)
-
-    displayText = display_text
-    if manager.alternate_menu_names_var:
-        displayText = bidi_get_display(
-            menuNameMap.get(display_text.lower(), display_text)
-        )
-
-    textBbox = font.getbbox(displayText)
-
-    textWidth = int(textBbox[2] - textBbox[0])
-    textHeight = int(textBbox[3] - textBbox[1])
-    y_location = int(
-        screen_y_middle - textHeight / 2 - textBbox[1] + from_middle_padding
-    )
-    x_location = int(screen_x_middle - textWidth / 2)
-
-    draw.text(
-        (x_location, y_location), displayText, font=font, fill=f"#{deselected_font_hex}"
-    )
-
-    return image
-
-
 def generatePilImageDefaultScreen(
     bg_hex: str, render_factor: int, manager: SettingsManager
 ) -> Image.Image:
@@ -3481,12 +3250,10 @@ def FillTempThemeFolder(
 
     ## IMAGE STUFF
     temp_image_dir = temp_build_dir / "image"
-    bootlogoimage = generatePilImageBootLogo(
+    bootlogoimage = theme_generator.generate_boot_screen_with_logo(
         manager.bgHexVar,
         manager.deselectedFontHexVar,
         manager.bubbleHexVar,
-        render_factor,
-        manager,
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
         Image.LANCZOS,
@@ -3497,13 +3264,11 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    chargingimage = generatePilImageBootScreen(
+    chargingimage = theme_generator.generate_boot_screen_with_text(
         manager.bgHexVar,
         manager.deselectedFontHexVar,
         manager.iconHexVar,
         "CHARGING...",
-        render_factor,
-        manager,
         icon_path=ASSETS_DIR / "ChargingLogo[5x].png",
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
@@ -3515,13 +3280,11 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    loadingimage = generatePilImageBootScreen(
+    loadingimage = theme_generator.generate_boot_screen_with_text(
         manager.bgHexVar,
         manager.deselectedFontHexVar,
         manager.iconHexVar,
         "LOADING...",
-        render_factor,
-        manager,
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
         Image.LANCZOS,
@@ -3532,13 +3295,11 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    shutdownimage = generatePilImageBootScreen(
+    shutdownimage = theme_generator.generate_boot_screen_with_text(
         manager.bgHexVar,
         manager.deselectedFontHexVar,
         manager.iconHexVar,
         "Shutting Down...",
-        render_factor,
-        manager,
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
         Image.LANCZOS,
@@ -3549,13 +3310,11 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    rebootimage = generatePilImageBootScreen(
+    rebootimage = theme_generator.generate_boot_screen_with_text(
         manager.bgHexVar,
         manager.deselectedFontHexVar,
         manager.iconHexVar,
         "Rebooting...",
-        render_factor,
-        manager,
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
         Image.LANCZOS,
@@ -3566,9 +3325,7 @@ def FillTempThemeFolder(
     )
     progress_bar["value"] += 1
 
-    defaultimage = generatePilImageDefaultScreen(
-        manager.bgHexVar, render_factor, manager
-    ).resize(
+    defaultimage = theme_generator.generate_background_image(manager.bgHexVar).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
         Image.LANCZOS,
     )
