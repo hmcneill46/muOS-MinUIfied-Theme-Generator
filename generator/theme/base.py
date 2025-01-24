@@ -24,6 +24,11 @@ class BaseThemeGenerator:
         self.manager = manager
         self.render_factor = render_factor
 
+        self.screen_dimensions = (
+            int(self.manager.deviceScreenWidthVar) * self.render_factor,
+            int(self.manager.deviceScreenHeightVar) * self.render_factor,
+        )
+
     def generate_button_glyph_image(
         self,
         buttonText: str,
@@ -193,10 +198,7 @@ class BaseThemeGenerator:
     ) -> Image.Image:
         image = Image.new(
             "RGBA",
-            (
-                int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                int(self.manager.deviceScreenHeightVar) * self.render_factor,
-            ),
+            self.screen_dimensions,
             (255, 255, 255, 0),
         )
         draw = ImageDraw.Draw(image)
@@ -472,10 +474,7 @@ class BaseThemeGenerator:
 
         image = Image.new(
             "RGBA",
-            (
-                int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                int(self.manager.deviceScreenHeightVar) * self.render_factor,
-            ),
+            self.screen_dimensions,
             (255, 255, 255, 0),
         )
         draw = ImageDraw.Draw(image)
@@ -760,20 +759,12 @@ class BaseThemeGenerator:
         bg_rgb = hex_to_rgba(bg_hex)
         image = Image.new(
             "RGBA",
-            (
-                int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                int(self.manager.deviceScreenHeightVar) * self.render_factor,
-            ),
+            self.screen_dimensions,
             bg_rgb,
         )
         if background_image != None:
             image.paste(
-                background_image.resize(
-                    (
-                        int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                        int(self.manager.deviceScreenHeightVar) * self.render_factor,
-                    )
-                ),
+                background_image.resize(self.screen_dimensions),
                 (0, 0),
             )
         return image
@@ -795,10 +786,7 @@ class BaseThemeGenerator:
 
         image = Image.new(
             "RGBA",
-            (
-                int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                int(self.manager.deviceScreenHeightVar) * self.render_factor,
-            ),
+            self.screen_dimensions,
             (255, 255, 255, 0),
         )
         draw = ImageDraw.Draw(image)
