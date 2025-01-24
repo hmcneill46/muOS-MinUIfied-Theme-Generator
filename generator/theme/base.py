@@ -752,8 +752,30 @@ class BaseThemeGenerator:
                     realRhsPointer += horizontal_large_padding * self.render_factor
         return image
 
-    def generate_background_image(self) -> Image.Image:
-        pass
+    def generate_background_image(self, bg_hex: str) -> Image.Image:
+        if bg_hex.startswith("#"):
+            bg_hex = bg_hex[1:]
+
+        bg_rgb = hex_to_rgba(bg_hex)
+        image = Image.new(
+            "RGBA",
+            (
+                int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                int(self.manager.deviceScreenHeightVar) * self.render_factor,
+            ),
+            bg_rgb,
+        )
+        if background_image != None:
+            image.paste(
+                background_image.resize(
+                    (
+                        int(self.manager.deviceScreenWidthVar) * self.render_factor,
+                        int(self.manager.deviceScreenHeightVar) * self.render_factor,
+                    )
+                ),
+                (0, 0),
+            )
+        return image
 
     def generate_wall_image(self) -> Image.Image:
         pass

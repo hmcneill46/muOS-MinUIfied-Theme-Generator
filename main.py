@@ -2181,34 +2181,6 @@ def generatePilImageAltHorizontal(
     return image
 
 
-def generatePilImageDefaultScreen(
-    bg_hex: str, render_factor: int, manager: SettingsManager
-) -> Image.Image:
-    if bg_hex.startswith("#"):
-        bg_hex = bg_hex[1:]
-
-    bg_rgb = hex_to_rgba(bg_hex)
-    image = Image.new(
-        "RGBA",
-        (
-            int(manager.deviceScreenWidthVar) * render_factor,
-            int(manager.deviceScreenHeightVar) * render_factor,
-        ),
-        bg_rgb,
-    )
-    if background_image != None:
-        image.paste(
-            background_image.resize(
-                (
-                    int(manager.deviceScreenWidthVar) * render_factor,
-                    int(manager.deviceScreenHeightVar) * render_factor,
-                )
-            ),
-            (0, 0),
-        )
-    return image
-
-
 def HorizontalMenuGen(
     progress_bar: ttk.Progressbar,
     muOSSystemName: str,
