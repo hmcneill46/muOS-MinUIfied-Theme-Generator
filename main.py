@@ -1095,6 +1095,8 @@ def FillTempThemeFolder(
             grid_image_padding,
             circular_grid=False,
         )
+
+    theme_generator = DeviceThemeGenerator(manager)
     if not "Generating for lanuage on muxlaunch":
         horizontalLogoSize = getHorizontalLogoSize(
             HORIZONTAL_LOGOS_DIR / "explore.png", 1, manager
@@ -1788,29 +1790,7 @@ def FillTempThemeFolder(
     # TODO REMOVE THIS AS IT DOESNT ALLOW BACKGROUND REPLACEMENT (When Alternative is avaliable)
     # TODO wifi would be cool to have footers for once its possible
 
-    bg_rgb = hex_to_rgba(bg_hex)
-    background = Image.new(
-        "RGBA",
-        (
-            int(manager.deviceScreenWidthVar) * render_factor,
-            int(manager.deviceScreenHeightVar) * render_factor,
-        ),
-        bg_rgb,
-    )
-    if background_image is not None:
-        background.paste(
-            background_image.resize(
-                (
-                    int(manager.deviceScreenWidthVar) * render_factor,
-                    int(manager.deviceScreenHeightVar) * render_factor,
-                )
-            ),
-            (0, 0),
-        )
-    background = background.resize(
-        (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
-        Image.LANCZOS,
-    )
+    background = theme_generator.generate_background_image(bg_hex)
 
     visualbuttonoverlay_muxapp = theme_generator.generate_static_overlay_image(
         [["B", "BACK"], ["A", "LAUNCH"]],

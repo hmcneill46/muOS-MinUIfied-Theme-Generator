@@ -29,6 +29,9 @@ class BaseThemeGenerator:
             int(self.manager.deviceScreenWidthVar) * self.render_factor,
             int(self.manager.deviceScreenHeightVar) * self.render_factor,
         )
+        self.screen_x_middle, self.screen_y_middle = (
+            dim // 2 for dim in self.screen_dimensions
+        )
 
     def generate_button_glyph_image(
         self,
@@ -753,17 +756,31 @@ class BaseThemeGenerator:
                     realRhsPointer += horizontal_large_padding * self.render_factor
         return image
 
-    def generate_background_image(self, bg_hex: str) -> Image.Image:
+    def generate_background_image(
+        self, bg_hex: str = "#000000", transparent: bool = False
+    ) -> Image.Image:
         if bg_hex.startswith("#"):
             bg_hex = bg_hex[1:]
 
         bg_rgb = hex_to_rgba(bg_hex)
+        if transparent:
+            return Image.new(
+                "RGBA",
+                self.screen_dimensions,
+                (*bg_rgb[:3], 0),
+            )
+
         image = Image.new(
             "RGBA",
             self.screen_dimensions,
             bg_rgb,
         )
-        if background_image != None:
+        if (
+            self.manager.use_custom_background_var
+            and self.manager.background_image_path
+            and self.manager.background_image_path.exists()
+        ):
+            background_image = Image.open(self.manager.background_image_path)
             image.paste(
                 background_image.resize(self.screen_dimensions),
                 (0, 0),
@@ -825,83 +842,53 @@ class BaseThemeGenerator:
             ]
         ]
 
-        bg_rgb = hex_to_rgba(bg_hex)
-        image = Image.new(
-            "RGBA",
-            (
-                int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                int(self.manager.deviceScreenHeightVar) * self.render_factor,
-            ),
-            bg_rgb,
-        )
-        if self.manager.use_custom_bootlogo_var:
-            if (
-                self.manager.bootlogo_image_path
-                and self.manager.bootlogo_image_path.exists()
-            ):
-                bootlogo_image = Image.open(self.manager.bootlogo_image_path)
-                image.paste(
-                    bootlogo_image.resize(
-                        (
-                            int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                            int(self.manager.deviceScreenHeightVar)
-                            * self.render_factor,
-                        )
-                    ),
-                    (0, 0),
-                )
-                return image
-        elif background_image != None:
-            image.paste(
-                background_image.resize(
-                    (
-                        int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                        int(self.manager.deviceScreenHeightVar) * self.render_factor,
-                    )
-                ),
-                (0, 0),
-            )
+        image = self.generate_background_image(bg_hex)
+        if (
+            self.manager.use_custom_bootlogo_var
+            and self.manager.bootlogo_image_path
+            and self.manager.bootlogo_image_path.exists()
+        ):
+            bootlogo_image = Image.open(self.manager.bootlogo_image_path)
+            image.paste(bootlogo_image.resize(self.screen_dimensions), (0, 0))
+            return image
 
         draw = ImageDraw.Draw(image)
-        transparent_text_image = Image.new("RGBA", image.size, (255, 255, 255, 0))
-        draw_transparent = ImageDraw.Draw(transparent_text_image)
+
+        transparent_image = self.generate_background_image(transparent=True)
+        draw_transparent = ImageDraw.Draw(transparent_image)
 
         selected_font_path = get_font_path(
             self.manager.use_alt_font_var, self.manager.alt_font_filename
         )
+
+        muText = "mu"
+        osText = "OS"
 
         mu_font_size = 130 * self.render_factor
         mu_font = ImageFont.truetype(selected_font_path, mu_font_size)
         os_font_size = 98 * self.render_factor
         os_font = ImageFont.truetype(selected_font_path, os_font_size)
 
-        screen_x_middle, screen_y_middle = (
-            (int(self.manager.deviceScreenWidthVar) / 2) * self.render_factor,
-            (int(self.manager.deviceScreenHeightVar) / 2) * self.render_factor,
-        )
-
-        from_middle_padding = 20 * self.render_factor
-
-        muText = "mu"
-
-        osText = "OS"
-
         muTextBbox = mu_font.getbbox(muText)
         osTextBbox = os_font.getbbox(osText)
 
+        from_middle_padding = 20 * self.render_factor
+
         muTextWidth = muTextBbox[2] - muTextBbox[0]
         muTextHeight = muTextBbox[3] - muTextBbox[1]
-        mu_y_location = screen_y_middle - muTextHeight / 2 - muTextBbox[1]
-        mu_x_location = screen_x_middle - from_middle_padding - muTextWidth
+        mu_y_location = self.screen_y_middle - muTextHeight / 2 - muTextBbox[1]
+        mu_x_location = self.screen_x_middle - from_middle_padding - muTextWidth
 
         osTextWidth = osTextBbox[2] - osTextBbox[0]
         osTextHeight = osTextBbox[3] - osTextBbox[1]
-        os_y_location = screen_y_middle - osTextHeight / 2 - osTextBbox[1]
-        os_x_location = screen_x_middle + from_middle_padding
+        os_y_location = self.screen_y_middle - osTextHeight / 2 - osTextBbox[1]
+        os_x_location = self.screen_x_middle + from_middle_padding
 
         bubble_x_padding = 30 * self.render_factor
         bubble_y_padding = 25 * self.render_factor
-        bubble_x_mid_point = screen_x_middle + from_middle_padding + (osTextWidth / 2)
+        bubble_x_mid_point = (
+            self.screen_x_middle + from_middle_padding + (osTextWidth / 2)
+        )
         bubble_width = bubble_x_padding + osTextWidth + bubble_x_padding
         bubble_height = bubble_y_padding + osTextHeight + bubble_y_padding
         transparency = 0
@@ -910,11 +897,11 @@ class BaseThemeGenerator:
             [
                 (
                     bubble_x_mid_point - (bubble_width / 2),
-                    screen_y_middle - (bubble_height / 2),
+                    self.screen_y_middle - (bubble_height / 2),
                 ),
                 (
                     bubble_x_mid_point + (bubble_width / 2),
-                    screen_y_middle + (bubble_height / 2),
+                    self.screen_y_middle + (bubble_height / 2),
                 ),
             ],
             radius=bubble_height / 2,
@@ -934,7 +921,7 @@ class BaseThemeGenerator:
             fill=(*ImageColor.getrgb(f"#{bubble_hex}"), transparency),
         )
 
-        combined_image = Image.alpha_composite(image, transparent_text_image)
+        combined_image = Image.alpha_composite(image, transparent_image)
 
         return combined_image
 
@@ -959,25 +946,7 @@ class BaseThemeGenerator:
             ]
         ]
 
-        bg_rgb = hex_to_rgba(bg_hex)
-        image = Image.new(
-            "RGBA",
-            (
-                int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                int(self.manager.deviceScreenHeightVar) * self.render_factor,
-            ),
-            bg_rgb,
-        )
-        if background_image is not None:
-            image.paste(
-                background_image.resize(
-                    (
-                        int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                        int(self.manager.deviceScreenHeightVar) * self.render_factor,
-                    )
-                ),
-                (0, 0),
-            )
+        image = self.generate_background_image(bg_hex)
 
         draw = ImageDraw.Draw(image)
 
@@ -1071,40 +1040,7 @@ class BaseThemeGenerator:
         ]
 
         progress_bar["value"] += 1
-        bg_rgb = hex_to_rgba(bg_hex)
-
-        # Create image
-
-        if not transparent:
-            image = Image.new(
-                "RGBA",
-                (
-                    int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                    int(self.manager.deviceScreenHeightVar) * self.render_factor,
-                ),
-                bg_rgb,
-            )
-
-            if background_image != None:
-                image.paste(
-                    background_image.resize(
-                        (
-                            int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                            int(self.manager.deviceScreenHeightVar)
-                            * self.render_factor,
-                        )
-                    ),
-                    (0, 0),
-                )
-        else:
-            image = Image.new(
-                "RGBA",
-                (
-                    int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                    int(self.manager.deviceScreenHeightVar) * self.render_factor,
-                ),
-                (0, 0, 0, 0),
-            )
+        image = self.generate_background_image(bg_hex, transparent)
 
         exploreLogoColoured = change_logo_color(
             HORIZONTAL_LOGOS_DIR / "explore.png", icon_hex
@@ -1895,37 +1831,7 @@ class BaseThemeGenerator:
         ]
 
         progress_bar["value"] += 1
-        bg_rgb = hex_to_rgba(bg_hex)
-        if not transparent:
-            image = Image.new(
-                "RGBA",
-                (
-                    int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                    int(self.manager.deviceScreenHeightVar) * self.render_factor,
-                ),
-                bg_rgb,
-            )
-
-            if background_image != None:
-                image.paste(
-                    background_image.resize(
-                        (
-                            int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                            int(self.manager.deviceScreenHeightVar)
-                            * self.render_factor,
-                        )
-                    ),
-                    (0, 0),
-                )
-        else:
-            image = Image.new(
-                "RGBA",
-                (
-                    int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                    int(self.manager.deviceScreenHeightVar) * self.render_factor,
-                ),
-                (0, 0, 0, 0),
-            )
+        image = self.generate_background_image(bg_hex, transparent)
 
         draw = ImageDraw.Draw(image)
 
@@ -2184,40 +2090,7 @@ class BaseThemeGenerator:
         ]
 
         progress_bar["value"] += 1
-        bg_rgb = hex_to_rgba(bg_hex)
-
-        # Create image
-
-        if not transparent:
-            image = Image.new(
-                "RGBA",
-                (
-                    int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                    int(self.manager.deviceScreenHeightVar) * self.render_factor,
-                ),
-                bg_rgb,
-            )
-
-            if background_image != None:
-                image.paste(
-                    background_image.resize(
-                        (
-                            int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                            int(self.manager.deviceScreenHeightVar)
-                            * self.render_factor,
-                        )
-                    ),
-                    (0, 0),
-                )
-        else:
-            image = Image.new(
-                "RGBA",
-                (
-                    int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                    int(self.manager.deviceScreenHeightVar) * self.render_factor,
-                ),
-                (0, 0, 0, 0),
-            )
+        image = self.generate_background_image(bg_hex, transparent)
 
         top_to_bottom_row_padding = (
             min(
