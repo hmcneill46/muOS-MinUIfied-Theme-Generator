@@ -462,7 +462,7 @@
         {
           "label": "Show Battery Charging in Preview",
           "widget_type": "checkbox",
-          "var_name": "show_charing_battery_var",
+          "var_name": "show_charging_battery_var",
           "var_type": "boolean",
           "default_value": false
         }
