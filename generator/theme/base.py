@@ -14,6 +14,7 @@ from generator.color_utils import hex_to_rgba, change_logo_color
 from generator.constants import (
     BUTTON_GLYPHS_DIR,
     GLYPHS_DIR,
+    HORIZONTAL_LOGOS_DIR,
 )
 from generator.font import get_font_path
 from generator.settings import SettingsManager
@@ -1055,8 +1056,8 @@ class BaseThemeGenerator:
             HORIZONTAL_LOGOS_DIR / "apps.png", icon_hex
         )
 
-        top_logo_size = getHorizontalLogoSize(
-            HORIZONTAL_LOGOS_DIR / "explore.png", self.render_factor, self.manager
+        top_logo_size = self._get_horizontal_logo_size(
+            HORIZONTAL_LOGOS_DIR / "explore.png"
         )
 
         exploreLogoColoured = exploreLogoColoured.resize(
@@ -2884,6 +2885,26 @@ class BaseThemeGenerator:
             totalWidth += textWidth / self.render_factor
             totalWidth += largerPadding
         return totalWidth
+
+    def _get_horizontal_logo_size(self, logo_path: Path) -> tuple[int, ...]:
+        scaled_screen_dimensions = (
+            self.manager.deviceScreenHeightVar // 480,
+            self.manager.deviceScreenWidthVar // 640,
+        )
+        min_dimension = min(scaled_screen_dimensions)
+
+        exploreLogoColoured = change_logo_color(logo_path, self.manager.iconHexVar)
+        if len(exploreLogoColoured.size) != 2:
+            raise ValueError(
+                f"Logo at {logo_path} has {len(exploreLogoColoured.size)} dimensions"
+            )
+
+        logo_size = tuple(
+            int(dim * min_dimension * self.render_factor / 5)
+            for dim in exploreLogoColoured.size
+        )
+
+        return logo_size
 
     def generate_theme(self):
         raise NotImplementedError(

@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont
+from PIL.Image import Resampling
 
 from generator.color_utils import change_logo_color
 from generator.constants import (
@@ -18,11 +19,125 @@ class PreviewThemeGenerator(BaseThemeGenerator):
     def __init__(self, manager: SettingsManager, render_factor: int):
         super().__init__(manager, render_factor)
 
-    def generate_header_overlay_image(
+    def _generate_preview_glyph(
+        self, glyph_color: str, glyph_height: int, glyph_path: Path
+    ) -> Image.Image:
+        glyph_coloured = change_logo_color(glyph_path, glyph_color)
+        glyph_scaled_height = int(
+            glyph_height * (glyph_coloured.size[0] / glyph_coloured.size[1])
+        )
+        glyph_coloured = glyph_coloured.resize(
+            (glyph_scaled_height, glyph_height), Resampling.LANCZOS
+        )
+        return glyph_coloured
+
+    def _generate_battery_preview_glyph(
         self,
-        accent_colour: str | None = None,
-        bubble_alpha: float = 0.133,
-        muOSpageName: str = "muxlaunch",
+        glyph_color: str,
+        glyph_height: int,
+        charging: bool = False,
+        current: int = 30,
+    ) -> Image.Image:
+        if 100 < current < 0 or current % 10:
+            raise ValueError("Current must be a multiple of 10 between 0 and 100!")
+
+        battery_style_option_dict = (
+            BatteryChargingStyleOptionsDict if charging else BatteryStyleOptionsDict
+        )
+        battery_style_option = (
+            self.manager.battery_charging_style_var
+            if charging
+            else self.manager.battery_style_var
+        )
+        battery_glyph_path = (
+            GLYPHS_DIR
+            / f"{battery_style_option_dict[battery_style_option]}{current}[5x].png"
+        )
+
+        return self._generate_preview_glyph(
+            self.manager.batteryChargingHexVar if charging else glyph_color,
+            glyph_height,
+            battery_glyph_path,
+        )
+
+    def _generate_network_preview_glyph(
+        self, glyph_color: str, glyph_height: int, glyph_name: str = "network_active"
+    ) -> Image.Image:
+        network_glyph_path = GLYPHS_DIR / f"{glyph_name}[5x].png"
+
+        return self._generate_preview_glyph(
+            glyph_color, glyph_height, network_glyph_path
+        )
+
+    def _generate_header_preview_glyphs(
+        self,
+        glyph_alignment: str,
+        glyph_color: str,
+        glyph_gap: int,
+        glyph_height: int,
+        glyph_padding: tuple[int, int],
+        header_height: int,
+    ) -> Image.Image:
+        image = self.generate_background_image(transparent=True)
+
+        battery_glyph_image = self._generate_battery_preview_glyph(
+            glyph_color,
+            glyph_height,
+            charging=self.manager.show_charging_battery_var,
+        )
+        network_glyph_image = self._generate_network_preview_glyph(
+            glyph_color, glyph_height
+        )
+
+        header_glyphs_total_width = (
+            battery_glyph_image.size[0] + glyph_gap + network_glyph_image.size[0]
+        )
+
+        header_glyph_x_pos = 0
+        header_glyph_y_pos = int((header_height / 2) - (glyph_height / 2))
+
+        if glyph_alignment == "Left":
+            header_glyph_x_pos = glyph_padding[0]
+        elif glyph_alignment == "Centre":
+            header_glyph_x_pos = (
+                int(
+                    self.screen_dimensions[0] / 2
+                    - (
+                        (
+                            header_glyphs_total_width
+                            + glyph_padding[1]
+                            + glyph_padding[0]
+                        )
+                        / 2
+                    )
+                )
+                + glyph_padding[0]
+            )
+        elif glyph_alignment == "Right":
+            header_glyph_x_pos = (
+                self.screen_dimensions[0] - glyph_padding[1] - header_glyphs_total_width
+            )
+        else:
+            raise ValueError("Invalid header glyph alignment")
+
+        image.paste(
+            network_glyph_image,
+            (header_glyph_x_pos, header_glyph_y_pos),
+            network_glyph_image,
+        )
+
+        header_glyph_x_pos += network_glyph_image.size[0] + glyph_gap
+
+        image.paste(
+            battery_glyph_image,
+            (header_glyph_x_pos, header_glyph_y_pos),
+            battery_glyph_image,
+        )
+
+        return image
+
+    def _generate_header_preview_image(
+        self, muOSpageName: str = "muxlaunch"
     ) -> Image.Image:
         muOSpageNameDict = {
             "muxlaunch": "MAIN MENU",
@@ -34,268 +149,161 @@ class PreviewThemeGenerator(BaseThemeGenerator):
             "muxhistory": "HISTORY",
         }
         current_time = datetime.now()
-        image = Image.new(
-            "RGBA",
-            (
-                int(self.manager.deviceScreenWidthVar) * self.render_factor,
-                int(self.manager.deviceScreenHeightVar) * self.render_factor,
-            ),
-            (255, 255, 255, 0),
-        )
-        draw = ImageDraw.Draw(image)
-        if float(self.manager.header_glyph_height_var) < 10:
-            raise ValueError("Header Glyph Height Too Small!")
-        elif float(self.manager.header_glyph_height_var) > int(
-            self.manager.headerHeightVar
-        ):
-            raise ValueError("Header Glyph Height Too Large!")
-        else:
-            heightOfGlyph = int(
-                float(self.manager.header_glyph_height_var) * self.render_factor
-            )
-        accent_colour = self.manager.deselectedFontHexVar
+        clock_format = self.manager.clock_format_var
+
+        accent_colour: str = self.manager.deselectedFontHexVar
         if accent_colour.startswith("#"):
             accent_colour = accent_colour[1:]
-        if "showing battery and network":
-            glyphYPos = int(
-                ((int(self.manager.headerHeightVar) * self.render_factor) / 2)
-                - (heightOfGlyph / 2)
-            )
 
-            # Battery not charging stuff
-            capacityGlyph = "30"
-            capacity_image_path = (
-                GLYPHS_DIR
-                / f"{BatteryStyleOptionsDict[self.manager.battery_style_var]}{capacityGlyph}[5x].png"
-            )
+        image = self.generate_background_image(transparent=True)
 
-            capacity_image_coloured = change_logo_color(
-                capacity_image_path, accent_colour
-            )
-            capacity_image_coloured = capacity_image_coloured.resize(
-                (
-                    int(
-                        heightOfGlyph
-                        * (
-                            capacity_image_coloured.size[0]
-                            / capacity_image_coloured.size[1]
-                        )
-                    ),
-                    heightOfGlyph,
-                ),
-                Image.LANCZOS,
-            )
+        header_height = int(self.manager.headerHeightVar)
 
-            capacityChargingGlyph = "30"
-            capacity_charging_image_path = (
-                GLYPHS_DIR
-                / f"{BatteryChargingStyleOptionsDict[self.manager.battery_charging_style_var]}{capacityChargingGlyph}[5x].png"
+        header_glyph_height = int(self.manager.header_glyph_height_var)
+        if header_height < header_glyph_height < 10:
+            raise ValueError(
+                f"Header Glyph Height must be between 10 and {header_height}!"
             )
-
-            capacity_charging_image_coloured = change_logo_color(
-                capacity_charging_image_path, self.manager.batteryChargingHexVar
-            )
-            capacity_charging_image_coloured = capacity_charging_image_coloured.resize(
-                (
-                    int(
-                        heightOfGlyph
-                        * (
-                            capacity_charging_image_coloured.size[0]
-                            / capacity_charging_image_coloured.size[1]
-                        )
-                    ),
-                    heightOfGlyph,
-                ),
-                Image.LANCZOS,
-            )
-
-            networkGlyph = "network_active"
-            network_image_path = GLYPHS_DIR / f"{networkGlyph}[5x].png"
-
-            network_image_coloured = change_logo_color(
-                network_image_path, accent_colour
-            )
-            network_image_coloured = network_image_coloured.resize(
-                (
-                    int(
-                        heightOfGlyph
-                        * (
-                            network_image_coloured.size[0]
-                            / network_image_coloured.size[1]
-                        )
-                    ),
-                    heightOfGlyph,
-                ),
-                Image.LANCZOS,
-            )
-
-            glyph_left_side_padding = int(
-                self.manager.header_glyph_horizontal_left_padding_var
-            )
-            glyph_right_side_padding = int(
-                self.manager.header_glyph_horizontal_right_padding_var
-            )
-            glyph_between_padding = 5
-
-            totalGlyphWidth = (
-                capacity_image_coloured.size[0]
-                + glyph_between_padding * self.render_factor
-                + network_image_coloured.size[0]
-            )
-            if self.manager.header_glyph_alignment_var == "Left":
-                current_x_pos = glyph_left_side_padding * self.render_factor
-            elif self.manager.header_glyph_alignment_var == "Centre":
-                current_x_pos = (
-                    int(
-                        (int(self.manager.deviceScreenWidthVar) * self.render_factor)
-                        / 2
-                        - (
-                            (
-                                totalGlyphWidth
-                                + (
-                                    glyph_right_side_padding * self.render_factor
-                                    + glyph_left_side_padding * self.render_factor
-                                )
-                            )
-                            / 2
-                        )
-                    )
-                    + glyph_left_side_padding * self.render_factor
-                )
-            elif self.manager.header_glyph_alignment_var == "Right":
-                current_x_pos = int(
-                    int(self.manager.deviceScreenWidthVar) * self.render_factor
-                    - (glyph_right_side_padding * self.render_factor + totalGlyphWidth)
-                )
-            else:
-                raise ValueError("Invalid clock alignment")
-
-            image.paste(
-                network_image_coloured,
-                (current_x_pos, glyphYPos),
-                network_image_coloured,
-            )
-
-            current_x_pos += (
-                network_image_coloured.size[0]
-                + glyph_between_padding * self.render_factor
-            )
-
-            if not self.manager.show_charging_battery_var:
-                image.paste(
-                    capacity_image_coloured,
-                    (current_x_pos, glyphYPos),
-                    capacity_image_coloured,
-                )
-
-            if self.manager.show_charging_battery_var:
-                image.paste(
-                    capacity_charging_image_coloured,
-                    (current_x_pos, glyphYPos),
-                    capacity_charging_image_coloured,
-                )
-
-        if int(self.manager.header_text_height_var) < 10:
-            raise ValueError("Header Text Height Too Small!")
-        elif int(self.manager.header_text_height_var) > int(
-            self.manager.headerHeightVar
-        ):
-            raise ValueError("Header Text Height Too Large!")
         else:
-            heightOfText = int(
-                int(self.manager.header_text_height_var) * self.render_factor
-            )
+            header_height *= self.render_factor
+            header_glyph_height *= self.render_factor
 
-        fontSize = int(
-            int((heightOfText * (4 / 3)) / self.render_factor) * self.render_factor
-        )  ## TODO Make this not specific to BPreplay
-        headerFont = ImageFont.truetype(
-            get_font_path(
-                self.manager.use_alt_font_var, self.manager.alt_font_filename
-            ),
-            fontSize,
+        header_text_height = int(self.manager.header_text_height_var)
+        if header_height < header_text_height < 10:
+            raise ValueError(
+                f"Header Text Height must be between 10 and {header_height}!"
+            )
+        else:
+            header_text_height *= self.render_factor
+
+        header_font_size = int(header_text_height * (4 / 3))
+        header_font_path = get_font_path(
+            self.manager.use_alt_font_var, self.manager.alt_font_filename
         )
-        if "showing time":
-            clock_left_padding = int(self.manager.clockHorizontalLeftPaddingVar)
-            clock_right_padding = int(self.manager.clockHorizontalRightPaddingVar)
+        header_font = ImageFont.truetype(header_font_path, header_font_size)
 
-            if self.manager.clock_format_var == "12 Hour":
-                timeText = current_time.strftime("%I:%M %p")
-            else:
-                timeText = current_time.strftime("%H:%M")
+        header_clock_alignment = self.manager.clock_alignment_var
+        header_clock_left_padding = int(
+            self.manager.clockHorizontalLeftPaddingVar * self.render_factor
+        )
+        header_clock_right_padding = int(
+            self.manager.clockHorizontalRightPaddingVar * self.render_factor
+        )
 
-            timeTextBbox = headerFont.getbbox(timeText)
-            timeTextWidth = timeTextBbox[2] - timeTextBbox[0]
-            if self.manager.clock_alignment_var == "Left":
-                timeText_X = clock_left_padding * self.render_factor
-            elif self.manager.clock_alignment_var == "Centre":
-                timeText_X = (
-                    int(
-                        (int(self.manager.deviceScreenWidthVar) * self.render_factor)
-                        / 2
-                        - (
-                            (
-                                timeTextWidth
-                                + (
-                                    clock_right_padding * self.render_factor
-                                    + clock_left_padding * self.render_factor
-                                )
-                            )
-                            / 2
-                        )
-                    )
-                    + clock_left_padding * self.render_factor
-                )
-            elif self.manager.clock_alignment_var == "Right":
-                timeText_X = int(
-                    int(self.manager.deviceScreenWidthVar) * self.render_factor
-                ) - (timeTextWidth + clock_right_padding * self.render_factor)
-            else:
-                raise ValueError("Invalid clock alignment")
-            timeText_Y = (
+        # generate and offset battery and network glyphs
+        header_glyph_left_padding = int(
+            self.manager.header_glyph_horizontal_left_padding_var * self.render_factor
+        )
+        header_glyph_right_padding = int(
+            self.manager.header_glyph_horizontal_right_padding_var * self.render_factor
+        )
+        header_glyph_gap = 5 * self.render_factor
+        header_glyph_alignment = self.manager.header_glyph_alignment_var
+
+        header_glyphs_image = self._generate_header_preview_glyphs(
+            header_glyph_alignment,
+            accent_colour,
+            header_glyph_gap,
+            header_glyph_height,
+            (header_glyph_left_padding, header_glyph_right_padding),
+            header_height,
+        )
+
+        image = Image.alpha_composite(image, header_glyphs_image)
+
+        if clock_format == "12 Hour":
+            time_text = current_time.strftime("%I:%M %p")
+        else:
+            time_text = current_time.strftime("%H:%M")
+
+        time_text_bbox = header_font.getbbox(time_text)
+        time_text_width = time_text_bbox[2] - time_text_bbox[0]
+        if header_clock_alignment == "Left":
+            header_clock_x_pos = header_clock_left_padding
+        elif header_clock_alignment == "Centre":
+            header_clock_x_pos = (
                 int(
-                    ((int(self.manager.headerHeightVar) * self.render_factor) / 2)
-                    - (heightOfText / 2)
+                    self.screen_dimensions[0] / 2
+                    - (
+                        (
+                            time_text_width
+                            + (header_clock_right_padding + header_clock_left_padding)
+                        )
+                        / 2
+                    )
                 )
-                - timeTextBbox[1]
+                + header_clock_left_padding
             )
-            draw.text(
-                (timeText_X, timeText_Y),
-                timeText,
-                font=headerFont,
-                fill=(*ImageColor.getrgb(f"#{accent_colour}"), 255),
+        elif header_clock_alignment == "Right":
+            header_clock_x_pos = int(self.screen_dimensions[0]) - (
+                time_text_width + header_clock_right_padding
             )
+        else:
+            raise ValueError("Invalid clock alignment")
+        header_clock_y_pos = (
+            int((header_height / 2) - (header_text_height / 2)) - time_text_bbox[1]
+        )
+
+        draw = ImageDraw.Draw(image)
+        draw.text(
+            (header_clock_x_pos, header_clock_y_pos),
+            time_text,
+            font=header_font,
+            fill=(*ImageColor.getrgb(f"#{accent_colour}"), 255),
+        )
+
         if self.manager.show_console_name_var:
-            page_title_padding = int(self.manager.pageTitlePaddingVar)
-            pageTitle = muOSpageNameDict.get(muOSpageName, "UNKNOWN")
-            pageTitleBbox = headerFont.getbbox(pageTitle)
-            pageTitleWidth = pageTitleBbox[2] - pageTitleBbox[0]
-            if self.manager.page_title_alignment_var == "Left":
-                pageTitle_X = page_title_padding * self.render_factor
-            elif self.manager.page_title_alignment_var == "Centre":
-                pageTitle_X = int(
-                    (int(self.manager.deviceScreenWidthVar) * self.render_factor) / 2
-                    - (pageTitleWidth / 2)
+            header_page_title_padding = (
+                int(self.manager.pageTitlePaddingVar) * self.render_factor
+            )
+            header_page_title_alignment = self.manager.page_title_alignment_var
+
+            page_title = muOSpageNameDict.get(muOSpageName, "UNKNOWN")
+            page_title_bbox = header_font.getbbox(page_title)
+            page_title_width = page_title_bbox[2] - page_title_bbox[0]
+
+            if header_page_title_alignment == "Left":
+                header_page_title_x_pos = header_page_title_padding
+            elif header_page_title_alignment == "Centre":
+                header_page_title_x_pos = int(
+                    self.screen_dimensions[0] / 2 - (page_title_width / 2)
                 )
-            elif self.manager.page_title_alignment_var == "Right":
-                pageTitle_X = int(
-                    int(self.manager.deviceScreenWidthVar) * self.render_factor
-                ) - (pageTitleWidth + page_title_padding * self.render_factor)
+            elif header_page_title_alignment == "Right":
+                header_page_title_x_pos = (
+                    self.screen_dimensions[0]
+                    - page_title_width
+                    + header_page_title_padding
+                )
             else:
                 raise ValueError("Invalid page title alignment")
-            pageTitle_Y = (
-                int(
-                    ((int(self.manager.headerHeightVar) * self.render_factor) / 2)
-                    - (heightOfText / 2)
-                )
-                - pageTitleBbox[1]
+
+            header_page_title_y_pos = (
+                int((header_height / 2) - (header_text_height / 2)) - page_title_bbox[1]
             )
             draw.text(
-                (pageTitle_X, pageTitle_Y),
-                pageTitle,
-                font=headerFont,
+                (header_page_title_x_pos, header_page_title_y_pos),
+                page_title,
+                font=header_font,
                 fill=(*ImageColor.getrgb(f"#{accent_colour}"), 255),
             )
+
+        return image
+
+    def generate_header_overlay_image(
+        self,
+        accent_colour: str | None = None,
+        bubble_alpha: float = 0.133,
+        muOSpageName: str = "muxlaunch",
+    ) -> Image.Image:
+        image = self.generate_background_image(transparent=True)
+
+        bubbles_image = super().generate_header_overlay_image(
+            accent_colour, bubble_alpha, muOSpageName
+        )
+        preview_image = self._generate_header_preview_image(muOSpageName)
+
+        image = Image.alpha_composite(image, bubbles_image)
+        image = Image.alpha_composite(image, preview_image)
 
         return image
 
@@ -307,7 +315,7 @@ class PreviewThemeGenerator(BaseThemeGenerator):
         lhsButtons: list[tuple[str, str]] = [("POWER", "SLEEP")],
         muOSpageName: str = "muxlaunch",
     ) -> Image.Image:
-        return self.generate_static_overlay_image(
+        return super().generate_static_overlay_image(
             rhsButtons,
             selected_font_path,
             colour_hex,

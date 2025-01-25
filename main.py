@@ -257,37 +257,6 @@ def cut_out_image(
     return edited_image
 
 
-def getHorizontalLogoSize(
-    path_to_logo: Path, render_factor: int, manager: SettingsManager
-):
-    exploreLogoColoured = change_logo_color(path_to_logo, manager.iconHexVar)
-    top_logo_size = (
-        int(
-            (
-                exploreLogoColoured.size[0]
-                * render_factor
-                * min(
-                    int(manager.deviceScreenHeightVar) / 480,
-                    int(manager.deviceScreenWidthVar) / 640,
-                )
-            )
-            / 5
-        ),
-        int(
-            (
-                exploreLogoColoured.size[1]
-                * render_factor
-                * min(
-                    int(manager.deviceScreenHeightVar) / 480,
-                    int(manager.deviceScreenWidthVar) / 640,
-                )
-            )
-            / 5
-        ),
-    )
-    return top_logo_size
-
-
 def HorizontalMenuGen(
     progress_bar: ttk.Progressbar,
     muOSSystemName: str,
@@ -1098,8 +1067,8 @@ def FillTempThemeFolder(
 
     theme_generator = DeviceThemeGenerator(manager)
     if not "Generating for lanuage on muxlaunch":
-        horizontalLogoSize = getHorizontalLogoSize(
-            HORIZONTAL_LOGOS_DIR / "explore.png", 1, manager
+        horizontalLogoSize = theme_generator._get_horizontal_logo_size(
+            HORIZONTAL_LOGOS_DIR / "explore.png"
         )
         paddingBetweenLogos = (
             int(manager.deviceScreenWidthVar) - (horizontalLogoSize[0] * 4)
