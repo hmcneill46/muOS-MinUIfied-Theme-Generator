@@ -2017,7 +2017,8 @@ class BaseThemeGenerator:
 
             rectangle_x0 = text_x - (rectanglePadding * self.render_factor)
             rectangle_y0 = (
-                contentPaddingTop * self.render_factor + availableHeight * index
+                self.manager.contentPaddingTopVar * self.render_factor
+                + availableHeight * index
             )
             rectangle_x1 = (
                 rectangle_x0
@@ -2025,8 +2026,9 @@ class BaseThemeGenerator:
                 + text_width
                 + rectanglePadding * self.render_factor
             )
-            rectangle_y1 = contentPaddingTop * self.render_factor + availableHeight * (
-                index + 1
+            rectangle_y1 = (
+                self.manager.contentPaddingTopVar * self.render_factor
+                + availableHeight * (index + 1)
             )
             middle_y = (rectangle_y0 + rectangle_y1) / 2
             ascent, descent = font.getmetrics()
