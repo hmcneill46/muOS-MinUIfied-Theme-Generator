@@ -1056,20 +1056,18 @@ class BaseThemeGenerator:
             HORIZONTAL_LOGOS_DIR / "apps.png", icon_hex
         )
 
-        top_logo_size = self._get_horizontal_logo_size(
-            HORIZONTAL_LOGOS_DIR / "explore.png"
-        )
+        top_logo_size = self._get_horizontal_logo_size(exploreLogoColoured)
 
         exploreLogoColoured = exploreLogoColoured.resize(
-            (top_logo_size), Resampling.LANCZOS
+            top_logo_size, Resampling.LANCZOS
         )
         favouriteLogoColoured = favouriteLogoColoured.resize(
-            (top_logo_size), Resampling.LANCZOS
+            top_logo_size, Resampling.LANCZOS
         )
         historyLogoColoured = historyLogoColoured.resize(
-            (top_logo_size), Resampling.LANCZOS
+            top_logo_size, Resampling.LANCZOS
         )
-        appsLogoColoured = appsLogoColoured.resize((top_logo_size), Resampling.LANCZOS)
+        appsLogoColoured = appsLogoColoured.resize(top_logo_size, Resampling.LANCZOS)
 
         combined_top_logos_width = (
             exploreLogoColoured.size[0]
@@ -2888,22 +2886,18 @@ class BaseThemeGenerator:
             totalWidth += largerPadding
         return totalWidth
 
-    def _get_horizontal_logo_size(self, logo_path: Path) -> tuple[int, ...]:
+    def _get_horizontal_logo_size(self, logo_image: Image.Image) -> tuple[int, ...]:
         scaled_screen_dimensions = (
             self.manager.deviceScreenHeightVar // 480,
             self.manager.deviceScreenWidthVar // 640,
         )
         min_dimension = min(scaled_screen_dimensions)
 
-        exploreLogoColoured = change_logo_color(logo_path, self.manager.iconHexVar)
-        if len(exploreLogoColoured.size) != 2:
-            raise ValueError(
-                f"Logo at {logo_path} has {len(exploreLogoColoured.size)} dimensions"
-            )
+        if len(logo_image.size) != 2:
+            raise ValueError(f"Logo at {len(logo_image.size)} dimensions?")
 
         logo_size = tuple(
-            int(dim * min_dimension * self.render_factor / 5)
-            for dim in exploreLogoColoured.size
+            int(dim * min_dimension * self.render_factor / 5) for dim in logo_image.size
         )
 
         return logo_size
