@@ -145,8 +145,8 @@
           "label": "Background Color",
           "widget_type": "entry",
           "var_name": "bgHexVar",
-          "default_value": "000000",
-          "var_type": "string"
+          "default_value": "#000000",
+          "var_type": "color"
         },
         {
           "label": "Pick Color",
@@ -158,8 +158,8 @@
           "label": "Selected Font Color",
           "widget_type": "entry",
           "var_name": "selectedFontHexVar",
-          "default_value": "ffffff",
-          "var_type": "string"
+          "default_value": "#ffffff",
+          "var_type": "color"
         },
         {
           "label": "Pick Color",
@@ -171,8 +171,8 @@
           "label": "Unselected Font Color",
           "widget_type": "entry",
           "var_name": "deselectedFontHexVar",
-          "default_value": "ffffff",
-          "var_type": "string"
+          "default_value": "#ffffff",
+          "var_type": "color"
         },
         {
           "label": "Pick Color",
@@ -184,8 +184,8 @@
           "label": "Selected Bubble Color",
           "widget_type": "entry",
           "var_name": "bubbleHexVar",
-          "default_value": "ffffff",
-          "var_type": "string"
+          "default_value": "#ffffff",
+          "var_type": "color"
         },
         {
           "label": "Pick Color",
@@ -197,8 +197,8 @@
           "label": "Footer Foreground Color",
           "widget_type": "entry",
           "var_name": "footerBubbleHexVar",
-          "default_value": "ffffff",
-          "var_type": "string"
+          "default_value": "#ffffff",
+          "var_type": "color"
         },
         {
           "label": "Pick Color",
@@ -210,8 +210,8 @@
           "label": "Icon Color",
           "widget_type": "entry",
           "var_name": "iconHexVar",
-          "default_value": "ffffff",
-          "var_type": "string"
+          "default_value": "#ffffff",
+          "var_type": "color"
         },
         {
           "label": "Pick Color",
@@ -223,8 +223,8 @@
           "label": "Battery Charging Color",
           "widget_type": "entry",
           "var_name": "batteryChargingHexVar",
-          "default_value": "2eb774",
-          "var_type": "string"
+          "default_value": "#2eb774",
+          "var_type": "color"
         },
         {
           "label": "Pick Color",
