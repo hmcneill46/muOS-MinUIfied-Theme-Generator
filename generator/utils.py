@@ -1,9 +1,26 @@
+import json
+import logging
 import os
 from pathlib import Path
 import shutil
 import sys
+from typing import Any
 
 from PIL import ImageFont
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+LOGGER = logging.getLogger(__name__)
+
+
+class FileOperationError(Exception):
+    pass
+
+
+class FolderOperationError(Exception):
+    pass
 
 
 def find_base_dirs() -> tuple[Path, Path]:
@@ -23,59 +40,134 @@ def find_base_dirs() -> tuple[Path, Path]:
     return BASE_DIR, RESOURCES_DIR
 
 
-def copy_contents(src: Path, dst: Path):
-    if not dst.exists():
-        os.makedirs(dst)
+def copy_contents(src: str | Path, dst: str | Path, overwrite: bool = False) -> None:
+    src = Path(src).resolve()
+    dst = Path(dst).resolve()
 
-    for item in os.listdir(src):
-        src_path = src / item
-        dst_path = dst / item
+    if not src.is_dir():
+        raise NotADirectoryError(f"Source path {src} is not a directory")
 
-        if src_path.is_dir():
-            if not dst_path.exists():
-                shutil.copytree(src_path, dst_path)
-            else:
-                copy_contents(src_path, dst_path)
+    dst.mkdir(parents=True, exist_ok=True)
+
+    for item in src.iterdir():
+        dst_path = dst / item.name
+
+        if item.is_dir():
+            copy_contents(item, dst_path, overwrite=overwrite)
         else:
-            shutil.copy2(src_path, dst_path)
+            if not dst_path.exists() or overwrite:
+                try:
+                    shutil.copy2(item, dst_path)
+                except Exception as e:
+                    LOGGER.error(f"Error copying {item} to {dst_path}: {e}")
+                    raise FileOperationError from e
 
 
-def ensure_folder_exists(folder_path: Path):
+def ensure_file_exists(file_path: str | Path, default_data: dict | None = None):
+    file_path = Path(file_path).resolve()
+
+    if not file_path.exists():
+        try:
+            if default_data is not None:
+                file_data = json.dumps(default_data, indent=4)
+                file_path.write_text(file_data, encoding="utf-8")
+            else:
+                file_path.touch()
+        except Exception as e:
+            LOGGER.error(f"Error creating file {file_path}: {e}")
+            raise FileOperationError from e
+
+
+def ensure_folder_exists(folder_path: str | Path):
+    folder_path = Path(folder_path).resolve()
+
     if not folder_path.exists():
         try:
             os.makedirs(folder_path, exist_ok=True)
         except Exception as e:
-            print(f"Error creating folder {folder_path}: {e}")
+            LOGGER.error(f"Error creating folder {folder_path}: {e}")
+            raise FolderOperationError from e
 
 
-def delete_folder(folder_path: Path):
+def delete_folder(folder_path: str | Path):
+    folder_path = Path(folder_path).resolve()
+
     if folder_path.exists():
         try:
             shutil.rmtree(folder_path)
         except Exception as e:
-            print(f"Error deleting folder {folder_path}: {e}")
+            LOGGER.error(f"Error deleting folder {folder_path}: {e}")
+            raise FolderOperationError from e
     else:
+        LOGGER.warning(f"Folder {folder_path} does not exist")
         raise FileNotFoundError(f"Folder {folder_path} does not exist")
 
 
-def delete_file(file_path: Path):
+def delete_file(file_path: str | Path):
+    file_path = Path(file_path).resolve()
+
     if file_path.exists():
         try:
-            os.remove(file_path)
+            file_path.unlink()
         except Exception as e:
-            print(f"Error deleting file {file_path}: {e}")
+            LOGGER.error(f"Error deleting file {file_path}: {e}")
     else:
+        LOGGER.warning(f"File {file_path} does not exist")
         raise FileNotFoundError(f"File {file_path} does not exist")
 
 
-def rename_file(src: Path, dst: Path):
+def rename_file(src: str | Path, dst: str | Path):
+    src = Path(src).resolve()
+    dst = Path(dst).resolve()
+
     if src.exists():
         try:
-            os.rename(src, dst)
+            src.rename(dst)
         except Exception as e:
-            print(f"Error renaming file {src} to {dst}: {e}")
+            LOGGER.info(f"Error renaming file {src} to {dst}: {e}")
+            raise FileOperationError from e
     else:
+        LOGGER.warning(f"File {src} does not exist")
         raise FileNotFoundError(f"File {src} does not exist")
+
+
+def read_file(file_path: str | Path) -> str:
+    file_path = Path(file_path).resolve()
+
+    if file_path.exists():
+        try:
+            return file_path.read_text(encoding="utf-8")
+        except Exception as e:
+            LOGGER.error(f"Error reading file {file_path}: {e}")
+            raise FileOperationError from e
+    else:
+        LOGGER.warning(f"File {file_path} does not exist")
+        raise FileNotFoundError(f"File {file_path} does not exist")
+
+
+def read_json(file_path: str | Path) -> dict[str, Any]:
+    file_text = read_file(file_path)
+
+    try:
+        return json.loads(file_text)
+    except Exception as e:
+        LOGGER.error(f"Error parsing JSON from file {file_path}: {e}")
+        raise FileOperationError from e
+
+
+def write_file(file_path: str | Path, content: str):
+    file_path = Path(file_path).resolve()
+
+    try:
+        file_path.write_text(content, encoding="utf-8")
+    except Exception as e:
+        LOGGER.error(f"Error writing to file {file_path}: {e}")
+        raise FileOperationError from e
+
+
+def write_json(file_path: str | Path, content: dict[str, Any]):
+    content_json = json.dumps(content, indent=4)
+    write_file(file_path, content_json)
 
 
 def get_time_string_widths(time_font: ImageFont.FreeTypeFont) -> dict[str, int]:

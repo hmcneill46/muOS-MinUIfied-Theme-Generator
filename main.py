@@ -18,20 +18,14 @@ from tkinter import (
 )
 import traceback
 
+from generator.adapter import TkinterSettingsAdapter
 from generator.settings import SettingsManager
 from generator.theme import DeviceThemeGenerator, PreviewThemeGenerator
-
-try:
-    from bidi import get_display as bidi_get_display
-except:
-    from bidi.algorithm import get_display as bidi_get_display
 
 from PIL import (
     ImageTk,
     Image,
     ImageDraw,
-    ImageFont,
-    ImageColor,
 )
 
 from generator.app import ThemeGeneratorApp
@@ -68,9 +62,6 @@ Image.MAX_IMAGE_PIXELS = None
 
 background_image = None
 preview_overlay_image = None
-
-manager = SettingsManager(BASE_SETTINGS_PATH, USER_SETTINGS_PATH)
-manager.load()
 
 # Define constants
 render_factor = 5
@@ -2286,16 +2277,16 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
     global preview_overlay_image
     global contentPaddingTop
 
-    contentPaddingTop = manager.contentPaddingTopVar
-    screen_width = manager.deviceScreenWidthVar
-    screen_height = manager.deviceScreenHeightVar
+    contentPaddingTop = app.manager.contentPaddingTopVar
+    screen_width = app.manager.deviceScreenWidthVar
+    screen_height = app.manager.deviceScreenHeightVar
     preview_width = app.get_preview_width()
 
-    if manager.include_overlay_var and manager.selected_overlay_var:
+    if app.manager.include_overlay_var and app.manager.selected_overlay_var:
         preview_overlay_path = (
             OVERLAY_DIR
             / f"{screen_width}x{screen_height}"
-            / f"{manager.selected_overlay_var}.png"
+            / f"{app.manager.selected_overlay_var}.png"
         )
         if preview_overlay_path.exists():
             preview_overlay_image = Image.open(preview_overlay_path)
@@ -2305,16 +2296,16 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
         preview_overlay_path = None
 
     if (
-        manager.use_custom_background_var
-        and manager.background_image_path
-        and manager.background_image_path.exists()
+        app.manager.use_custom_background_var
+        and app.manager.background_image_path
+        and app.manager.background_image_path.exists()
     ):
-        background_image = Image.open(manager.background_image_path)
+        background_image = Image.open(app.manager.background_image_path)
     else:
         background_image = None
 
     previewApplicationList = []
-    if manager.version_var[0:9] == "muOS 2410":
+    if app.manager.version_var[0:9] == "muOS 2410":
         index = None
         for i, n in enumerate(MENU_LISTING_2410_X):
             if n[0] == "muxapp":
@@ -2373,42 +2364,44 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
             ["Shutdown Device", "Menu", "shutdown"],
         ]
 
-        preview_theme_generator = PreviewThemeGenerator(manager, previewRenderFactor)
-        if manager.main_menu_style_var == "Horizontal":
+        preview_theme_generator = PreviewThemeGenerator(
+            app.manager, previewRenderFactor
+        )
+        if app.manager.main_menu_style_var == "Horizontal":
             image1 = preview_theme_generator.generate_horizontal_menu_image(
                 fakeprogressbar,
                 0,
-                manager.bgHexVar,
-                manager.selectedFontHexVar,
-                manager.deselectedFontHexVar,
-                manager.bubbleHexVar,
-                manager.iconHexVar,
+                app.manager.bgHexVar,
+                app.manager.selectedFontHexVar,
+                app.manager.deselectedFontHexVar,
+                app.manager.bubbleHexVar,
+                app.manager.iconHexVar,
                 transparent=False,
             ).resize(preview_size, Image.LANCZOS)
-        elif manager.main_menu_style_var == "Alt-Horizontal":
+        elif app.manager.main_menu_style_var == "Alt-Horizontal":
             image1 = preview_theme_generator.generate_alt_horizontal_menu_image(
                 fakeprogressbar,
                 0,
-                manager.bgHexVar,
-                manager.selectedFontHexVar,
-                manager.deselectedFontHexVar,
-                manager.bubbleHexVar,
-                manager.iconHexVar,
+                app.manager.bgHexVar,
+                app.manager.selectedFontHexVar,
+                app.manager.deselectedFontHexVar,
+                app.manager.bubbleHexVar,
+                app.manager.iconHexVar,
                 transparent=False,
             ).resize(preview_size, Image.LANCZOS)
-        elif manager.main_menu_style_var == "Vertical":
+        elif app.manager.main_menu_style_var == "Vertical":
             image1 = preview_theme_generator.generate_vertical_menu_image(
                 fakeprogressbar,
                 0,
                 "muxlaunch",
-                previewItemList[0 : int(manager.itemsPerScreenVar)],
-                int(manager.textPaddingVar),
-                int(manager.bubblePaddingVar),
-                int(manager.itemsPerScreenVar),
-                manager.bgHexVar,
-                manager.selectedFontHexVar,
-                manager.deselectedFontHexVar,
-                manager.bubbleHexVar,
+                previewItemList[0 : int(app.manager.itemsPerScreenVar)],
+                int(app.manager.textPaddingVar),
+                int(app.manager.bubblePaddingVar),
+                int(app.manager.itemsPerScreenVar),
+                app.manager.bgHexVar,
+                app.manager.selectedFontHexVar,
+                app.manager.deselectedFontHexVar,
+                app.manager.bubbleHexVar,
                 transparent=False,
             ).resize(preview_size, Image.LANCZOS)
 
@@ -2416,54 +2409,54 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
             fakeprogressbar,
             0,
             "muxapp",
-            previewApplicationList[0 : int(manager.itemsPerScreenVar)],
-            int(manager.textPaddingVar),
-            int(manager.bubblePaddingVar),
-            int(manager.itemsPerScreenVar),
-            manager.bgHexVar,
-            manager.selectedFontHexVar,
-            manager.deselectedFontHexVar,
-            manager.bubbleHexVar,
-            fileCounter=f"1 / {manager.itemsPerScreenVar}",
+            previewApplicationList[0 : int(app.manager.itemsPerScreenVar)],
+            int(app.manager.textPaddingVar),
+            int(app.manager.bubblePaddingVar),
+            int(app.manager.itemsPerScreenVar),
+            app.manager.bgHexVar,
+            app.manager.selectedFontHexVar,
+            app.manager.deselectedFontHexVar,
+            app.manager.bubbleHexVar,
+            fileCounter=f"1 / {app.manager.itemsPerScreenVar}",
             transparent=False,
         ).resize(preview_size, Image.LANCZOS)
 
-        if manager.main_menu_style_var == "Horizontal":
+        if app.manager.main_menu_style_var == "Horizontal":
             image3 = preview_theme_generator.generate_horizontal_menu_image(
                 fakeprogressbar,
                 4,
-                manager.bgHexVar,
-                manager.selectedFontHexVar,
-                manager.deselectedFontHexVar,
-                manager.bubbleHexVar,
-                manager.iconHexVar,
+                app.manager.bgHexVar,
+                app.manager.selectedFontHexVar,
+                app.manager.deselectedFontHexVar,
+                app.manager.bubbleHexVar,
+                app.manager.iconHexVar,
                 transparent=False,
             ).resize(preview_size, Image.LANCZOS)
 
-        elif manager.main_menu_style_var == "Alt-Horizontal":
+        elif app.manager.main_menu_style_var == "Alt-Horizontal":
             image3 = preview_theme_generator.generate_alt_horizontal_menu_image(
                 fakeprogressbar,
                 4,
-                manager.bgHexVar,
-                manager.selectedFontHexVar,
-                manager.deselectedFontHexVar,
-                manager.bubbleHexVar,
-                manager.iconHexVar,
+                app.manager.bgHexVar,
+                app.manager.selectedFontHexVar,
+                app.manager.deselectedFontHexVar,
+                app.manager.bubbleHexVar,
+                app.manager.iconHexVar,
                 transparent=False,
             ).resize(preview_size, Image.LANCZOS)
 
-        if manager.include_overlay_var and manager.selected_overlay_var != "":
+        if app.manager.include_overlay_var and app.manager.selected_overlay_var != "":
             preview_overlay_resized = preview_overlay_image.resize(
                 image1.size, Image.LANCZOS
             )
             image1.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
             image2.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
-            if manager.main_menu_style_var != "Vertical":
+            if app.manager.main_menu_style_var != "Vertical":
                 image3.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
 
         update_image_label(app.image_label1, image1)
         update_image_label(app.image_label2, image2)
-        if manager.main_menu_style_var != "Vertical":
+        if app.manager.main_menu_style_var != "Vertical":
             update_image_label(app.image_label3, image3)
         else:
             remove_image_from_label(app.image_label3)
@@ -2482,13 +2475,13 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
                 redOutlineImage2 = outline_image_with_inner_gap(
                     get_current_image(app.image_label2)
                 ).resize(preview_size, Image.LANCZOS)
-                if manager.main_menu_style_var != "Vertical":
+                if app.manager.main_menu_style_var != "Vertical":
                     redOutlineImage3 = outline_image_with_inner_gap(
                         get_current_image(app.image_label3)
                     ).resize(preview_size, Image.LANCZOS)
                 update_image_label(app.image_label1, redOutlineImage1)
                 update_image_label(app.image_label2, redOutlineImage2)
-                if manager.main_menu_style_var != "Vertical":
+                if app.manager.main_menu_style_var != "Vertical":
                     update_image_label(app.image_label3, redOutlineImage3)
                 valid_params = False
         else:
@@ -2521,6 +2514,11 @@ def replace_scheme_options(
 
 
 def main():
+    manager = SettingsManager(BASE_SETTINGS_PATH, USER_SETTINGS_PATH)
+    manager.load()
+
+    adapter = TkinterSettingsAdapter(manager)
+
     commands_map = {
         "select_color": select_color,
         "select_bootlogo_image_path": select_bootlogo_image_path,
@@ -2533,9 +2531,10 @@ def main():
         title="MinUI Theme Generator",
         min_size=(1080, 500),
         settings_manager=manager,
+        settings_adapter=adapter,
         commands_map=commands_map,
     )
-    app.add_change_listener(partial(on_change, app))
+    app.set_on_change_listener(partial(on_change, app))
     app.build_sections_from_settings()
 
     app.run()

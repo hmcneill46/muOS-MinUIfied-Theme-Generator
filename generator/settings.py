@@ -4,39 +4,10 @@ import re
 from typing import Any
 
 from generator.constants import MENU_LISTING_MAP
-
-
-def ensure_file_exists(path: Path, default_data: dict | None = None):
-    if not path.exists():
-        default_data = default_data or {}
-        path.write_text(
-            json.dumps(
-                default_data,
-                indent=4,
-            ),
-            encoding="utf-8",
-        )
-
-
-def load_json(path: Path):
-    if not path.exists():
-        return {}
-
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception as e:
-        print(f"Error loading JSON file {path}: {e}")
-        return {}
+from generator.utils import ensure_file_exists, read_json, write_json
 
 
 class SettingsManager:
-    PATH_KEYS = (
-        "theme_directory_path",
-        "background_image_path",
-        "bootlogo_image_path",
-        "alt_font_filename",
-    )
-
     def __init__(self, base_path: Path, user_path: Path):
         self.base_path = base_path
         self.user_path = user_path
@@ -87,8 +58,8 @@ class SettingsManager:
         ensure_file_exists(self.base_path, {"sections": []})
         ensure_file_exists(self.user_path, {})
 
-        base_data = load_json(self.base_path)
-        user_data = load_json(self.user_path)
+        base_data = read_json(self.base_path)
+        user_data = read_json(self.user_path)
 
         self.sections = base_data.get("sections", [])
         self.user_values = user_data
@@ -110,10 +81,7 @@ class SettingsManager:
 
                 casted_user_data[var_name] = self._cast_to_json(value, var_type)
 
-        self.user_path.write_text(
-            json.dumps(casted_user_data, indent=4),
-            encoding="utf-8",
-        )
+        write_json(self.user_path, casted_user_data)
 
     def set_value(self, var_name: str, new_value: Any) -> None:
         default_value = self.default_values.get(var_name, None)
@@ -230,9 +198,6 @@ class SettingsManager:
 
     def get_sections(self):
         return self.sections
-
-    def __setattr__(self, name: str, value: Any):
-        self.set_value(name, value)
 
     def __getattr__(self, name: str) -> Any:
         return self.get_value(name)

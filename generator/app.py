@@ -1,24 +1,10 @@
 import platform
 import tkinter as tk
 from tkinter import font, ttk
-from typing import Callable
+from typing import Any, Callable
 
-from .settings import SettingsManager
-
-
-def create_tk_variable(var_type_str: str, default_value=None) -> tk.Variable:
-    if var_type_str == "string":
-        return tk.StringVar(value=default_value)
-    elif var_type_str == "int":
-        return tk.IntVar(value=default_value)
-    elif var_type_str == "float":
-        return tk.DoubleVar(value=default_value)
-    elif var_type_str == "boolean":
-        return tk.BooleanVar(value=bool(default_value))
-    else:
-        return tk.StringVar(
-            value=str(default_value) if default_value is not None else ""
-        )
+from generator.adapter import TkinterSettingsAdapter
+from generator.settings import SettingsManager
 
 
 class ThemeGeneratorApp:
@@ -27,10 +13,12 @@ class ThemeGeneratorApp:
         title: str,
         min_size: tuple[int, int],
         settings_manager: SettingsManager,
+        settings_adapter: TkinterSettingsAdapter,
         commands_map: dict[str, Callable],
     ):
         self.root = tk.Tk()
-        self.settings_manager = settings_manager
+        self.manager = settings_manager
+        self.adapter = settings_adapter
         self.commands_map = commands_map
         self.on_change_settings = None
 
@@ -140,7 +128,7 @@ class ThemeGeneratorApp:
         return self.right_pane.winfo_width()
 
     def build_sections_from_settings(self) -> None:
-        for section_data in self.settings_manager.get_sections():
+        for section_data in self.manager.get_sections():
             if section_title := section_data.get("title", ""):
                 heading_label = ttk.Label(
                     self.scrollable_frame,
@@ -162,32 +150,33 @@ class ThemeGeneratorApp:
                 var_name = field_info.get("var_name", "")
                 default_value = field_info.get("default_value", None)
                 var_type_str = field_info.get("var_type", "string")
+                label_text = field_info.get("label", "")
+                options = field_info.get("options", [])
+                command_name = field_info.get("command", None)
 
-                if var_name:
-                    if var_name not in self.tk_variables:
-                        start_val = self.settings_manager.get_value(
-                            var_name, default_value
-                        )
-                        self.tk_variables[var_name] = create_tk_variable(
-                            var_type_str, start_val
-                        )
-                    if self.on_change_settings:
-                        self.tk_variables[var_name].trace_add(
-                            "write",
-                            lambda *_, name=var_name: self._on_var_change(name),
-                        )
-
-                self._create_widget_for_field(widget_type, field_info)
+                self._create_widget_for_field(
+                    widget_type=widget_type,
+                    var_name=var_name,
+                    label_text=label_text,
+                    var_type_str=var_type_str,
+                    default_value=default_value,
+                    options=options,
+                    command_name=command_name,
+                )
 
         if self.on_change_settings:
             self.on_change_settings()
 
-    def _create_widget_for_field(self, widget_type, field_info) -> None:
-        label_text = field_info.get("label", "")
-        var_name = field_info.get("var_name", "")
-        options = field_info.get("options", [])
-        command_name = field_info.get("command", None)
-
+    def _create_widget_for_field(
+        self,
+        widget_type: str,
+        var_name: str,
+        label_text: str,
+        var_type_str: str,
+        default_value: Any,
+        options: list[str],
+        command_name: str | None,
+    ) -> None:
         if widget_type in ("label", "optionmenu", "entry") and label_text:
             lbl = ttk.Label(self.scrollable_frame, text=label_text)
             lbl.grid(
@@ -198,12 +187,15 @@ class ThemeGeneratorApp:
                 pady=(2, 2),
             )
 
+        if not var_name:
+            if widget_type == "label":
+                self._current_row += 1
+            return
+
+        tk_var = self.adapter.get_variable(var_name, var_type_str, default_value)
+
         if widget_type == "entry":
-            entry = ttk.Entry(self.scrollable_frame)
-
-            if var_name and var_name in self.tk_variables:
-                entry.configure(textvariable=self.tk_variables[var_name])
-
+            entry = ttk.Entry(self.scrollable_frame, textvariable=tk_var)
             entry.grid(
                 row=self._current_row,
                 column=1,
@@ -214,46 +206,26 @@ class ThemeGeneratorApp:
 
             self._current_row += 1
         elif widget_type == "optionmenu":
-            var = None
-            if var_name and var_name in self.tk_variables:
-                var = self.tk_variables[var_name]
-
-            if var is not None:
-                om = ttk.OptionMenu(
-                    self.scrollable_frame,
-                    var,
-                    var.get(),
-                    *options,
-                )
-                om.grid(
-                    row=self._current_row,
-                    column=1,
-                    sticky=tk.EW,
-                    padx=(10, 10),
-                    pady=(2, 2),
-                )
-            else:
-                lbl = ttk.Label(
-                    self.scrollable_frame, text="Missing variable for optionmenu"
-                )
-                lbl.grid(
-                    row=self._current_row,
-                    column=1,
-                    sticky=tk.W,
-                    padx=(10, 10),
-                    pady=(2, 2),
-                )
+            om = ttk.OptionMenu(
+                self.scrollable_frame,
+                tk_var,
+                tk_var.get(),
+                *options,
+            )
+            om.grid(
+                row=self._current_row,
+                column=1,
+                sticky=tk.EW,
+                padx=(10, 10),
+                pady=(2, 2),
+            )
 
             self._current_row += 1
         elif widget_type == "checkbox":
-            var = None
-            if var_name:
-                var = self.tk_variables[var_name]
-
             cb = ttk.Checkbutton(
                 self.scrollable_frame,
                 text=label_text,
-                variable=var,
+                variable=tk_var,
             )
             cb.grid(
                 row=self._current_row,
@@ -272,7 +244,7 @@ class ThemeGeneratorApp:
 
                 def callback():
                     self.commands_map[command_name](
-                        self.settings_manager, var_name, self.tk_variables
+                        self.manager, var_name, self.adapter.variables
                     )
 
                 btn.configure(command=callback)
@@ -288,8 +260,7 @@ class ThemeGeneratorApp:
 
             self._current_row += 1
         elif widget_type == "label":
-            if not label_text:
-                return
+            pass
         else:
             lbl = ttk.Label(
                 self.scrollable_frame, text=f"Unknown widget type: {widget_type}"
@@ -305,9 +276,11 @@ class ThemeGeneratorApp:
 
             self._current_row += 1
 
-    def _on_var_change(self, var_name: str):
-        new_val = self.tk_variables[var_name].get()
-        self.settings_manager.set_value(var_name, new_val)
+    def set_on_change_listener(self, callback: Callable[[], None]):
+        self.on_change_settings = callback
+        self.adapter.subscribe(self._on_var_change)
+
+    def _on_var_change(self, var_name: str, value: Any):
         if self.on_change_settings:
             self.on_change_settings()
 
@@ -339,7 +312,7 @@ class ThemeGeneratorApp:
             self.canvas.yview_scroll(1, "units")
 
     def on_app_close(self):
-        self.settings_manager.save_user_values()
+        self.manager.save_user_values()
         self.root.destroy()
 
     def add_change_listener(self, on_change_settings: Callable):
