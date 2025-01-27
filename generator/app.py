@@ -10,13 +10,14 @@ from generator.settings import SettingsManager
 class ThemeGeneratorApp:
     def __init__(
         self,
+        root: tk.Tk,
         title: str,
         min_size: tuple[int, int],
         settings_manager: SettingsManager,
         settings_adapter: TkinterSettingsAdapter,
         commands_map: dict[str, Callable],
     ):
-        self.root = tk.Tk()
+        self.root = root
         self.manager = settings_manager
         self.adapter = settings_adapter
         self.commands_map = commands_map
@@ -187,11 +188,6 @@ class ThemeGeneratorApp:
                 pady=(2, 2),
             )
 
-        if not var_name:
-            if widget_type == "label":
-                self._current_row += 1
-            return
-
         tk_var = self.adapter.get_variable(var_name, var_type_str, default_value)
 
         if widget_type == "entry":
@@ -260,7 +256,7 @@ class ThemeGeneratorApp:
 
             self._current_row += 1
         elif widget_type == "label":
-            pass
+            self._current_row += 1
         else:
             lbl = ttk.Label(
                 self.scrollable_frame, text=f"Unknown widget type: {widget_type}"

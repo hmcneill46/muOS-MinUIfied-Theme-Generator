@@ -39,6 +39,15 @@ BatteryChargingStyleOptionsDict = {
     "Lightning 3": "alt2_capacity_charging_",
 }
 
+DEVICE_TYPE_OPTIONS = [
+    "Other [640x480]",
+    "RG CubeXX [720x720]",
+    "RG34XX [720x480]",
+    "576p [720x576]",
+    "HD [1280x720]",
+    "Full HD [1920x1080]",
+]
+
 MENU_LISTING_2410_X: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
     (
         "muxapp",

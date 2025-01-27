@@ -2,7 +2,7 @@ import copy
 from functools import partial
 import json
 import math
-from typing import Any
+from typing import Any, Callable
 import numpy as np
 from pathlib import Path
 import queue
@@ -32,6 +32,7 @@ from generator.app import ThemeGeneratorApp
 from generator.color_utils import *
 from generator.constants import (
     BASE_DIR,
+    DEVICE_TYPE_OPTIONS,
     RESOURCES_DIR,
     ASSETS_DIR,
     GLYPHS_DIR,
@@ -54,6 +55,8 @@ from generator.utils import (
     rename_file,
     ensure_folder_exists,
 )
+from generator.utils.math import round_to_nearest_odd
+from generator.ui.progress_dialog import ProgressDialog
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -68,25 +71,6 @@ render_factor = 5
 
 contentPaddingTop = 44
 textMF = 0.7
-
-
-def getRealFooterHeight(manager: SettingsManager) -> int:
-    items_per_screen = manager.itemsPerScreenVar
-    device_screen_height = manager.deviceScreenHeightVar
-    content_padding_top = manager.contentPaddingTopVar
-    approx_footer_height = manager.approxFooterHeightVar
-
-    individualItemHeight = round(
-        (device_screen_height - approx_footer_height - content_padding_top)
-        / items_per_screen
-    )
-    footerHeight = (
-        device_screen_height
-        - (individualItemHeight * items_per_screen)
-        - content_padding_top
-    )
-
-    return footerHeight
 
 
 def ContinuousFolderImageGen(
@@ -171,39 +155,6 @@ def ContinuousFolderImageGen(
                 directory = outputDir / muOSSystemName / "Folder" / "box"
                 ensure_folder_exists(directory)
                 image.save(directory / f"{workingItem[2]}.png")
-
-
-def resize_system_logos(
-    system_logos_path: Path,
-    output_system_logos_path: Path,
-    grid_cell_size: int,
-    grid_image_padding: int,
-    circular_grid: bool,
-) -> None:
-    system_logos = system_logos_path.glob("*.png")
-    if circular_grid:
-        effective_circle_diameter = grid_cell_size - (grid_image_padding * 2)
-    else:
-        effective_grid_size = grid_cell_size - (grid_image_padding * 2)
-    for system_logo_path in system_logos:
-        system_logo_image = Image.open(system_logo_path).convert("RGBA")
-        if circular_grid:
-            old_size = system_logo_image.size
-            aspect_ratio = old_size[0] / old_size[1]
-            new_height = math.sqrt(
-                math.pow(effective_circle_diameter, 2) / (1 + math.pow(aspect_ratio, 2))
-            )
-            new_size = int(new_height * aspect_ratio), int(new_height)
-        else:
-            width_multiplier = effective_grid_size / system_logo_image.size[0]
-            height_multiplier = effective_grid_size / system_logo_image.size[1]
-            multiplier = min(width_multiplier, height_multiplier)
-            new_size = (
-                int(system_logo_image.size[0] * multiplier),
-                int(system_logo_image.size[1] * multiplier),
-            )
-        system_logo_image = system_logo_image.resize(new_size, Image.LANCZOS)
-        system_logo_image.save(output_system_logos_path / system_logo_path.name)
 
 
 def cut_out_image(
@@ -459,182 +410,153 @@ def select_alt_font_path(
         tk_variables[var_name].set(file_path)
 
 
-# INFO FOR BELOW LIST
-#        FOLDER NAME      DISPLAYED NAME     FILE NAME
-
-
-def round_to_nearest_odd(number: float | int) -> int:
-    high_odd = (number // 2) * 2 + 1
-    low_odd = high_odd - 2
-    return (
-        int(high_odd)
-        if abs(number - high_odd) < abs(number - low_odd)
-        else int(low_odd)
-    )
-
-
 def generate_theme(
-    progress_bar: ttk.Progressbar,
-    loading_window: tk.Toplevel,
-    threadNumber: int,
     manager: SettingsManager,
-    barrier: threading.Barrier,
-    resolutions: tuple[int, int],
+    threadNumber: int,
+    resolutions: list[tuple[int, int]],
     assumed_res: tuple[int, int],
+    progress_callback: Callable,
 ) -> None:
     temp_build_dir = RESOURCES_DIR / f".TempBuildTheme{threadNumber}"
     temp_system_icons_dir = RESOURCES_DIR / f".TempBuildSystemIconsAMFile{threadNumber}"
     assumed_res_dir = temp_build_dir / f"{assumed_res[0]}x{assumed_res[1]}"
 
-    try:
-        progress_bar["value"] = 0
-        if (
-            manager.main_menu_style_var == "Alt-Horizontal"
-            or manager.main_menu_style_var == "Horizontal"
-        ):
-            progress_bar["maximum"] = 28 * len(resolutions)
-        elif manager.main_menu_style_var == "Vertical":
-            progress_bar["maximum"] = 20 * len(resolutions)
-        else:
-            raise ValueError("Something went wrong with your Main Menu Style")
+    # try:
 
-        if threadNumber != -1:
-            themeName = manager.theme_name_var + f" {manager.main_menu_style_var}"
-        else:
-            themeName = manager.theme_name_var
+    if threadNumber != -1:
+        themeName = manager.theme_name_var + f" {manager.main_menu_style_var}"
+    else:
+        themeName = manager.theme_name_var
 
-        assumed_items_per_screen = int(manager.itemsPerScreenVar)
-        height_items_per_screen_map = {}
-        for width, height in resolutions:
-            height_items_per_screen_map[height] = round_to_nearest_odd(
-                assumed_items_per_screen * (height / assumed_res[1])
-            )
+    assumed_items_per_screen = int(manager.itemsPerScreenVar)
+    height_items_per_screen_map = {}
+    for width, height in resolutions:
+        height_items_per_screen_map[height] = round_to_nearest_odd(
+            assumed_items_per_screen * (height / assumed_res[1])
+        )
 
-        for width, height in resolutions:
-            temp_res_dir = temp_build_dir / f"{width}x{height}"
+    for width, height in resolutions:
+        temp_res_dir = temp_build_dir / f"{width}x{height}"
+        scale_factor = width / assumed_res[0]
 
-            res_config = copy.deepcopy(manager)
-            res_manager.deviceScreenWidthVar = width
-            res_manager.deviceScreenHeightVar = height
-            if height != assumed_res[1]:
-                res_manager.itemsPerScreenVar = height_items_per_screen_map[height]
-                res_manager.itemsPerScreenVar = height_items_per_screen_map[height]
-                if res_manager.clock_alignment_var == "Centre":
-                    res_manager.clockHorizontalLeftPaddingVar = str(
-                        int(
-                            int(res_manager.clockHorizontalLeftPaddingVar)
-                            * (width / assumed_res[0])
-                        )
-                    )
-                    res_manager.clockHorizontalRightPaddingVar = str(
-                        int(
-                            int(res_manager.clockHorizontalRightPaddingVar)
-                            * (width / assumed_res[0])
-                        )
-                    )
-                if res_manager.header_glyph_alignment_var == "Centre":
-                    res_manager.header_glyph_horizontal_left_padding_var = str(
-                        int(
-                            int(res_manager.header_glyph_horizontal_left_padding_var)
-                            * (width / assumed_res[0])
-                        )
-                    )
-                    res_manager.header_glyph_horizontal_right_padding_var = str(
-                        int(
-                            int(res_manager.header_glyph_horizontal_right_padding_var)
-                            * (width / assumed_res[0])
-                        )
-                    )
-                if res_manager.page_title_alignment_var == "Centre":
-                    res_manager.pageTitlePaddingVar = str(
-                        int(
-                            int(res_manager.pageTitlePaddingVar)
-                            * (width / assumed_res[0])
-                        )
-                    )
-                    res_manager.pageTitlePaddingVar = str(
-                        int(
-                            int(res_manager.pageTitlePaddingVar)
-                            * (width / assumed_res[0])
-                        )
-                    )
-            FillTempThemeFolder(progress_bar, threadNumber, manager=res_config)
+        scaled_clock_left_padding = int(
+            int(manager.clockHorizontalLeftPaddingVar) * scale_factor
+        )
+        scaled_clock_right_padding = int(
+            int(manager.clockHorizontalRightPaddingVar) * scale_factor
+        )
+        scaled_glyph_left_padding = int(
+            int(manager.header_glyph_horizontal_left_padding_var) * scale_factor
+        )
+        scaled_glyph_right_padding = int(
+            int(manager.header_glyph_horizontal_right_padding_var) * scale_factor
+        )
+        scaled_page_title_padding = int(int(manager.pageTitlePaddingVar) * scale_factor)
 
-            try:
-                for target in ["font", "glyph", "image", "scheme", "preview.png"]:
-                    shutil.move(temp_build_dir / target, temp_res_dir / target)
-            except Exception as e:
-                print(e)
-                pass
+        res_values = {
+            "deviceScreenWidthVar": width,
+            "deviceScreenHeightVar": height,
+        }
 
-            if manager.enable_grid_view_explore_var:
-                theme_dir = manager.theme_directory_path
+        if height != assumed_res[1]:
+            res_values["itemsPerScreenVar"] = height_items_per_screen_map[height]
 
-                ensure_folder_exists(temp_system_icons_dir / "opt")
-                shutil.copy2(
-                    ASSETS_DIR / "AM - Scripts" / "System Logo Load" / "update.sh",
-                    temp_system_icons_dir / "opt" / "update.sh",
+            if manager.clock_alignment_var == "Centre":
+                res_values["clockHorizontalLeftPaddingVar"] = scaled_clock_left_padding
+                res_values["clockHorizontalRightPaddingVar"] = (
+                    scaled_clock_right_padding
                 )
+
+            if manager.header_glyph_alignment_var == "Centre":
+                res_values["header_glyph_horizontal_left_padding_var"] = (
+                    scaled_glyph_left_padding
+                )
+                res_values["header_glyph_horizontal_right_padding_var"] = (
+                    scaled_glyph_right_padding
+                )
+            if manager.page_title_alignment_var == "Centre":
+                res_values["pageTitlePaddingVar"] = scaled_page_title_padding
+
+        res_manager = SettingsManager()
+        res_manager.load(res_values)
+
+        res_generator = DeviceThemeGenerator(res_manager, progress_callback)
+        res_generator.generate_theme(threadNumber)
+
+        try:
+            for target in ["font", "glyph", "image", "scheme"]:
+                shutil.move(temp_build_dir / target, temp_res_dir / target)
+        except Exception as e:
+            print(e)
+            pass
+
         if manager.enable_grid_view_explore_var:
             theme_dir = manager.theme_directory_path
 
-            shutil.make_archive(
-                str(theme_dir / "MinUIfied AM System Icons"),
-                "zip",
-                str(temp_system_icons_dir),
+            ensure_folder_exists(temp_system_icons_dir / "opt")
+            shutil.copy2(
+                ASSETS_DIR / "AM - Scripts" / "System Logo Load" / "update.sh",
+                temp_system_icons_dir / "opt" / "update.sh",
             )
-            delete_folder(temp_system_icons_dir)
-
-        for target in ["font", "glyph", "image", "scheme", "preview.png"]:
-            shutil.move(assumed_res_dir / target, temp_build_dir / target)
-
-        delete_folder(assumed_res_dir)
-
+    if manager.enable_grid_view_explore_var:
         theme_dir = manager.theme_directory_path
 
-        shutil.make_archive(str(theme_dir / themeName), "zip", temp_build_dir)
+        shutil.make_archive(
+            str(theme_dir / "MinUIfied AM System Icons"),
+            "zip",
+            str(temp_system_icons_dir),
+        )
+        delete_folder(temp_system_icons_dir)
 
-        if manager.developer_preview_var:
-            ensure_folder_exists(theme_dir)
-            for width, height in resolutions:
-                thread_and_res = f"{threadNumber}[{width}x{height}].png"
-                theme_and_res = f"{themeName}[{width}x{height}].png"
-                temp_preview_path = RESOURCES_DIR / f"TempPreview{thread_and_res}"
-                theme_preview_path = theme_dir / theme_and_res
-                preview_path = theme_dir / "preview" / f"TempPreview{thread_and_res}"
+    for target in ["font", "glyph", "image", "scheme"]:
+        shutil.move(assumed_res_dir / target, temp_build_dir / target)
 
-                delete_file(temp_preview_path)
-                rename_file(temp_preview_path, theme_preview_path)
-                delete_file(temp_preview_path)
-                delete_file(preview_path)
+    delete_folder(assumed_res_dir)
 
-        delete_folder(temp_build_dir)
-        if threadNumber == -1:
-            messagebox.showinfo("Success", "Theme generated successfully.")
-        loading_window.destroy()
-        barrier.wait()
-    except Exception as e:
-        print(e)
-        loading_window.destroy()
-        theme_dir = manager.theme_directory_path
+    theme_dir = manager.theme_directory_path
 
-        if manager.advanced_error_var:
-            tb_str = "".join(traceback.format_exception(type(e), e, e.__traceback__))
-            messagebox.showerror(
-                "Error", f"An unexpected error occurred: {e}\n{tb_str}"
-            )
-        else:
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+    shutil.make_archive(str(theme_dir / themeName), "zip", temp_build_dir)
 
-        delete_folder(temp_build_dir)
-        if manager.developer_preview_var:
-            for width, height in resolutions:
-                thread_and_res = f"{threadNumber}[{width}x{height}].png"
-                temp_preview_path = RESOURCES_DIR / f"TempPreview{thread_and_res}"
-                preview_path = theme_dir / "preview" / f"TempPreview{thread_and_res}"
+    if manager.developer_preview_var:
+        ensure_folder_exists(theme_dir)
+        for width, height in resolutions:
+            thread_and_res = f"{threadNumber}[{width}x{height}].png"
+            theme_and_res = f"{themeName}[{width}x{height}].png"
+            temp_preview_path = RESOURCES_DIR / f"TempPreview{thread_and_res}"
+            theme_preview_path = theme_dir / theme_and_res
+            preview_path = theme_dir / "preview" / f"TempPreview{thread_and_res}"
 
-                delete_file(temp_preview_path)
-                delete_file(preview_path)
+            delete_file(temp_preview_path)
+            rename_file(temp_preview_path, theme_preview_path)
+            delete_file(temp_preview_path)
+            delete_file(preview_path)
+
+    delete_folder(temp_build_dir)
+    if threadNumber == -1:
+        messagebox.showinfo("Success", "Theme generated successfully.")
+
+    # except Exception as e:
+    #     print(e)
+    #     loading_window.destroy()
+    #     theme_dir = manager.theme_directory_path
+
+    #     if manager.advanced_error_var:
+    #         tb_str = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+    #         messagebox.showerror(
+    #             "Error", f"An unexpected error occurred: {e}\n{tb_str}"
+    #         )
+    #     else:
+    #         messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+
+    #     delete_folder(temp_build_dir)
+    #     if manager.developer_preview_var:
+    #         for width, height in resolutions:
+    #             thread_and_res = f"{threadNumber}[{width}x{height}].png"
+    #             temp_preview_path = RESOURCES_DIR / f"TempPreview{thread_and_res}"
+    #             preview_path = theme_dir / "preview" / f"TempPreview{thread_and_res}"
+
+    #             delete_file(temp_preview_path)
+    #             delete_file(preview_path)
 
 
 def generate_themes(themes: list[Any]) -> None:
@@ -1352,7 +1274,7 @@ def FillTempThemeFolder(
         manager.bgHexVar,
         manager.deselectedFontHexVar,
         manager.iconHexVar,
-        "Rebooting...",
+        "REBOOTING...",
     ).resize(
         (int(manager.deviceScreenWidthVar), int(manager.deviceScreenHeightVar)),
         Image.LANCZOS,
@@ -2137,47 +2059,54 @@ def FillTempThemeFolder(
         )
 
 
-def start_theme_task() -> None:
-    barrier = threading.Barrier(2)
-    # Create a new Toplevel window for the loading bar
-    loading_window = tk.Toplevel(root)
-    loading_window.title("Generating...")
-    loading_window.geometry("300x100")
-
-    # Create a Progressbar widget in the loading window
-    progress_bar = ttk.Progressbar(
-        loading_window, orient="horizontal", length=280, mode="determinate"
+def start_theme_task(manager: SettingsManager, *args) -> None:
+    max_progress = 20 if manager.main_menu_style_var == "Vertical" else 31
+    dialog = ProgressDialog(
+        root, title=f"Generating {manager.theme_name_var}...", max=max_progress
     )
-    progress_bar.pack(pady=20)
 
-    match = re.search(r"\[(\d+)x(\d+)\]", manager.device_type_var)
-    assumed_res = (640, 480)
-    if match:
-        assumed_res = (int(match.group(1)), int(match.group(2)))
-    else:
-        raise ValueError("Invalid device type format, cannot find screen dimensions")
     all_resolutions = []
-    for device_type in deviceTypeOptions:
+    for device_type in DEVICE_TYPE_OPTIONS:
         match = re.search(r"\[(\d+)x(\d+)\]", device_type)
         if match:
             all_resolutions.append((int(match.group(1)), int(match.group(2))))
 
-    input_queue = queue.Queue()
-    output_queue = queue.Queue()
+    match = re.search(r"\[(\d+)x(\d+)\]", manager.device_type_var)
+    assumed_res = [640, 480]
+    if match:
+        assumed_res = (int(match.group(1)), int(match.group(2)))
+    else:
+        raise ValueError("Invalid device type format, cannot find screen dimensions")
 
-    # Start the long-running task in a separate thread
-    threading.Thread(
-        target=generate_theme,
-        args=(
-            progress_bar,
-            loading_window,
-            -1,
-            manager,
-            barrier,
-            all_resolutions,
-            assumed_res,
-        ),
-    ).start()
+    def on_progress(message: str = "", step: int = 1):
+        def _update():
+            dialog.label["text"] = message
+            dialog.progress_bar["value"] += step
+
+        root.after(0, _update)
+
+    def worker():
+        try:
+            manager.save_user_values()
+
+            generate_theme(
+                manager,
+                -1,
+                all_resolutions,
+                assumed_res,
+                progress_callback=on_progress,
+            )
+
+            root.after(0, dialog.destroy)
+            root.after(
+                0,
+                lambda: messagebox.showinfo("Success", "Theme generated successfully!"),
+            )
+        except Exception as e:
+            root.after(0, dialog.destroy)
+            raise e
+
+    threading.Thread(target=worker, daemon=True).start()
 
 
 def start_bulk_theme_task() -> None:
@@ -2490,27 +2419,7 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
 
 # menuNameMap = getAlternateMenuNameDict()
 
-
-def replace_scheme_options(
-    newSchemeDir: Path, fileName: str, replacementStringMap: dict[str, Any]
-) -> None:
-    file_path = newSchemeDir / f"{fileName}.txt"
-    replacements = {
-        stringToBeReplaced: replacementStringMap[fileName].get(
-            stringToBeReplaced, defaultValue
-        )
-        for stringToBeReplaced, defaultValue in replacementStringMap["default"].items()
-    }
-
-    with file_path.open("rb") as file:
-        file_contents = file.read()
-
-    # Replace the occurrences of the search_string with replace_string in binary data
-    new_contents = file_contents.decode().format(**replacements)
-
-    # Write the new content back to the file in binary mode
-    with file_path.open("wb") as file:
-        file.write(new_contents.encode())
+root = tk.Tk()
 
 
 def main():
@@ -2525,9 +2434,11 @@ def main():
         "select_background_image_path": select_background_image_path,
         "select_alt_font_path": select_alt_font_path,
         "select_theme_directory_path": select_theme_directory_path,
+        "start_theme_task": start_theme_task,
     }
 
     app = ThemeGeneratorApp(
+        root=root,
         title="MinUI Theme Generator",
         min_size=(1080, 500),
         settings_manager=manager,

@@ -1,6 +1,10 @@
+from datetime import datetime
 import math
 from pathlib import Path
+
 from tkinter import ttk
+
+from typing import Callable
 
 try:  # try to use the Rust-based package if possible
     from bidi import get_display as bidi_get_display
@@ -22,17 +26,35 @@ from generator.utils import get_max_length_time_string
 
 
 class BaseThemeGenerator:
-    def __init__(self, manager: SettingsManager, render_factor: int):
+    def __init__(
+        self,
+        manager: SettingsManager,
+        render_factor: int,
+        progress_callback: Callable | None = None,
+    ):
         self.manager = manager
         self.render_factor = render_factor
 
-        self.screen_dimensions = (
-            int(self.manager.deviceScreenWidthVar) * self.render_factor,
-            int(self.manager.deviceScreenHeightVar) * self.render_factor,
-        )
+        self.on_progress = progress_callback
+
         self.screen_x_middle, self.screen_y_middle = (
-            dim // 2 for dim in self.screen_dimensions
+            dim // 2 for dim in self.scaled_screen_dimensions
         )
+
+    @property
+    def screen_dimensions(self) -> tuple[int, int]:
+        return (
+            int(self.manager.deviceScreenWidthVar),
+            int(self.manager.deviceScreenHeightVar),
+        )
+
+    @property
+    def scaled_screen_dimensions(self) -> tuple[int, ...]:
+        return tuple(dim * self.render_factor for dim in self.screen_dimensions)
+
+    def update_progress(self, *args, **kwargs):
+        if self.on_progress is not None:
+            self.on_progress(*args, **kwargs)
 
     def generate_button_glyph_image(
         self,
@@ -203,7 +225,7 @@ class BaseThemeGenerator:
     ) -> Image.Image:
         image = Image.new(
             "RGBA",
-            self.screen_dimensions,
+            self.scaled_screen_dimensions,
             (255, 255, 255, 0),
         )
         draw = ImageDraw.Draw(image)
@@ -477,11 +499,7 @@ class BaseThemeGenerator:
         if colour_hex.startswith("#"):
             colour_hex = colour_hex[1:]
 
-        image = Image.new(
-            "RGBA",
-            self.screen_dimensions,
-            (255, 255, 255, 0),
-        )
+        image = self.generate_background_image(transparent=True)
         draw = ImageDraw.Draw(image)
 
         real_rhs_buttons = []
@@ -729,7 +747,7 @@ class BaseThemeGenerator:
                     )
                     button_image = change_logo_color(button_image, colour_hex)
 
-                    image.paste(
+                    image.alpha_composite(
                         button_image,
                         (
                             int(realRhsPointer),
@@ -738,7 +756,6 @@ class BaseThemeGenerator:
                                 - (button_image.size[1] / 2)
                             ),
                         ),
-                        button_image,
                     )
                     realRhsPointer += (
                         (button_image.size[0])
@@ -755,6 +772,7 @@ class BaseThemeGenerator:
                     )
                     realRhsPointer += textWidth
                     realRhsPointer += horizontal_large_padding * self.render_factor
+
         return image
 
     def generate_background_image(
@@ -767,13 +785,13 @@ class BaseThemeGenerator:
         if transparent:
             return Image.new(
                 "RGBA",
-                self.screen_dimensions,
+                self.scaled_screen_dimensions,
                 (*bg_rgb[:3], 0),
             )
 
         image = Image.new(
             "RGBA",
-            self.screen_dimensions,
+            self.scaled_screen_dimensions,
             bg_rgb,
         )
         if (
@@ -783,7 +801,7 @@ class BaseThemeGenerator:
         ):
             background_image = Image.open(self.manager.background_image_path)
             image.paste(
-                background_image.resize(self.screen_dimensions),
+                background_image.resize(self.scaled_screen_dimensions),
                 (0, 0),
             )
         return image
@@ -805,7 +823,7 @@ class BaseThemeGenerator:
 
         image = Image.new(
             "RGBA",
-            self.screen_dimensions,
+            self.scaled_screen_dimensions,
             (255, 255, 255, 0),
         )
         draw = ImageDraw.Draw(image)
@@ -850,7 +868,7 @@ class BaseThemeGenerator:
             and self.manager.bootlogo_image_path.exists()
         ):
             bootlogo_image = Image.open(self.manager.bootlogo_image_path)
-            image.paste(bootlogo_image.resize(self.screen_dimensions), (0, 0))
+            image.paste(bootlogo_image.resize(self.scaled_screen_dimensions), (0, 0))
             return image
 
         draw = ImageDraw.Draw(image)
@@ -1602,94 +1620,26 @@ class BaseThemeGenerator:
         reboot_logo_x = int(reboot_middle - (rebootLogoColoured.size[0]) / 2)
         shutdown_logo_x = int(shutdown_middle - (shutdownLogoColoured.size[0]) / 2)
 
-        if workingIndex == 4:
-            centre_x = info_middle
+        if workingIndex > 3:
+            if workingIndex == 4:
+                centre_x = info_middle
+            elif workingIndex == 5:
+                centre_x = config_middle
+            elif workingIndex == 6:
+                centre_x = reboot_middle
+            elif workingIndex == 7:
+                centre_x = shutdown_middle
+
+            icon_position = (
+                int(centre_x - circle_radius),
+                int(bottom_row_middle_y - circle_radius),
+                int(centre_x + circle_radius),
+                int(bottom_row_middle_y + circle_radius),
+            )
             if self.manager.transparent_text_var:
-                draw_transparent.ellipse(
-                    (
-                        int(centre_x - circle_radius),
-                        int(bottom_row_middle_y - circle_radius),
-                        int(centre_x + circle_radius),
-                        int(bottom_row_middle_y + circle_radius),
-                    ),
-                    fill=f"#{bubble_hex}",
-                )
+                draw_transparent.ellipse(icon_position, fill=f"#{bubble_hex}")
             else:
-                draw.ellipse(
-                    (
-                        int(centre_x - circle_radius),
-                        int(bottom_row_middle_y - circle_radius),
-                        int(centre_x + circle_radius),
-                        int(bottom_row_middle_y + circle_radius),
-                    ),
-                    fill=f"#{bubble_hex}",
-                )
-        elif workingIndex == 5:
-            centre_x = config_middle
-            if self.manager.transparent_text_var:
-                draw_transparent.ellipse(
-                    (
-                        int(centre_x - circle_radius),
-                        int(bottom_row_middle_y - circle_radius),
-                        int(centre_x + circle_radius),
-                        int(bottom_row_middle_y + circle_radius),
-                    ),
-                    fill=f"#{bubble_hex}",
-                )
-            else:
-                draw.ellipse(
-                    (
-                        int(centre_x - circle_radius),
-                        int(bottom_row_middle_y - circle_radius),
-                        int(centre_x + circle_radius),
-                        int(bottom_row_middle_y + circle_radius),
-                    ),
-                    fill=f"#{bubble_hex}",
-                )
-        elif workingIndex == 6:
-            centre_x = reboot_middle
-            if self.manager.transparent_text_var:
-                draw_transparent.ellipse(
-                    (
-                        int(centre_x - circle_radius),
-                        int(bottom_row_middle_y - circle_radius),
-                        int(centre_x + circle_radius),
-                        int(bottom_row_middle_y + circle_radius),
-                    ),
-                    fill=f"#{bubble_hex}",
-                )
-            else:
-                draw.ellipse(
-                    (
-                        int(centre_x - circle_radius),
-                        int(bottom_row_middle_y - circle_radius),
-                        int(centre_x + circle_radius),
-                        int(bottom_row_middle_y + circle_radius),
-                    ),
-                    fill=f"#{bubble_hex}",
-                )
-        elif workingIndex == 7:
-            centre_x = shutdown_middle
-            if self.manager.transparent_text_var:
-                draw_transparent.ellipse(
-                    (
-                        int(centre_x - circle_radius),
-                        int(bottom_row_middle_y - circle_radius),
-                        int(centre_x + circle_radius),
-                        int(bottom_row_middle_y + circle_radius),
-                    ),
-                    fill=f"#{bubble_hex}",
-                )
-            else:
-                draw.ellipse(
-                    (
-                        int(centre_x - circle_radius),
-                        int(bottom_row_middle_y - circle_radius),
-                        int(centre_x + circle_radius),
-                        int(bottom_row_middle_y + circle_radius),
-                    ),
-                    fill=f"#{bubble_hex}",
-                )
+                draw.ellipse(icon_position, fill=f"#{bubble_hex}")
 
         info_logo_y = int(bottom_row_middle_y - (infoLogoColoured.size[1] / 2))
         config_logo_y = int(bottom_row_middle_y - (configLogoColoured.size[1] / 2))
@@ -2887,11 +2837,11 @@ class BaseThemeGenerator:
         return totalWidth
 
     def _get_horizontal_logo_size(self, logo_image: Image.Image) -> tuple[int, ...]:
-        scaled_screen_dimensions = (
+        scaled_scaled_screen_dimensions = (
             self.manager.deviceScreenHeightVar // 480,
             self.manager.deviceScreenWidthVar // 640,
         )
-        min_dimension = min(scaled_screen_dimensions)
+        min_dimension = min(scaled_scaled_screen_dimensions)
 
         if len(logo_image.size) != 2:
             raise ValueError(f"Logo at {len(logo_image.size)} dimensions?")
@@ -2902,7 +2852,26 @@ class BaseThemeGenerator:
 
         return logo_size
 
-    def generate_theme(self):
+    def _get_footer_height(
+        self,
+        items_per_screen: int,
+        device_screen_height: int,
+        content_padding_top: int,
+        approx_footer_height: int,
+    ) -> int:
+        individualItemHeight = round(
+            (device_screen_height - approx_footer_height - content_padding_top)
+            / items_per_screen
+        )
+        footerHeight = (
+            device_screen_height
+            - (individualItemHeight * items_per_screen)
+            - content_padding_top
+        )
+
+        return footerHeight
+
+    def generate_theme(self, *args, **kwargs):
         raise NotImplementedError(
             "Subclasses of BaseThemeGenerator must implement generate_theme"
         )

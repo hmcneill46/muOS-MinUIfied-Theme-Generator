@@ -101,7 +101,7 @@ class PreviewThemeGenerator(BaseThemeGenerator):
         elif glyph_alignment == "Centre":
             header_glyph_x_pos = (
                 int(
-                    self.screen_dimensions[0] / 2
+                    self.scaled_screen_dimensions[0] / 2
                     - (
                         (
                             header_glyphs_total_width
@@ -115,7 +115,9 @@ class PreviewThemeGenerator(BaseThemeGenerator):
             )
         elif glyph_alignment == "Right":
             header_glyph_x_pos = (
-                self.screen_dimensions[0] - glyph_padding[1] - header_glyphs_total_width
+                self.scaled_screen_dimensions[0]
+                - glyph_padding[1]
+                - header_glyphs_total_width
             )
         else:
             raise ValueError("Invalid header glyph alignment")
@@ -223,7 +225,7 @@ class PreviewThemeGenerator(BaseThemeGenerator):
         elif header_clock_alignment == "Centre":
             header_clock_x_pos = (
                 int(
-                    self.screen_dimensions[0] / 2
+                    self.scaled_screen_dimensions[0] / 2
                     - (
                         (
                             time_text_width
@@ -235,7 +237,7 @@ class PreviewThemeGenerator(BaseThemeGenerator):
                 + header_clock_left_padding
             )
         elif header_clock_alignment == "Right":
-            header_clock_x_pos = int(self.screen_dimensions[0]) - (
+            header_clock_x_pos = int(self.scaled_screen_dimensions[0]) - (
                 time_text_width + header_clock_right_padding
             )
         else:
@@ -266,11 +268,11 @@ class PreviewThemeGenerator(BaseThemeGenerator):
                 header_page_title_x_pos = header_page_title_padding
             elif header_page_title_alignment == "Centre":
                 header_page_title_x_pos = int(
-                    self.screen_dimensions[0] / 2 - (page_title_width / 2)
+                    self.scaled_screen_dimensions[0] / 2 - (page_title_width / 2)
                 )
             elif header_page_title_alignment == "Right":
                 header_page_title_x_pos = (
-                    self.screen_dimensions[0]
+                    self.scaled_screen_dimensions[0]
                     - page_title_width
                     + header_page_title_padding
                 )

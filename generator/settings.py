@@ -3,17 +3,18 @@ from pathlib import Path
 import re
 from typing import Any
 
-from generator.constants import MENU_LISTING_MAP
+from generator.constants import BASE_SETTINGS_PATH, USER_SETTINGS_PATH, MENU_LISTING_MAP
 from generator.utils import ensure_file_exists, read_json, write_json
 
 
 class SettingsManager:
-    def __init__(self, base_path: Path, user_path: Path):
+    def __init__(
+        self,
+        base_path: Path = BASE_SETTINGS_PATH,
+        user_path: Path = USER_SETTINGS_PATH,
+    ):
         self.base_path = base_path
         self.user_path = user_path
-
-        self.deviceScreenHeightVar = 480
-        self.deviceScreenWidthVar = 640
 
         self.sections = []
         self.default_values: dict[str, Any] = {}
@@ -54,7 +55,7 @@ class SettingsManager:
 
         return "string"
 
-    def load(self):
+    def load(self, override_values: dict[str, Any] | None = None):
         ensure_file_exists(self.base_path, {"sections": []})
         ensure_file_exists(self.user_path, {})
 
@@ -65,6 +66,9 @@ class SettingsManager:
         self.user_values = user_data
 
         self._merge_values()
+
+        if override_values:
+            self.set_values(override_values)
 
     def save_user_values(self):
         casted_user_data = {}
@@ -93,8 +97,12 @@ class SettingsManager:
         self.user_values[var_name] = new_value
         self.merged_values[var_name] = new_value
 
-        if var_name == "device_type_var":
+        if var_name in "device_type_var":
             self._parse_screen_dimensions(new_value)
+
+    def set_values(self, values: dict[str, Any]) -> None:
+        for var_name, new_value in values.items():
+            self.set_value(var_name, new_value)
 
     def get_value(self, var_name: str, fallback: Any = None):
         return self.merged_values.get(var_name, fallback)
@@ -109,8 +117,8 @@ class SettingsManager:
     def _parse_screen_dimensions(self, device_type: str):
         match = re.search(r"\[(\d+)x(\d+)\]", device_type)
         if match:
-            self.deviceScreenWidthVar = int(match.group(1))
-            self.deviceScreenHeightVar = int(match.group(2))
+            self.set_value("deviceScreenWidthVar", int(match.group(1)))
+            self.set_value("deviceScreenHeightVar", int(match.group(2)))
         else:
             raise ValueError(
                 "Invalid device type format, cannot find screen dimensions"
