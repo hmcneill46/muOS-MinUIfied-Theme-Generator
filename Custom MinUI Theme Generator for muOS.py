@@ -76,6 +76,7 @@ class Config: # TODO delete unneeded variables
         self.deselectedFontHexVar = "ffffff"
         self.deselected_font_hex_entry = "ffffff"
         self.bubbleHexVar = "ffffff"
+        self.footerBubbleHexVar = "ffffff"
         self.bubble_hex_entry = "ffffff"
         self.iconHexVar = "ffffff"
         self.batteryChargingHexVar = "2eb774"
@@ -809,17 +810,17 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
 
     if muOSSystemName == "muxlaunch":
-        menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo":
-        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxapp":
-        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxplore":
-        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxfavourite":
-        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxhistory":
-        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
 
     if config.show_file_counter_var == 1:
         in_bubble_font_size = 19*render_factor
@@ -1123,7 +1124,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
             selected_font_path = config.alt_font_path
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
-    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     
     
 
@@ -1483,7 +1484,7 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
             selected_font_path = config.alt_font_path
         else:
             selected_font_path = os.path.join(internal_files_dir, "Assets", "Font", "BPreplayBold-unhinted.otf")
-    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+    menuHelperGuides = generateMenuHelperGuides([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     
 
     font_size = min((int(config.deviceScreenHeightVar)*24)/480,(int(config.deviceScreenWidthVar)*24)/640) * render_factor  ## CHANGE for adjustment
@@ -2743,7 +2744,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         grid_cell_width = grid_column_width-2*cell_inner_padding
         grid_cell_height = grid_row_height-2*cell_inner_padding
         grid_cell_size = min(grid_cell_width,grid_cell_height)
-        replacementStringMap["muxplore"] = {}
+        if "muxplore" not in replacementStringMap:
+            replacementStringMap["muxplore"] = {}
         replacementStringMap["muxplore"]["{grid_location_x}"] = grid_location_x
         replacementStringMap["muxplore"]["{grid_location_y}"] = grid_location_y
         replacementStringMap["muxplore"]["{grid_column_count}"] = grid_column_count
@@ -2933,7 +2935,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
     #TODO If implimented it would be great to only set these once as a default.png type thing, and then make it work in every menu
     
-    visualbuttonoverlay_B_BACK_A_SELECT = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_B_BACK_A_SELECT = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     
 
     if config.version_var == "muOS 2410.1 Banana":
@@ -2971,7 +2973,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
 
     
-    visualbuttonoverlay_A_SELECT = generateMuOSBackgroundOverlay([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_A_SELECT = generateMuOSBackgroundOverlay([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
 
     if config.version_var == "muOS 2410.1 Banana":
         muxlaunch_items = ["explore", "favourite", "history", "apps", "info", "config", "reboot", "shutdown"]
@@ -2982,8 +2984,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         visualbuttonoverlay_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch",f"{item}.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_B_BACK = generateMuOSBackgroundOverlay([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    visualbuttonoverlay_B_SAVE = generateMuOSBackgroundOverlay([["B", "SAVE"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_B_BACK = generateMuOSBackgroundOverlay([["B", "BACK"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_B_SAVE = generateMuOSBackgroundOverlay([["B", "SAVE"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
 
     if config.version_var == "muOS 2410.1 Banana":
         muxtweakgen_items = ["hidden", "bgm", "sound", "startup", "colour", "brightness", "hdmi", "power", "interface", "advanced"]
@@ -3060,18 +3062,18 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     background = background.resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
     
 
-    visualbuttonoverlay_muxapp = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxapp = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxapp)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxapp.png"), format='PNG')
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtask.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxplore = generateMuOSBackgroundOverlay([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxplore = generateMuOSBackgroundOverlay([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxplore)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxplore.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxfavourite = generateMuOSBackgroundOverlay([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxfavourite = generateMuOSBackgroundOverlay([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxfavourite)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxfavourite.png"), format='PNG')
     progress_bar['value'] +=1
@@ -3086,47 +3088,47 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         gameSwitcherOverlay.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxhistory.png"), format='PNG')
         progress_bar['value'] +=1
     else:
-        visualbuttonoverlay_muxhistory = generateMuOSBackgroundOverlay([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+        visualbuttonoverlay_muxhistory = generateMuOSBackgroundOverlay([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
         altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxhistory)
         altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxhistory.png"), format='PNG')
         progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxtimezone = generateMuOSBackgroundOverlay([["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxtimezone = generateMuOSBackgroundOverlay([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxtimezone)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtimezone.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxpicker = generateMuOSBackgroundOverlay([["Y","SAVE"],["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxpicker = generateMuOSBackgroundOverlay([["Y","SAVE"],["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxpicker)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxpicker.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxlanguage = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxlanguage = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxlanguage)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxlanguage.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxarchive = generateMuOSBackgroundOverlay([["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxarchive = generateMuOSBackgroundOverlay([["B", "BACK"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxarchive)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxarchive.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxnetprofile = generateMuOSBackgroundOverlay([["Y", "REMOVE"],["X", "SAVE"],["B", "BACK"],["A", "LOAD"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxnetprofile = generateMuOSBackgroundOverlay([["Y", "REMOVE"],["X", "SAVE"],["B", "BACK"],["A", "LOAD"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetprofile)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxnetprofile.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxnetscan = generateMuOSBackgroundOverlay([["X", "RESCAN"],["B", "BACK"],["A", "USE"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxnetscan = generateMuOSBackgroundOverlay([["X", "RESCAN"],["B", "BACK"],["A", "USE"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetscan)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxnetscan.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxgov = generateMuOSBackgroundOverlay([["Y", "RECURSIVE"],["X", "DIRECTORY"],["A", "INDIVIDUAL"],["B", "BACK"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxgov = generateMuOSBackgroundOverlay([["Y", "RECURSIVE"],["X", "DIRECTORY"],["A", "INDIVIDUAL"],["B", "BACK"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxgov)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxgov.png"), format='PNG')
     progress_bar['value'] +=1
 
-    visualbuttonoverlay_muxsearch = generateMuOSBackgroundOverlay([["X", "CLEAR"],["B", "BACK"],["A", "SELECT"]],selected_font_path,bubble_hex,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    visualbuttonoverlay_muxsearch = generateMuOSBackgroundOverlay([["X", "CLEAR"],["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
     altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxsearch)
     altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxsearch.png"), format='PNG')
     progress_bar['value'] +=1
@@ -3567,6 +3569,7 @@ bgHexVar = tk.StringVar()
 selectedFontHexVar = tk.StringVar()
 deselectedFontHexVar = tk.StringVar()
 bubbleHexVar = tk.StringVar()
+footerBubbleHexVar = tk.StringVar()
 iconHexVar = tk.StringVar()
 batteryChargingHexVar = tk.StringVar()
 maxBoxArtWidth = tk.StringVar()
@@ -3659,6 +3662,12 @@ grid_helper.add(tk.Label(scrollable_frame, text="Bubble Hex Colour: #"), sticky=
 bubble_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=bubbleHexVar)
 grid_helper.add(bubble_hex_entry)
 grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(bubble_hex_entry)), next_row=True)
+
+# Option for Footer Bubble Hex Colour
+grid_helper.add(tk.Label(scrollable_frame, text="Footer Bubble Hex Colour: #"), sticky="w")
+footer_bubble_hex_entry = tk.Entry(scrollable_frame, width=50, textvariable=footerBubbleHexVar)
+grid_helper.add(footer_bubble_hex_entry)
+grid_helper.add(tk.Button(scrollable_frame, text="Pick Color", command=lambda: select_color(footer_bubble_hex_entry)), next_row=True)
 
 # Option for Icon Hex Colour
 grid_helper.add(tk.Label(scrollable_frame, text="Icon Hex Colour: #"), sticky="w")
@@ -3792,7 +3801,7 @@ grid_helper.add(header_items_horizontal_right_padding_entry, next_row=True)
 grid_helper.add(tk.Label(scrollable_frame, text=""), next_row=True)
 
 grid_helper.add(tk.Label(scrollable_frame, text="Battery Glyph Style"), sticky="w")
-BatteryStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_"}
+BatteryStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_","Alt Percentage":"alt_percentage_capacity_"}
 BatteryStyleOptions = list(BatteryStyleOptionsDict.keys())
 battery_style_option_menu = tk.OptionMenu(scrollable_frame, battery_style_var, *BatteryStyleOptions)
 grid_helper.add(battery_style_option_menu, colspan=3, sticky="w", next_row=True)
@@ -3801,7 +3810,7 @@ grid_helper.add(tk.Checkbutton(scrollable_frame, text="Show Charging battery in 
 
 
 grid_helper.add(tk.Label(scrollable_frame, text="Battery Charging Glyph Style"), sticky="w")
-BatteryChargingStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_", "Percentage Lightning":"percentage_capacity_charging_", "Lightning 1":"capacity_charging_", "Lightning 2":"alt1_capacity_charging_", "Lightning 3":"alt2_capacity_charging_"}
+BatteryChargingStyleOptionsDict = {"Default": "capacity_","Percentage":"percentage_capacity_", "Percentage Lightning":"percentage_capacity_charging_", "Alt Percentage":"alt_percentage_capacity_", "Alt Percentage Lightning":"alt_percentage_capacity_charging_", "Lightning 1":"capacity_charging_", "Lightning 2":"alt1_capacity_charging_", "Lightning 3":"alt2_capacity_charging_"}
 BatteryChargingStyleOptions = list(BatteryChargingStyleOptionsDict.keys())
 battery_charging_style_option_menu = tk.OptionMenu(scrollable_frame, battery_charging_style_var, *BatteryChargingStyleOptions)
 grid_helper.add(battery_charging_style_option_menu, colspan=3, sticky="w", next_row=True)
@@ -4208,6 +4217,7 @@ def save_settings(config: Config):
     config.deselectedFontHexVar = deselectedFontHexVar.get()
     config.deselected_font_hex_entry = deselected_font_hex_entry.get()
     config.bubbleHexVar = bubbleHexVar.get()
+    config.footerBubbleHexVar = footerBubbleHexVar.get()
     config.bubble_hex_entry = bubble_hex_entry.get()
     config.iconHexVar = iconHexVar.get()
     config.batteryChargingHexVar =batteryChargingHexVar.get()
@@ -4318,6 +4328,7 @@ def load_settings(config: Config):
     selectedFontHexVar.set(config.selectedFontHexVar)
     deselectedFontHexVar.set(config.deselectedFontHexVar)
     bubbleHexVar.set(config.bubbleHexVar)
+    footerBubbleHexVar.set(config.footerBubbleHexVar)
     iconHexVar.set(config.iconHexVar)
     batteryChargingHexVar.set(config.batteryChargingHexVar)
     include_overlay_var.set(config.include_overlay_var)
@@ -4405,6 +4416,7 @@ bgHexVar.trace_add("write", lambda *args: save_settings(global_config))
 selectedFontHexVar.trace_add("write", lambda *args: save_settings(global_config))
 deselectedFontHexVar.trace_add("write", lambda *args: save_settings(global_config))
 bubbleHexVar.trace_add("write", lambda *args: save_settings(global_config))
+footerBubbleHexVar.trace_add("write", lambda *args: save_settings(global_config))
 iconHexVar.trace_add("write", lambda *args: save_settings(global_config))
 batteryChargingHexVar.trace_add("write", lambda *args: save_settings(global_config))
 show_file_counter_var.trace_add("write", lambda *args: save_settings(global_config))
