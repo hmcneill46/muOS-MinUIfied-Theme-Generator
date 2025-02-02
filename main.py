@@ -2060,9 +2060,8 @@ def FillTempThemeFolder(
 
 
 def start_theme_task(manager: SettingsManager, *args) -> None:
-    max_progress = 20 if manager.main_menu_style_var == "Vertical" else 31
     dialog = ProgressDialog(
-        root, title=f"Generating {manager.theme_name_var}...", max=max_progress
+        root, title=f"Generating {manager.theme_name_var}...", max=None
     )
 
     all_resolutions = []
@@ -2298,7 +2297,6 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
         )
         if app.manager.main_menu_style_var == "Horizontal":
             image1 = preview_theme_generator.generate_horizontal_menu_image(
-                fakeprogressbar,
                 0,
                 app.manager.bgHexVar,
                 app.manager.selectedFontHexVar,
@@ -2352,7 +2350,6 @@ def on_change(app: ThemeGeneratorApp, *args) -> None:
 
         if app.manager.main_menu_style_var == "Horizontal":
             image3 = preview_theme_generator.generate_horizontal_menu_image(
-                fakeprogressbar,
                 4,
                 app.manager.bgHexVar,
                 app.manager.selectedFontHexVar,

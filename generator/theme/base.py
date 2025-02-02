@@ -1031,7 +1031,6 @@ class BaseThemeGenerator:
 
     def generate_horizontal_menu_image(
         self,
-        progress_bar: ttk.Progressbar,
         workingIndex: int,
         bg_hex: str,
         selected_font_hex: str,
@@ -1058,7 +1057,6 @@ class BaseThemeGenerator:
             ]
         ]
 
-        progress_bar["value"] += 1
         image = self.generate_background_image(bg_hex, transparent)
 
         exploreLogoColoured = change_logo_color(
