@@ -4,15 +4,15 @@ from pathlib import Path
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 from PIL.Image import Resampling
 
-from generator.color_utils import change_logo_color
-from generator.constants import (
+from .base import BaseThemeGenerator
+from ..color_utils import change_logo_color
+from ..constants import (
     GLYPHS_DIR,
     BatteryStyleOptionsDict,
     BatteryChargingStyleOptionsDict,
 )
-from generator.font import get_font_path
-from generator.settings import SettingsManager
-from generator.theme.base import BaseThemeGenerator
+from ..font import get_font_path
+from ..settings import SettingsManager
 
 
 class PreviewThemeGenerator(BaseThemeGenerator):

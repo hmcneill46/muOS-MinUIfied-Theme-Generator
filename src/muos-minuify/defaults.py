@@ -1,4 +1,4 @@
-from generator.constants import BASE_DIR, FONTS_DIR
+from .constants import BASE_DIR, FONTS_DIR
 
 
 DEFAULT_ALT_TEXT_FILENAME = "AlternativeMenuNames.json"

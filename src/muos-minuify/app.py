@@ -3,8 +3,8 @@ import tkinter as tk
 from tkinter import font, ttk
 from typing import Any, Callable
 
-from generator.adapter import TkinterSettingsAdapter
-from generator.settings import SettingsManager
+from .adapter import TkinterSettingsAdapter
+from .settings import SettingsManager
 
 
 class ThemeGeneratorApp:

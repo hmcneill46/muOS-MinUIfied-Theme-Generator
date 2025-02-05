@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from generator.defaults import DEFAULT_FONT_PATH
+from .defaults import DEFAULT_FONT_PATH
 
 
 def get_font_path(use_alt_font: bool, alt_font_path: Path) -> Path:

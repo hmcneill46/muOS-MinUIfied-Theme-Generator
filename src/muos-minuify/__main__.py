@@ -18,9 +18,9 @@ from tkinter import (
 )
 import traceback
 
-from generator.adapter import TkinterSettingsAdapter
-from generator.settings import SettingsManager
-from generator.theme import DeviceThemeGenerator, PreviewThemeGenerator
+from .adapter import TkinterSettingsAdapter
+from .settings import SettingsManager
+from .theme import DeviceThemeGenerator, PreviewThemeGenerator
 
 from PIL import (
     ImageTk,
@@ -28,9 +28,9 @@ from PIL import (
     ImageDraw,
 )
 
-from generator.app import ThemeGeneratorApp
-from generator.color_utils import *
-from generator.constants import (
+from .app import ThemeGeneratorApp
+from .color_utils import *
+from .constants import (
     BASE_DIR,
     DEVICE_TYPE_OPTIONS,
     RESOURCES_DIR,
@@ -47,16 +47,16 @@ from generator.constants import (
     BatteryChargingStyleOptionsDict,
     MENU_LISTING_2410_X,
 )
-from generator.font import get_font_path
-from generator.utils import (
+from .font import get_font_path
+from .utils import (
     copy_contents,
     delete_folder,
     delete_file,
     rename_file,
     ensure_folder_exists,
 )
-from generator.utils.math import round_to_nearest_odd
-from generator.ui.progress_dialog import ProgressDialog
+from .utils.math import round_to_nearest_odd
+from .ui.progress_dialog import ProgressDialog
 
 Image.MAX_IMAGE_PIXELS = None
 

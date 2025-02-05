@@ -1,4 +1,4 @@
-from generator.utils import find_base_dirs
+from .utils import find_base_dirs
 
 
 BASE_DIR, RESOURCES_DIR = find_base_dirs()
@@ -21,6 +21,7 @@ PREMADE_THEMES_FILENAME = "PremadeThemes.json"
 PREMADE_THEMES_PATH = BASE_DIR / PREMADE_THEMES_FILENAME
 
 BASE_SETTINGS_PATH = ASSETS_DIR / "base_settings.json"
+MENU_DEFINITIONS_PATH = ASSETS_DIR / "menu_definitions.json"
 USER_SETTINGS_PATH = BASE_DIR / "settings.json"
 
 BatteryStyleOptionsDict = {

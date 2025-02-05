@@ -1,10 +1,9 @@
-import json
 from pathlib import Path
 import re
 from typing import Any
 
-from generator.constants import BASE_SETTINGS_PATH, USER_SETTINGS_PATH, MENU_LISTING_MAP
-from generator.utils import ensure_file_exists, read_json, write_json
+from .constants import BASE_SETTINGS_PATH, USER_SETTINGS_PATH, MENU_LISTING_MAP
+from .utils import ensure_file_exists, read_json, write_json
 
 
 class SettingsManager:

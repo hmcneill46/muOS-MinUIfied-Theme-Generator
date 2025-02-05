@@ -9,8 +9,8 @@ from tkinter import ttk
 from PIL import Image
 from PIL.Image import Resampling
 
-from generator.color_utils import percentage_color
-from generator.constants import (
+from ..color_utils import percentage_color
+from ..constants import (
     ASSETS_DIR,
     DEVICE_TYPE_OPTIONS,
     RESOURCES_DIR,
@@ -25,10 +25,10 @@ from generator.constants import (
     BatteryChargingStyleOptionsDict,
 )
 
-from generator.font import get_font_path
-from generator.utils import copy_contents, ensure_folder_exists, resize_system_logos
-from generator.settings import SettingsManager
-from generator.theme import BaseThemeGenerator
+from ..font import get_font_path
+from ..utils import copy_contents, ensure_folder_exists, resize_system_logos
+from ..settings import SettingsManager
+from .base import BaseThemeGenerator
 
 
 class DeviceThemeGenerator(BaseThemeGenerator):
@@ -1417,163 +1417,157 @@ class DeviceThemeGenerator(BaseThemeGenerator):
             format="PNG",
         )
 
-        # itemsList = []
-        # if self.manager.version_var[0:9] == "muOS 2410":
-        #     workingMenus = MENU_LISTING_2410_X
+        itemsList = []
+        if self.manager.version_var[0:9] == "muOS 2410":
+            workingMenus = MENU_LISTING_2410_X
 
-        # else:
-        #     raise ValueError("You Haven't Selected a muOS Version")
+        else:
+            raise ValueError("You Haven't Selected a muOS Version")
 
-        # workingMenus = [
-        #     [
-        #         "muxlaunch",
-        #         [
-        #             ["Content Explorer", "explore"],
-        #             ["Favourites", "favourite"],
-        #             ["History", "history"],
-        #             ["Applications", "apps"],
-        #             ["Information", "info"],
-        #             ["Configuration", "config"],
-        #             ["Reboot Device", "reboot"],
-        #             ["Shutdown Device", "shutdown"],
-        #         ],
-        #     ]
-        # ]
+        workingMenus = [
+            [
+                "muxlaunch",
+                [
+                    ["Content Explorer", "explore"],
+                    ["Favourites", "favourite"],
+                    ["History", "history"],
+                    ["Applications", "apps"],
+                    ["Information", "info"],
+                    ["Configuration", "config"],
+                    ["Reboot Device", "reboot"],
+                    ["Shutdown Device", "shutdown"],
+                ],
+            ]
+        ]
 
-        # for index, menu in enumerate(workingMenus):
-        #     itemsList.append([])
-        #     for item in menu[1]:
-        #         (itemsList[index].append([item[0], "Menu", item[1]]),)
+        for index, menu in enumerate(workingMenus):
+            itemsList.append([])
+            for item in menu[1]:
+                itemsList[index].append([item[0], "Menu", item[1]])
 
-        # preview_theme_generator = PreviewThemeGenerator(self.manager, self.render_factor)
-        # for index, menu in enumerate(workingMenus):
-        #     if menu[0] == "muxdevice":
-        #         ContinuousFolderImageGen(
-        #             progress_bar,
-        #             menu[0],
-        #             itemsList[index],
-        #             textPadding,
-        #             rectanglePadding,
-        #             ItemsPerScreen,
-        #             bg_hex,
-        #             selected_font_hex,
-        #             deselected_font_hex,
-        #             bubble_hex,
-        #             self.render_factor,
-        #             temp_image_dir / "static",
-        #             self.manager,
-        #             threadNumber=threadNumber,
-        #         )
-        #     elif menu[0] == "muxlaunch":
-        #         if self.manager.main_menu_style_var == "Horizontal":
-        #             HorizontalMenuGen(
-        #                 progress_bar,
-        #                 menu[0],
-        #                 itemsList[index],
-        #                 bg_hex,
-        #                 selected_font_hex,
-        #                 deselected_font_hex,
-        #                 bubble_hex,
-        #                 icon_hex,
-        #                 self.render_factor,
-        #                 temp_image_dir / "static",
-        #                 variant="Horizontal",
-        #                 self.manager=self.manager,
-        #                 threadNumber=threadNumber,
-        #             )
-        #         elif self.manager.main_menu_style_var == "Alt-Horizontal":
-        #             HorizontalMenuGen(
-        #                 progress_bar,
-        #                 menu[0],
-        #                 itemsList[index],
-        #                 bg_hex,
-        #                 selected_font_hex,
-        #                 deselected_font_hex,
-        #                 bubble_hex,
-        #                 icon_hex,
-        #                 self.render_factor,
-        #                 temp_image_dir / "static",
-        #                 variant="Alt-Horizontal",
-        #                 self.manager=self.manager,
-        #                 threadNumber=threadNumber,
-        #             )
+        for index, menu in enumerate(workingMenus):
+            if menu[0] == "muxdevice":
+                ContinuousFolderImageGen(
+                    progress_bar,
+                    menu[0],
+                    itemsList[index],
+                    textPadding,
+                    rectanglePadding,
+                    ItemsPerScreen,
+                    bg_hex,
+                    selected_font_hex,
+                    deselected_font_hex,
+                    bubble_hex,
+                    self.render_factor,
+                    temp_image_dir / "static",
+                    self.manager,
+                    threadNumber=threadNumber,
+                )
+            elif menu[0] == "muxlaunch":
+                if self.manager.main_menu_style_var == "Horizontal":
+                    self.generate_horizontal_launch_menu_image(
+                        menu[0],
+                        itemsList[index],
+                        bg_hex,
+                        selected_font_hex,
+                        deselected_font_hex,
+                        bubble_hex,
+                        icon_hex,
+                        temp_image_dir / "static",
+                        variant="Horizontal",
+                    )
+                elif self.manager.main_menu_style_var == "Alt-Horizontal":
+                    self.generate_horizontal_launch_menu_image(
+                        menu[0],
+                        itemsList[index],
+                        bg_hex,
+                        selected_font_hex,
+                        deselected_font_hex,
+                        bubble_hex,
+                        icon_hex,
+                        temp_image_dir / "static",
+                        variant="Alt-Horizontal",
+                    )
 
-        #     else:
-        #         ContinuousFolderImageGen(
-        #             progress_bar,
-        #             menu[0],
-        #             itemsList[index],
-        #             textPadding,
-        #             rectanglePadding,
-        #             ItemsPerScreen,
-        #             bg_hex,
-        #             selected_font_hex,
-        #             deselected_font_hex,
-        #             bubble_hex,
-        #             self.render_factor,
-        #             temp_image_dir / "static",
-        #             self.manager,
-        #             threadNumber=threadNumber,
-        #         )
-        # fakeprogressbar = {"value": 0}
-        # fakeprogressbar["maximum"] = 1
-        # if self.manager.main_menu_style_var == "Horizontal":
-        #     previewImage = preview_theme_generator.generate_horizontal_menu_image(
-        #         fakeprogressbar,
-        #         0,
-        #         self.manager.bgHexVar,
-        #         self.manager.selectedFontHexVar,
-        #         self.manager.deselectedFontHexVar,
-        #         self.manager.bubbleHexVar,
-        #         self.manager.iconHexVar,
-        #         transparent=False,
-        #     )
-        # elif self.manager.main_menu_style_var == "Alt-Horizontal":
-        #     previewImage = theme_generator.generate_alt_horizontal_menu(
-        #         fakeprogressbar,
-        #         0,
-        #         self.manager.bgHexVar,
-        #         self.manager.selectedFontHexVar,
-        #         self.manager.deselectedFontHexVar,
-        #         self.manager.bubbleHexVar,
-        #         self.manager.iconHexVar,
-        #         transparent=False,
-        #     )
-        # elif self.manager.main_menu_style_var == "Vertical":
-        #     previewImage = preview_theme_generator.generate_vertical_menu_image(
-        #         fakeprogressbar,
-        #         0,
-        #         "muxlaunch",
-        #         itemsList[index][0 : int(self.manager.itemsPerScreenVar)],
-        #         int(self.manager.textPaddingVar),
-        #         int(self.manager.bubblePaddingVar),
-        #         int(self.manager.itemsPerScreenVar),
-        #         self.manager.bgHexVar,
-        #         self.manager.selectedFontHexVar,
-        #         self.manager.deselectedFontHexVar,
-        #         self.manager.bubbleHexVar,
-        #         transparent=False,
-        #     )
-        # preview_size = (
-        #     int(0.45 * int(self.manager.deviceScreenWidthVar)),
-        #     int(0.45 * int(self.manager.deviceScreenHeightVar)),
-        # )
-        # if (
-        #     int(self.manager.deviceScreenWidthVar) == 720
-        #     and int(self.manager.deviceScreenHeightVar) == 720
-        # ):
-        #     preview_size = (340, 340)
-        # smallPreviewImage = previewImage.resize(preview_size, Resampling.LANCZOS)
-        # smallPreviewImage.save(temp_build_dir / "preview.png")
-        # if self.manager.developer_preview_var:
-        #     developerPreviewImage = previewImage.resize(
-        #         (int(self.manager.deviceScreenWidthVar), int(self.manager.deviceScreenHeightVar)),
-        #         Resampling.LANCZOS,
-        #     )
-        #     developerPreviewImage.save(
-        #         RESOURCES_DIR
-        #         / f"TempPreview{threadNumber}[{self.manager.deviceScreenWidthVar}x{self.manager.deviceScreenHeightVar}].png",
-        #     )
+            else:
+                ContinuousFolderImageGen(
+                    progress_bar,
+                    menu[0],
+                    itemsList[index],
+                    textPadding,
+                    rectanglePadding,
+                    ItemsPerScreen,
+                    bg_hex,
+                    selected_font_hex,
+                    deselected_font_hex,
+                    bubble_hex,
+                    self.render_factor,
+                    temp_image_dir / "static",
+                    self.manager,
+                    threadNumber=threadNumber,
+                )
+
+        fakeprogressbar = {"value": 0}
+        fakeprogressbar["maximum"] = 1
+        if self.manager.main_menu_style_var == "Horizontal":
+            previewImage = self.generate_horizontal_menu_image(
+                0,
+                self.manager.bgHexVar,
+                self.manager.selectedFontHexVar,
+                self.manager.deselectedFontHexVar,
+                self.manager.bubbleHexVar,
+                self.manager.iconHexVar,
+                transparent=False,
+            )
+        elif self.manager.main_menu_style_var == "Alt-Horizontal":
+            previewImage = self.generate_alt_horizontal_menu_image(
+                fakeprogressbar,
+                0,
+                self.manager.bgHexVar,
+                self.manager.selectedFontHexVar,
+                self.manager.deselectedFontHexVar,
+                self.manager.bubbleHexVar,
+                self.manager.iconHexVar,
+                transparent=False,
+            )
+        elif self.manager.main_menu_style_var == "Vertical":
+            previewImage = self.generate_vertical_menu_image(
+                fakeprogressbar,
+                0,
+                "muxlaunch",
+                itemsList[index][0 : int(self.manager.itemsPerScreenVar)],
+                int(self.manager.textPaddingVar),
+                int(self.manager.bubblePaddingVar),
+                int(self.manager.itemsPerScreenVar),
+                self.manager.bgHexVar,
+                self.manager.selectedFontHexVar,
+                self.manager.deselectedFontHexVar,
+                self.manager.bubbleHexVar,
+                transparent=False,
+            )
+        preview_size = (
+            int(0.45 * int(self.manager.deviceScreenWidthVar)),
+            int(0.45 * int(self.manager.deviceScreenHeightVar)),
+        )
+        if (
+            int(self.manager.deviceScreenWidthVar) == 720
+            and int(self.manager.deviceScreenHeightVar) == 720
+        ):
+            preview_size = (340, 340)
+        smallPreviewImage = previewImage.resize(preview_size, Resampling.LANCZOS)
+        smallPreviewImage.save(temp_build_dir / "preview.png")
+        if self.manager.developer_preview_var:
+            developerPreviewImage = previewImage.resize(
+                (
+                    int(self.manager.deviceScreenWidthVar),
+                    int(self.manager.deviceScreenHeightVar),
+                ),
+                Resampling.LANCZOS,
+            )
+            developerPreviewImage.save(
+                RESOURCES_DIR
+                / f"TempPreview{threadNumber}[{self.manager.deviceScreenWidthVar}x{self.manager.deviceScreenHeightVar}].png",
+            )
 
     def replace_scheme_options(
         self, newSchemeDir: Path, fileName: str, replacementStringMap: dict[str, Any]

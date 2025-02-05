@@ -1,10 +1,9 @@
-from datetime import datetime
 import math
 from pathlib import Path
 
 from tkinter import ttk
 
-from typing import Callable
+from typing import Any, Callable
 
 try:  # try to use the Rust-based package if possible
     from bidi import get_display as bidi_get_display
@@ -14,15 +13,22 @@ except ImportError:  # otherwise use the Python-based package
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 from PIL.Image import Resampling
 
-from generator.color_utils import hex_to_rgba, change_logo_color
-from generator.constants import (
+from ..color_utils import hex_to_rgba, change_logo_color
+from ..constants import (
     BUTTON_GLYPHS_DIR,
     GLYPHS_DIR,
     HORIZONTAL_LOGOS_DIR,
+    MENU_DEFINITIONS_PATH,
+    RESOURCES_DIR,
 )
-from generator.font import get_font_path
-from generator.settings import SettingsManager
-from generator.utils import get_max_length_time_string
+from ..font import get_font_path
+from ..settings import SettingsManager
+from ..utils import (
+    get_max_length_time_string,
+    ensure_file_exists,
+    ensure_folder_exists,
+    read_json,
+)
 
 
 class BaseThemeGenerator:
@@ -31,15 +37,20 @@ class BaseThemeGenerator:
         manager: SettingsManager,
         render_factor: int,
         progress_callback: Callable | None = None,
+        thread_number: int = -1,
     ):
         self.manager = manager
         self.render_factor = render_factor
+        self.thread_number = thread_number
 
         self.on_progress = progress_callback
 
         self.screen_x_middle, self.screen_y_middle = (
             dim // 2 for dim in self.scaled_screen_dimensions
         )
+
+        self.menu_data = {"main": {}, "programs": {}}
+        self._load_menu_definitions()
 
     @property
     def screen_dimensions(self) -> tuple[int, int]:
@@ -51,6 +62,12 @@ class BaseThemeGenerator:
     @property
     def scaled_screen_dimensions(self) -> tuple[int, ...]:
         return tuple(dim * self.render_factor for dim in self.screen_dimensions)
+
+    def _load_menu_definitions(self) -> None:
+        ensure_file_exists(MENU_DEFINITIONS_PATH, self.menu_data)
+        menu_data = read_json(MENU_DEFINITIONS_PATH)
+
+        self.menu_data = menu_data
 
     def update_progress(self, *args, **kwargs):
         if self.on_progress is not None:
@@ -2873,3 +2890,137 @@ class BaseThemeGenerator:
         raise NotImplementedError(
             "Subclasses of BaseThemeGenerator must implement generate_theme"
         )
+
+    def generate_horizontal_launch_menu_image(
+        self,
+        muOSSystemName: str,
+        listItems: list[str],
+        bg_hex: str,
+        selected_font_hex: str,
+        deselected_font_hex: str,
+        bubble_hex: str,
+        icon_hex: str,
+        outputDir: Path,
+        variant: str,
+    ) -> None:
+        (
+            bg_hex,
+            selected_font_hex,
+            deselected_font_hex,
+            bubble_hex,
+            icon_hex,
+        ) = [
+            val[1:] if val.startswith("#") else val
+            for val in [
+                bg_hex,
+                selected_font_hex,
+                deselected_font_hex,
+                bubble_hex,
+                icon_hex,
+            ]
+        ]
+
+        startIndex = 0
+        endIndex = 8
+        for workingIndex in range(startIndex, endIndex):
+            workingItem = listItems[workingIndex]
+            if variant == "Horizontal":
+                image = self.generate_horizontal_menu_image(
+                    workingIndex,
+                    bg_hex,
+                    selected_font_hex,
+                    deselected_font_hex,
+                    bubble_hex,
+                    icon_hex,
+                    transparent=True,
+                )
+            elif variant == "Alt-Horizontal":
+                image = self.generate_alt_horizontal_menu_image(
+                    workingIndex,
+                    bg_hex,
+                    selected_font_hex,
+                    deselected_font_hex,
+                    bubble_hex,
+                    icon_hex,
+                    transparent=True,
+                )
+            else:
+                raise ValueError("Something went wrong with your Main Menu Style")
+            image = image.resize(
+                self.screen_dimensions,
+                Resampling.LANCZOS,
+            )
+
+            if workingItem[1] == "File":
+                directory = outputDir / muOSSystemName / "box"
+                ensure_folder_exists(directory)
+                image.save(directory / f"{workingItem[0]}.png")
+            elif workingItem[1] == "Directory":
+                directory = outputDir / muOSSystemName / "Folder" / "box"
+                ensure_folder_exists(directory)
+                image.save(directory / f"{workingItem[0]}.png")
+            elif workingItem[1] == "Menu":
+                directory = outputDir / muOSSystemName
+                ensure_folder_exists(directory)
+                image.save(directory / f"{workingItem[2]}.png")
+
+    def generate_theme_image(self, program_name: str) -> tuple[bool, Image.Image]:
+        if not (menu_def := self.menu_data.get(program_name)):
+            return False, self.generate_background_image(
+                bg_hex=self.manager.backgroundHexVar
+            )
+
+        menu_items: list[str] | None = menu_def.get("menu_items")
+        caption_text: str = menu_def.get("caption_text", "")
+
+        if menu_items is not None and caption_text:
+            raise ValueError(
+                "Cannot have both menu_items and caption_text in menu definition"
+            )
+        elif menu_items is None and not caption_text:
+            return False, self.generate_background_image(
+                bg_hex=self.manager.backgroundHexVar
+            )
+        elif not menu_items and caption_text:
+            return False, self.generate_boot_screen_with_text(
+                self.manager.backgroundHexVar,
+                self.manager.deselectedFontHexVar,
+                self.manager.iconHexVar,
+                caption_text,
+            )
+        else:
+            menu_items = menu_items or []
+
+        left_guides: list[tuple[str, str]] = [
+            tuple(pair) for pair in menu_def.get("left_guides", [])
+        ]
+        right_guides: list[tuple[str, str]] = [
+            tuple(pair) for pair in menu_def.get("right_guides", [])
+        ]
+
+        if program_name == "mux_launch":
+            # generate launch menu
+            pass
+
+        is_static_menu = len(menu_items) > 1
+        image = self.generate_background_image(
+            bg_hex=self.manager.backgroundHexVar,
+            transparent=is_static_menu,
+        )
+
+        header_bubbles = self.generate_header_bubbles()
+        image.alpha_composite(header_bubbles)
+
+        selected_font_path = get_font_path(
+            self.manager.use_alt_font_var,
+            self.manager.alt_font_filename,
+        )
+        footer_guides = self.generate_footer_guides(
+            right_guides,
+            selected_font_path,
+            self.manager.footerBubbleHexVar,
+            left_guides,
+        )
+        image.alpha_composite(footer_guides)
+
+        return is_static_menu, image
