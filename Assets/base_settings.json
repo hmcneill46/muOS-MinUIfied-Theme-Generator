@@ -337,14 +337,14 @@
           ]
         },
         {
-          "label": "Clock - Left Padding",
+          "label": "Clock - Left Margin",
           "widget_type": "entry",
           "var_name": "clockHorizontalLeftPaddingVar",
           "default_value": 10,
           "var_type": "int"
         },
         {
-          "label": "Clock - Right Padding",
+          "label": "Clock - Right Margin",
           "widget_type": "entry",
           "var_name": "clockHorizontalRightPaddingVar",
           "default_value": 10,
