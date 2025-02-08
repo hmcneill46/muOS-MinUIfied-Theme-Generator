@@ -3,10 +3,14 @@ from pathlib import Path
 from PIL import Image
 
 
-def hex_to_rgba(hex_color: str, alpha=1.0) -> tuple[int, int, int, int]:
+def hex_to_rgba(hex_color: str | None, alpha=1.0) -> tuple[int, int, int, int]:
     # Convert hex to RGB
+    if not hex_color:
+        return (0, 0, 0, int(alpha * 255))
+
     if hex_color.startswith("#"):
         hex_color = hex_color[1:]
+
     rgb = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
     return (rgb[0], rgb[1], rgb[2], int(alpha * 255))
 
@@ -14,6 +18,11 @@ def hex_to_rgba(hex_color: str, alpha=1.0) -> tuple[int, int, int, int]:
 def rgb_to_hex(rgb_color: tuple[int, int, int]) -> str:
     # Convert RGB to hex
     return "{:02x}{:02x}{:02x}".format(*rgb_color)
+
+
+def strip_hex_code(hex_code: str | None) -> str:
+    # Strip the hash from a hex code
+    return hex_code.lstrip("#") if hex_code else ""
 
 
 def interpolate_color_component(c1: int, c2: int, factor: float) -> int:
