@@ -63,7 +63,9 @@ class SettingsManager:
                 )
 
                 if var_name == "device_type_var":
-                    self._parse_screen_dimensions(final_val)
+                    width, height = self._parse_screen_dimensions(final_val)
+                    merged["deviceScreenWidthVar"] = width
+                    merged["deviceScreenHeightVar"] = height
 
         self.merged_values = merged
 
@@ -122,7 +124,11 @@ class SettingsManager:
         self.merged_values[var_name] = new_value
 
         if var_name in "device_type_var":
-            self._parse_screen_dimensions(new_value)
+            width, height = self._parse_screen_dimensions(new_value)
+            self.user_values["deviceScreenWidthVar"] = width
+            self.merged_values["deviceScreenWidthVar"] = width
+            self.user_values["deviceScreenHeightVar"] = height
+            self.merged_values["deviceScreenHeightVar"] = height
 
     def set_values(self, values: dict[str, Any]) -> None:
         for var_name, new_value in values.items():
@@ -138,11 +144,10 @@ class SettingsManager:
             version_number = version[5:9]
             return MENU_LISTING_MAP.get(version_number)
 
-    def _parse_screen_dimensions(self, device_type: str):
+    def _parse_screen_dimensions(self, device_type: str) -> tuple[int, int]:
         match = re.search(r"\[(\d+)x(\d+)\]", device_type)
         if match:
-            self.set_value("deviceScreenWidthVar", int(match.group(1)))
-            self.set_value("deviceScreenHeightVar", int(match.group(2)))
+            return int(match.group(1)), int(match.group(2))
         else:
             raise ValueError(
                 "Invalid device type format, cannot find screen dimensions"
