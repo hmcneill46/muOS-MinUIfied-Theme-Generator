@@ -1,7 +1,7 @@
 from tkinter import BooleanVar, DoubleVar, IntVar, StringVar, Variable
 from typing import Any, Callable
 
-from generator.settings import SettingsManager
+from ..settings import SettingsManager
 
 
 def create_tk_variable(var_type_str: str, default_value=None) -> Variable:

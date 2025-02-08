@@ -1,1 +1,1 @@
-from generator.adapter.tkinter import TkinterSettingsAdapter
+from .tkinter import TkinterSettingsAdapter

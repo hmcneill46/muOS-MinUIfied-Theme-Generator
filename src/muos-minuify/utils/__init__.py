@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import shutil
 import sys
-from typing import Any
+from typing import Any, Literal
 
 from PIL import Image, ImageFont
 from PIL.Image import Resampling
@@ -185,7 +185,10 @@ def get_time_string_widths(time_font: ImageFont.FreeTypeFont) -> dict[str, int]:
     return time_string_widths
 
 
-def get_max_length_time_string(font: ImageFont.FreeTypeFont, time_format: str):
+def get_max_length_time_string(
+    font: ImageFont.FreeTypeFont,
+    time_format: Literal["12 Hour", "24 Hour"],
+) -> str:
     time_string_sizes = get_time_string_widths(font)
 
     last_digit = max(
