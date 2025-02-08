@@ -373,6 +373,7 @@ class BaseThemeGenerator:
             )
         else:
             raise ValueError("Header Glyph Height Too Large!")
+
         if self.manager.show_glyphs_bubbles_var:
             # Battery not charging stuff
             capacityGlyph = "capacity_30.png"
@@ -455,10 +456,6 @@ class BaseThemeGenerator:
                 )
             else:
                 raise ValueError("Invalid clock alignment")
-
-            glyphBubbleXPos = int(
-                int(self.manager.deviceScreenWidthVar) * self.render_factor
-            ) - (glyphTotalWidth + glyph_left_side_padding * self.render_factor)
 
             bottom_y_points["glyphs"] = headerMiddleY - (
                 (int(self.manager.header_glyph_bubble_height_var) * self.render_factor)
