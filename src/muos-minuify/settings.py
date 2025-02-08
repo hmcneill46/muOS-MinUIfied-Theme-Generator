@@ -20,6 +20,25 @@ class SettingsManager:
         self.user_values: dict[str, Any] = {}
         self.merged_values: dict[str, Any] = {}
 
+    @staticmethod
+    def get_default_settings(
+        defaults_path: Path = BASE_SETTINGS_PATH,
+    ) -> dict[str, Any]:
+        ensure_file_exists(defaults_path, {"sections": []})
+        base_data = read_json(defaults_path)
+        defaults = {}
+
+        for section in base_data.get("sections", []):
+            for field in section.get("fields", []):
+                if (var_name := field.get("var_name")) and (
+                    var_type := field.get("var_type", "string")
+                ):
+                    defaults[var_name] = SettingsManager._cast_from_json(
+                        field.get("default_value", None), var_type
+                    )
+
+        return defaults
+
     def _merge_values(self):
         merged = {}
 
@@ -35,11 +54,13 @@ class SettingsManager:
                 var_type = field.get("var_type", "string")
                 user_val = self.user_values.get(var_name, None)
 
-                final_val = self._cast_from_json(
+                final_val = SettingsManager._cast_from_json(
                     user_val if user_val is not None else default_val, var_type
                 )
                 merged[var_name] = final_val
-                self.default_values[var_name] = default_val
+                self.default_values[var_name] = SettingsManager._cast_from_json(
+                    default_val, var_type
+                )
 
                 if var_name == "device_type_var":
                     self._parse_screen_dimensions(final_val)
@@ -82,7 +103,9 @@ class SettingsManager:
                 var_type = field.get("var_type", "string")
                 value = self.user_values[var_name]
 
-                casted_user_data[var_name] = self._cast_to_json(value, var_type)
+                casted_user_data[var_name] = SettingsManager._cast_to_json(
+                    value, var_type
+                )
 
         write_json(self.user_path, casted_user_data)
 
@@ -91,7 +114,9 @@ class SettingsManager:
         old_value = self.merged_values.get(var_name, None)
         var_type = self._get_var_type(var_name)
 
-        new_value = self._parse_value(new_value, old_value, default_value, var_type)
+        new_value = SettingsManager._parse_value(
+            new_value, old_value, default_value, var_type
+        )
 
         self.user_values[var_name] = new_value
         self.merged_values[var_name] = new_value
@@ -123,8 +148,8 @@ class SettingsManager:
                 "Invalid device type format, cannot find screen dimensions"
             )
 
+    @staticmethod
     def _parse_value(
-        self,
         new_value: Any,
         old_value: Any | None = None,
         default_value: Any | None = None,
@@ -133,16 +158,22 @@ class SettingsManager:
         parsed_value = new_value
 
         if var_type == "color":
-            parsed_value = self._parse_color_hex(new_value, old_value, default_value)
+            parsed_value = SettingsManager._parse_color_hex(
+                new_value, old_value, default_value
+            )
         if var_type == "int":
-            parsed_value = self._parse_integer(new_value, old_value, default_value)
+            parsed_value = SettingsManager._parse_integer(
+                new_value, old_value, default_value
+            )
         if var_type == "path":
-            parsed_value = self._parse_path(new_value, old_value, default_value)
+            parsed_value = SettingsManager._parse_path(
+                new_value, old_value, default_value
+            )
 
         return parsed_value
 
+    @staticmethod
     def _parse_color_hex(
-        self,
         color_hex: str,
         old_color_hex: str | None = None,
         default_color_hex: str | None = "#000000",
@@ -162,8 +193,8 @@ class SettingsManager:
 
         return "#000000"
 
+    @staticmethod
     def _parse_integer(
-        self,
         value: str | int,
         old_value: str | int | None = None,
         default_value: str | int | None = 0,
@@ -177,8 +208,8 @@ class SettingsManager:
 
         return 0
 
+    @staticmethod
     def _parse_path(
-        self,
         value: str | Path,
         old_value: str | Path | None = None,
         default_value: str | Path | None = None,
@@ -209,36 +240,49 @@ class SettingsManager:
     def __getattr__(self, name: str) -> Any:
         return self.get_value(name)
 
-    def _cast_from_json(self, value: Any, var_type: str) -> Any:
+    @staticmethod
+    def _cast_from_json(value: Any, var_type: str) -> Any:
         if value is None:
             return None
 
         if var_type == "int":
-            return self._parse_integer(value)
+            return SettingsManager._parse_integer(value)
         elif var_type == "float":
             return float(value)
         elif var_type == "boolean":
             return bool(value)
         elif var_type == "path":
-            return parsed_path if (parsed_path := self._parse_path(value)) else None
+            return (
+                parsed_path
+                if (parsed_path := SettingsManager._parse_path(value))
+                else None
+            )
         elif var_type == "color":
-            return self._parse_color_hex(value)
+            return SettingsManager._parse_color_hex(value)
         else:
             return str(value)
 
-    def _cast_to_json(self, value: Any, var_type: str) -> Any:
+    @staticmethod
+    def _cast_to_json(value: Any, var_type: str) -> Any:
         if value is None:
             return None
 
         if var_type == "int":
-            return self._parse_integer(value)
+            return SettingsManager._parse_integer(value)
         elif var_type == "float":
             return float(value)
         elif var_type == "boolean":
             return bool(value)
         elif var_type == "path":
-            return str(parsed_path) if (parsed_path := self._parse_path(value)) else ""
+            return (
+                str(parsed_path)
+                if (parsed_path := SettingsManager._parse_path(value))
+                else ""
+            )
         elif var_type == "color":
-            return self._parse_color_hex(value)
+            return SettingsManager._parse_color_hex(value)
         else:
             return str(value)
+
+
+DEFAULT_SETTINGS = SettingsManager.get_default_settings()
