@@ -4,6 +4,7 @@ from PIL import Image
 
 from ..settings import SettingsManager
 from .components import Background, HeaderBubbles
+from .components import Background, FooterGuides, HeaderBubbles
 
 
 class BaseThemeGenerator:
@@ -115,3 +116,9 @@ class BaseThemeGenerator:
 
     def generate_theme(self):
         pass
+        for _ in []:
+            self.generate_wall_image()
+            self.generate_static_image()
+
+            if self.on_progress:
+                self.on_progress()
