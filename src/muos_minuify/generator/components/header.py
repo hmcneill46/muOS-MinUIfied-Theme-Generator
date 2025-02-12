@@ -8,11 +8,12 @@ from PIL.Image import Resampling
 from ...color_utils import hex_to_rgba
 from ...constants import GLYPHS_DIR
 from ...defaults import DEFAULT_FONT_PATH
-from ...settings import DEFAULT_SETTINGS
+from ...settings import SettingsManager
 from ...utils import get_max_length_time_string
+from .scalable import Scalable
 
 
-class HeaderBubbles:
+class HeaderBubbles(Scalable):
     capacity_30 = "capacity_30.png"
     capacity_image_path = GLYPHS_DIR / "capacity_30[5x].png"
     network_active = "network_active.png"
@@ -20,47 +21,54 @@ class HeaderBubbles:
 
     def __init__(
         self,
+        manager: SettingsManager,
         font_path: Path = DEFAULT_FONT_PATH,
         screen_dimensions: tuple[int, int] = (640, 480),
-        render_factor: int = 1,
+        render_factor: int = 5,
     ):
-        self.render_factor = render_factor
-        self.screen_dimensions = screen_dimensions
+        super().__init__(screen_dimensions, render_factor)
+        self.manager = manager
 
-        self.header_height = DEFAULT_SETTINGS["headerHeightVar"] * render_factor
+        self.header_height = self.manager.headerHeightVar * self.render_factor
         self.text_height = (
-            DEFAULT_SETTINGS["header_text_height_var"] * render_factor * 4 // 3
+            self.manager.header_text_height_var * self.render_factor * 4 / 3
         )
         self.text_bubble_height = (
-            DEFAULT_SETTINGS["header_text_bubble_height_var"] * render_factor
+            self.manager.header_text_bubble_height_var * self.render_factor
         )
-        self.text_bubble_padding_block = DEFAULT_SETTINGS["contentPaddingTopVar"]
+        self.text_bubble_padding_block = (
+            self.manager.contentPaddingTopVar * self.render_factor
+        )
 
-        self.clock_format = DEFAULT_SETTINGS["clock_format_var"]
-        self.clock_bubble_alignment = DEFAULT_SETTINGS["clock_alignment_var"]
-        self.clock_bubble_margin_left = DEFAULT_SETTINGS[
-            "clockHorizontalLeftPaddingVar"
-        ]
-        self.clock_bubble_margin_left = DEFAULT_SETTINGS[
-            "clockHorizontalRightPaddingVar"
-        ]
+        self.clock_format = self.manager.clock_format_var
+        self.clock_bubble_alignment = self.manager.clock_alignment_var
+        self.clock_bubble_margin_left = (
+            self.manager.clockHorizontalLeftPaddingVar * self.render_factor
+        )
+        self.clock_bubble_margin_left = (
+            self.manager.clockHorizontalRightPaddingVar * self.render_factor
+        )
 
-        self.status_bubble_alignment = DEFAULT_SETTINGS["header_glyph_alignment_var"]
-        self.status_glyph_height = DEFAULT_SETTINGS["header_glyph_height_var"]
-        self.status_bubble_height = DEFAULT_SETTINGS["header_glyph_bubble_height_var"]
-        self.status_bubble_padding_left = DEFAULT_SETTINGS[
-            "header_glyph_horizontal_left_padding_var"
-        ]
-        self.status_bubble_padding_right = DEFAULT_SETTINGS[
-            "header_glyph_horizontal_right_padding_var"
-        ]
-        self.status_bubble_gap = 5
+        self.status_bubble_alignment = self.manager.header_glyph_alignment_var
+        self.status_glyph_height = (
+            self.manager.header_glyph_height_var * self.render_factor
+        )
+        self.status_bubble_height = (
+            self.manager.header_glyph_bubble_height_var * self.render_factor
+        )
+        self.status_bubble_padding_left = (
+            self.manager.header_glyph_horizontal_left_padding_var * self.render_factor
+        )
+        self.status_bubble_padding_right = (
+            self.manager.header_glyph_horizontal_right_padding_var * self.render_factor
+        )
+        self.status_bubble_gap = 5 * self.render_factor
         self.status_bubble_margin_inline = (
             self.status_bubble_height - self.status_glyph_height
-        ) // 2
+        ) / 2
 
-        self.clock_x_pos = self.clock_bubble_margin_left * self.render_factor
-        self.center_y_pos = self.header_height // 2
+        self.clock_x_pos = self.clock_bubble_margin_left
+        self.center_y_pos = self.header_height / 2
 
         self.bottom_y_points = {}
         self.top_y_points = {}
@@ -84,7 +92,7 @@ class HeaderBubbles:
                 f"Header text height must be between 10 and {header_height}!"
             )
         else:
-            self.text_height = header_text_height * self.render_factor * 4 // 3
+            self.text_height = header_text_height * self.render_factor * 4 / 3
             self.header_font.size = self.text_height
 
         if not (header_text_height <= header_text_bubble_height <= header_height):
@@ -94,10 +102,12 @@ class HeaderBubbles:
         else:
             self.text_bubble_height = header_text_bubble_height * self.render_factor
             self.text_bubble_padding_block = (
-                header_text_bubble_height - header_text_height
-            ) // 2
+                (header_text_bubble_height - header_text_height)
+                / 2
+                * self.render_factor
+            )
 
-        self.center_y_pos = self.header_height // 2
+        self.center_y_pos = self.header_height / 2
 
         return self
 
@@ -126,8 +136,8 @@ class HeaderBubbles:
             case "Left":
                 self.clock_x_pos = clock_bubble_margin_left * self.render_factor
             case "Center":
-                self.clock_x_pos = int(
-                    (self.screen_dimensions[0] * self.render_factor / 2)
+                self.clock_x_pos = (
+                    (self.scaled_screen_dimensions[0] / 2)
                     - (
                         (
                             maxTimeTextWidth
@@ -141,27 +151,17 @@ class HeaderBubbles:
                     + (clock_bubble_margin_left * self.render_factor)
                 )
             case "Right":
-                self.clock_x_pos = int(
-                    (self.screen_dimensions[0] * self.render_factor)
-                    - (
-                        maxTimeTextWidth
-                        + (clock_bubble_margin_right * self.render_factor)
-                    )
+                self.clock_x_pos = self.scaled_screen_dimensions[0] - (
+                    maxTimeTextWidth + (clock_bubble_margin_right * self.render_factor)
                 )
 
         self.bottom_y_points["clock"] = self.center_y_pos - (
-            self.text_bubble_height * self.render_factor // 2
+            self.text_bubble_height / 2
         )
-        self.top_y_points["clock"] = self.center_y_pos + (
-            self.text_bubble_height * self.render_factor // 2
-        )
-        self.left_x_points["clock"] = (
-            self.clock_x_pos - self.text_bubble_padding_block * self.render_factor
-        )
+        self.top_y_points["clock"] = self.center_y_pos + (self.text_bubble_height / 2)
+        self.left_x_points["clock"] = self.clock_x_pos - self.text_bubble_padding_block
         self.right_x_points["clock"] = (
-            self.clock_x_pos
-            + maxTimeTextWidth
-            + (self.text_bubble_padding_block * self.render_factor)
+            self.clock_x_pos + maxTimeTextWidth + self.text_bubble_padding_block
         )
 
         return self
@@ -231,7 +231,7 @@ class HeaderBubbles:
                 self.status_x_pos = status_bubble_padding_left * self.render_factor
             case "Center":
                 self.status_x_pos = int(
-                    (self.screen_dimensions[0] * self.render_factor / 2)
+                    (self.scaled_screen_dimensions[0] / 2)
                     - (
                         (
                             glyphTotalWidth
@@ -248,7 +248,7 @@ class HeaderBubbles:
                 )
             case "Right":
                 self.status_x_pos = int(
-                    (self.screen_dimensions[0] * self.render_factor)
+                    (self.scaled_screen_dimensions[0])
                     - (
                         glyphTotalWidth
                         + (status_bubble_padding_right * self.render_factor)
@@ -256,10 +256,10 @@ class HeaderBubbles:
                 )
 
         self.bottom_y_points["status"] = self.center_y_pos - (
-            status_bubble_height * self.render_factor // 2
+            status_bubble_height * self.render_factor / 2
         )
         self.top_y_points["status"] = self.center_y_pos + (
-            status_bubble_height * self.render_factor // 2
+            status_bubble_height * self.render_factor / 2
         )
         self.left_x_points["status"] = (
             self.status_x_pos - self.status_bubble_margin_inline * self.render_factor
@@ -295,7 +295,7 @@ class HeaderBubbles:
                 (self.left_x_points[key], self.bottom_y_points[key]),
                 (self.right_x_points[key], self.top_y_points[key]),
             ],
-            radius=math.ceil((self.top_y_points[key] - self.bottom_y_points[key]) // 2),
+            radius=math.ceil((self.top_y_points[key] - self.bottom_y_points[key]) / 2),
             fill=hex_to_rgba(accent_colour, alpha=bubble_alpha),
         )
 
@@ -331,7 +331,7 @@ class HeaderBubbles:
                 (left_x, bottom_y),
                 (right_x, top_y),
             ],
-            radius=math.ceil((top_y - bottom_y) // 2),
+            radius=math.ceil((top_y - bottom_y) / 2),
             fill=hex_to_rgba(accent_colour, alpha=bubble_alpha),
         )
 
@@ -343,7 +343,7 @@ class HeaderBubbles:
         show_status_bubble: bool = False,
         join_bubbles: bool = False,
     ) -> Image.Image:
-        image = Image.new("RGBA", self.screen_dimensions, (0, 0, 0, 0))
+        image = Image.new("RGBA", self.scaled_screen_dimensions, (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
 
         if join_bubbles:

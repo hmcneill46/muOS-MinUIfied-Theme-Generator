@@ -1,9 +1,9 @@
 from typing import Callable
 
 from PIL import Image
+from PIL.Image import Resampling
 
 from ..settings import SettingsManager
-from .components import Background, HeaderBubbles
 from .components import Background, FooterGuides, HeaderBubbles
 
 
@@ -11,7 +11,7 @@ class BaseThemeGenerator:
     def __init__(
         self,
         manager: SettingsManager,
-        render_factor: int = 1,
+        render_factor: int = 5,
         on_progress: Callable | None = None,
     ):
         self.manager = manager
@@ -28,8 +28,8 @@ class BaseThemeGenerator:
     @property
     def scaled_screen_dimensions(self) -> tuple[int, int]:
         return (
-            self.screen_dimensions[0] * self.render_factor,
-            self.screen_dimensions[1] * self.render_factor,
+            int(self.screen_dimensions[0] * self.render_factor),
+            int(self.screen_dimensions[1] * self.render_factor),
         )
 
     def _generate_background(self) -> Image.Image:
@@ -66,7 +66,8 @@ class BaseThemeGenerator:
 
         header_bubbles = (
             HeaderBubbles(
-                screen_dimensions=self.scaled_screen_dimensions,
+                manager=self.manager,
+                screen_dimensions=self.screen_dimensions,
                 render_factor=self.render_factor,
             )
             .with_header_configuration(header_height, text_height, text_bubble_height)
@@ -98,21 +99,75 @@ class BaseThemeGenerator:
         )
         return header_bubbles_image
 
-    def generate_wall_image(self) -> Image.Image:
-        background_image = self._generate_background()
+    def _generate_footer_guides(
+        self, right_buttons: list[tuple[str, str]], left_buttons: list[tuple[str, str]]
+    ) -> Image.Image:
+        items_per_screen = self.manager.itemsPerScreenVar
+        content_padding_top = self.manager.contentPaddingTopVar
+        footer_ideal_height = self.manager.approxFooterHeightVar
+        footer_margin_block = self.manager.VBG_Vertical_Padding_var
+        footer_margin_inline = self.manager.VBG_Horizontal_Padding_var
+
+        control_scheme = self.manager.muos_button_swap_var
+        button_layout = self.manager.physical_controller_layout_var
+
+        footer_guides = (
+            FooterGuides(
+                manager=self.manager,
+                screen_dimensions=self.screen_dimensions,
+                render_factor=self.render_factor,
+            )
+            .with_footer_configuration(
+                items_per_screen,
+                content_padding_top,
+                footer_ideal_height,
+                footer_margin_block,
+                footer_margin_inline,
+            )
+            .with_button_configuration(
+                right_buttons,
+                left_buttons,
+                control_scheme,
+                button_layout,
+            )
+        )
+
+        colour_hex = self.manager.footerBubbleHexVar
+        show_left_guide = not self.manager.remove_left_menu_guides_var
+        show_right_guide = not self.manager.remove_right_menu_guides_var
+
+        footer_guides_image = footer_guides.generate(
+            colour_hex,
+            show_left_guide=show_left_guide,
+            show_right_guide=show_right_guide,
+        )
+        return footer_guides_image
+
+    def generate_wall_image(
+        self, right_buttons: list[tuple[str, str]], left_buttons: list[tuple[str, str]]
+    ) -> Image.Image:
+        image = self._generate_background()
 
         header_bubbles_image = self._generate_header_bubbles()
-        background_image.paste(header_bubbles_image, (0, 0), header_bubbles_image)
+        image.alpha_composite(header_bubbles_image, (0, 0))
 
-        return background_image
+        footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
+        image.alpha_composite(footer_guides_image, (0, 0))
 
-    def generate_static_image(self) -> Image.Image:
-        image = Image.new("RGBA", self.screen_dimensions, (0, 0, 0, 0))
+        return image.resize(self.screen_dimensions, Resampling.LANCZOS)
+
+    def generate_static_image(
+        self, right_buttons: list[tuple[str, str]], left_buttons: list[tuple[str, str]]
+    ) -> Image.Image:
+        image = Image.new("RGBA", self.scaled_screen_dimensions, (0, 0, 0, 0))
 
         header_bubbles_image = self._generate_header_bubbles()
         image.alpha_composite(header_bubbles_image)
 
-        return image
+        footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
+        image.alpha_composite(footer_guides_image)
+
+        return image.resize(self.screen_dimensions, Resampling.LANCZOS)
 
     def generate_theme(self):
         pass
