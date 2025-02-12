@@ -117,18 +117,18 @@ class BaseThemeGenerator:
                 screen_dimensions=self.screen_dimensions,
                 render_factor=self.render_factor,
             )
+            .with_button_configuration(
+                right_buttons,
+                left_buttons,
+                control_scheme,
+                button_layout,
+            )
             .with_footer_configuration(
                 items_per_screen,
                 content_padding_top,
                 footer_ideal_height,
                 footer_margin_block,
                 footer_margin_inline,
-            )
-            .with_button_configuration(
-                right_buttons,
-                left_buttons,
-                control_scheme,
-                button_layout,
             )
         )
 

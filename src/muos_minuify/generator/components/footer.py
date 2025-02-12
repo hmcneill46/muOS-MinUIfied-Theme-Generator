@@ -48,6 +48,9 @@ class FooterGuides(Scalable):
         self.right_buttons = []
         self.left_buttons = [("POWER", "SLEEP")]
 
+        self.left_guide_width = 0
+        self.right_guide_width = self.screen_dimensions[0]
+
         button_font_size = self.footer_bubble_height * (20.1 / 60)
         effect_font_size = self.footer_bubble_height * (24 / 60)
         single_letter_font_size = self.footer_bubble_button_width * (28 / 40)
@@ -118,51 +121,89 @@ class FooterGuides(Scalable):
         footer_margin_block: int,
         footer_margin_inline: int,
     ) -> "FooterGuides":
-        self.content_item_height = (
-            self.scaled_screen_dimensions[1]
-            - self.render_factor * (footer_ideal_height + content_padding_top)
-        ) / items_per_screen
-        self.footer_height = (
-            self.scaled_screen_dimensions[1]
-            - (content_padding_top * self.render_factor)
-            - (self.content_item_height * items_per_screen)
-            + (self.content_gap * self.render_factor)
-        )
+        self.footer_margin_block = footer_margin_block * self.render_factor
 
-        self.footer_bubble_height = self.footer_height - (
-            footer_margin_block * self.render_factor
-        )
+        iterations = 0
+        self.left_guide_width = 0
+        self.right_guide_width = self.scaled_screen_dimensions[0]
 
-        self.footer_bubble_padding = self.footer_bubble_height * (10 / 60)
-        self.footer_bubble_button_padding = self.footer_bubble_height * (10 / 60)
-        self.footer_bubble_effect_padding_right = self.footer_bubble_height * (20 / 60)
-        self.footer_margin_inline = footer_margin_inline * self.render_factor
+        while (
+            80
+            + (self.footer_margin_inline * 2)
+            + self.left_guide_width
+            + self.right_guide_width
+        ) > self.scaled_screen_dimensions[0]:
+            footer_margin_block += iterations * self.render_factor
 
-        self.footer_bubble_button_width = self.footer_bubble_height - (
-            self.footer_bubble_padding * 2
-        )
+            self.content_item_height = (
+                self.scaled_screen_dimensions[1]
+                - self.render_factor * (footer_ideal_height + content_padding_top)
+            ) / items_per_screen
+            self.footer_height = (
+                self.scaled_screen_dimensions[1]
+                - (content_padding_top * self.render_factor)
+                - (self.content_item_height * items_per_screen)
+                + (self.content_gap * self.render_factor)
+            )
 
-        button_font_size = self.footer_bubble_height * (20.1 / 60)
-        effect_font_size = self.footer_bubble_height * (24 / 60)
-        single_letter_font_size = self.footer_bubble_button_width * (28 / 40)
-        word_font_size = self.footer_bubble_button_width * (20.1 / 40)
+            self.footer_bubble_height = self.footer_height - (
+                footer_margin_block * self.render_factor
+            )
 
-        self.button_font = ImageFont.truetype(self.font_path, button_font_size)
-        self.effect_font = ImageFont.truetype(self.font_path, effect_font_size)
-        self.single_letter_font = ImageFont.truetype(
-            self.font_path, single_letter_font_size
-        )
-        self.word_font = ImageFont.truetype(self.font_path, word_font_size)
+            self.footer_bubble_padding = self.footer_bubble_height * (10 / 60)
+            self.footer_bubble_button_padding = self.footer_bubble_height * (10 / 60)
+            self.footer_bubble_effect_padding_right = self.footer_bubble_height * (
+                20 / 60
+            )
+            self.footer_margin_inline = footer_margin_inline * self.render_factor
 
-        self.center_y_pos = (
-            self.scaled_screen_dimensions[1]
-            - (footer_margin_block * self.render_factor)
-            - (self.footer_height / 2)
-        )
+            self.footer_bubble_button_width = self.footer_bubble_height - (
+                self.footer_bubble_padding * 2
+            )
 
-        ib_ascent, ib_descent = self.button_font.getmetrics()
-        ib_text_height = ib_ascent + ib_descent
-        self.footer_bubble_button_y = self.center_y_pos - (ib_text_height / 2)
+            button_font_size = self.footer_bubble_height * (20.1 / 60)
+            effect_font_size = self.footer_bubble_height * (24 / 60)
+            single_letter_font_size = self.footer_bubble_button_width * (28 / 40)
+            word_font_size = self.footer_bubble_button_width * (20.1 / 40)
+
+            self.button_font = ImageFont.truetype(self.font_path, button_font_size)
+            self.effect_font = ImageFont.truetype(self.font_path, effect_font_size)
+            self.single_letter_font = ImageFont.truetype(
+                self.font_path, single_letter_font_size
+            )
+            self.word_font = ImageFont.truetype(self.font_path, word_font_size)
+
+            self.center_y_pos = (
+                self.scaled_screen_dimensions[1]
+                - self.footer_margin_block
+                - (self.footer_bubble_height / 2)
+            )
+
+            ib_ascent, ib_descent = self.button_font.getmetrics()
+            ib_text_height = ib_ascent + ib_descent
+            self.footer_bubble_button_y = self.center_y_pos - (ib_text_height / 2)
+
+            self.left_guide_width = self._get_total_bubble_width(
+                self.left_buttons,
+                self.word_font,
+                self.effect_font,
+                self.footer_bubble_padding,
+                self.footer_bubble_effect_padding_right,
+                self.footer_bubble_button_padding,
+                self.footer_bubble_button_width,
+            )
+
+            self.right_guide_width = self._get_total_bubble_width(
+                self.right_buttons,
+                self.word_font,
+                self.effect_font,
+                self.footer_bubble_padding,
+                self.footer_bubble_effect_padding_right,
+                self.footer_bubble_button_padding,
+                self.footer_bubble_button_width,
+            )
+
+            iterations += 1
 
         return self
 
@@ -193,26 +234,6 @@ class FooterGuides(Scalable):
                     case "Y":
                         modern_buttons.append(("X", effect))
             self.right_buttons = modern_buttons
-
-        self.left_guide_width = self._get_total_bubble_width(
-            self.left_buttons,
-            self.word_font,
-            self.effect_font,
-            self.footer_bubble_padding,
-            self.footer_bubble_effect_padding_right,
-            self.footer_bubble_button_padding,
-            self.footer_bubble_button_width,
-        )
-
-        self.right_guide_width = self._get_total_bubble_width(
-            self.right_buttons,
-            self.word_font,
-            self.effect_font,
-            self.footer_bubble_padding,
-            self.footer_bubble_effect_padding_right,
-            self.footer_bubble_button_padding,
-            self.footer_bubble_button_width,
-        )
 
         return self
 
