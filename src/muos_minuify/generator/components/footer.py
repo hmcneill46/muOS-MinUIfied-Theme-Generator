@@ -28,7 +28,7 @@ class FooterGuides(Scalable):
         self.footer_height = self.footer_ideal_height
         self.footer_margin_block = self.manager.VBG_Vertical_Padding_var
         self.footer_margin_inline = self.manager.VBG_Horizontal_Padding_var
-        self.footer_bubble_height = self.footer_height - self.footer_margin_block
+        self.footer_bubble_height = self.footer_height - self.footer_margin_block * 2
         self.footer_bubble_padding = self.footer_bubble_height * (10 / 60)
         self.footer_bubble_button_padding = self.footer_bubble_height * (10 / 60)
         self.footer_bubble_effect_padding_right = self.footer_bubble_height * (20 / 60)
@@ -147,7 +147,7 @@ class FooterGuides(Scalable):
             )
 
             self.footer_bubble_height = self.footer_height - (
-                footer_margin_block * self.render_factor
+                2 * footer_margin_block * self.render_factor
             )
 
             self.footer_bubble_padding = self.footer_bubble_height * (10 / 60)
