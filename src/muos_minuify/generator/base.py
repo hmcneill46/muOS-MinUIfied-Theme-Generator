@@ -86,7 +86,7 @@ class BaseThemeGenerator:
             )
         )
 
-        accent_colour = "#ff0000"
+        accent_colour = self.manager.deselectedFontHexVar
         show_clock_bubble = self.manager.show_clock_bubbles_var
         show_status_bubble = self.manager.show_glyphs_bubbles_var
         join_bubbles = self.manager.join_header_bubbles_var
