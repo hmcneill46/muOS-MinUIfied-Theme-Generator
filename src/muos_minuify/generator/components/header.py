@@ -114,12 +114,12 @@ class HeaderBubbles(Scalable):
     def with_clock_configuration(
         self,
         clock_format: Literal["12 Hour", "24 Hour"],
-        clock_bubble_alignment: Literal["Left", "Center", "Right"],
+        clock_bubble_alignment: Literal["Left", "Centre", "Right"],
         clock_bubble_margin_left: int,
         clock_bubble_margin_right: int,
     ) -> "HeaderBubbles":
-        if clock_bubble_alignment not in ["Left", "Center", "Right"]:
-            raise ValueError("Clock alignment must be 'Left', 'Center', or 'Right'!")
+        if clock_bubble_alignment not in ["Left", "Centre", "Right"]:
+            raise ValueError("Clock alignment must be 'Left', 'Centre', or 'Right'!")
         else:
             self.clock_bubble_alignment = clock_bubble_alignment
 
@@ -135,7 +135,7 @@ class HeaderBubbles(Scalable):
         match self.clock_bubble_alignment:
             case "Left":
                 self.clock_x_pos = clock_bubble_margin_left * self.render_factor
-            case "Center":
+            case "Centre":
                 self.clock_x_pos = (
                     (self.scaled_screen_dimensions[0] / 2)
                     - (
@@ -168,7 +168,7 @@ class HeaderBubbles(Scalable):
 
     def with_status_configuration(
         self,
-        status_bubble_alignment: Literal["Left", "Center", "Right"],
+        status_bubble_alignment: Literal["Left", "Centre", "Right"],
         status_glyph_height: int,
         status_bubble_height: int,
         status_bubble_padding_left: int,
@@ -221,15 +221,15 @@ class HeaderBubbles(Scalable):
             + scaled_network_glyph.size[0]
         )
 
-        if status_bubble_alignment not in ["Left", "Center", "Right"]:
-            raise ValueError("Status alignment must be 'Left', 'Center', or 'Right'!")
+        if status_bubble_alignment not in ["Left", "Centre", "Right"]:
+            raise ValueError("Status alignment must be 'Left', 'Centre', or 'Right'!")
         else:
             self.status_bubble_alignment = status_bubble_alignment
 
         match status_bubble_alignment:
             case "Left":
                 self.status_x_pos = status_bubble_padding_left * self.render_factor
-            case "Center":
+            case "Centre":
                 self.status_x_pos = int(
                     (self.scaled_screen_dimensions[0] / 2)
                     - (
