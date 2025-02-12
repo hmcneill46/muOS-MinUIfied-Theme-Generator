@@ -298,14 +298,33 @@ class FooterGuides(Scalable):
                 (0, 0, rendered_bubble_height, rendered_bubble_height),
                 fill="#FFFFFF",
             )
+
             singleLetterWidth = sl_text_bbox[2] - sl_text_bbox[0]
             smallerTextX = circleCentreX - (singleLetterWidth / 2)
-            draw.text(
+
+            text_mask = Image.new("L", image.size, 0)
+            mask_draw = ImageDraw.Draw(text_mask)
+            mask_draw.text(
                 (smallerTextX, single_letter_text_y),
                 button_text,
                 font=self.single_letter_font,
-                fill=hex_to_rgba("#000000", alpha=0.593),
+                fill=255,
             )
+
+            existing_alpha = image.getchannel("A")
+            new_alpha = Image.new("L", image.size, 0)
+
+            existing_alpha_pixels = existing_alpha.load()
+            new_alpha_pixels = new_alpha.load()
+
+            for y in range(int(rendered_bubble_height)):
+                for x in range(int(rendered_bubble_height)):
+                    new_alpha_pixels[x, y] = max(
+                        existing_alpha_pixels[x, y] - text_mask.getpixel((x, y)), 0
+                    )
+
+            image.putalpha(new_alpha)
+            image.save("final.png")
         else:
             isb_text_bbox = self.word_font.getbbox(button_text)
             isb_text_height = isb_text_bbox[3] - isb_text_bbox[1]
@@ -341,13 +360,31 @@ class FooterGuides(Scalable):
                 radius=(math.ceil(rendered_bubble_height) / 2),
                 fill=hex_to_rgba("#FFFFFF"),
             )
+
             smallerTextX = horizontal_small_padding
-            draw.text(
+
+            text_mask = Image.new("L", image.size, 0)
+            mask_draw = ImageDraw.Draw(text_mask)
+            mask_draw.text(
                 (smallerTextX, in_smaller_bubble_text_y),
                 button_text,
                 font=self.word_font,
-                fill=hex_to_rgba("#000000", alpha=0.593),
+                fill=255,
             )
+
+            existing_alpha = image.getchannel("A")
+            new_alpha = Image.new("L", image.size, 0)
+
+            existing_alpha_pixels = existing_alpha.load()
+            new_alpha_pixels = new_alpha.load()
+
+            for y in range(int(rendered_bubble_height)):
+                for x in range(int(rendered_smallerBubbleWidth)):
+                    new_alpha_pixels[x, y] = max(
+                        existing_alpha_pixels[x, y] - text_mask.getpixel((x, y)), 0
+                    )
+
+            image.putalpha(new_alpha)
 
         return image
 
@@ -382,15 +419,15 @@ class FooterGuides(Scalable):
                 button,
                 colour_hex,
             )
+
             button_image = change_logo_color(button_image, colour_hex)
 
-            image.paste(
+            image.alpha_composite(
                 button_image,
                 (
                     int(bubble_x_pos),
                     int(self.center_y_pos - (button_image.size[1] / 2)),
                 ),
-                button_image,
             )
 
             bubble_x_pos += button_image.size[0] + self.footer_bubble_button_padding
