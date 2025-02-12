@@ -37,11 +37,18 @@ class BaseThemeGenerator:
         use_background_image = self.manager.use_custom_background_var
         background_image_path = self.manager.background_image_path
 
-        background = Background().with_background_hex(bg_hex)
+        background = Background(
+            manager=self.manager,
+            screen_dimensions=self.screen_dimensions,
+            render_factor=self.render_factor,
+        ).with_background_hex(bg_hex)
+
         if use_background_image and background_image_path:
             background = background.with_background_image(background_image_path)
 
-        background_image = background.generate(self.scaled_screen_dimensions)
+        background_image = background.generate(
+            use_background_image=use_background_image
+        )
         return background_image
 
     def _generate_header_bubbles(self) -> Image.Image:

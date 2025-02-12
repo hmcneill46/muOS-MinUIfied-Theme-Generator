@@ -3,14 +3,23 @@ from pathlib import Path
 from PIL import Image
 
 from ...color_utils import hex_to_rgba
-from ...settings import DEFAULT_SETTINGS
+from ...settings import SettingsManager
+from .scalable import Scalable
 
 
-class Background:
-    def __init__(self):
-        self.background_hex = DEFAULT_SETTINGS["bgHexVar"]
+class Background(Scalable):
+    def __init__(
+        self,
+        manager: SettingsManager,
+        screen_dimensions: tuple[int, int] = (640, 480),
+        render_factor: int = 5,
+    ):
+        super().__init__(screen_dimensions, render_factor)
+        self.manager = manager
+
+        self.background_hex = self.manager.bgHexVar
         self.background_rgba = hex_to_rgba(self.background_hex)
-        self.background_image_path = DEFAULT_SETTINGS["background_image_path"]
+        self.background_image_path = self.manager.background_image_path
 
     def with_background_hex(self, background_hex: str) -> "Background":
         if background_hex.startswith("#"):
@@ -26,13 +35,13 @@ class Background:
 
         return self
 
-    def generate(self, screen_dimensions: tuple[int, int] = (640, 480)) -> Image.Image:
-        image = Image.new("RGBA", screen_dimensions, self.background_rgba)
+    def generate(self, use_background_image: bool = False) -> Image.Image:
+        image = Image.new("RGBA", self.scaled_screen_dimensions, self.background_rgba)
 
-        if self.background_image_path:
+        if use_background_image and self.background_image_path:
             background_image = Image.open(self.background_image_path)
             image.paste(
-                background_image.resize(screen_dimensions),
+                background_image.resize(self.scaled_screen_dimensions),
                 (0, 0),
             )
         return image
