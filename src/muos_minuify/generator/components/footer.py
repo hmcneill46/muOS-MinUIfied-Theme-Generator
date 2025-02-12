@@ -324,7 +324,6 @@ class FooterGuides(Scalable):
                     )
 
             image.putalpha(new_alpha)
-            image.save("final.png")
         else:
             isb_text_bbox = self.word_font.getbbox(button_text)
             isb_text_height = isb_text_bbox[3] - isb_text_bbox[1]
