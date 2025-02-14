@@ -4,7 +4,7 @@ from PIL import Image
 from PIL.Image import Resampling
 
 from ..settings import SettingsManager
-from .components import Background, FooterGuides, HeaderBubbles
+from .components import Background, FooterGuides, HeaderBubbles, LauncherIcons
 
 
 class ThemeGenerator:
@@ -150,8 +150,31 @@ class ThemeGenerator:
         )
         return footer_guides_image
 
+    def _generate_launcher_icons(self, launch_item: str) -> Image.Image:
+        selected_font_hex = self.manager.selectedFontHexVar
+        deselected_font_hex = self.manager.deselectedFontHexVar
+        bubble_hex = self.manager.bubbleHexVar
+        icon_hex = self.manager.iconHexVar
+        passthrough = self.manager.transparent_text_var
+
+        launcher_icons = LauncherIcons(
+            manager=self.manager,
+            screen_dimensions=self.screen_dimensions,
+            render_factor=self.render_factor,
+        ).with_color_configuration(
+            selected_font_hex=selected_font_hex,
+            deselected_font_hex=deselected_font_hex,
+            bubble_hex=bubble_hex,
+            icon_hex=icon_hex,
+        )
+
+        launcher_icons_image = launcher_icons.generate(launch_item, passthrough)
+        return launcher_icons_image
+
     def generate_wall_image(
-        self, right_buttons: list[tuple[str, str]], left_buttons: list[tuple[str, str]]
+        self,
+        right_buttons: list[tuple[str, str]],
+        left_buttons: list[tuple[str, str]],
     ) -> Image.Image:
         image = self._generate_background()
 
@@ -164,9 +187,30 @@ class ThemeGenerator:
         return image.resize(self.screen_dimensions, Resampling.LANCZOS)
 
     def generate_static_image(
-        self, right_buttons: list[tuple[str, str]], left_buttons: list[tuple[str, str]]
+        self,
+        right_buttons: list[tuple[str, str]],
+        left_buttons: list[tuple[str, str]],
     ) -> Image.Image:
         image = Image.new("RGBA", self.scaled_screen_dimensions, (0, 0, 0, 0))
+
+        header_bubbles_image = self._generate_header_bubbles()
+        image.alpha_composite(header_bubbles_image)
+
+        footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
+        image.alpha_composite(footer_guides_image)
+
+        return image.resize(self.screen_dimensions, Resampling.LANCZOS)
+
+    def generate_launcher_image(
+        self,
+        launch_item: str,
+        right_buttons: list[tuple[str, str]],
+        left_buttons: list[tuple[str, str]],
+    ) -> Image.Image:
+        image = Image.new("RGBA", self.scaled_screen_dimensions, (0, 0, 0, 0))
+
+        launcher_icons_image = self._generate_launcher_icons(launch_item)
+        image.alpha_composite(launcher_icons_image)
 
         header_bubbles_image = self._generate_header_bubbles()
         image.alpha_composite(header_bubbles_image)
