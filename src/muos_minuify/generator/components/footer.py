@@ -21,8 +21,8 @@ class FooterGuides(Scalable):
         render_factor: int = 5,
     ):
         super().__init__(screen_dimensions, render_factor)
-        self.font_path = font_path
         self.manager = manager
+        self.font_path = font_path
 
         self.footer_ideal_height = self.manager.approxFooterHeightVar
         self.footer_height = self.footer_ideal_height
@@ -179,7 +179,7 @@ class FooterGuides(Scalable):
                 - (self.footer_bubble_height / 2)
             )
 
-            ib_ascent, ib_descent = self.button_font.getmetrics()
+            ib_ascent, ib_descent = self.effect_font.getmetrics()
             ib_text_height = ib_ascent + ib_descent
             self.footer_bubble_button_y = self.center_y_pos - (ib_text_height / 2)
 
