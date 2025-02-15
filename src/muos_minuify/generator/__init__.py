@@ -1,4 +1,4 @@
-from typing import Callable, Literal
+from typing import Literal
 
 from PIL import Image
 from PIL.Image import Resampling
@@ -12,11 +12,9 @@ class ThemeGenerator:
         self,
         manager: SettingsManager,
         render_factor: int = 5,
-        on_progress: Callable | None = None,
     ):
         self.manager = manager
         self.render_factor = render_factor
-        self.on_progress = on_progress
 
     @property
     def screen_dimensions(self) -> tuple[int, int]:
@@ -51,7 +49,7 @@ class ThemeGenerator:
         )
         return background_image
 
-    def _generate_header_bubbles(self) -> Image.Image:
+    def _generate_header_bubbles(self, *args) -> Image.Image:
         header_height = self.manager.headerHeightVar
         text_height = self.manager.header_text_height_var
         text_bubble_height = self.manager.header_text_bubble_height_var
@@ -177,12 +175,13 @@ class ThemeGenerator:
 
     def generate_wall_image(
         self,
-        right_buttons: list[tuple[str, str]],
-        left_buttons: list[tuple[str, str]],
+        right_buttons: list[tuple[str, str]] = [],
+        left_buttons: list[tuple[str, str]] = [("POWER", "SLEEP")],
+        *args,
     ) -> Image.Image:
         image = self._generate_background()
 
-        header_bubbles_image = self._generate_header_bubbles()
+        header_bubbles_image = self._generate_header_bubbles(*args)
         image.alpha_composite(header_bubbles_image, (0, 0))
 
         footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
@@ -192,12 +191,13 @@ class ThemeGenerator:
 
     def generate_static_image(
         self,
-        right_buttons: list[tuple[str, str]],
-        left_buttons: list[tuple[str, str]],
+        right_buttons: list[tuple[str, str]] = [],
+        left_buttons: list[tuple[str, str]] = [("POWER", "SLEEP")],
+        *args,
     ) -> Image.Image:
         image = Image.new("RGBA", self.scaled_screen_dimensions, (0, 0, 0, 0))
 
-        header_bubbles_image = self._generate_header_bubbles()
+        header_bubbles_image = self._generate_header_bubbles(*args)
         image.alpha_composite(header_bubbles_image)
 
         footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
@@ -207,19 +207,19 @@ class ThemeGenerator:
 
     def generate_launcher_image(
         self,
-        launch_item: str,
-        right_buttons: list[tuple[str, str]],
-        left_buttons: list[tuple[str, str]],
+        right_buttons: list[tuple[str, str]] = [],
+        left_buttons: list[tuple[str, str]] = [("POWER", "SLEEP")],
+        selected_item: str = "explore",
     ) -> Image.Image:
         if (variant := self.manager.main_menu_style_var) == "Vertical":
             return self.generate_static_image(right_buttons, left_buttons)
 
         image = Image.new("RGBA", self.scaled_screen_dimensions, (0, 0, 0, 0))
 
-        launcher_icons_image = self._generate_launcher_icons(launch_item, variant)
+        launcher_icons_image = self._generate_launcher_icons(selected_item, variant)
         image.alpha_composite(launcher_icons_image)
 
-        header_bubbles_image = self._generate_header_bubbles()
+        header_bubbles_image = self._generate_header_bubbles(selected_item)
         image.alpha_composite(header_bubbles_image)
 
         footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
@@ -229,9 +229,3 @@ class ThemeGenerator:
 
     def generate_theme(self):
         pass
-        for _ in []:
-            self.generate_wall_image()
-            self.generate_static_image()
-
-            if self.on_progress:
-                self.on_progress()

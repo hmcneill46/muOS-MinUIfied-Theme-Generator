@@ -5,12 +5,12 @@ from typing import Literal
 from PIL import Image, ImageDraw, ImageFont
 from PIL.Image import Resampling
 
-from ...color_utils import hex_to_rgba
-from ...constants import GLYPHS_DIR
-from ...defaults import DEFAULT_FONT_PATH
-from ...settings import SettingsManager
-from ...utils import get_max_length_time_string
-from .scalable import Scalable
+from ....color_utils import hex_to_rgba
+from ....constants import GLYPHS_DIR
+from ....defaults import DEFAULT_FONT_PATH
+from ....settings import SettingsManager
+from ....utils import get_max_length_time_string
+from ..scalable import Scalable
 
 
 class HeaderBubbles(Scalable):
@@ -309,6 +309,7 @@ class HeaderBubbles(Scalable):
 
     def _draw_status_bubble(
         self,
+        image: Image.Image,
         draw: ImageDraw.ImageDraw,
         accent_colour: str | None = None,
         bubble_alpha: float = 0.133,
@@ -353,6 +354,6 @@ class HeaderBubbles(Scalable):
                 self._draw_clock_bubble(draw, accent_colour, bubble_alpha)
 
             if show_status_bubble:
-                self._draw_status_bubble(draw, accent_colour, bubble_alpha)
+                self._draw_status_bubble(image, draw, accent_colour, bubble_alpha)
 
         return image
