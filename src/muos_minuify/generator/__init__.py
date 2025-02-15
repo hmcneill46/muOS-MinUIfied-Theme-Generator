@@ -156,6 +156,7 @@ class ThemeGenerator:
         bubble_hex = self.manager.bubbleHexVar
         icon_hex = self.manager.iconHexVar
         passthrough = self.manager.transparent_text_var
+        variant = self.manager.main_menu_style_var
 
         launcher_icons = LauncherIcons(
             manager=self.manager,
@@ -168,7 +169,9 @@ class ThemeGenerator:
             icon_hex=icon_hex,
         )
 
-        launcher_icons_image = launcher_icons.generate(launch_item, passthrough)
+        launcher_icons_image = launcher_icons.generate(
+            launch_item, variant, passthrough
+        )
         return launcher_icons_image
 
     def generate_wall_image(

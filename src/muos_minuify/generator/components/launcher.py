@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 
 from PIL import Image, ImageDraw, ImageFont
 from PIL.Image import Resampling
@@ -82,11 +83,11 @@ class LauncherIcons(Scalable):
         return self
 
     def _load_and_color_icon(
-        self, item: str, top_row: bool, selected: bool
+        self, item: str, top_row: bool, selected: bool, alt: bool = False
     ) -> Image.Image:
-        icon_path = HORIZONTAL_LOGOS_DIR / f"{item}.png"
+        icon_path = HORIZONTAL_LOGOS_DIR / f"{'alt-' if alt else ''}{item}.png"
 
-        if top_row:
+        if top_row or alt:
             return change_logo_color(icon_path, self.icon_hex)
         else:
             return change_logo_color(
@@ -371,8 +372,12 @@ class LauncherIcons(Scalable):
     def generate(
         self,
         selected_item: str,
+        variant: Literal["Horizontal", "Alt-Horizontal"],
         passthrough: bool = False,
     ) -> Image.Image:
+        if variant not in ["Horizontal", "Alt-Horizontal"]:
+            raise ValueError("Invalid variant")
+
         image = Image.new("RGBA", self.scaled_screen_dimensions, (255, 0, 0, 0))
         draw = ImageDraw.Draw(image)
 
@@ -383,28 +388,56 @@ class LauncherIcons(Scalable):
             "apps": "Utilities",
         }
 
+        bottom_label_map = {
+            "info": "Info",
+            "config": "Config",
+            "reboot": "Reboot",
+            "shutdown": "Shutdown",
+        }
+
         top_items = LAUNCHER_ITEMS[:4]
-        top_icons = {}
+        top_icons: dict[str, Image.Image] = {}
         bottom_items = LAUNCHER_ITEMS[4:]
-        bottom_icons = {}
+        bottom_icons: dict[str, Image.Image] = {}
 
         for item in top_items:
             selected = item == selected_item
-            icon = self._load_and_color_icon(item, top_row=True, selected=selected)
-            large_size = self._get_large_icon_size(icon)
-            icon = icon.resize(large_size, Resampling.LANCZOS)
-            top_icons[item] = icon
+            top_icon = self._load_and_color_icon(item, top_row=True, selected=selected)
+            large_size = self._get_large_icon_size(top_icon)
+            top_icon = top_icon.resize(large_size, Resampling.LANCZOS)
+            top_icons[item] = top_icon
 
         top_positions = self._calculate_top_row_positions(top_icons)
-        icon_y, bubble_center_y = self._get_top_row_vertical_positions(top_icons)
+
+        if variant == "Horizontal":
+            top_icon_y, top_bubble_center_y = self._get_top_row_vertical_positions(
+                top_icons
+            )
+        else:
+            combined_top_height = (
+                max(icon.size[1] for icon in top_icons.values())
+                + self.label_bubble_height
+            )
+            top_to_bottom_padding = min(
+                self.scaled_screen_dimensions[0] * 30 / 640,
+                self.scaled_screen_dimensions[1] * 30 / 480,
+            )
+            top_icon_y = int(
+                self.screen_y_center - combined_top_height - (top_to_bottom_padding / 2)
+            )
+            top_bubble_center_y = int(
+                self.screen_y_center
+                - (top_to_bottom_padding / 2)
+                - (self.label_bubble_height / 2)
+            )
 
         self._draw_top_row(
             image,
             draw,
             top_icons,
             top_positions,
-            icon_y,
-            bubble_center_y,
+            top_icon_y,
+            top_bubble_center_y,
             top_label_map,
             selected_item,
             passthrough,
@@ -412,27 +445,62 @@ class LauncherIcons(Scalable):
 
         for item in bottom_items:
             selected = item == selected_item
-            icon = self._load_and_color_icon(item, top_row=False, selected=selected)
-            small_size = self._get_small_icon_size(icon)
-            icon = icon.resize(small_size, Resampling.LANCZOS)
-            bottom_icons[item] = icon
+            bottom_icon = self._load_and_color_icon(
+                item, top_row=False, selected=selected, alt=variant == "Alt-Horizontal"
+            )
+            bottom_icon_size = (
+                self._get_small_icon_size(bottom_icon)
+                if variant == "Horizontal"
+                else self._get_large_icon_size(bottom_icon)
+            )
+            bottom_icon = bottom_icon.resize(bottom_icon_size, Resampling.LANCZOS)
+            bottom_icons[item] = bottom_icon
 
-        bottom_positions = self._calculate_bottom_row_positions(bottom_icons)
+        if variant == "Horizontal":
+            bottom_positions = self._calculate_bottom_row_positions(bottom_icons)
+            max_top_icon_height = max(icon.size[1] for icon in top_icons.values())
+            top_row_combined_height = max_top_icon_height + self.label_bubble_height
+            bottom_center_y, circle_radius = self._get_bottom_row_vertical_positions(
+                top_row_combined_height, bottom_icons
+            )
 
-        max_top_icon_height = max(icon.size[1] for icon in top_icons.values())
-        top_row_combined_height = max_top_icon_height + self.label_bubble_height
-        bottom_center_y, circle_radius = self._get_bottom_row_vertical_positions(
-            top_row_combined_height, bottom_icons
-        )
-        self._draw_bottom_row(
-            image,
-            draw,
-            bottom_icons,
-            bottom_positions,
-            bottom_center_y,
-            circle_radius,
-            selected_item,
-            passthrough,
-        )
+            self._draw_bottom_row(
+                image,
+                draw,
+                bottom_icons,
+                bottom_positions,
+                bottom_center_y,
+                circle_radius,
+                selected_item,
+                passthrough,
+            )
+        else:
+            bottom_positions = self._calculate_top_row_positions(bottom_icons)
+            top_to_bottom_padding = min(
+                self.scaled_screen_dimensions[0] * 30 / 640,
+                self.scaled_screen_dimensions[1] * 30 / 480,
+            )
+            max_bottom_icon_height = max(icon.size[1] for icon in top_icons.values())
+            bottom_row_combined_height = (
+                max_bottom_icon_height + self.label_bubble_height
+            )
+            bottom_icon_y = int(self.screen_y_center + (top_to_bottom_padding / 2))
+            bottom_bubble_center_y = int(
+                self.screen_y_center + bottom_row_combined_height
+                # + (top_to_bottom_padding / 2)
+                # + (self.label_bubble_height / 2)
+            )
+
+            self._draw_top_row(
+                image,
+                draw,
+                bottom_icons,
+                bottom_positions,
+                bottom_icon_y,
+                bottom_bubble_center_y,
+                bottom_label_map,
+                selected_item,
+                passthrough,
+            )
 
         return image
