@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Literal
 
 from PIL import Image
@@ -179,10 +180,11 @@ class ThemeGenerator:
         )
         return launcher_icons_image
 
-    def _generate_bootlogo_image(self) -> Image.Image:
+    def _generate_boot_logo_image(self) -> Image.Image:
         bg_hex = self.manager.bgHexVar
         deselected_font_hex = self.manager.deselectedFontHexVar
         bubble_hex = self.manager.bubbleHexVar
+        icon_hex = self.manager.iconHexVar
 
         boot_screen = BootScreen(
             manager=self.manager,
@@ -192,12 +194,38 @@ class ThemeGenerator:
             bg_hex=bg_hex,
             deselected_font_hex=deselected_font_hex,
             bubble_hex=bubble_hex,
+            icon_hex=icon_hex,
         )
 
-        use_custom_logo = self.manager.use_custom_bootlogo_var
+        if use_custom_logo := self.manager.use_custom_bootlogo_var:
+            boot_screen = boot_screen.with_bootlogo_image(
+                self.manager.bootlogo_image_path
+            )
 
         bootlogo_image = boot_screen.generate_with_logo(use_custom_logo)
         return bootlogo_image
+
+    def _generate_boot_text_image(
+        self, display_text: str, icon_path: Path | None = None
+    ) -> Image.Image:
+        bg_hex = self.manager.bgHexVar
+        deselected_font_hex = self.manager.deselectedFontHexVar
+        bubble_hex = self.manager.bubbleHexVar
+        icon_hex = self.manager.iconHexVar
+
+        boot_screen = BootScreen(
+            manager=self.manager,
+            screen_dimensions=self.screen_dimensions,
+            render_factor=self.render_factor,
+        ).with_color_configuration(
+            bg_hex=bg_hex,
+            deselected_font_hex=deselected_font_hex,
+            bubble_hex=bubble_hex,
+            icon_hex=icon_hex,
+        )
+
+        boottext_image = boot_screen.generate_with_text(display_text, icon_path)
+        return boottext_image
 
     def generate_wall_image(
         self,
@@ -253,13 +281,23 @@ class ThemeGenerator:
 
         return image.resize(self.screen_dimensions, Resampling.LANCZOS)
 
-    def generate_bootlogo_image(
+    def generate_boot_logo_image(
         self,
     ) -> Image.Image:
         image = self._generate_background()
 
-        bootlogo_image = self._generate_bootlogo_image()
+        bootlogo_image = self._generate_boot_logo_image()
         image.alpha_composite(bootlogo_image, (0, 0))
+
+        return image.resize(self.screen_dimensions, Resampling.LANCZOS)
+
+    def generate_boot_text_image(
+        self, display_text: str, icon_path: Path | None = None
+    ) -> Image.Image:
+        image = self._generate_background()
+
+        boottext_image = self._generate_boot_text_image(display_text, icon_path)
+        image.alpha_composite(boottext_image, (0, 0))
 
         return image.resize(self.screen_dimensions, Resampling.LANCZOS)
 
