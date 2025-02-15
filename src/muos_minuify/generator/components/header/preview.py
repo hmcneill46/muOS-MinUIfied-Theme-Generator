@@ -17,6 +17,16 @@ from ....settings import SettingsManager
 
 
 class PreviewHeaderBubbles(HeaderBubbles):
+    PAGE_TITLE_MAP = {
+        "launch": "MAIN MENU",
+        "explore": "CONTENT",
+        "favourite": "FAVOURITES",
+        "history": "HISTORY",
+        "apps": "APPLICATIONS",
+        "info": "INFORMATION",
+        "config": "CONFIGURATION",
+    }
+
     def __init__(
         self,
         manager: SettingsManager,
@@ -27,6 +37,9 @@ class PreviewHeaderBubbles(HeaderBubbles):
         super().__init__(manager, font_path, screen_dimensions, render_factor)
 
         self.clock_format = self.manager.clock_format_var
+
+        ascent, descent = self.header_font.getmetrics()
+        self.header_text_height = ascent + descent
 
     def _draw_clock_text(
         self, draw: ImageDraw.ImageDraw, accent_colour: str | None = None
@@ -47,12 +60,10 @@ class PreviewHeaderBubbles(HeaderBubbles):
         bubble_height = top - bottom
 
         text_bbox = self.header_font.getbbox(time_text)
-        ascent, descent = self.header_font.getmetrics()
         text_width = text_bbox[2] - text_bbox[0]
-        text_height = ascent + descent
 
         x = left + (bubble_width - text_width) // 2
-        y = bottom + (bubble_height - text_height) // 2
+        y = bottom + (bubble_height - self.header_text_height) // 2
 
         draw.text(
             (x, y),
@@ -75,7 +86,40 @@ class PreviewHeaderBubbles(HeaderBubbles):
         draw: ImageDraw.ImageDraw,
         selected_item: str,
     ) -> None:
-        pass
+        page_title = self.PAGE_TITLE_MAP.get(selected_item, "UNKNOWN")
+
+        text_bbox = self.header_font.getbbox(page_title)
+        text_width = text_bbox[2] - text_bbox[0]
+
+        match self.page_title_alignment:
+            case "Left":
+                page_title_x_pos = self.page_title_margin_inline
+            case "Centre":
+                page_title_x_pos = (self.scaled_screen_dimensions[0] / 2) - (
+                    text_width / 2
+                )
+            case "Right":
+                page_title_x_pos = (
+                    self.scaled_screen_dimensions[0]
+                    - text_width
+                    - self.page_title_margin_inline
+                )
+            case _:
+                raise ValueError(
+                    "Page title alignment must be 'Left', 'Centre', or 'Right'!"
+                )
+
+        page_title_y_pos = (
+            int((self.header_height / 2) - (self.header_text_height / 2)) - text_bbox[1]
+        )
+
+        draw.text(
+            (page_title_x_pos, page_title_y_pos),
+            page_title,
+            font=self.header_font,
+            fill=self.manager.deselectedFontHexVar,
+        )
+
     def __generate_glyph(
         self, color_hex: str, height: int, glyph_path: Path
     ) -> Image.Image:
@@ -239,6 +283,7 @@ class PreviewHeaderBubbles(HeaderBubbles):
         show_clock_bubble: bool = False,
         show_status_bubble: bool = False,
         join_bubbles: bool = False,
+        show_page_title: bool = False,
         show_charging: bool = False,
         charging_hex: str = "#FFFFFF",
         selected_item: str = "explore",
@@ -255,6 +300,7 @@ class PreviewHeaderBubbles(HeaderBubbles):
         )
         draw = ImageDraw.Draw(image)
 
-        self._draw_page_title(draw, selected_item)
+        if show_page_title:
+            self._draw_page_title(draw, selected_item)
 
         return image

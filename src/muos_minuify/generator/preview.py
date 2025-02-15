@@ -60,6 +60,7 @@ class ThemePreviewGenerator(ThemeGenerator):
         show_clock_bubble = self.manager.show_clock_bubbles_var
         show_status_bubble = self.manager.show_glyphs_bubbles_var
         join_bubbles = self.manager.join_header_bubbles_var
+        show_page_title = self.manager.show_console_name_var
         show_charging = self.manager.show_charging_battery_var
         charging_hex = self.manager.batteryChargingHexVar
 
@@ -68,9 +69,10 @@ class ThemePreviewGenerator(ThemeGenerator):
             show_clock_bubble=show_clock_bubble,
             show_status_bubble=show_status_bubble,
             join_bubbles=join_bubbles,
+            show_page_title=show_page_title,
             show_charging=show_charging,
             charging_hex=charging_hex,
-            selected_item=selected_item,
+            selected_item="launch",
         )
         return header_bubbles_image
 

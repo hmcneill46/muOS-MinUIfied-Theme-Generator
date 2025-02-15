@@ -49,6 +49,11 @@ class HeaderBubbles(Scalable):
             self.manager.clockHorizontalRightPaddingVar * self.render_factor
         )
 
+        self.page_title_margin_inline = (
+            self.manager.pageTitlePaddingVar * self.render_factor
+        )
+        self.page_title_alignment = self.manager.page_title_alignment_var
+
         self.status_bubble_alignment = self.manager.header_glyph_alignment_var
         self.status_glyph_height = (
             self.manager.header_glyph_height_var * self.render_factor
@@ -108,6 +113,22 @@ class HeaderBubbles(Scalable):
             )
 
         self.center_y_pos = self.header_height / 2
+
+        return self
+
+    def with_page_title_configuration(
+        self,
+        page_title_alignment: Literal["Left", "Centre", "Right"],
+        page_title_margin_inline: int,
+    ) -> "HeaderBubbles":
+        if page_title_alignment not in ["Left", "Centre", "Right"]:
+            raise ValueError(
+                "Page title alignment must be 'Left', 'Centre', or 'Right'!"
+            )
+        else:
+            self.page_title_alignment = page_title_alignment
+
+        self.page_title_margin_inline = page_title_margin_inline * self.render_factor
 
         return self
 
