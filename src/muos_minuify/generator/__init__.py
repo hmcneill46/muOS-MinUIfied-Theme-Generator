@@ -4,7 +4,13 @@ from PIL import Image
 from PIL.Image import Resampling
 
 from ..settings import SettingsManager
-from .components import Background, FooterGuides, HeaderBubbles, LauncherIcons
+from .components import (
+    Background,
+    BootScreen,
+    FooterGuides,
+    HeaderBubbles,
+    LauncherIcons,
+)
 
 
 class ThemeGenerator:
@@ -173,6 +179,26 @@ class ThemeGenerator:
         )
         return launcher_icons_image
 
+    def _generate_bootlogo_image(self) -> Image.Image:
+        bg_hex = self.manager.bgHexVar
+        deselected_font_hex = self.manager.deselectedFontHexVar
+        bubble_hex = self.manager.bubbleHexVar
+
+        boot_screen = BootScreen(
+            manager=self.manager,
+            screen_dimensions=self.screen_dimensions,
+            render_factor=self.render_factor,
+        ).with_color_configuration(
+            bg_hex=bg_hex,
+            deselected_font_hex=deselected_font_hex,
+            bubble_hex=bubble_hex,
+        )
+
+        use_custom_logo = self.manager.use_custom_bootlogo_var
+
+        bootlogo_image = boot_screen.generate_with_logo(use_custom_logo)
+        return bootlogo_image
+
     def generate_wall_image(
         self,
         right_buttons: list[tuple[str, str]] = [],
@@ -224,6 +250,16 @@ class ThemeGenerator:
 
         footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
         image.alpha_composite(footer_guides_image)
+
+        return image.resize(self.screen_dimensions, Resampling.LANCZOS)
+
+    def generate_bootlogo_image(
+        self,
+    ) -> Image.Image:
+        image = self._generate_background()
+
+        bootlogo_image = self._generate_bootlogo_image()
+        image.alpha_composite(bootlogo_image, (0, 0))
 
         return image.resize(self.screen_dimensions, Resampling.LANCZOS)
 
