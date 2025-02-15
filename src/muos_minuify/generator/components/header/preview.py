@@ -3,8 +3,15 @@ from pathlib import Path
 from typing import Literal
 
 from PIL import Image, ImageDraw
+from PIL.Image import Resampling
 
 from . import HeaderBubbles
+from ....color_utils import change_logo_color
+from ....constants import (
+    GLYPHS_DIR,
+    BatteryChargingStyleOptionsDict,
+    BatteryStyleOptionsDict,
+)
 from ....defaults import DEFAULT_FONT_PATH
 from ....settings import SettingsManager
 
@@ -69,9 +76,70 @@ class PreviewHeaderBubbles(HeaderBubbles):
         selected_item: str,
     ) -> None:
         pass
+    def __generate_glyph(
+        self, color_hex: str, height: int, glyph_path: Path
+    ) -> Image.Image:
+        glyph_coloured = change_logo_color(glyph_path, color_hex)
+        original_width, original_height = glyph_coloured.size
+        scaled_width = int(height * original_width / original_height)
+        glyph_coloured = glyph_coloured.resize(
+            (scaled_width, height), Resampling.LANCZOS
+        )
+
+        return glyph_coloured
+
+    def _generate_network_glyph(
+        self,
+        color_hex: str,
+        height: int,
+        glyph_name: str = "network_active",
+    ) -> Image.Image:
+        network_glyph_path = GLYPHS_DIR / f"{glyph_name}[5x].png"
+        return self.__generate_glyph(color_hex, height, network_glyph_path)
+
+    def _generate_battery_glyph(
+        self,
+        color_hex: str,
+        height: int,
+        charging: bool = False,
+        current: int = 30,
+    ) -> Image.Image:
+        if current < 0 or current > 100 or current % 10 != 0:
+            raise ValueError("Current battery percentage must be a multiple of 10")
+
+        color_hex = self.manager.batteryChargingHexVar if charging else color_hex
+        battery_style_option_dict = (
+            BatteryChargingStyleOptionsDict if charging else BatteryStyleOptionsDict
+        )
+        battery_style_option = (
+            self.manager.battery_charging_style_var
+            if charging
+            else self.manager.battery_style_var
+        )
+
+        battery_glyph_path = (
+            GLYPHS_DIR
+            / f"{battery_style_option_dict[battery_style_option]}{current}[5x].png"
+        )
+
+        return self.__generate_glyph(color_hex, height, battery_glyph_path)
 
     def _draw_network_glyph(self, image: Image.Image) -> None:
-        pass
+        color_hex = self.manager.deselectedFontHexVar
+        network_glyph = self._generate_network_glyph(
+            color_hex, self.status_glyph_height
+        )
+
+        bubble_top = self.top_y_points.get("status", 0)
+        bubble_bottom = self.bottom_y_points.get("status", 0)
+
+        x = int(self.status_x_pos)
+        y = int(
+            bubble_bottom
+            + ((bubble_top - bubble_bottom) - self.status_glyph_height) / 2
+        )
+
+        image.paste(network_glyph, (x, y), network_glyph)
 
     def _draw_battery_glyph(
         self,
@@ -79,7 +147,27 @@ class PreviewHeaderBubbles(HeaderBubbles):
         show_charging: bool,
         charging_hex: str,
     ) -> None:
-        pass
+        color_hex = self.manager.deselectedFontHexVar
+        battery_glyph = self._generate_battery_glyph(
+            charging_hex if show_charging else color_hex,
+            self.status_glyph_height,
+            charging=show_charging,
+            current=30,
+        )
+        network_glyph = self._generate_network_glyph(
+            color_hex, self.status_glyph_height
+        )
+
+        bubble_top = self.top_y_points.get("status", 0)
+        bubble_bottom = self.bottom_y_points.get("status", 0)
+
+        x = int(self.status_x_pos + network_glyph.size[0] + self.status_bubble_gap)
+        y = int(
+            bubble_bottom
+            + ((bubble_top - bubble_bottom) - self.status_glyph_height) / 2
+        )
+
+        image.paste(battery_glyph, (x, y), battery_glyph)
 
     def _draw_status_glyphs(
         self,
