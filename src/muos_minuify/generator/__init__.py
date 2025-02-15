@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Literal
 
 from PIL import Image
 from PIL.Image import Resampling
@@ -150,13 +150,14 @@ class ThemeGenerator:
         )
         return footer_guides_image
 
-    def _generate_launcher_icons(self, launch_item: str) -> Image.Image:
+    def _generate_launcher_icons(
+        self, launch_item: str, variant: Literal["Horizontal", "Alt-Horizontal"]
+    ) -> Image.Image:
         selected_font_hex = self.manager.selectedFontHexVar
         deselected_font_hex = self.manager.deselectedFontHexVar
         bubble_hex = self.manager.bubbleHexVar
         icon_hex = self.manager.iconHexVar
         passthrough = self.manager.transparent_text_var
-        variant = self.manager.main_menu_style_var
 
         launcher_icons = LauncherIcons(
             manager=self.manager,
@@ -210,9 +211,12 @@ class ThemeGenerator:
         right_buttons: list[tuple[str, str]],
         left_buttons: list[tuple[str, str]],
     ) -> Image.Image:
+        if (variant := self.manager.main_menu_style_var) == "Vertical":
+            return self.generate_static_image(right_buttons, left_buttons)
+
         image = Image.new("RGBA", self.scaled_screen_dimensions, (0, 0, 0, 0))
 
-        launcher_icons_image = self._generate_launcher_icons(launch_item)
+        launcher_icons_image = self._generate_launcher_icons(launch_item, variant)
         image.alpha_composite(launcher_icons_image)
 
         header_bubbles_image = self._generate_header_bubbles()
