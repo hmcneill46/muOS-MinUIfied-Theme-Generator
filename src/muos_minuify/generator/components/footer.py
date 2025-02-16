@@ -237,7 +237,12 @@ class FooterGuides(Scalable):
 
         return self
 
-    def _generate_button_glyph(self, button_text: str, colour_hex: str) -> Image.Image:
+    def _generate_button_glyph(
+        self,
+        button_text: str,
+        colour_hex: str,
+        button_layout: str | None = None,
+    ) -> Image.Image:
         rendered_bubble_height = int(self.footer_bubble_button_width)
         buttonSize = (rendered_bubble_height, rendered_bubble_height)
 
@@ -246,12 +251,12 @@ class FooterGuides(Scalable):
             "B",
             "X",
             "Y",
-        ] and self.button_layout in [
+        ] and button_layout in [
             "PlayStation",
             "Xbox",
             "Universal",
         ]:
-            if self.button_layout == "PlayStation":
+            if button_layout == "PlayStation":
                 image = (
                     Image.open(
                         BUTTON_GLYPHS_DIR / "PlayStation" / f"{button_text.upper()}.png"
@@ -259,7 +264,7 @@ class FooterGuides(Scalable):
                     .convert("RGBA")
                     .resize(buttonSize, Resampling.LANCZOS)
                 )
-            elif self.button_layout == "Universal":
+            elif button_layout == "Universal":
                 image = (
                     Image.open(
                         BUTTON_GLYPHS_DIR / "Universal" / f"{button_text.upper()}.png"
@@ -267,15 +272,15 @@ class FooterGuides(Scalable):
                     .convert("RGBA")
                     .resize(buttonSize, Resampling.LANCZOS)
                 )
-            elif self.button_layout == "Xbox":
+            elif button_layout == "Xbox":
                 if button_text.upper() == "A":
-                    image = self._generate_button_glyph("B", colour_hex)
+                    image = self._generate_button_glyph("B", colour_hex, "Nintendo")
                 elif button_text.upper() == "B":
-                    image = self._generate_button_glyph("A", colour_hex)
+                    image = self._generate_button_glyph("A", colour_hex, "Nintendo")
                 elif button_text.upper() == "X":
-                    image = self._generate_button_glyph("Y", colour_hex)
+                    image = self._generate_button_glyph("Y", colour_hex, "Nintendo")
                 elif button_text.upper() == "Y":
-                    image = self._generate_button_glyph("X", colour_hex)
+                    image = self._generate_button_glyph("X", colour_hex, "Nintendo")
 
         elif len(button_text) == 1:
             sl_text_bbox = self.single_letter_font.getbbox(button_text)
@@ -417,6 +422,7 @@ class FooterGuides(Scalable):
             button_image = self._generate_button_glyph(
                 button,
                 colour_hex,
+                self.button_layout,
             )
 
             button_image = change_logo_color(button_image, colour_hex)
