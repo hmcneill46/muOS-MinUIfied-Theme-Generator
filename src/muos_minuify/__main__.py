@@ -27,6 +27,7 @@ from PIL import (
     Image,
     ImageDraw,
 )
+from PIL.Image import Resampling
 
 from .app import ThemeGeneratorApp
 from .color_utils import *
@@ -57,6 +58,7 @@ from .utils import (
 )
 from .utils.math import round_to_nearest_odd
 from .ui.progress_dialog import ProgressDialog
+from .generator.preview import ThemePreviewGenerator
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -2179,9 +2181,6 @@ def outline_image_with_inner_gap(
     return final_image
 
 
-valid_params = True
-
-
 def map_value(
     value: float | int,
     x_min: float | int,
@@ -2198,220 +2197,93 @@ def map_value(
     return mapped_value
 
 
-def on_change(app: ThemeGeneratorApp, *args) -> None:
+def on_change(app: ThemeGeneratorApp, generator: ThemePreviewGenerator, *args) -> None:
     # global menuNameMap
     # menuNameMap = getAlternateMenuNameDict()
     global background_image
     global preview_overlay_image
-    global contentPaddingTop
 
-    contentPaddingTop = app.manager.contentPaddingTopVar
     screen_width = app.manager.deviceScreenWidthVar
     screen_height = app.manager.deviceScreenHeightVar
+    aspect_ratio = screen_width / screen_height
+
     preview_width = app.get_preview_width()
+    preview_height = preview_width / aspect_ratio
+    if not preview_width or not preview_height:
+        return
 
-    if app.manager.include_overlay_var and app.manager.selected_overlay_var:
-        preview_overlay_path = (
-            OVERLAY_DIR
-            / f"{screen_width}x{screen_height}"
-            / f"{app.manager.selected_overlay_var}.png"
-        )
-        if preview_overlay_path.exists():
-            preview_overlay_image = Image.open(preview_overlay_path)
-        else:
-            preview_overlay_image = None
-    else:
-        preview_overlay_path = None
+    preview_size = (round(preview_width), round(preview_height))
 
-    if (
-        app.manager.use_custom_background_var
-        and app.manager.background_image_path
-        and app.manager.background_image_path.exists()
-    ):
-        background_image = Image.open(app.manager.background_image_path)
-    else:
-        background_image = None
+    preview_theme_generator = ThemePreviewGenerator(app.manager)
 
-    previewApplicationList = []
-    if app.manager.version_var[0:9] == "muOS 2410":
-        index = None
-        for i, n in enumerate(MENU_LISTING_2410_X):
-            if n[0] == "muxapp":
-                index = i
-                break
-        if index is not None:
-            previewApplicationList = [
-                [x[0], "menu", x[0]] for x in MENU_LISTING_2410_X[index][1]
-            ]
+    content_preview = preview_theme_generator.generate_launcher_image(
+        [("A", "SELECT")]
+    ).resize(preview_size, Resampling.LANCZOS)
+    info_preview = preview_theme_generator.generate_launcher_image(
+        [("A", "SELECT")], selected_item="info"
+    ).resize(preview_size, Resampling.LANCZOS)
 
-    global valid_params
+    # if app.manager.include_overlay_var and app.manager.selected_overlay_var:
+    #     preview_overlay_path = (
+    #         OVERLAY_DIR
+    #         / f"{screen_width}x{screen_height}"
+    #         / f"{app.manager.selected_overlay_var}.png"
+    #     )
+    #     if preview_overlay_path.exists():
+    #         preview_overlay_image = Image.open(preview_overlay_path)
+    #     else:
+    #         preview_overlay_image = None
+    # else:
+    #     preview_overlay_path = None
 
-    fakeprogressbar = {"value": 0}
-    fakeprogressbar["maximum"] = 1
+    # if (
+    #     app.manager.use_custom_background_var
+    #     and app.manager.background_image_path
+    #     and app.manager.background_image_path.exists()
+    # ):
+    #     background_image = Image.open(app.manager.background_image_path)
+    # else:
+    #     background_image = None
 
-    previewRenderFactor = 1
-    current_image_size = [640, 480]
-    if get_current_image(app.image_label1) is not None:
-        current_image_size = get_current_image(app.image_label1).size
-    preview_size = [current_image_size[0] / 2, current_image_size[1] / 2]
-    if preview_width > 100:
-        previewRenderFactor = (
-            math.ceil(preview_width / current_image_size[1]) + 1
-        )  # Affectively anti aliasing in the preview
+    # previewApplicationList = []
+    # if app.manager.version_var[0:9] == "muOS 2410":
+    #     index = None
+    #     for i, n in enumerate(MENU_LISTING_2410_X):
+    #         if n[0] == "muxapp":
+    #             index = i
+    #             break
+    #     if index is not None:
+    #         previewApplicationList = [
+    #             [x[0], "menu", x[0]] for x in MENU_LISTING_2410_X[index][1]
+    #         ]
 
-        preview_size = [
-            int(preview_width),
-            int(preview_width * (current_image_size[1] / current_image_size[0])),
-        ]
-    try:
-        if preview_width < 100:
-            preview_size = [
-                screen_width // 2,
-                screen_height // 2,
-            ]
-        else:
-            previewRenderFactor = (
-                math.ceil(preview_width / screen_width) + 1
-            )  # Affectively anti aliasing in the preview
+    # previewItemList = [
+    #     ["Content Explorer", "Menu", "explore"],
+    #     ["Favourites", "Menu", "favourite"],
+    #     ["History", "Menu", "history"],
+    #     ["Applications", "Menu", "apps"],
+    #     ["Information", "Menu", "info"],
+    #     ["Configuration", "Menu", "config"],
+    #     ["Reboot Device", "Menu", "reboot"],
+    #     ["Shutdown Device", "Menu", "shutdown"],
+    # ]
 
-            preview_size = [
-                int(preview_width),
-                int(preview_width * screen_height / screen_width),
-            ]
+    # if app.manager.include_overlay_var and app.manager.selected_overlay_var != "":
+    #     preview_overlay_resized = preview_overlay_image.resize(
+    #         image1.size, Image.LANCZOS
+    #     )
+    #     image1.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
+    #     image2.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
+    #     if app.manager.main_menu_style_var != "Vertical":
+    #         image3.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
 
-        # This function will run whenever any traced variable changes
+    update_image_label(app.image_label1, content_preview)
+    update_image_label(app.image_label2, info_preview)
 
-        previewItemList = [
-            ["Content Explorer", "Menu", "explore"],
-            ["Favourites", "Menu", "favourite"],
-            ["History", "Menu", "history"],
-            ["Applications", "Menu", "apps"],
-            ["Information", "Menu", "info"],
-            ["Configuration", "Menu", "config"],
-            ["Reboot Device", "Menu", "reboot"],
-            ["Shutdown Device", "Menu", "shutdown"],
-        ]
-
-        preview_theme_generator = PreviewThemeGenerator(
-            app.manager, previewRenderFactor
-        )
-        if app.manager.main_menu_style_var == "Horizontal":
-            image1 = preview_theme_generator.generate_horizontal_menu_image(
-                0,
-                app.manager.bgHexVar,
-                app.manager.selectedFontHexVar,
-                app.manager.deselectedFontHexVar,
-                app.manager.bubbleHexVar,
-                app.manager.iconHexVar,
-                transparent=False,
-            ).resize(preview_size, Image.LANCZOS)
-        elif app.manager.main_menu_style_var == "Alt-Horizontal":
-            image1 = preview_theme_generator.generate_alt_horizontal_menu_image(
-                fakeprogressbar,
-                0,
-                app.manager.bgHexVar,
-                app.manager.selectedFontHexVar,
-                app.manager.deselectedFontHexVar,
-                app.manager.bubbleHexVar,
-                app.manager.iconHexVar,
-                transparent=False,
-            ).resize(preview_size, Image.LANCZOS)
-        elif app.manager.main_menu_style_var == "Vertical":
-            image1 = preview_theme_generator.generate_vertical_menu_image(
-                fakeprogressbar,
-                0,
-                "muxlaunch",
-                previewItemList[0 : int(app.manager.itemsPerScreenVar)],
-                int(app.manager.textPaddingVar),
-                int(app.manager.bubblePaddingVar),
-                int(app.manager.itemsPerScreenVar),
-                app.manager.bgHexVar,
-                app.manager.selectedFontHexVar,
-                app.manager.deselectedFontHexVar,
-                app.manager.bubbleHexVar,
-                transparent=False,
-            ).resize(preview_size, Image.LANCZOS)
-
-        image2 = preview_theme_generator.generate_vertical_menu_image(
-            fakeprogressbar,
-            0,
-            "muxapp",
-            previewApplicationList[0 : int(app.manager.itemsPerScreenVar)],
-            int(app.manager.textPaddingVar),
-            int(app.manager.bubblePaddingVar),
-            int(app.manager.itemsPerScreenVar),
-            app.manager.bgHexVar,
-            app.manager.selectedFontHexVar,
-            app.manager.deselectedFontHexVar,
-            app.manager.bubbleHexVar,
-            fileCounter=f"1 / {app.manager.itemsPerScreenVar}",
-            transparent=False,
-        ).resize(preview_size, Image.LANCZOS)
-
-        if app.manager.main_menu_style_var == "Horizontal":
-            image3 = preview_theme_generator.generate_horizontal_menu_image(
-                4,
-                app.manager.bgHexVar,
-                app.manager.selectedFontHexVar,
-                app.manager.deselectedFontHexVar,
-                app.manager.bubbleHexVar,
-                app.manager.iconHexVar,
-                transparent=False,
-            ).resize(preview_size, Image.LANCZOS)
-
-        elif app.manager.main_menu_style_var == "Alt-Horizontal":
-            image3 = preview_theme_generator.generate_alt_horizontal_menu_image(
-                fakeprogressbar,
-                4,
-                app.manager.bgHexVar,
-                app.manager.selectedFontHexVar,
-                app.manager.deselectedFontHexVar,
-                app.manager.bubbleHexVar,
-                app.manager.iconHexVar,
-                transparent=False,
-            ).resize(preview_size, Image.LANCZOS)
-
-        if app.manager.include_overlay_var and app.manager.selected_overlay_var != "":
-            preview_overlay_resized = preview_overlay_image.resize(
-                image1.size, Image.LANCZOS
-            )
-            image1.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
-            image2.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
-            if app.manager.main_menu_style_var != "Vertical":
-                image3.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
-
-        update_image_label(app.image_label1, image1)
-        update_image_label(app.image_label2, image2)
-        if app.manager.main_menu_style_var != "Vertical":
-            update_image_label(app.image_label3, image3)
-        else:
-            remove_image_from_label(app.image_label3)
-        valid_params = True
-    except Exception:
-        traceback.print_exc()
-        if (
-            get_current_image(app.image_label1) != None
-            and get_current_image(app.image_label2) != None
-            and get_current_image(app.image_label3)
-        ):
-            if valid_params:
-                redOutlineImage1 = outline_image_with_inner_gap(
-                    get_current_image(app.image_label1)
-                ).resize(preview_size, Image.LANCZOS)
-                redOutlineImage2 = outline_image_with_inner_gap(
-                    get_current_image(app.image_label2)
-                ).resize(preview_size, Image.LANCZOS)
-                if app.manager.main_menu_style_var != "Vertical":
-                    redOutlineImage3 = outline_image_with_inner_gap(
-                        get_current_image(app.image_label3)
-                    ).resize(preview_size, Image.LANCZOS)
-                update_image_label(app.image_label1, redOutlineImage1)
-                update_image_label(app.image_label2, redOutlineImage2)
-                if app.manager.main_menu_style_var != "Vertical":
-                    update_image_label(app.image_label3, redOutlineImage3)
-                valid_params = False
-        else:
-            raise
+    # if app.manager.main_menu_style_var != "Vertical":
+    #     update_image_label(app.image_label3, image3)
+    # else:
+    #     remove_image_from_label(app.image_label3)
 
 
 # menuNameMap = getAlternateMenuNameDict()
@@ -2442,7 +2314,10 @@ def main():
         settings_adapter=adapter,
         commands_map=commands_map,
     )
-    app.set_on_change_listener(partial(on_change, app))
+
+    preview_generator = ThemePreviewGenerator(manager)
+
+    app.set_on_change_listener(partial(on_change, app, preview_generator))
     app.build_sections_from_settings()
 
     app.run()
