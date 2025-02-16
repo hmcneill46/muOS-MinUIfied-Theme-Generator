@@ -109,9 +109,7 @@ class PreviewHeaderBubbles(HeaderBubbles):
                     "Page title alignment must be 'Left', 'Centre', or 'Right'!"
                 )
 
-        page_title_y_pos = (
-            int((self.header_height / 2) - (self.header_text_height / 2)) - text_bbox[1]
-        )
+        page_title_y_pos = int((self.header_height / 2) - (self.header_text_height / 2))
 
         draw.text(
             (page_title_x_pos, page_title_y_pos),
