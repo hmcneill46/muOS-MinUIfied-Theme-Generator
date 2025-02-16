@@ -72,15 +72,6 @@ class PreviewHeaderBubbles(HeaderBubbles):
             fill=accent_colour,
         )
 
-    def _draw_clock_bubble(
-        self,
-        draw: ImageDraw.ImageDraw,
-        accent_colour: str | None = None,
-        bubble_alpha: float = 0.133,
-    ) -> None:
-        super()._draw_clock_bubble(draw, accent_colour, bubble_alpha)
-        self._draw_clock_text(draw, accent_colour)
-
     def _draw_page_title(
         self,
         draw: ImageDraw.ImageDraw,
@@ -220,16 +211,6 @@ class PreviewHeaderBubbles(HeaderBubbles):
         self._draw_network_glyph(image)
         self._draw_battery_glyph(image, show_charging, charging_hex)
 
-    def _draw_status_bubble(
-        self,
-        image: Image.Image,
-        draw: ImageDraw.ImageDraw,
-        accent_colour: str | None = None,
-        bubble_alpha: float = 0.133,
-    ) -> None:
-        super()._draw_status_bubble(image, draw, accent_colour, bubble_alpha)
-        self._draw_status_glyphs(image, self.show_charging, self.charging_hex)
-
     def with_header_configuration(
         self,
         header_height: int,
@@ -286,17 +267,20 @@ class PreviewHeaderBubbles(HeaderBubbles):
         charging_hex: str = "#FFFFFF",
         selected_item: str = "explore",
     ) -> Image.Image:
-        self.show_charging = show_charging
-        self.charging_hex = charging_hex
-
-        image = super().generate(
-            accent_colour,
-            bubble_alpha,
-            show_clock_bubble,
-            show_status_bubble,
-            join_bubbles,
-        )
+        image = Image.new("RGBA", self.scaled_screen_dimensions, (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
+
+        if join_bubbles:
+            self._draw_joined_bubble(draw, accent_colour, bubble_alpha)
+        else:
+            if show_clock_bubble:
+                self._draw_clock_bubble(draw, accent_colour, bubble_alpha)
+
+            if show_status_bubble:
+                self._draw_status_bubble(image, draw, accent_colour, bubble_alpha)
+
+        self._draw_clock_text(draw, accent_colour)
+        self._draw_status_glyphs(image, show_charging, charging_hex)
 
         if show_page_title:
             self._draw_page_title(draw, selected_item)
