@@ -109,3 +109,25 @@ class ThemePreviewGenerator(ThemeGenerator):
         image.alpha_composite(footer_guides_image)
 
         return image.resize(self.screen_dimensions, Resampling.LANCZOS)
+
+    def generate_launcher_image(
+        self,
+        right_buttons: list[tuple[str, str]] = [],
+        left_buttons: list[tuple[str, str]] = [("POWER", "SLEEP")],
+        selected_item: str = "explore",
+    ) -> Image.Image:
+        if (variant := self.manager.main_menu_style_var) == "Vertical":
+            return self.generate_static_image(right_buttons, left_buttons)
+
+        image = self._generate_background()
+
+        launcher_icons_image = self._generate_launcher_icons(selected_item, variant)
+        image.alpha_composite(launcher_icons_image)
+
+        header_bubbles_image = self._generate_header_bubbles(selected_item)
+        image.alpha_composite(header_bubbles_image)
+
+        footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
+        image.alpha_composite(footer_guides_image)
+
+        return image.resize(self.screen_dimensions, Resampling.LANCZOS)
