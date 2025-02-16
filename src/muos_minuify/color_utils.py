@@ -30,14 +30,16 @@ def interpolate_color_component(c1: int, c2: int, factor: float) -> int:
     return int(c1 + (c2 - c1) * factor)
 
 
-def percentage_color(hex1: str, hex2: str, percentage: float):
+def percentage_color(hex1: str, hex2: str, percentage: float) -> str:
     # Convert hex colors to RGB
     rgb1 = hex_to_rgba(hex1)
     rgb2 = hex_to_rgba(hex2)
 
     # Calculate the interpolated color for each component
-    interp_rgb = tuple(
-        interpolate_color_component(c1, c2, percentage) for c1, c2 in zip(rgb1, rgb2)
+    interp_rgb = (
+        interpolate_color_component(rgb1[0], rgb2[0], percentage),
+        interpolate_color_component(rgb1[1], rgb2[1], percentage),
+        interpolate_color_component(rgb1[2], rgb2[2], percentage),
     )
 
     # Convert interpolated RGB back to hex
