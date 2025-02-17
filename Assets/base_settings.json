@@ -35,7 +35,7 @@
       "title": "General Configuration",
       "fields": [
         {
-          "label": "Use Grid View in Explore",
+          "label": "Use Grid View in Content Explorer",
           "widget_type": "checkbox",
           "var_name": "enable_grid_view_explore_var",
           "var_type": "boolean",
@@ -109,7 +109,7 @@
           "command": "select_background_image_path"
         },
         {
-          "label": "Show Background through Text on Launch Menu",
+          "label": "Show Background through Text on Launch Menu (only for Horizontal or Alt-Horizontal)",
           "widget_type": "checkbox",
           "var_name": "transparent_text_var",
           "var_type": "boolean",
@@ -469,7 +469,7 @@
       "title": "Content List Configuration",
       "fields": [
         {
-          "label": "Show Glyphs",
+          "label": "Show Glyphs (not shown in preview)",
           "widget_type": "checkbox",
           "var_name": "show_glyphs_var",
           "var_type": "boolean",
