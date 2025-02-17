@@ -34,7 +34,11 @@ class TkinterSettingsAdapter:
             tk_var = create_tk_variable(var_type, current_value)
 
             def on_write(*_):
-                new_val = tk_var.get()
+                try:
+                    new_val = tk_var.get()
+                except Exception:
+                    return
+
                 self.manager.set_value(var_name, new_val)
                 self._notify_subscribers(var_name, new_val)
 
