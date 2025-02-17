@@ -2,6 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 from PIL.Image import Resampling
 
 from . import ThemeGenerator
+from ..constants import OVERLAY_DIR
 from .components.header.preview import PreviewHeaderBubbles
 from ..settings import SettingsManager
 from ..font import get_font_path
@@ -200,6 +201,20 @@ class ThemePreviewGenerator(ThemeGenerator):
                 )
             draw.text((text_x, text_y), text, font=font, fill=text_color)
 
+    def _generate_overlay(self) -> Image.Image | None:
+        preview_overlay_image = None
+
+        if self.manager.include_overlay_var and self.manager.selected_overlay_var:
+            preview_overlay_path = (
+                OVERLAY_DIR
+                / f"{self.screen_dimensions[0]}x{self.screen_dimensions[1]}"
+                / f"{self.manager.selected_overlay_var}.png"
+            )
+            if preview_overlay_path.exists():
+                preview_overlay_image = Image.open(preview_overlay_path).convert("RGBA")
+
+        return preview_overlay_image
+
     def generate_wall_image(
         self,
         right_buttons: list[tuple[str, str]] = [],
@@ -215,7 +230,12 @@ class ThemePreviewGenerator(ThemeGenerator):
         footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
         image.alpha_composite(footer_guides_image, (0, 0))
 
-        return image.resize(self.screen_dimensions, Resampling.LANCZOS)
+        image = image.resize(self.screen_dimensions, Resampling.LANCZOS)
+
+        if overlay_image := self._generate_overlay():
+            image.alpha_composite(overlay_image, (0, 0))
+
+        return image
 
     def generate_static_image(
         self,
@@ -232,7 +252,12 @@ class ThemePreviewGenerator(ThemeGenerator):
         footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
         image.alpha_composite(footer_guides_image)
 
-        return image.resize(self.screen_dimensions, Resampling.LANCZOS)
+        image = image.resize(self.screen_dimensions, Resampling.LANCZOS)
+
+        if overlay_image := self._generate_overlay():
+            image.alpha_composite(overlay_image, (0, 0))
+
+        return image
 
     def generate_launcher_image(
         self,
@@ -255,4 +280,9 @@ class ThemePreviewGenerator(ThemeGenerator):
         footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
         image.alpha_composite(footer_guides_image)
 
-        return image.resize(self.screen_dimensions, Resampling.LANCZOS)
+        image = image.resize(self.screen_dimensions, Resampling.LANCZOS)
+
+        if overlay_image := self._generate_overlay():
+            image.alpha_composite(overlay_image, (0, 0))
+
+        return image
