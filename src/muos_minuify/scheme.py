@@ -264,7 +264,7 @@ class SchemeRenderer:
                 int(self.manager.deviceScreenHeightVar) * (165 / 480)
             ),
             "glyph_padding_left": int(self.rectanglePadding + (self.glyph_width / 2)),
-            "image_overlay": self.manager.include_overlay_var,
+            "image_overlay": int(self.manager.include_overlay_var),
             "footer_height": self.footerHeight,
             "header_text_alpha": 255 if self.manager.show_console_name_var else 0,
             "page_title_text_align": self.page_title_alignment_map[
