@@ -347,7 +347,7 @@ class SchemeRenderer:
             "grid_cell_default_image_recolour_alpha": 255,
             "grid_cell_default_text": self.deselected_font_hex,
             "grid_cell_default_text_alpha": 0,
-            "grid_cell_focus_background": self.deselected_font_hex,
+            "grid_cell_focus_background": self.selected_font_hex,
             "grid_cell_focus_background_alpha": int(255 * 0.133),
             "grid_cell_focus_border": self.deselected_font_hex,
             "grid_cell_focus_border_alpha": 0,
