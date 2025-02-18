@@ -62,18 +62,6 @@ from .generator.preview import ThemePreviewGenerator
 
 Image.MAX_IMAGE_PIXELS = None
 
-## TODO look into centre align and left align
-## TODO make header resizable
-
-background_image = None
-preview_overlay_image = None
-
-# Define constants
-render_factor = 5
-
-contentPaddingTop = 44
-textMF = 0.7
-
 
 def ContinuousFolderImageGen(
     progress_bar: ttk.Progressbar,
@@ -2200,8 +2188,6 @@ def map_value(
 def on_change(app: ThemeGeneratorApp, generator: ThemePreviewGenerator, *args) -> None:
     # global menuNameMap
     # menuNameMap = getAlternateMenuNameDict()
-    global background_image
-    global preview_overlay_image
 
     screen_width = app.manager.deviceScreenWidthVar
     screen_height = app.manager.deviceScreenHeightVar
@@ -2223,67 +2209,8 @@ def on_change(app: ThemeGeneratorApp, generator: ThemePreviewGenerator, *args) -
         [("A", "SELECT")], selected_item="info"
     ).resize(preview_size, Resampling.LANCZOS)
 
-    # if app.manager.include_overlay_var and app.manager.selected_overlay_var:
-    #     preview_overlay_path = (
-    #         OVERLAY_DIR
-    #         / f"{screen_width}x{screen_height}"
-    #         / f"{app.manager.selected_overlay_var}.png"
-    #     )
-    #     if preview_overlay_path.exists():
-    #         preview_overlay_image = Image.open(preview_overlay_path)
-    #     else:
-    #         preview_overlay_image = None
-    # else:
-    #     preview_overlay_path = None
-
-    # if (
-    #     app.manager.use_custom_background_var
-    #     and app.manager.background_image_path
-    #     and app.manager.background_image_path.exists()
-    # ):
-    #     background_image = Image.open(app.manager.background_image_path)
-    # else:
-    #     background_image = None
-
-    # previewApplicationList = []
-    # if app.manager.version_var[0:9] == "muOS 2410":
-    #     index = None
-    #     for i, n in enumerate(MENU_LISTING_2410_X):
-    #         if n[0] == "muxapp":
-    #             index = i
-    #             break
-    #     if index is not None:
-    #         previewApplicationList = [
-    #             [x[0], "menu", x[0]] for x in MENU_LISTING_2410_X[index][1]
-    #         ]
-
-    # previewItemList = [
-    #     ["Content Explorer", "Menu", "explore"],
-    #     ["Favourites", "Menu", "favourite"],
-    #     ["History", "Menu", "history"],
-    #     ["Applications", "Menu", "apps"],
-    #     ["Information", "Menu", "info"],
-    #     ["Configuration", "Menu", "config"],
-    #     ["Reboot Device", "Menu", "reboot"],
-    #     ["Shutdown Device", "Menu", "shutdown"],
-    # ]
-
-    # if app.manager.include_overlay_var and app.manager.selected_overlay_var != "":
-    #     preview_overlay_resized = preview_overlay_image.resize(
-    #         image1.size, Image.LANCZOS
-    #     )
-    #     image1.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
-    #     image2.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
-    #     if app.manager.main_menu_style_var != "Vertical":
-    #         image3.paste(preview_overlay_resized, (0, 0), preview_overlay_resized)
-
     update_image_label(app.image_label1, content_preview)
     update_image_label(app.image_label2, info_preview)
-
-    # if app.manager.main_menu_style_var != "Vertical":
-    #     update_image_label(app.image_label3, image3)
-    # else:
-    #     remove_image_from_label(app.image_label3)
 
 
 # menuNameMap = getAlternateMenuNameDict()
