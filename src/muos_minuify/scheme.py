@@ -119,7 +119,7 @@ class SchemeRenderer:
         return map
 
     def _get_muxnetwork_map(self) -> dict[str, int]:
-        map = {"footer_alpha": 255}
+        map = {}
 
         if self.manager.version_var == "muOS 2410.1 Banana":
             map.update(
@@ -140,20 +140,17 @@ class SchemeRenderer:
                 self.rectanglePadding + (self.glyph_width / 2) + self.glyph_to_text_pad
             ),
             "list_glyph_alpha": 255,
-            "footer_alpha": 255,
         }
 
         return map
 
     def _get_muxgov_map(self) -> dict[str, int]:
         map = self._get_muxassign_map()
-        map["footer_alpha"] = 0
 
         return map
 
     def _get_muxsearch_map(self) -> dict[str, int]:
         map = self._get_muxassign_map()
-        map["footer_alpha"] = 0
 
         return map
 
@@ -251,7 +248,7 @@ class SchemeRenderer:
         return self._get_muxplore_map()
 
     def _get_muxstorage_map(self) -> dict[str, int]:
-        map = {"footer_alpha": 255}
+        map = {}
 
         return map
 
@@ -373,8 +370,6 @@ class SchemeRenderer:
         default_contents = self.replacementStringMap["default"]
         scheme_contents = self.replacementStringMap.get(item, {})
 
-        if not scheme_contents:
-            return None
-
         scheme_contents = default_contents | scheme_contents
+
         return template.format(**scheme_contents)
