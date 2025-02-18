@@ -301,5 +301,11 @@ class ThemeGenerator:
 
         return image.resize(self.screen_dimensions, Resampling.LANCZOS)
 
+    def generate_background_image(
+        self,
+    ) -> Image.Image:
+        image = self._generate_background()
+        return image.resize(self.screen_dimensions, Resampling.LANCZOS)
+
     def generate_theme(self):
         pass
