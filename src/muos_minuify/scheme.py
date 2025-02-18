@@ -367,22 +367,14 @@ class SchemeRenderer:
 
         return map
 
-    def render(self) -> None:
-        temp_build_dir = RESOURCES_DIR / f".temp-{datetime.now(UTC)}"
-
-        copy_contents(THEME_SHELL_DIR, temp_build_dir)
-
-        newSchemeDir = temp_build_dir / "scheme"
-        ensure_folder_exists(newSchemeDir)
-
+    def render(self, item: str) -> str | None:
         template = TEMPLATE_SCHEME_PATH.read_text()
 
-        for filename, scheme in self.replacementStringMap.items():
-            path = newSchemeDir / f"{filename}.txt"
-            scheme_contents = self.replacementStringMap["default"]
+        default_contents = self.replacementStringMap["default"]
+        scheme_contents = self.replacementStringMap.get(item, {})
 
-            if filename != "default":
-                scheme_contents.update(scheme)
+        if not scheme_contents:
+            return None
 
-            with open(path, "w+") as f:
-                f.write(template.format(**scheme_contents))
+        scheme_contents = default_contents | scheme_contents
+        return template.format(**scheme_contents)
