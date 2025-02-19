@@ -3,9 +3,12 @@ class Scalable:
         self,
         screen_dimensions: tuple[int, int] = (640, 480),
         render_factor: int = 1,
+        **kwargs,
     ):
         self.screen_dimensions = screen_dimensions
         self.render_factor = render_factor
+
+        super().__init__(**kwargs)
 
     @property
     def scaled_screen_dimensions(self) -> tuple[int, int]:

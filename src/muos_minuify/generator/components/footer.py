@@ -9,20 +9,24 @@ from ...color_utils import hex_to_rgba, change_logo_color
 from ...constants import BUTTON_GLYPHS_DIR
 from ...defaults import DEFAULT_FONT_PATH
 from ...settings import SettingsManager
+from .font import HasFont
 from .scalable import Scalable
 
 
-class FooterGuides(Scalable):
+class FooterGuides(Scalable, HasFont):
     def __init__(
         self,
         manager: SettingsManager,
-        font_path: Path = DEFAULT_FONT_PATH,
         screen_dimensions: tuple[int, int] = (640, 480),
         render_factor: int = 5,
+        font_path: Path = DEFAULT_FONT_PATH,
     ):
-        super().__init__(screen_dimensions, render_factor)
+        super().__init__(
+            screen_dimensions=screen_dimensions,
+            render_factor=render_factor,
+            font_path=font_path,
+        )
         self.manager = manager
-        self.font_path = font_path
 
         self.footer_ideal_height = self.manager.approxFooterHeightVar
         self.footer_height = self.footer_ideal_height
@@ -467,6 +471,12 @@ class FooterGuides(Scalable):
         return self.__generate_guide(
             self.right_buttons, self.right_guide_width, right_x_pos, colour_hex
         )
+
+    def get_font(self) -> Path:
+        bubble_font_size = round(
+            self.footer_bubble_height * (24 / 40) / self.render_factor
+        )
+        return super().get_font_binary(bubble_font_size)
 
     def generate(
         self,

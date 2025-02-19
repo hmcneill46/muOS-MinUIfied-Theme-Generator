@@ -4,6 +4,7 @@ from typing import Literal
 from PIL import Image
 from PIL.Image import Resampling
 
+from ..defaults import DEFAULT_FONT_PATH
 from ..settings import SettingsManager
 from .components import (
     Background,
@@ -12,16 +13,30 @@ from .components import (
     HeaderBubbles,
     LauncherIcons,
 )
+from .components.font import HasFont
 
 
-class ThemeGenerator:
+class ThemeGenerator(HasFont):
     def __init__(
         self,
         manager: SettingsManager,
         render_factor: int = 5,
+        font_path: Path = DEFAULT_FONT_PATH,
     ):
+        super().__init__(font_path=font_path)
         self.manager = manager
         self.render_factor = render_factor
+
+        kwargs = {
+            "manager": self.manager,
+            "screen_dimensions": self.screen_dimensions,
+            "render_factor": self.render_factor,
+        }
+
+        self.background = Background(**kwargs)
+        self.header_bubbles = HeaderBubbles(**kwargs)
+        self.footer_guides = FooterGuides(**kwargs)
+        self.launcher_icons = LauncherIcons(**kwargs)
 
     @property
     def screen_dimensions(self) -> tuple[int, int]:
@@ -42,11 +57,7 @@ class ThemeGenerator:
         use_background_image = self.manager.use_custom_background_var
         background_image_path = self.manager.background_image_path
 
-        background = Background(
-            manager=self.manager,
-            screen_dimensions=self.screen_dimensions,
-            render_factor=self.render_factor,
-        ).with_background_hex(bg_hex)
+        background = self.background.with_background_hex(bg_hex)
 
         if use_background_image and background_image_path:
             background = background.with_background_image(background_image_path)
@@ -76,13 +87,12 @@ class ThemeGenerator:
             self.manager.header_glyph_horizontal_right_padding_var
         )
 
+        header_bubbles = self.header_bubbles
+
         header_bubbles = (
-            HeaderBubbles(
-                manager=self.manager,
-                screen_dimensions=self.screen_dimensions,
-                render_factor=self.render_factor,
+            header_bubbles.with_header_configuration(
+                header_height, text_height, text_bubble_height
             )
-            .with_header_configuration(header_height, text_height, text_bubble_height)
             .with_clock_configuration(
                 clock_format,
                 clock_bubble_alignment,
@@ -123,25 +133,19 @@ class ThemeGenerator:
         control_scheme = self.manager.muos_button_swap_var
         button_layout = self.manager.physical_controller_layout_var
 
-        footer_guides = (
-            FooterGuides(
-                manager=self.manager,
-                screen_dimensions=self.screen_dimensions,
-                render_factor=self.render_factor,
-            )
-            .with_button_configuration(
-                right_buttons,
-                left_buttons,
-                control_scheme,
-                button_layout,
-            )
-            .with_footer_configuration(
-                items_per_screen,
-                content_padding_top,
-                footer_ideal_height,
-                footer_margin_block,
-                footer_margin_inline,
-            )
+        footer_guides = self.footer_guides
+
+        footer_guides = footer_guides.with_button_configuration(
+            right_buttons,
+            left_buttons,
+            control_scheme,
+            button_layout,
+        ).with_footer_configuration(
+            items_per_screen,
+            content_padding_top,
+            footer_ideal_height,
+            footer_margin_block,
+            footer_margin_inline,
         )
 
         colour_hex = self.manager.footerBubbleHexVar
@@ -164,11 +168,9 @@ class ThemeGenerator:
         icon_hex = self.manager.iconHexVar
         passthrough = self.manager.transparent_text_var
 
-        launcher_icons = LauncherIcons(
-            manager=self.manager,
-            screen_dimensions=self.screen_dimensions,
-            render_factor=self.render_factor,
-        ).with_color_configuration(
+        launcher_icons = self.launcher_icons
+
+        launcher_icons = launcher_icons.with_color_configuration(
             selected_font_hex=selected_font_hex,
             deselected_font_hex=deselected_font_hex,
             bubble_hex=bubble_hex,
@@ -308,6 +310,14 @@ class ThemeGenerator:
     ) -> Image.Image:
         image = self._generate_background()
         return image.resize(self.screen_dimensions, Resampling.LANCZOS)
+
+    def get_fonts(self) -> list[tuple[str, Path]]:
+        fonts = [("panel", self.get_font_binary(self.manager.font_size_var))]
+
+        fonts.append(("header", self.header_bubbles.get_font()))
+        fonts.append(("footer", self.footer_guides.get_font()))
+
+        return fonts
 
     def generate_theme(self):
         pass

@@ -10,10 +10,11 @@ from ....constants import GLYPHS_DIR
 from ....defaults import DEFAULT_FONT_PATH
 from ....settings import SettingsManager
 from ....utils import get_max_length_time_string
+from ..font import HasFont
 from ..scalable import Scalable
 
 
-class HeaderBubbles(Scalable):
+class HeaderBubbles(Scalable, HasFont):
     capacity_30 = "capacity_30.png"
     capacity_image_path = GLYPHS_DIR / "capacity_30[5x].png"
     network_active = "network_active.png"
@@ -22,11 +23,15 @@ class HeaderBubbles(Scalable):
     def __init__(
         self,
         manager: SettingsManager,
-        font_path: Path = DEFAULT_FONT_PATH,
         screen_dimensions: tuple[int, int] = (640, 480),
         render_factor: int = 5,
+        font_path: Path = DEFAULT_FONT_PATH,
     ):
-        super().__init__(screen_dimensions, render_factor)
+        super().__init__(
+            screen_dimensions=screen_dimensions,
+            render_factor=render_factor,
+            font_path=font_path,
+        )
         self.manager = manager
 
         self.header_height = self.manager.headerHeightVar * self.render_factor
@@ -80,7 +85,7 @@ class HeaderBubbles(Scalable):
         self.left_x_points = {}
         self.right_x_points = {}
 
-        self.header_font = ImageFont.truetype(font_path, self.text_height)
+        self.header_font = ImageFont.truetype(self.font_path, self.text_height)
         self.capacity_glyph = Image.open(self.capacity_image_path).convert("RGBA")
         self.network_glyph = Image.open(self.network_image_path).convert("RGBA")
 
@@ -356,6 +361,9 @@ class HeaderBubbles(Scalable):
             radius=math.ceil((top_y - bottom_y) / 2),
             fill=hex_to_rgba(accent_colour, alpha=bubble_alpha),
         )
+
+    def get_font(self) -> Path:
+        return super().get_font_binary(self.text_height / self.render_factor)
 
     def generate(
         self,

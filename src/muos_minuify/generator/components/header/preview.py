@@ -34,7 +34,12 @@ class PreviewHeaderBubbles(HeaderBubbles):
         screen_dimensions: tuple[int, int] = (640, 480),
         render_factor: int = 5,
     ):
-        super().__init__(manager, font_path, screen_dimensions, render_factor)
+        super().__init__(
+            manager,
+            screen_dimensions=screen_dimensions,
+            render_factor=render_factor,
+            font_path=font_path,
+        )
 
         self.clock_format = self.manager.clock_format_var
 
