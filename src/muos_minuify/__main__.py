@@ -2225,15 +2225,8 @@ def on_change(app: ThemeGeneratorApp, generator: ThemePreviewGenerator, *args) -
 
 # menuNameMap = getAlternateMenuNameDict()
 
-root = tk.Tk()
-
 
 def main():
-    manager = SettingsManager(BASE_SETTINGS_PATH, USER_SETTINGS_PATH)
-    manager.load()
-
-    adapter = TkinterSettingsAdapter(manager)
-
     commands_map = {
         "select_color": select_color,
         "select_bootlogo_image_path": select_bootlogo_image_path,
@@ -2243,6 +2236,11 @@ def main():
         "start_theme_task": start_theme_task,
     }
 
+    manager = SettingsManager(BASE_SETTINGS_PATH, USER_SETTINGS_PATH)
+    manager.load()
+
+    root = tk.Tk()
+    adapter = TkinterSettingsAdapter(manager, root)
     app = ThemeGeneratorApp(
         root=root,
         title="MinUI Theme Generator",

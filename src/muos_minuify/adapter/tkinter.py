@@ -1,4 +1,4 @@
-from tkinter import BooleanVar, DoubleVar, IntVar, StringVar, Variable
+from tkinter import BooleanVar, DoubleVar, IntVar, Tk, StringVar, Variable
 from typing import Any, Callable
 
 from ..settings import SettingsManager
@@ -21,10 +21,16 @@ def create_tk_variable(var_type_str: str, default_value=None) -> Variable:
 
 
 class TkinterSettingsAdapter:
-    def __init__(self, manager: SettingsManager):
+    def __init__(self, manager: SettingsManager, master: Tk, debounce_delay: int = 300):
         self.manager = manager
+        self.master = master
+        self.debounce_delay = debounce_delay
+
         self.variables: dict[str, Variable] = {}
         self._subscribers: list[Callable[[str, Any], None]] = []
+
+        self._debounce_after_id = None
+        self._last_change: tuple[str, Any] | None = None
 
     def get_variable(
         self, var_name: str, var_type: str, default_value: Any | None = None
@@ -40,7 +46,7 @@ class TkinterSettingsAdapter:
                     return
 
                 self.manager.set_value(var_name, new_val)
-                self._notify_subscribers(var_name, new_val)
+                self._debounce_notify(var_name, new_val)
 
             tk_var.trace_add("write", on_write)
             self.variables[var_name] = tk_var
@@ -53,3 +59,21 @@ class TkinterSettingsAdapter:
     def _notify_subscribers(self, var_name: str, new_val: Any):
         for cb in self._subscribers:
             cb(var_name, new_val)
+
+    def _debounce_notify(self, var_name: str, new_val: Any) -> None:
+        self._last_change = (var_name, new_val)
+
+        if self._debounce_after_id is not None:
+            self.master.after_cancel(self._debounce_after_id)
+
+        self._debounce_after_id = self.master.after(
+            self.debounce_delay, self._process_debounce
+        )
+
+    def _process_debounce(self):
+        if self._last_change is not None:
+            var_name, new_val = self._last_change
+            self._notify_subscribers(var_name, new_val)
+
+        self._debounce_after_id = None
+        self._last_change = None
