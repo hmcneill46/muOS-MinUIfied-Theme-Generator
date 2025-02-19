@@ -267,6 +267,7 @@ class ThemeGenerator(HasFont):
         left_buttons: list[tuple[str, str]] = [("POWER", "SLEEP")],
         selected_item: str = "explore",
         variant: str | None = None,
+        *args,
     ) -> Image.Image:
         variant = variant or self.manager.main_menu_style_var
         if variant == "Vertical":

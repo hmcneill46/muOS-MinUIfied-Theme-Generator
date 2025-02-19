@@ -16,6 +16,13 @@ class ThemePreviewGenerator(ThemeGenerator):
     ):
         super().__init__(manager, render_factor)
 
+    @property
+    def preview_size(self) -> tuple[int, int]:
+        return (
+            int(288 * 640 / self.screen_dimensions[0]),
+            int(216 * 480 / self.screen_dimensions[1]),
+        )
+
     def _generate_header_bubbles(self, selected_item: str = "", *args) -> Image.Image:
         header_height = self.manager.headerHeightVar
         text_height = self.manager.header_text_height_var
@@ -201,13 +208,15 @@ class ThemePreviewGenerator(ThemeGenerator):
                 )
             draw.text((text_x, text_y), text, font=font, fill=text_color)
 
-    def _generate_overlay(self) -> Image.Image | None:
+    def _generate_overlay(self, for_preview: bool = False) -> Image.Image | None:
         preview_overlay_image = None
+
+        dimensions = self.preview_size if for_preview else self.screen_dimensions
 
         if self.manager.include_overlay_var and self.manager.selected_overlay_var:
             preview_overlay_path = (
                 OVERLAY_DIR
-                / f"{self.screen_dimensions[0]}x{self.screen_dimensions[1]}"
+                / f"{dimensions[0]}x{dimensions[1]}"
                 / f"{self.manager.selected_overlay_var}.png"
             )
             if preview_overlay_path.exists():
@@ -265,7 +274,11 @@ class ThemePreviewGenerator(ThemeGenerator):
         left_buttons: list[tuple[str, str]] = [("POWER", "SLEEP")],
         selected_item: str = "explore",
         variant: str | None = None,
+        for_preview: bool = False,
+        *args,
     ) -> Image.Image:
+        dimensions = self.preview_size if for_preview else self.screen_dimensions
+
         image = self._generate_background()
         variant = variant or self.manager.main_menu_style_var
 
@@ -282,7 +295,7 @@ class ThemePreviewGenerator(ThemeGenerator):
         footer_guides_image = self._generate_footer_guides(right_buttons, left_buttons)
         image.alpha_composite(footer_guides_image)
 
-        image = image.resize(self.screen_dimensions, Resampling.LANCZOS)
+        image = image.resize(dimensions, Resampling.LANCZOS)
 
         if overlay_image := self._generate_overlay():
             image.alpha_composite(overlay_image, (0, 0))
