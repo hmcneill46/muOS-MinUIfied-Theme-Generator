@@ -264,10 +264,12 @@ class ThemePreviewGenerator(ThemeGenerator):
         right_buttons: list[tuple[str, str]] = [],
         left_buttons: list[tuple[str, str]] = [("POWER", "SLEEP")],
         selected_item: str = "explore",
+        variant: str | None = None,
     ) -> Image.Image:
         image = self._generate_background()
+        variant = variant or self.manager.main_menu_style_var
 
-        if (variant := self.manager.main_menu_style_var) == "Vertical":
+        if variant == "Vertical":
             draw = ImageDraw.Draw(image)
             self._generate_launcher_list(draw, selected_item)
         else:

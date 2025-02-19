@@ -264,8 +264,10 @@ class ThemeGenerator:
         right_buttons: list[tuple[str, str]] = [],
         left_buttons: list[tuple[str, str]] = [("POWER", "SLEEP")],
         selected_item: str = "explore",
+        variant: str | None = None,
     ) -> Image.Image:
-        if (variant := self.manager.main_menu_style_var) == "Vertical":
+        variant = variant or self.manager.main_menu_style_var
+        if variant == "Vertical":
             return self.generate_static_image(right_buttons, left_buttons)
 
         image = Image.new("RGBA", self.scaled_screen_dimensions, (0, 0, 0, 0))

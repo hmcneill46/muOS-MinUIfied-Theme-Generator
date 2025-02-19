@@ -2212,6 +2212,14 @@ def on_change(app: ThemeGeneratorApp, generator: ThemePreviewGenerator, *args) -
     update_image_label(app.image_label1, content_preview)
     update_image_label(app.image_label2, info_preview)
 
+    if app.manager.main_menu_style_var != "Vertical":
+        list_preview = preview_theme_generator.generate_launcher_image(
+            [("A", "SELECT")],
+            selected_item="explore",
+            variant="Vertical",
+        ).resize(preview_size, Resampling.LANCZOS)
+        update_image_label(app.image_label3, list_preview)
+
 
 # menuNameMap = getAlternateMenuNameDict()
 
