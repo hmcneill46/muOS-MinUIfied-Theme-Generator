@@ -135,37 +135,26 @@ class SchemeRenderer:
         return map
 
     def _get_muxassign_map(self) -> dict[str, int]:
-        map = {
-            "bubble_padding_left": int(
-                self.rectanglePadding + (self.glyph_width / 2) + self.glyph_to_text_pad
-            ),
-            "list_glyph_alpha": 255,
-        }
+        map = {"footer_alpha": 255}
 
         return map
 
     def _get_muxgov_map(self) -> dict[str, int]:
-        map = self._get_muxassign_map()
+        map = {}
 
         return map
 
     def _get_muxsearch_map(self) -> dict[str, int]:
-        map = self._get_muxassign_map()
-
-        return map
+        return self._get_muxpicker_map()
 
     def _get_muxpicker_map(self) -> dict[str, int]:
         map = {}
 
-        if self.manager.version_var != "muOS 2410.1 Banana":
-            max_preview_size = int(self.manager.deviceScreenWidthVar * 0.45)
-            if int(self.manager.deviceScreenWidthVar) == 720:
-                max_preview_size = 340
-
+        if int(self.manager.maxBoxArtWidth) > 0:
             map["content_width"] = (
                 int(self.manager.deviceScreenWidthVar)
-                - max_preview_size
-                - 2 * (self.textPadding - self.rectanglePadding)
+                - int(self.manager.maxBoxArtWidth)
+                - (self.textPadding - self.rectanglePadding)
             )
 
         return map
@@ -242,10 +231,10 @@ class SchemeRenderer:
         return map
 
     def _get_muxfavourite_map(self) -> dict[str, int]:
-        return self._get_muxplore_map()
+        return self._get_muxpicker_map()
 
     def _get_muxhistory_map(self) -> dict[str, int]:
-        return self._get_muxplore_map()
+        return self._get_muxpicker_map()
 
     def _get_muxstorage_map(self) -> dict[str, int]:
         map = {}
