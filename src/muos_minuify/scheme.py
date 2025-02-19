@@ -104,6 +104,13 @@ class SchemeRenderer:
             "muxstorage": self._get_muxstorage_map(),
         }
 
+    def __get_content_width_with_boxart(self) -> int:
+        return (
+            int(self.manager.deviceScreenWidthVar)
+            - int(self.manager.maxBoxArtWidth)
+            - (self.textPadding - self.rectanglePadding)
+        )
+
     def _get_muxlaunch_map(self) -> dict[str, int]:
         map = {}
 
@@ -145,29 +152,17 @@ class SchemeRenderer:
         return map
 
     def _get_muxsearch_map(self) -> dict[str, int]:
-        return self._get_muxpicker_map()
+        map = {"content_width": self.__get_content_width_with_boxart()}
+
+        return map
 
     def _get_muxpicker_map(self) -> dict[str, int]:
-        map = {}
-
-        if int(self.manager.maxBoxArtWidth) > 0:
-            map["content_width"] = (
-                int(self.manager.deviceScreenWidthVar)
-                - int(self.manager.maxBoxArtWidth)
-                - (self.textPadding - self.rectanglePadding)
-            )
+        map = {"content_width": int(288 * 480 / self.screen_dimensions[1])}
 
         return map
 
     def _get_muxplore_map(self) -> dict[str, int]:
-        map = {}
-
-        if int(self.manager.maxBoxArtWidth) > 0:
-            map["content_width"] = (
-                int(self.manager.deviceScreenWidthVar)
-                - int(self.manager.maxBoxArtWidth)
-                - (self.textPadding - self.rectanglePadding)
-            )
+        map = {"content_width": self.__get_content_width_with_boxart()}
 
         if self.manager.enable_grid_view_explore_var:
             grid_total_height = (
@@ -231,10 +226,14 @@ class SchemeRenderer:
         return map
 
     def _get_muxfavourite_map(self) -> dict[str, int]:
-        return self._get_muxpicker_map()
+        map = {"content_width": self.__get_content_width_with_boxart()}
+
+        return map
 
     def _get_muxhistory_map(self) -> dict[str, int]:
-        return self._get_muxpicker_map()
+        map = {"content_width": self.__get_content_width_with_boxart()}
+
+        return map
 
     def _get_muxstorage_map(self) -> dict[str, int]:
         map = {}
