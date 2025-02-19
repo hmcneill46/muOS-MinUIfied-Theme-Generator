@@ -1,0 +1,932 @@
+{
+  "default": {
+    "left_guides": [
+      [
+        "POWER",
+        "SLEEP"
+      ]
+    ],
+    "right_guides": [
+      [
+        "A",
+        "SELECT"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxapp": {
+    "right_guides": [
+      [
+        "A",
+        "LAUNCH"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxarchive": {
+    "right_guides": [
+      [
+        "A",
+        "EXTRACT"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxassign": {
+    "menu_items": {
+      "core": {
+        "right_guides": [
+          [
+            "Y",
+            "RECURSIVE"
+          ],
+          [
+            "X",
+            "DIRECTORY"
+          ],
+          [
+            "A",
+            "INDIVIDUAL"
+          ],
+          [
+            "B",
+            "BACK"
+          ]
+        ]
+      },
+      "default": {
+        "right_guides": [
+          [
+            "Y",
+            "RECURSIVE"
+          ],
+          [
+            "X",
+            "DIRECTORY"
+          ],
+          [
+            "A",
+            "INDIVIDUAL"
+          ],
+          [
+            "B",
+            "BACK"
+          ]
+        ]
+      },
+      "system": {}
+    }
+  },
+  "muxcharge": {
+    "caption_text": "CHARGING...",
+    "icon_path": "Assets/ChargingLogo[5x].png"
+  },
+  "muxcollect": {
+    "left_guides": [
+      [
+        "POWER",
+        "SLEEP"
+      ],
+      [
+        "MENU",
+        "INFO"
+      ]
+    ],
+    "right_guides": [
+      [
+        "X",
+        "REMOVE"
+      ],
+      [
+        "A",
+        "OPEN"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxconfig": {
+    "menu_items": {
+      "general": {},
+      "custom": {},
+      "network": {},
+      "service": {},
+      "clock": {},
+      "language": {},
+      "storage": {}
+    }
+  },
+  "muxcredits": {
+  },
+  "muxcustom": {
+    "menu_items": {
+      "theme": {},
+      "catalogue": {},
+      "config": {}
+    }
+  },
+  "muxfavourite": {
+    "left_guides": [
+      [
+        "POWER",
+        "SLEEP"
+      ],
+      [
+        "MENU",
+        "INFO"
+      ]
+    ],
+    "right_guides": [
+      [
+        "X",
+        "REMOVE"
+      ],
+      [
+        "A",
+        "OPEN"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxgov": {
+    "right_guides": [
+      [
+        "Y",
+        "RECURSIVE"
+      ],
+      [
+        "X",
+        "DIRECTORY"
+      ],
+      [
+        "A",
+        "INDIVIDUAL"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxhdmi": {
+    "menu_items": {
+      "enable": {},
+      "resolution": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "theme_resolution": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "space": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "depth": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "range": {},
+      "scan": {},
+      "audio": {}
+    },
+    "right_guides": [
+      [
+        "A",
+        "TOGGLE"
+      ],
+      [
+        "B",
+        "SAVE"
+      ]
+    ]
+  },
+  "muxhistory": {
+    "left_guides": [
+      [
+        "POWER",
+        "SLEEP"
+      ],
+      [
+        "MENU",
+        "INFO"
+      ]
+    ],
+    "right_guides": [
+      [
+        "Y",
+        "FAVOURITE"
+      ],
+      [
+        "X",
+        "REMOVE"
+      ],
+      [
+        "A",
+        "OPEN"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxinfo": {
+    "menu_items": {
+      "tracker": {},
+      "tester": {},
+      "system": {},
+      "credit": {}
+    }
+  },
+  "muxlanguage": {
+    "menu_items": {
+      "language": {}
+    }
+  },
+  "muxlaunch": {
+    "menu_items": {
+      "explore": {},
+      "favourite": {},
+      "history": {},
+      "apps": {},
+      "info": {},
+      "config": {},
+      "reboot": {},
+      "shutdown": {}
+    },
+    "right_guides": [
+      [
+        "A",
+        "SELECT"
+      ]
+    ]
+  },
+  "muxnetprofile": {
+    "menu_items": {
+      "profile": {}
+    },
+    "right_guides": [
+      [
+        "Y",
+        "REMOVE"
+      ],
+      [
+        "X",
+        "SAVE"
+      ],
+      [
+        "A",
+        "LOAD"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxnetscan": {
+    "menu_items": {
+      "netscan": {}
+    },
+    "right_guides": [
+      [
+        "X",
+        "RESCAN"
+      ],
+      [
+        "A",
+        "USE"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxnetwork": {
+    "menu_items": {
+      "enable": {
+        "right_guides": [
+          [
+            "Y",
+            "PROFILES"
+          ],
+          [
+            "X",
+            "SCAN"
+          ],
+          [
+            "A",
+            "TOGGLE"
+          ],
+          [
+            "B",
+            "BACK"
+          ]
+        ]
+      },
+      "identifier": {},
+      "password": {},
+      "scan": {},
+      "type": {
+        "right_guides": [
+          [
+            "Y",
+            "PROFILES"
+          ],
+          [
+            "X",
+            "SCAN"
+          ],
+          [
+            "A",
+            "TOGGLE"
+          ],
+          [
+            "B",
+            "BACK"
+          ]
+        ]
+      },
+      "address": {},
+      "subnet": {},
+      "gateway": {},
+      "dns": {},
+      "connect": {
+        "right_guides": [
+          [
+            "Y",
+            "PROFILES"
+          ],
+          [
+            "X",
+            "SCAN"
+          ],
+          [
+            "A",
+            "SELECT"
+          ],
+          [
+            "B",
+            "BACK"
+          ]
+        ]
+      }
+    },
+    "right_guides": [
+      [
+        "Y",
+        "PROFILES"
+      ],
+      [
+        "X",
+        "SCAN"
+      ],
+      [
+        "A",
+        "EDIT"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxoption": {
+    "menu_items": {
+      "search": {},
+      "core": {},
+      "governor": {}
+    }
+  },
+  "muxpass": {
+  },
+  "muxpicker": {
+    "right_guides": [
+      [
+        "Y",
+        "SAVE"
+      ],
+      [
+        "A",
+        "SELECT"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxplore": {
+    "left_guides": [
+      [
+        "POWER",
+        "SLEEP"
+      ],
+      [
+        "MENU",
+        "INFO"
+      ]
+    ],
+    "right_guides": [
+      [
+        "Y",
+        "FAVOURITE"
+      ],
+      [
+        "X",
+        "REFRESH"
+      ],
+      [
+        "A",
+        "OPEN"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxpower": {
+    "menu_items": {
+      "shutdown": {},
+      "battery": {},
+      "idle_display": {},
+      "idle_sleep": {}
+    },
+    "right_guides": [
+      [
+        "B",
+        "SAVE"
+      ]
+    ]
+  },
+  "muxrtc": {
+    "menu_items": {
+      "year": {},
+      "month": {},
+      "day": {},
+      "hour": {},
+      "minute": {},
+      "notation": {
+        "right_guides": [
+          [
+            "A",
+            "TOGGLE"
+          ],
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "timezone": {
+        "right_guides": [
+          [
+            "A",
+            "SELECT"
+          ],
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      }
+    },
+    "right_guides": [
+      [
+        "B",
+        "SAVE"
+      ]
+    ]
+  },
+  "muxsearch": {
+    "menu_items": {
+      "lookup": {},
+      "local": {},
+      "global": {}
+    },
+    "right_guides": [
+      [
+        "X",
+        "CLEAR"
+      ],
+      [
+        "A",
+        "SELECT"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxsnapshot": {
+  },
+  "muxsplash": {
+  },
+  "muxstart": {
+    "caption_text": "LOADING..."
+  },
+  "muxstorage": {
+    "menu_items": {
+      "bios": {},
+      "favourite": {},
+      "catalogue": {},
+      "name": {},
+      "retroarch": {},
+      "config": {},
+      "core": {},
+      "collection": {},
+      "history": {},
+      "music": {},
+      "save": {},
+      "screenshot": {},
+      "theme": {},
+      "pack-catalogue": {},
+      "pack-config": {},
+      "language": {},
+      "network": {},
+      "syncthing": {},
+      "userinit": {}
+    },
+    "right_guides": [
+      [
+        "A",
+        "MIGRATE"
+      ],
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxsysinfo": {
+    "menu_items": {
+      "version": {},
+      "device": {},
+      "kernel": {},
+      "uptime": {},
+      "cpu": {},
+      "speed": {},
+      "governor": {},
+      "memory": {},
+      "temp": {},
+      "capacity": {},
+      "voltage": {}
+    },
+    "right_guides": [
+      [
+        "B",
+        "BACK"
+      ]
+    ]
+  },
+  "muxtask": {
+    "right_guides": [
+      [
+        "B",
+        "BACK"
+      ],
+      [
+        "A",
+        "LAUNCH"
+      ]
+    ]
+  },
+  "muxtester": {
+  },
+  "muxtimezone": {
+    "menu_items": {
+      "timezone": {}
+    },
+    "right_guides": [
+      [
+        "A",
+        "SELECT"
+      ]
+    ]
+  },
+  "muxtweakadv": {
+    "menu_items": {
+      "accelerate": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "swap": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "thermal": {},
+      "font": {},
+      "volume": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "brightness": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "offset": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "lock": {},
+      "led": {},
+      "theme": {},
+      "retrowait": {},
+      "usbfunction": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "state": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "verbose": {},
+      "rumble": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "userinit": {},
+      "dpadswap": {},
+      "overdrive": {},
+      "swapfile": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "carmode": {}
+    },
+    "right_guides": [
+      [
+        "A",
+        "TOGGLE"
+      ],
+      [
+        "B",
+        "SAVE"
+      ]
+    ]
+  },
+  "muxtweakgen": {
+    "menu_items": {
+      "hidden": {
+        "right_guides": [
+          [
+            "A",
+            "TOGGLE"
+          ],
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "bgm": {
+        "right_guides": [
+          [
+            "A",
+            "TOGGLE"
+          ],
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "sound": {
+        "right_guides": [
+          [
+            "A",
+            "TOGGLE"
+          ],
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "startup": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "colour": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "brightness": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "hdmi": {
+        "right_guides": [
+          [
+            "A",
+            "SELECT"
+          ],
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "power": {
+        "right_guides": [
+          [
+            "A",
+            "SELECT"
+          ],
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "interface": {
+        "right_guides": [
+          [
+            "A",
+            "SELECT"
+          ],
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "advanced": {
+        "right_guides": [
+          [
+            "A",
+            "SELECT"
+          ],
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      }
+    }
+  },
+  "muxvisual": {
+    "menu_items": {
+      "battery": {},
+      "network": {},
+      "bluetooth": {},
+      "clock": {},
+      "boxart": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "boxartalign": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "name": {
+        "right_guides": [
+          [
+            "B",
+            "SAVE"
+          ]
+        ]
+      },
+      "dash": {},
+      "friendlyfolder": {},
+      "thetitleformat": {},
+      "titleincluderootdrive": {},
+      "folderitemcount": {},
+      "folderempty": {},
+      "counterfolder": {},
+      "counterfile": {},
+      "backgroundanimation": {},
+      "launchsplash": {},
+      "blackfade": {}
+    },
+    "right_guides": [
+      [
+        "A",
+        "TOGGLE"
+      ],
+      [
+        "B",
+        "SAVE"
+      ]
+    ]
+  },
+  "muxwebserv": {
+    "menu_items": {
+      "sshd": {},
+      "sftpgo": {},
+      "ttyd": {},
+      "syncthing": {},
+      "rslsync": {},
+      "ntp": {},
+      "tailscaled": {}
+    },
+    "right_guides": [
+      [
+        "A",
+        "TOGGLE"
+      ],
+      [
+        "B",
+        "SAVE"
+      ]
+    ]
+  },
+  "reboot": {
+    "caption_text": "REBOOTING..."
+  },
+  "shutdown": {
+    "caption_text": "SHUTTING DOWN..."
+  },
+  "bootlogo": {}
+}
