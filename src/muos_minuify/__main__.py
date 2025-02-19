@@ -2219,6 +2219,8 @@ def on_change(app: ThemeGeneratorApp, generator: ThemePreviewGenerator, *args) -
             variant="Vertical",
         ).resize(preview_size, Resampling.LANCZOS)
         update_image_label(app.image_label3, list_preview)
+    else:
+        app.image_label3.config(image="")
 
 
 # menuNameMap = getAlternateMenuNameDict()

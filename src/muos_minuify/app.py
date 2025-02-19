@@ -48,8 +48,6 @@ class ThemeGeneratorApp:
         self.image_label1: ttk.Label | None = None
         self.image_label2: ttk.Label | None = None
         self.image_label3: ttk.Label | None = None
-        self.image_label4: ttk.Label | None = None
-        self.image_label5: ttk.Label | None = None
 
         self._build_paned_window()
         self._build_left_pane()
@@ -100,17 +98,13 @@ class ThemeGeneratorApp:
     def _build_right_pane(self):
         self.right_pane = ttk.Frame(self.paned_window, width=240)
 
-        self.image_label1 = ttk.Label(self.right_pane, text="Preview #1")
-        self.image_label2 = ttk.Label(self.right_pane, text="Preview #2")
-        self.image_label3 = ttk.Label(self.right_pane, text="Preview #3")
-        self.image_label4 = ttk.Label(self.right_pane, text="Preview #4")
-        self.image_label5 = ttk.Label(self.right_pane, text="Preview #5")
+        self.image_label1 = ttk.Label(self.right_pane, text="")
+        self.image_label2 = ttk.Label(self.right_pane, text="")
+        self.image_label3 = ttk.Label(self.right_pane, text="")
 
         self.image_label1.pack()
         self.image_label2.pack()
         self.image_label3.pack()
-        self.image_label4.pack()
-        self.image_label5.pack()
 
     def _bind_events(self) -> None:
         self.root.bind("<Configure>", self._on_resize)
