@@ -1,12 +1,10 @@
-from datetime import datetime, UTC
 import math
 from pathlib import Path
 
 from .color_utils import percentage_color
-from .constants import RESOURCES_DIR, THEME_SHELL_DIR, TEMPLATE_SCHEME_PATH
+from .constants import TEMPLATE_SCHEME_PATH
 from .defaults import DEFAULT_FONT_PATH
 from .settings import SettingsManager
-from .utils import copy_contents, ensure_folder_exists
 
 
 class SchemeRenderer:
