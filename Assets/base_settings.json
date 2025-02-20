@@ -156,7 +156,7 @@
           "label": "Selected Font Color",
           "widget_type": "entry",
           "var_name": "selectedFontHexVar",
-          "default_value": "#ffffff",
+          "default_value": "#000000",
           "var_type": "color"
         },
         {
