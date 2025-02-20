@@ -206,6 +206,7 @@ class SchemeRenderer:
             grid_cell_width = grid_column_width - 2 * cell_inner_padding
             grid_cell_height = grid_row_height - 2 * cell_inner_padding
             grid_cell_size = min(grid_cell_width, grid_cell_height)
+            self.grid_cell_size = grid_cell_size
 
             map.update(
                 {
