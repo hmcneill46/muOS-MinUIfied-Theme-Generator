@@ -4,6 +4,7 @@ from typing import Literal
 from PIL import Image
 from PIL.Image import Resampling
 
+from ..color_utils import change_logo_color
 from ..defaults import DEFAULT_FONT_PATH
 from ..settings import SettingsManager
 from .components import (
@@ -228,6 +229,18 @@ class ThemeGenerator(HasFont):
 
         boottext_image = boot_screen.generate_with_text(display_text, icon_path)
         return boottext_image
+
+    def generate_button_glyph(
+        self,
+        button_text: str,
+    ) -> Image.Image:
+        glyph_img = self.footer_guides._generate_button_glyph(
+            button_text,
+            self.manager.physical_controller_layout_var,
+        )
+        glyph_img = change_logo_color(glyph_img, self.manager.footerBubbleHexVar)
+
+        return glyph_img
 
     def generate_wall_image(
         self,
