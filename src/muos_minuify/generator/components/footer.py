@@ -244,7 +244,6 @@ class FooterGuides(Scalable, HasFont):
     def _generate_button_glyph(
         self,
         button_text: str,
-        colour_hex: str,
         button_layout: str | None = None,
     ) -> Image.Image:
         rendered_bubble_height = int(self.footer_bubble_button_width)
@@ -278,13 +277,13 @@ class FooterGuides(Scalable, HasFont):
                 )
             elif button_layout == "Xbox":
                 if button_text.upper() == "A":
-                    image = self._generate_button_glyph("B", colour_hex, "Nintendo")
+                    image = self._generate_button_glyph("B", "Nintendo")
                 elif button_text.upper() == "B":
-                    image = self._generate_button_glyph("A", colour_hex, "Nintendo")
+                    image = self._generate_button_glyph("A", "Nintendo")
                 elif button_text.upper() == "X":
-                    image = self._generate_button_glyph("Y", colour_hex, "Nintendo")
+                    image = self._generate_button_glyph("Y", "Nintendo")
                 elif button_text.upper() == "Y":
-                    image = self._generate_button_glyph("X", colour_hex, "Nintendo")
+                    image = self._generate_button_glyph("X", "Nintendo")
 
         elif len(button_text) == 1:
             sl_text_bbox = self.single_letter_font.getbbox(button_text)
@@ -425,7 +424,6 @@ class FooterGuides(Scalable, HasFont):
         for button, effect in buttons:
             button_image = self._generate_button_glyph(
                 button,
-                colour_hex,
                 self.button_layout,
             )
 
