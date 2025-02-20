@@ -2,7 +2,12 @@ from pathlib import Path
 import re
 from typing import Any
 
-from .constants import BASE_SETTINGS_PATH, USER_SETTINGS_PATH, MENU_LISTING_MAP
+from .constants import (
+    BASE_SETTINGS_PATH,
+    USER_SETTINGS_PATH,
+    MENU_LISTING_MAP,
+    LEGACY_SETTINGS_PATH,
+)
 from .utils import ensure_file_exists, read_json, write_json
 
 
@@ -16,25 +21,32 @@ class SettingsManager:
         self.user_path = user_path
 
         self.sections = []
-        self.default_values: dict[str, Any] = {}
+        self.default_values: dict[str, tuple[Any, str]] = self._load_defaults(base_path)
         self.user_values: dict[str, Any] = {}
         self.merged_values: dict[str, Any] = {}
 
-    @staticmethod
-    def get_default_settings(
+    def _load_defaults(
+        self,
         defaults_path: Path = BASE_SETTINGS_PATH,
-    ) -> dict[str, Any]:
+    ) -> dict[str, tuple[Any, str]]:
         ensure_file_exists(defaults_path, {"sections": []})
         base_data = read_json(defaults_path)
         defaults = {}
 
         for section in base_data.get("sections", []):
             for field in section.get("fields", []):
-                if (var_name := field.get("var_name")) and (
-                    var_type := field.get("var_type", "string")
+                if (
+                    (var_name := field.get("var_name"))
+                    and (var_type := field.get("var_type", "string"))
+                    and not field.get("command")
                 ):
-                    defaults[var_name] = SettingsManager._cast_from_json(
-                        field.get("default_value", None), var_type
+                    if "hex" in var_name.lower():
+                        pass
+                    defaults[var_name] = (
+                        SettingsManager._cast_from_json(
+                            field.get("default_value", None), var_type
+                        ),
+                        var_type,
                     )
 
         return defaults
@@ -58,9 +70,6 @@ class SettingsManager:
                     user_val if user_val is not None else default_val, var_type
                 )
                 merged[var_name] = final_val
-                self.default_values[var_name] = SettingsManager._cast_from_json(
-                    default_val, var_type
-                )
 
                 if var_name == "device_type_var":
                     width, height = self._parse_screen_dimensions(final_val)
@@ -79,18 +88,30 @@ class SettingsManager:
 
     def load(self, override_values: dict[str, Any] | None = None):
         ensure_file_exists(self.base_path, {"sections": []})
-        ensure_file_exists(self.user_path, {})
-
         base_data = read_json(self.base_path)
-        user_data = read_json(self.user_path)
+        user_data = {}
+
+        if not self.user_path.exists() and not LEGACY_SETTINGS_PATH.exists():
+            ensure_file_exists(self.user_path, {})
+        elif self.user_path.exists():
+            user_data = read_json(self.user_path)
+        else:
+            legacy_data = read_json(LEGACY_SETTINGS_PATH)
+            for key, value in legacy_data.items():
+                if "hex" in key.lower():
+                    pass
+                if key in self.default_values and value != self.default_values[key][0]:
+                    user_data[key] = SettingsManager._cast_from_json(
+                        *self.default_values[key]
+                    )
+
+        if override_values:
+            user_data.update(override_values)
 
         self.sections = base_data.get("sections", [])
         self.user_values = user_data
 
         self._merge_values()
-
-        if override_values:
-            self.set_values(override_values)
 
     def save_user_values(self):
         casted_user_data = {}
@@ -263,7 +284,7 @@ class SettingsManager:
                 else None
             )
         elif var_type == "color":
-            return SettingsManager._parse_color_hex(value)
+            return SettingsManager._parse_color_hex(f"#{value.strip('#')}")
         else:
             return str(value)
 
@@ -285,9 +306,6 @@ class SettingsManager:
                 else ""
             )
         elif var_type == "color":
-            return SettingsManager._parse_color_hex(value)
+            return SettingsManager._parse_color_hex(f"#{value.strip('#')}")
         else:
             return str(value)
-
-
-DEFAULT_SETTINGS = SettingsManager.get_default_settings()
