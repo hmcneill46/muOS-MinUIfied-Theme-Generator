@@ -18,9 +18,16 @@ class ThemePreviewGenerator(ThemeGenerator):
 
     @property
     def preview_size(self) -> tuple[int, int]:
+        preview_width = 288
+        preview_height = 216
+        default_width = 640
+        default_height = 480
+        if self.screen_dimensions[0] == self.screen_dimensions[1]:
+            preview_height = preview_width
+            default_height = default_width
         return (
-            int(288 * 640 / self.screen_dimensions[0]),
-            int(216 * 480 / self.screen_dimensions[1]),
+            int(preview_width * default_width / self.screen_dimensions[0]),
+            int(preview_height * default_height / self.screen_dimensions[1]),
         )
 
     def _generate_header_bubbles(self, selected_item: str = "", *args) -> Image.Image:
