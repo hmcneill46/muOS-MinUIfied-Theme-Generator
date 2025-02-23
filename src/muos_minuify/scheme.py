@@ -355,7 +355,9 @@ class SchemeRenderer:
         template = TEMPLATE_SCHEME_PATH.read_text()
 
         default_contents = self.replacementStringMap["default"]
-        scheme_contents = self.replacementStringMap.get(item, {})
+        scheme_contents = self.replacementStringMap.get(item)
+        if scheme_contents is None:
+            return None
 
         scheme_contents = default_contents | scheme_contents
 
