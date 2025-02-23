@@ -184,6 +184,7 @@ def generate_full_theme(
     zip_theme(manager.theme_name_var, temp_path, output_dir)
     delete_folder(temp_path)
 
+    manager.load()
 
 def zip_theme(theme_name: str, temp_path: Path, theme_path: Path) -> None:
     shutil.make_archive(
