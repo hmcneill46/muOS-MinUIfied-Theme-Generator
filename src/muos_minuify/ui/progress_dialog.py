@@ -8,7 +8,7 @@ class ProgressDialog(tk.Toplevel):
     ):
         super().__init__(parent)
         self.title(title)
-        self.geometry("300x100")
+        self.geometry("400x100")
         self.resizable(False, False)
 
         self.section_label = ttk.Label(self, text="")
