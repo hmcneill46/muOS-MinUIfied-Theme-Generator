@@ -615,6 +615,11 @@
           "var_name": "advanced_error_var",
           "var_type": "boolean",
           "default_value": false
+        },
+        {
+          "label": "Bulk generate themes in predetermined colours",
+          "widget_type": "button",
+          "command": "start_bulk_theme_task"
         }
       ]
     }
