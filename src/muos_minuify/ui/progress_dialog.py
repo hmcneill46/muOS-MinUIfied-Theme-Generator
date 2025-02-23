@@ -11,8 +11,10 @@ class ProgressDialog(tk.Toplevel):
         self.geometry("300x100")
         self.resizable(False, False)
 
-        self.label = ttk.Label(self, text="")
-        self.label.pack(padx=10, pady=10)
+        self.section_label = ttk.Label(self, text="")
+        self.section_label.pack(padx=10, pady=(10, 0))
+        self.item_label = ttk.Label(self, text="")
+        self.item_label.pack(padx=10, pady=(0, 10))
 
         self.progress_bar = ttk.Progressbar(
             self,
@@ -27,3 +29,17 @@ class ProgressDialog(tk.Toplevel):
 
         self.transient(parent)
         self.grab_set()
+
+    def update_status(
+        self,
+        section: str | None = None,
+        item: str | None = None,
+        step: int = 1,
+    ) -> None:
+        if section is not None:
+            self.section_label.config(text=section)
+
+        if item is not None:
+            self.item_label.config(text=item)
+
+        self.progress_bar.step(step)

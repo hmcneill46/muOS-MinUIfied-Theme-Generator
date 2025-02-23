@@ -152,9 +152,6 @@ def generate_full_theme(
         renderer = SchemeRenderer(manager)
         generator = ThemeGenerator(manager, renderer=renderer)
 
-        if progress_callback:
-            progress_callback(f"Generating theme for {device}...", 5)
-
         menu_defs = read_json(MENU_DEFINITIONS_PATH)
         defaults = menu_defs.get("default", {})
 
@@ -165,13 +162,22 @@ def generate_full_theme(
             "left_guides", defaults.get("left_guides", [])
         )
 
+        if progress_callback:
+            progress_callback(
+                section=f"Generating theme for {resolution}...",
+                item="",
+            )
+
         generator.generate_theme(
             temp_path,
             progress_callback=progress_callback,
         )
 
         if progress_callback:
-            progress_callback("Generating theme preview image...", 5)
+            progress_callback(
+                section=f"Generating preview image for {resolution}...",
+                item="",
+            )
 
         preview_img = preview_generator.generate_launcher_image(
             preview_right_buttons,
@@ -221,10 +227,11 @@ def start_theme_task(manager: SettingsManager, root: tk.Tk, **kwargs) -> None:
         root, title=f"Generating {manager.theme_name_var}...", max=None
     )
 
-    def on_progress(message: str = "", step: int = 1) -> None:
+    def on_progress(
+        section: str | None = None, item: str | None = None, step: int = 1
+    ) -> None:
         def _update():
-            dialog.label["text"] = message
-            dialog.progress_bar["value"] += step
+            dialog.update_status(section, item, step)
 
         root.after(0, _update)
 
@@ -237,7 +244,7 @@ def start_theme_task(manager: SettingsManager, root: tk.Tk, **kwargs) -> None:
 
             generate_full_theme(manager, output_dir, progress_callback=on_progress)
 
-            on_progress("Theme generation complete.", 10)
+            on_progress(section="Theme generation complete.", item="")
             root.after(0, dialog.destroy)
             root.after(
                 0,
