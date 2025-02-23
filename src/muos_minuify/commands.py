@@ -11,10 +11,17 @@ from .constants import (
     DEVICE_TYPE_OPTIONS,
     SYSTEM_LOGOS_SCRIPT_PATH,
     MENU_DEFINITIONS_PATH,
+    THEME_SHELL_DIR,
 )
 from .settings import SettingsManager
 from .ui.progress_dialog import ProgressDialog
-from .utils import delete_file, delete_folder, ensure_folder_exists, read_json
+from .utils import (
+    delete_file,
+    delete_folder,
+    ensure_folder_exists,
+    read_json,
+    copy_contents,
+)
 from .generator import ThemeGenerator
 from .generator.preview import ThemePreviewGenerator
 from .scheme import SchemeRenderer
@@ -123,6 +130,14 @@ def generate_full_theme(
 
     items_per_screen = int(manager.itemsPerScreenVar)
     original_res = manager.deviceScreenHeightVar
+
+    if progress_callback:
+        progress_callback(
+            section="Generating theme",
+            item="Copying theme shell...",
+        )
+
+    copy_contents(THEME_SHELL_DIR, temp_path)
 
     for device in DEVICE_TYPE_OPTIONS:
         manager.load({"device_type_var": device})
