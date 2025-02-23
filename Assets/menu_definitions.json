@@ -127,8 +127,7 @@
       "storage": {}
     }
   },
-  "muxcredits": {
-  },
+  "muxcredits": {},
   "muxcustom": {
     "menu_items": {
       "theme": {},
@@ -431,8 +430,7 @@
       "governor": {}
     }
   },
-  "muxpass": {
-  },
+  "muxpass": {},
   "muxpicker": {
     "right_guides": [
       [
@@ -553,10 +551,8 @@
       ]
     ]
   },
-  "muxsnapshot": {
-  },
-  "muxsplash": {
-  },
+  "muxsnapshot": {},
+  "muxsplash": {},
   "muxstart": {
     "caption_text": "LOADING..."
   },
@@ -626,8 +622,7 @@
       ]
     ]
   },
-  "muxtester": {
-  },
+  "muxtester": {},
   "muxtimezone": {
     "menu_items": {
       "timezone": {}
