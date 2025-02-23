@@ -14,7 +14,7 @@ from .constants import (
 )
 from .settings import SettingsManager
 from .ui.progress_dialog import ProgressDialog
-from .utils import delete_folder, ensure_folder_exists, read_json
+from .utils import delete_file, delete_folder, ensure_folder_exists, read_json
 from .generator import ThemeGenerator
 from .generator.preview import ThemePreviewGenerator
 from .scheme import SchemeRenderer
@@ -173,7 +173,7 @@ def generate_full_theme(
                 for_preview=True,
             )
             dev_preview_img.save(
-                output_dir / f"{manager.theme_name_var}[{resolution}].png"
+                temp_path / f"{manager.theme_name_var}[{resolution}].png"
             )
 
     opt_path = temp_path / "system_logos" / "opt"
@@ -181,16 +181,23 @@ def generate_full_theme(
 
     shutil.copy2(SYSTEM_LOGOS_SCRIPT_PATH, opt_path / "update.sh")
 
-    zip_theme(manager.theme_name_var, temp_path, output_dir)
+    package_theme(manager.theme_name_var, temp_path, output_dir)
     delete_folder(temp_path)
 
     manager.load()
 
-def zip_theme(theme_name: str, temp_path: Path, theme_path: Path) -> None:
+
+def package_theme(theme_name: str, temp_path: Path, theme_path: Path) -> None:
     shutil.make_archive(
         str(theme_path / "MinUIfied AM System Icons"), "zip", temp_path / "system_logos"
     )
     delete_folder(temp_path / "system_logos")
+
+    for file in temp_path.iterdir():
+        if file.is_file() and file.name.endswith(".png"):
+            shutil.copy2(file, theme_path / file.name)
+            delete_file(file)
+
     shutil.make_archive(str(theme_path / theme_name), "zip", temp_path)
 
 
