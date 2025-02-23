@@ -1,12 +1,25 @@
 from pathlib import Path
-from typing import Literal
+import shutil
+from typing import Callable, Literal
 
 from PIL import Image
 from PIL.Image import Resampling
 
+from ..constants import (
+    SYSTEM_LOGOS_SCRIPT_PATH,
+    THEME_SHELL_DIR,
+    OVERLAY_DIR,
+    MENU_DEFINITIONS_PATH,
+    GLYPHS_DIR,
+    SYSTEM_LOGOS_DIR,
+    BatteryStyleOptionsDict,
+    BatteryChargingStyleOptionsDict,
+)
+from ..utils import copy_contents, ensure_folder_exists, read_json, delete_folder
 from ..color_utils import change_logo_color
 from ..defaults import DEFAULT_FONT_PATH
 from ..settings import SettingsManager
+from ..scheme import SchemeRenderer
 from .components import (
     Background,
     BootScreen,
@@ -22,11 +35,13 @@ class ThemeGenerator(HasFont):
         self,
         manager: SettingsManager,
         render_factor: int = 5,
+        renderer: SchemeRenderer | None = None,
         font_path: Path = DEFAULT_FONT_PATH,
     ):
         super().__init__(font_path=font_path)
         self.manager = manager
         self.render_factor = render_factor
+        self.renderer = renderer
 
         kwargs = {
             "manager": self.manager,
@@ -333,5 +348,241 @@ class ThemeGenerator(HasFont):
 
         return fonts
 
-    def generate_theme(self):
-        pass
+    def generate_theme(
+        self,
+        temp_path: Path,
+        progress_callback: Callable | None = None,
+    ) -> None:
+        if progress_callback:
+            progress_callback("Copying theme shell...", 5)
+
+        copy_contents(THEME_SHELL_DIR, temp_path)
+
+        resolution = (
+            f"{self.manager.deviceScreenWidthVar}x{self.manager.deviceScreenHeightVar}"
+        )
+        res_path = temp_path / resolution
+        font_path = res_path / "font"
+        header_glyph_path = res_path / "glyph" / "header"
+        footer_glyph_path = res_path / "glyph" / "footer"
+        image_path = res_path / "image"
+        wall_path = res_path / "image" / "wall"
+        static_path = res_path / "image" / "static"
+        scheme_path = res_path / "scheme"
+        folders = [
+            res_path,
+            font_path,
+            header_glyph_path,
+            footer_glyph_path,
+            image_path,
+            wall_path,
+            static_path,
+            scheme_path,
+        ]
+
+        for folder in folders:
+            ensure_folder_exists(folder)
+
+        if self.manager.include_overlay_var:
+            if progress_callback:
+                progress_callback("Including overlay with theme...", 5)
+
+            src_overlay = (
+                OVERLAY_DIR / resolution / f"{self.manager.selected_overlay_var}.png"
+            )
+            dest_overlay = image_path / "overlay.png"
+            shutil.copy2(src_overlay, dest_overlay)
+
+        if progress_callback:
+            progress_callback("Generating button glyphs...", 5)
+
+        buttons_to_generate = ["A", "B", "C", "MENU", "X", "Y", "Z"]
+        for button in buttons_to_generate:
+            glyph_img = self.generate_button_glyph(button)
+            glyph_img = glyph_img.resize(
+                (
+                    int(glyph_img.size[0] / 5),
+                    int(glyph_img.size[1] / 5),
+                ),
+                Resampling.LANCZOS,
+            )
+            glyph_img.save(footer_glyph_path / f"{button.lower()}.png")
+
+        if progress_callback:
+            progress_callback("Generating battery glyphs...", 5)
+
+        glyph_height = int(self.manager.header_glyph_height_var)
+        battery_capacities = range(0, 101, 10)
+        for capacity in battery_capacities:
+            capacity_image_path = (
+                GLYPHS_DIR
+                / f"{BatteryStyleOptionsDict[self.manager.battery_style_var]}{capacity}[5x].png"
+            )
+            charging_image_path = (
+                GLYPHS_DIR
+                / f"{BatteryChargingStyleOptionsDict[self.manager.battery_charging_style_var]}{capacity}[5x].png"
+            )
+            for idx, img_path in enumerate([capacity_image_path, charging_image_path]):
+                glyph_img = Image.open(img_path)
+                glyph_img = glyph_img.resize(
+                    (
+                        int(glyph_height * glyph_img.size[0] / glyph_img.size[1]),
+                        glyph_height,
+                    ),
+                    Resampling.LANCZOS,
+                )
+                glyph_img.save(
+                    header_glyph_path
+                    / f"capacity_{'charging_' if idx == 1 else ''}{capacity}.png"
+                )
+
+        if progress_callback:
+            progress_callback("Generating network glyphs...", 5)
+
+        network_glyph_names = ["network_active", "network_normal"]
+        for glyph_name in network_glyph_names:
+            network_image_path = GLYPHS_DIR / f"{glyph_name}[5x].png"
+            network_img = Image.open(network_image_path)
+            network_img = network_img.resize(
+                (
+                    int(glyph_height * network_img.size[0] / network_img.size[1]),
+                    glyph_height,
+                ),
+                Resampling.LANCZOS,
+            )
+            network_img.save(header_glyph_path / f"{glyph_name}.png")
+
+        if progress_callback:
+            progress_callback("Copying font binaries...", 5)
+
+        for dest, font in self.get_fonts():
+            dest_path = font_path / dest
+            ensure_folder_exists(dest_path)
+
+            shutil.copy2(font, dest_path / "default.bin")
+
+        if progress_callback:
+            progress_callback("Processing menu definitions...", 0)
+
+        menu_defs = read_json(MENU_DEFINITIONS_PATH)
+        defaults = menu_defs.get("default", {})
+        for name, menu_def in menu_defs.items():
+            if (
+                (name[:3] == "mux" or name == "default")
+                and self.renderer
+                and (rendered_scheme := self.renderer.render(name))
+            ):
+                if progress_callback:
+                    progress_callback("Generating scheme files...", 5)
+
+                with (scheme_path / f"{name}.txt").open("w") as f:
+                    f.write(rendered_scheme)
+
+            if progress_callback:
+                progress_callback("Generating theme images...", 5)
+
+            if name == "bootlogo":
+                boot_image = self.generate_boot_logo_image()
+                boot_image.save(image_path / f"{name}.bmp")
+                continue
+            elif name == "default":
+                background_image = self.generate_background_image()
+                background_image.save(wall_path / "default.png")
+                continue
+            elif name == "muxassign":
+                continue
+
+            if not menu_def:
+                continue
+            elif caption_text := menu_def.get("caption_text"):
+                icon_path = menu_def.get("icon_path")
+                boot_image = self.generate_boot_text_image(
+                    caption_text, Path(icon_path) if icon_path else None
+                )
+                boot_image.save(
+                    (wall_path if name[:3] == "mux" else image_path) / f"{name}.png"
+                )
+                continue
+
+            def_right_buttons = menu_def.get(
+                "right_guides", defaults.get("right_guides", [])
+            )
+            def_left_buttons = menu_def.get(
+                "left_guides", defaults.get("left_guides", [])
+            )
+
+            if len(menu_items := menu_def.get("menu_items", [])) > 1:
+                menu_path = static_path / name
+                ensure_folder_exists(menu_path)
+
+                if name == "muxsearch":
+                    wall_img = self.generate_wall_image(
+                        def_right_buttons, def_left_buttons
+                    )
+                    wall_img.save(wall_path / f"{name}.png")
+                    continue
+
+                for item, item_def in menu_items.items():
+                    right_buttons = item_def.get("right_guides", def_right_buttons)
+                    left_buttons = item_def.get("left_guides", def_left_buttons)
+
+                    static_img = (
+                        self.generate_launcher_image(right_buttons, left_buttons, item)
+                        if name == "muxlaunch"
+                        else self.generate_static_image(right_buttons, left_buttons)
+                    )
+                    static_img.save(menu_path / f"{item}.png")
+            else:
+                wall_img = self.generate_wall_image(def_right_buttons, def_left_buttons)
+                wall_img.save(wall_path / f"{name}.png")
+
+        if self.manager.enable_grid_view_explore_var:
+            if progress_callback:
+                progress_callback("Generatng system logo icons...", 5)
+
+            system_logos_path = (
+                temp_path
+                / "system_logos"
+                / "run"
+                / "muos"
+                / "storage"
+                / "info"
+                / "catalogue"
+                / "Folder"
+                / "grid"
+                / "resolutions"
+                / resolution
+            )
+            ensure_folder_exists(system_logos_path)
+
+            self._resize_system_logos(
+                SYSTEM_LOGOS_DIR,
+                system_logos_path,
+                self.renderer.grid_cell_size if self.renderer else 100,
+            )
+
+        if progress_callback:
+            progress_callback(f"Theme generation completed for {resolution}!", 10)
+
+    def _resize_system_logos(
+        self,
+        system_logos_path: Path,
+        output_system_logos_path: Path,
+        grid_cell_size: int,
+    ) -> None:
+        effective_grid_size = grid_cell_size - 20
+
+        for system_logo in system_logos_path.iterdir():
+            if not system_logo.is_file():
+                continue
+
+            system_logo_image = Image.open(system_logo).convert("RGBA")
+            width_multiplier = effective_grid_size / system_logo_image.size[0]
+            height_multiplier = effective_grid_size / system_logo_image.size[1]
+            multiplier = min(width_multiplier, height_multiplier)
+            new_size = (
+                int(system_logo_image.size[0] * multiplier),
+                int(system_logo_image.size[1] * multiplier),
+            )
+            system_logo_image = system_logo_image.resize(new_size, Resampling.LANCZOS)
+            system_logo_image.save(output_system_logos_path / system_logo.name)

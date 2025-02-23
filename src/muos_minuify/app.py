@@ -1,3 +1,4 @@
+from functools import partial
 import platform
 import tkinter as tk
 from tkinter import font, ttk
@@ -231,13 +232,15 @@ class ThemeGeneratorApp:
             btn = ttk.Button(self.scrollable_frame, text=label_text)
 
             if command_name and command_name in self.commands_map:
+                command = partial(
+                    self.commands_map[command_name],
+                    manager=self.manager,
+                    var_name=var_name,
+                    tk_variables=self.adapter.variables,
+                    root=self.root,
+                )
 
-                def callback():
-                    self.commands_map[command_name](
-                        self.manager, var_name, self.adapter.variables
-                    )
-
-                btn.configure(command=callback)
+                btn.configure(command=command)
 
             btn.grid(
                 row=self._current_row,

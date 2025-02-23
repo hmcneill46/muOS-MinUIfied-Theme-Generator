@@ -5,20 +5,21 @@ import math
 from typing import Any, Callable
 import numpy as np
 from pathlib import Path
-import queue
 import re
 import shutil
 import threading
 import tkinter as tk
-from tkinter import (
-    filedialog,
-    messagebox,
-    ttk,
-    colorchooser,
-)
-import traceback
+from tkinter import messagebox, ttk
 
 from .adapter import TkinterSettingsAdapter
+from .commands import (
+    select_color,
+    select_bootlogo_image_path,
+    select_background_image_path,
+    select_alt_font_path,
+    select_theme_directory_path,
+    start_theme_task,
+)
 from .settings import SettingsManager
 from .theme import DeviceThemeGenerator, PreviewThemeGenerator
 
@@ -308,98 +309,6 @@ def getDefaultAlternateMenuNameData():
     return defaultMenuNameMap
 
 
-def select_color(
-    manager: SettingsManager, var_name: str, tk_variables: dict[str, tk.Variable]
-) -> None:
-    """Opens a color picker and sets the selected color to the given entry."""
-    current_hex = tk_variables[var_name].get()
-    if current_hex and not current_hex.startswith("#"):
-        current_hex = f"#{current_hex}"
-
-    try:
-        chosen_tuple = colorchooser.askcolor(
-            initialcolor=current_hex or "#ffffff",
-            title="Choose Color",
-        )
-        color_code = chosen_tuple[1]
-    except Exception:
-        chosen_tuple = colorchooser.askcolor(title="Choose Color")
-        color_code = chosen_tuple[1]
-
-    if color_code:
-        manager.set_value(var_name, color_code.lstrip("#"))
-        tk_variables[var_name].set(color_code)
-
-
-def select_theme_directory_path(
-    manager: SettingsManager, var_name: str, tk_variables: dict[str, tk.Variable]
-) -> None:
-    dir_path = filedialog.askdirectory()
-
-    if dir_path:
-        manager.set_value(var_name, dir_path)
-        tk_variables[var_name].set(dir_path)
-
-
-def select_background_image_path(
-    manager: SettingsManager, var_name: str, tk_variables: dict[str, tk.Variable]
-) -> None:
-    # File dialog to select a file, with specific types of files allowed
-    file_path = filedialog.askopenfilename(
-        filetypes=[
-            ("Image Files", "*.png"),
-            ("Image Files", "*.jpg"),
-            ("Image Files", "*.jpeg"),
-            ("Image Files", "*.webp"),
-            ("Image Files", "*.gif"),
-            ("Image Files", "*.bmp"),
-        ],  # Only show .png files
-        title="Select background image file",
-    )
-
-    if file_path:
-        manager.set_value(var_name, file_path)
-        tk_variables[var_name].set(file_path)
-
-
-def select_bootlogo_image_path(
-    manager: SettingsManager, var_name: str, tk_variables: dict[str, tk.Variable]
-) -> None:
-    # File dialog to select a file, with specific types of files allowed
-    file_path = filedialog.askopenfilename(
-        filetypes=[
-            ("Image Files", "*.png"),
-            ("Image Files", "*.jpg"),
-            ("Image Files", "*.jpeg"),
-            ("Image Files", "*.webp"),
-            ("Image Files", "*.gif"),
-            ("Image Files", "*.bmp"),
-        ],  # Only show .png files
-        title="Select bootlogo image file",
-    )
-
-    if file_path:
-        manager.set_value(var_name, file_path)
-        tk_variables[var_name].set(file_path)
-
-
-def select_alt_font_path(
-    manager: SettingsManager, var_name: str, tk_variables: dict[str, tk.Variable]
-) -> None:
-    # File dialog to select a file, with specific types of files allowed
-    file_path = filedialog.askopenfilename(
-        filetypes=[
-            ("Font Files", "*.ttf"),
-            ("Font Files", "*.otf"),
-        ],  # Only show font files
-        title="Select font file",
-    )
-
-    if file_path:
-        manager.set_value(var_name, file_path)
-        tk_variables[var_name].set(file_path)
-
-
 def generate_theme(
     manager: SettingsManager,
     threadNumber: int,
@@ -524,29 +433,6 @@ def generate_theme(
     delete_folder(temp_build_dir)
     if threadNumber == -1:
         messagebox.showinfo("Success", "Theme generated successfully.")
-
-    # except Exception as e:
-    #     print(e)
-    #     loading_window.destroy()
-    #     theme_dir = manager.theme_directory_path
-
-    #     if manager.advanced_error_var:
-    #         tb_str = "".join(traceback.format_exception(type(e), e, e.__traceback__))
-    #         messagebox.showerror(
-    #             "Error", f"An unexpected error occurred: {e}\n{tb_str}"
-    #         )
-    #     else:
-    #         messagebox.showerror("Error", f"An unexpected error occurred: {e}")
-
-    #     delete_folder(temp_build_dir)
-    #     if manager.developer_preview_var:
-    #         for width, height in resolutions:
-    #             thread_and_res = f"{threadNumber}[{width}x{height}].png"
-    #             temp_preview_path = RESOURCES_DIR / f"TempPreview{thread_and_res}"
-    #             preview_path = theme_dir / "preview" / f"TempPreview{thread_and_res}"
-
-    #             delete_file(temp_preview_path)
-    #             delete_file(preview_path)
 
 
 def generate_themes(themes: list[Any]) -> None:
@@ -2049,55 +1935,6 @@ def FillTempThemeFolder(
         )
 
 
-def start_theme_task(manager: SettingsManager, *args) -> None:
-    dialog = ProgressDialog(
-        root, title=f"Generating {manager.theme_name_var}...", max=None
-    )
-
-    all_resolutions = []
-    for device_type in DEVICE_TYPE_OPTIONS:
-        match = re.search(r"\[(\d+)x(\d+)\]", device_type)
-        if match:
-            all_resolutions.append((int(match.group(1)), int(match.group(2))))
-
-    match = re.search(r"\[(\d+)x(\d+)\]", manager.device_type_var)
-    assumed_res = [640, 480]
-    if match:
-        assumed_res = (int(match.group(1)), int(match.group(2)))
-    else:
-        raise ValueError("Invalid device type format, cannot find screen dimensions")
-
-    def on_progress(message: str = "", step: int = 1):
-        def _update():
-            dialog.label["text"] = message
-            dialog.progress_bar["value"] += step
-
-        root.after(0, _update)
-
-    def worker():
-        try:
-            manager.save_user_values()
-
-            generate_theme(
-                manager,
-                -1,
-                all_resolutions,
-                assumed_res,
-                progress_callback=on_progress,
-            )
-
-            root.after(0, dialog.destroy)
-            root.after(
-                0,
-                lambda: messagebox.showinfo("Success", "Theme generated successfully!"),
-            )
-        except Exception as e:
-            root.after(0, dialog.destroy)
-            raise e
-
-    threading.Thread(target=worker, daemon=True).start()
-
-
 def start_bulk_theme_task() -> None:
     # Create a new Toplevel window for the loading bar
     themes = manager.load_premade_themes()
@@ -2227,6 +2064,8 @@ def on_change(app: ThemeGeneratorApp, generator: ThemePreviewGenerator, *args) -
 
 
 def main():
+    root = tk.Tk()
+
     commands_map = {
         "select_color": select_color,
         "select_bootlogo_image_path": select_bootlogo_image_path,
@@ -2239,7 +2078,6 @@ def main():
     manager = SettingsManager(BASE_SETTINGS_PATH, USER_SETTINGS_PATH)
     manager.load()
 
-    root = tk.Tk()
     adapter = TkinterSettingsAdapter(manager, root)
     app = ThemeGeneratorApp(
         root=root,
