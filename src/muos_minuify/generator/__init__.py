@@ -483,7 +483,7 @@ class ThemeGenerator(HasFont):
 
             if name == "bootlogo":
                 boot_image = self.generate_boot_logo_image()
-                boot_image.save(image_path / f"{name}.bmp")
+                boot_image.save(image_path / "bootlogo.bmp")
                 continue
             elif name == "default":
                 background_image = self.generate_background_image()
