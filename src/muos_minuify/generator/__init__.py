@@ -511,35 +511,36 @@ class ThemeGenerator(HasFont):
                 "left_guides", defaults.get("left_guides", [])
             )
 
-            if len(menu_items := menu_def.get("menu_items", [])) > 1:
-                menu_path = static_path / name
-                ensure_folder_exists(menu_path)
+            menu_items = menu_def.get("menu_items")
+            if menu_items and isinstance(menu_items, dict):
+                non_empty_items = {
+                    item: item_def for item, item_def in menu_items.items() if item_def
+                }
+                if len(non_empty_items) > 1 or name == "muxlaunch":
+                    menu_path = static_path / name
+                    ensure_folder_exists(menu_path)
 
-                if name == "muxsearch":
-                    wall_img = self.generate_wall_image(
-                        def_right_buttons, def_left_buttons
-                    )
-                    wall_img.save(wall_path / f"{name}.png")
+                    for item, item_def in menu_items.items():
+                        if progress_callback:
+                            progress_callback(item=f"Generating {name}/{item}...")
+                        right_buttons = item_def.get("right_guides", def_right_buttons)
+                        left_buttons = item_def.get("left_guides", def_left_buttons)
+
+                        static_img = (
+                            self.generate_launcher_image(
+                                right_buttons, left_buttons, item
+                            )
+                            if name == "muxlaunch"
+                            else self.generate_static_image(right_buttons, left_buttons)
+                        )
+                        static_img.save(menu_path / f"{item}.png")
+
                     continue
 
-                for item, item_def in menu_items.items():
-                    right_buttons = item_def.get("right_guides", def_right_buttons)
-                    left_buttons = item_def.get("left_guides", def_left_buttons)
-
-                    static_img = (
-                        self.generate_launcher_image(right_buttons, left_buttons, item)
-                        if name == "muxlaunch"
-                        else self.generate_static_image(right_buttons, left_buttons)
-                    )
-                    static_img.save(menu_path / f"{item}.png")
-            else:
-                wall_img = self.generate_wall_image(def_right_buttons, def_left_buttons)
-                wall_img.save(wall_path / f"{name}.png")
+            wall_img = self.generate_wall_image(def_right_buttons, def_left_buttons)
+            wall_img.save(wall_path / f"{name}.png")
 
         if self.manager.enable_grid_view_explore_var:
-            if progress_callback:
-                progress_callback("Generatng system logo icons...", 5)
-
             system_logos_path = (
                 temp_path
                 / "system_logos"
