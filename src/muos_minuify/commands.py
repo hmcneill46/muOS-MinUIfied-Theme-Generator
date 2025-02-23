@@ -165,6 +165,16 @@ def generate_full_theme(
             for_preview=True,
         )
         preview_img.save(temp_path / resolution / "preview.png")
+        if manager.developer_preview_var:
+            dev_preview_img = preview_generator.generate_launcher_image(
+                preview_right_buttons,
+                preview_left_buttons,
+                "explore",
+                for_preview=True,
+            )
+            dev_preview_img.save(
+                output_dir / f"{manager.theme_name_var}[{resolution}].png"
+            )
 
     opt_path = temp_path / "system_logos" / "opt"
     ensure_folder_exists(opt_path)
