@@ -116,7 +116,7 @@ def select_alt_font_path(
 def generate_full_theme(
     manager: SettingsManager, output_dir: Path, progress_callback: Callable
 ) -> None:
-    temp_path = Path(".temp")
+    temp_path = output_dir / ".temp"
     if temp_path.exists():
         delete_folder(temp_path)
     ensure_folder_exists(temp_path)
