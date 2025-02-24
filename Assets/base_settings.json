@@ -438,7 +438,8 @@
           "var_type": "string",
           "options": [
             "Default",
-            "Percentage"
+            "Percentage",
+            "Alt Percentage"
           ]
         },
         {
@@ -451,6 +452,8 @@
             "Default",
             "Percentage",
             "Percentage Lightning",
+            "Alt Percentage",
+            "Alt Percentage Lightning",
             "Lightning 1",
             "Lightning 2",
             "Lightning 3"
