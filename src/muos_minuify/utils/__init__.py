@@ -226,34 +226,11 @@ def get_max_length_time_string(
     return timeText
 
 
-def resize_system_logos(
-    system_logos_path: Path,
-    output_system_logos_path: Path,
-    grid_cell_size: int,
-    grid_image_padding: int,
-    circular_grid: bool,
-) -> None:
-    system_logos = system_logos_path.glob("*.png")
-    if circular_grid:
-        effective_circle_diameter = grid_cell_size - (grid_image_padding * 2)
-    else:
-        effective_grid_size = grid_cell_size - (grid_image_padding * 2)
-    for system_logo_path in system_logos:
-        system_logo_image = Image.open(system_logo_path).convert("RGBA")
-        if circular_grid:
-            old_size = system_logo_image.size
-            aspect_ratio = old_size[0] / old_size[1]
-            new_height = math.sqrt(
-                math.pow(effective_circle_diameter, 2) / (1 + math.pow(aspect_ratio, 2))
-            )
-            new_size = int(new_height * aspect_ratio), int(new_height)
-        else:
-            width_multiplier = effective_grid_size / system_logo_image.size[0]
-            height_multiplier = effective_grid_size / system_logo_image.size[1]
-            multiplier = min(width_multiplier, height_multiplier)
-            new_size = (
-                int(system_logo_image.size[0] * multiplier),
-                int(system_logo_image.size[1] * multiplier),
-            )
-        system_logo_image = system_logo_image.resize(new_size, Resampling.LANCZOS)
-        system_logo_image.save(output_system_logos_path / system_logo_path.name)
+def round_to_nearest_odd(number: float | int) -> int:
+    high_odd = (number // 2) * 2 + 1
+    low_odd = high_odd - 2
+    return (
+        int(high_odd)
+        if abs(number - high_odd) < abs(number - low_odd)
+        else int(low_odd)
+    )

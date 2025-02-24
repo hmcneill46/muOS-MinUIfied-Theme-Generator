@@ -23,6 +23,7 @@ from .utils import (
     ensure_folder_exists,
     read_json,
     copy_contents,
+    round_to_nearest_odd,
 )
 from .generator import ThemeGenerator
 from .generator.preview import ThemePreviewGenerator
@@ -160,7 +161,9 @@ def generate_full_theme(
         width = manager.deviceScreenWidthVar
         resolution = f"{width}x{height}"
 
-        res_items_per_screen = items_per_screen * height / original_res
+        res_items_per_screen = round_to_nearest_odd(
+            items_per_screen * height / original_res
+        )
         manager.set_value("itemsPerScreenVar", res_items_per_screen)
 
         preview_generator = ThemePreviewGenerator(manager)
