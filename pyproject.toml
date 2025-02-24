@@ -16,6 +16,6 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://www.github.com/dmyoung/muos-minuify"
-repository = "https://www.github.com/dmyoung/muos-minuify.git"
-documentation = "https://www.github.com/dmyoung/muos-minuify/blob/main/Resources/README.md"
+homepage = "https://www.github.com/dmyoung9/muos-minuify"
+repository = "https://www.github.com/dmyoung9/muos-minuify.git"
+documentation = "https://www.github.com/dmyoung9/muos-minuify/blob/main/Resources/README.md"
