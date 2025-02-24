@@ -5,7 +5,6 @@ from typing import Any
 from .constants import (
     BASE_SETTINGS_PATH,
     USER_SETTINGS_PATH,
-    MENU_LISTING_MAP,
     LEGACY_SETTINGS_PATH,
 )
 from .utils import ensure_file_exists, read_json, write_json
@@ -157,13 +156,6 @@ class SettingsManager:
 
     def get_value(self, var_name: str, fallback: Any = None):
         return self.merged_values.get(var_name, fallback)
-
-    def get_menu_listing(
-        self, var_name: str
-    ) -> tuple[tuple[str, tuple[tuple[str, str], ...]], ...] | None:
-        if version := self.get_value(var_name):
-            version_number = version[5:9]
-            return MENU_LISTING_MAP.get(version_number)
 
     def _parse_screen_dimensions(self, device_type: str) -> tuple[int, int]:
         match = re.search(r"\[(\d+)x(\d+)\]", device_type)
