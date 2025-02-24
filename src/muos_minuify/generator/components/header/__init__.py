@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 from PIL.Image import Resampling
 
 from ....color_utils import hex_to_rgba
-from ....constants import GLYPHS_DIR
+from ....constants import GLYPHS_DIR, BatteryStyleOptionsDict
 from ....defaults import DEFAULT_FONT_PATH
 from ....settings import SettingsManager
 from ....utils import get_max_length_time_string
@@ -86,8 +86,6 @@ class HeaderBubbles(Scalable, HasFont):
         self.right_x_points = {}
 
         self.header_font = ImageFont.truetype(self.font_path, self.text_height)
-        self.capacity_glyph = Image.open(self.capacity_image_path).convert("RGBA")
-        self.network_glyph = Image.open(self.network_image_path).convert("RGBA")
 
     def with_header_configuration(
         self,
@@ -218,6 +216,12 @@ class HeaderBubbles(Scalable, HasFont):
                 status_bubble_height - status_glyph_height
             ) // 2
 
+        battery_glyph_path = (
+            GLYPHS_DIR
+            / f"{BatteryStyleOptionsDict[self.manager.battery_style_var]}30[5x].png"
+        )
+
+        self.capacity_glyph = Image.open(battery_glyph_path).convert("RGBA")
         scaled_capacity_glyph = self.capacity_glyph.resize(
             (
                 int(
@@ -229,6 +233,8 @@ class HeaderBubbles(Scalable, HasFont):
             ),
             Resampling.LANCZOS,
         )
+
+        self.network_glyph = Image.open(self.network_image_path).convert("RGBA")
         scaled_network_glyph = self.network_glyph.resize(
             (
                 int(
