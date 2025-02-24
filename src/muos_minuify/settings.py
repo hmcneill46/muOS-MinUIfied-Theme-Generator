@@ -233,20 +233,16 @@ class SettingsManager:
         default_value: str | Path | None = None,
     ) -> Path | None:
         if isinstance(value, str):
-            if value and (path := Path(value)).exists():
+            if value and (path := Path(value)):
                 return path.resolve()
             else:
                 return None
-        elif (
-            isinstance(old_value, Path)
-            and old_value
-            and (path := Path(old_value)).exists()
-        ):
+        elif isinstance(old_value, Path) and old_value and (path := Path(old_value)):
             return path.resolve()
         elif (
             isinstance(default_value, Path)
             and default_value
-            and (path := Path(default_value)).exists()
+            and (path := Path(default_value))
         ):
             return path.resolve()
 
