@@ -1,0 +1,21 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "muos-minuify"
+version = "2.0.0"
+authors = [{ name = "hmcneill64" }, { name = "dmyoung9" }]
+description = "A Python tool to allow you to create your own MinUI-inspired themes for MuOS."
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+
+[project.urls]
+homepage = "https://www.github.com/dmyoung/muos-minuify"
+repository = "https://www.github.com/dmyoung/muos-minuify.git"
+documentation = "https://www.github.com/dmyoung/muos-minuify/blob/main/Resources/README.md"
