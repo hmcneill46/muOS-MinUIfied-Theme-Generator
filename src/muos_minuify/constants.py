@@ -50,6 +50,7 @@ DEVICE_TYPE_OPTIONS = [
     "RG CubeXX [720x720]",
     "RG34XX [720x480]",
     "576p [720x576]",
+    "TrimUI Brick [1024x768]",
     "HD [1280x720]",
     "Full HD [1920x1080]",
 ]
