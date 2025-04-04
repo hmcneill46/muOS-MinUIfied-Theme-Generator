@@ -27,6 +27,8 @@ from datetime import datetime
 
 Image.MAX_IMAGE_PIXELS = None
 
+TargetMuOSVersion = "2502.0"
+
 ## TODO look into centre align and left align
 ## TODO make header resizable
 
@@ -435,7 +437,7 @@ def generatePilImageMuOSOverlay(config:Config,muOSpageName,render_factor):
                         "muxinfo":"INFORMATION",
                         "muxapp":"APPLICATIONS",
                         "muxplore":"ROMS",
-                        "muxfavourite":"FAVOURITES",
+                        "muxcollect":"COLLECTIONS",
                         "muxhistory":"HISTORY"}
     current_time = datetime.now()
     image = Image.new("RGBA", (int(config.deviceScreenWidthVar)*render_factor, int(config.deviceScreenHeightVar)*render_factor), (255, 255, 255, 0))
@@ -776,7 +778,7 @@ def getTotalBubbleWidth(buttons,internalBubbleFont,bubbleFont,initalPadding,larg
             totalWidth+=(smallerTextWidth/render_factor)
             totalWidth+=smallerPadding
         totalWidth+=smallerPadding
-        #pair[1] might be something like INFO, FAVOURITE, REFRESH etc...
+        #pair[1] might be something like INFO, COLLECT, REFRESH etc...
         textBbox = bubbleFont.getbbox(pair[1])
         textWidth = textBbox[2]-textBbox[0]
         totalWidth += (textWidth/render_factor)
@@ -816,11 +818,11 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
     elif muOSSystemName == "muxapp":
         menuHelperGuides = generateMenuHelperGuides([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxplore":
-        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
-    elif muOSSystemName == "muxfavourite":
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "COLLECT"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+    elif muOSSystemName == "muxcollect":
         menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
     elif muOSSystemName == "muxhistory":
-        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
+        menuHelperGuides = generateMenuHelperGuides([["MENU", "INFO"],["Y", "COLLECT"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]])
 
     if config.show_file_counter_var == 1:
         in_bubble_font_size = 19*render_factor
@@ -920,7 +922,7 @@ def generatePilImageVertical(progress_bar,workingIndex, muOSSystemName,listItems
         draw.text((text_x, text_y), text, font=font, fill=text_color)
             
     
-    if (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp" or muOSSystemName == "muxplore" or muOSSystemName == "muxfavourite" or muOSSystemName == "muxhistory"):
+    if (muOSSystemName == "muxdevice" or muOSSystemName == "muxlaunch" or muOSSystemName == "muxconfig" or muOSSystemName == "muxinfo" or muOSSystemName == "muxapp" or muOSSystemName == "muxplore" or muOSSystemName == "muxcollect" or muOSSystemName == "muxhistory"):
         image = Image.alpha_composite(image, menuHelperGuides)
     
     headerBubbles = generateHeaderBubbles(config,render_factor)
@@ -1069,18 +1071,18 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     
 
     exploreLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"),icon_hex)
-    favouriteLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "favourite.png"),icon_hex)
+    collectionLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "collection.png"),icon_hex)
     historyLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "history.png"),icon_hex)
     appsLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "apps.png"),icon_hex)
    
     top_logo_size = getHorizontalLogoSize(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"), render_factor, config)
     
     exploreLogoColoured = exploreLogoColoured.resize((top_logo_size), Image.LANCZOS)
-    favouriteLogoColoured = favouriteLogoColoured.resize((top_logo_size), Image.LANCZOS)
+    collectionLogoColoured = collectionLogoColoured.resize((top_logo_size), Image.LANCZOS)
     historyLogoColoured = historyLogoColoured.resize((top_logo_size), Image.LANCZOS)
     appsLogoColoured = appsLogoColoured.resize((top_logo_size), Image.LANCZOS)
     
-    combined_top_logos_width = exploreLogoColoured.size[0]+favouriteLogoColoured.size[0]+historyLogoColoured.size[0]+appsLogoColoured.size[0]
+    combined_top_logos_width = exploreLogoColoured.size[0]+collectionLogoColoured.size[0]+historyLogoColoured.size[0]+appsLogoColoured.size[0]
 
     icons_to_bubble_padding = min((int(config.deviceScreenHeightVar)*0)/480,(int(config.deviceScreenWidthVar)*0)/640)*render_factor ## CHANGE for adjustment
 
@@ -1088,7 +1090,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
 
     screen_y_middle = (int(config.deviceScreenHeightVar)*render_factor)/2
 
-    combined_top_row_height = max(exploreLogoColoured.size[1],favouriteLogoColoured.size[1],historyLogoColoured.size[1],appsLogoColoured.size[1])+icons_to_bubble_padding+bubble_height
+    combined_top_row_height = max(exploreLogoColoured.size[1],collectionLogoColoured.size[1],historyLogoColoured.size[1],appsLogoColoured.size[1])+icons_to_bubble_padding+bubble_height
 
     top_row_icon_y = int(screen_y_middle-(combined_top_row_height/2))
 
@@ -1097,17 +1099,17 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     padding_between_top_logos = (int(config.deviceScreenWidthVar)*render_factor-combined_top_logos_width)/(4+1) # 4 logos plus 1
 
     explore_middle = int(padding_between_top_logos+(exploreLogoColoured.size[0])/2)
-    favourite_middle = int(padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+(favouriteLogoColoured.size[0])/2)
-    history_middle = int(padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+(historyLogoColoured.size[0])/2)
-    apps_middle = int(padding_between_top_logos+appsLogoColoured.size[0]+padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+(appsLogoColoured.size[0])/2)
+    collection_middle = int(padding_between_top_logos+collectionLogoColoured.size[0]+padding_between_top_logos+(collectionLogoColoured.size[0])/2)
+    history_middle = int(padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+collectionLogoColoured.size[0]+padding_between_top_logos+(historyLogoColoured.size[0])/2)
+    apps_middle = int(padding_between_top_logos+appsLogoColoured.size[0]+padding_between_top_logos+collectionLogoColoured.size[0]+padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+(appsLogoColoured.size[0])/2)
 
     explore_logo_x = int(explore_middle-(exploreLogoColoured.size[0])/2)
-    favourite_logo_x = int(favourite_middle-(favouriteLogoColoured.size[0])/2)
+    collection_logo_x = int(collection_middle-(collectionLogoColoured.size[0])/2)
     history_logo_x = int(history_middle-(historyLogoColoured.size[0])/2)
     apps_logo_x = int(apps_middle-(appsLogoColoured.size[0])/2)
 
     image.paste(exploreLogoColoured,(explore_logo_x,top_row_icon_y),exploreLogoColoured)
-    image.paste(favouriteLogoColoured,(favourite_logo_x,top_row_icon_y),favouriteLogoColoured)
+    image.paste(collectionLogoColoured,(collection_logo_x,top_row_icon_y),collectionLogoColoured)
     image.paste(historyLogoColoured,(history_logo_x,top_row_icon_y),historyLogoColoured)
     image.paste(appsLogoColoured,(apps_logo_x,top_row_icon_y),appsLogoColoured)
 
@@ -1133,7 +1135,7 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
     if workingIndex == 0:
         current_x_midpoint = explore_middle
     elif workingIndex == 1:
-        current_x_midpoint = favourite_middle
+        current_x_midpoint = collection_middle
     elif workingIndex == 2:
         current_x_midpoint = history_middle
     elif workingIndex == 3:
@@ -1186,12 +1188,12 @@ def generatePilImageHorizontal(progress_bar,workingIndex, bg_hex, selected_font_
             draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
     
     if config.alternate_menu_names_var:
-        textString = bidi_get_display(menuNameMap.get("favourites", "Favourites"))
+        textString = bidi_get_display(menuNameMap.get("collections", "Collections"))
     else:
-        textString = "Favourites"
+        textString = "Collections"
     text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
-    bubble_centre_x =  favourite_middle
+    bubble_centre_x =  collection_middle
     textColour = selected_font_hex if workingIndex == 1 else deselected_font_hex
     text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 1 :
@@ -1428,7 +1430,7 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
     
 
     exploreLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "explore.png"),icon_hex)
-    favouriteLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "favourite.png"),icon_hex)
+    collectionLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "collection.png"),icon_hex)
     historyLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "history.png"),icon_hex)
     appsLogoColoured = change_logo_color(os.path.join(internal_files_dir, "Assets", "Horizontal Logos", "apps.png"),icon_hex)
    
@@ -1436,11 +1438,11 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
                      int((exploreLogoColoured.size[1]*render_factor*min(int(config.deviceScreenHeightVar)/480,int(config.deviceScreenWidthVar)/640))/5))
     
     exploreLogoColoured = exploreLogoColoured.resize((top_logo_size), Image.LANCZOS)
-    favouriteLogoColoured = favouriteLogoColoured.resize((top_logo_size), Image.LANCZOS)
+    collectionLogoColoured = collectionLogoColoured.resize((top_logo_size), Image.LANCZOS)
     historyLogoColoured = historyLogoColoured.resize((top_logo_size), Image.LANCZOS)
     appsLogoColoured = appsLogoColoured.resize((top_logo_size), Image.LANCZOS)
     
-    combined_top_logos_width = exploreLogoColoured.size[0]+favouriteLogoColoured.size[0]+historyLogoColoured.size[0]+appsLogoColoured.size[0]
+    combined_top_logos_width = exploreLogoColoured.size[0]+collectionLogoColoured.size[0]+historyLogoColoured.size[0]+appsLogoColoured.size[0]
 
     icons_to_bubble_padding = min((int(config.deviceScreenHeightVar)*0)/480,(int(config.deviceScreenWidthVar)*0)/640)*render_factor ## CHANGE for adjustment
 
@@ -1448,7 +1450,7 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
 
     screen_y_middle = (int(config.deviceScreenHeightVar)*render_factor)/2
 
-    combined_top_row_height = max(exploreLogoColoured.size[1],favouriteLogoColoured.size[1],historyLogoColoured.size[1],appsLogoColoured.size[1])+icons_to_bubble_padding+bubble_height
+    combined_top_row_height = max(exploreLogoColoured.size[1],collectionLogoColoured.size[1],historyLogoColoured.size[1],appsLogoColoured.size[1])+icons_to_bubble_padding+bubble_height
 
     top_row_icon_y = int(screen_y_middle-combined_top_row_height-(top_to_bottom_row_padding/2))
 
@@ -1457,17 +1459,17 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
     padding_between_top_logos = (int(config.deviceScreenWidthVar)*render_factor-combined_top_logos_width)/(4+1) # 4 logos plus 1
 
     explore_middle_x = int(padding_between_top_logos+(exploreLogoColoured.size[0])/2)
-    favourite_middle_x = int(padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+(favouriteLogoColoured.size[0])/2)
-    history_middle_x = int(padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+(historyLogoColoured.size[0])/2)
-    apps_middle_x = int(padding_between_top_logos+appsLogoColoured.size[0]+padding_between_top_logos+favouriteLogoColoured.size[0]+padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+(appsLogoColoured.size[0])/2)
+    collection_middle_x = int(padding_between_top_logos+collectionLogoColoured.size[0]+padding_between_top_logos+(collectionLogoColoured.size[0])/2)
+    history_middle_x = int(padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+collectionLogoColoured.size[0]+padding_between_top_logos+(historyLogoColoured.size[0])/2)
+    apps_middle_x = int(padding_between_top_logos+appsLogoColoured.size[0]+padding_between_top_logos+collectionLogoColoured.size[0]+padding_between_top_logos+historyLogoColoured.size[0]+padding_between_top_logos+(appsLogoColoured.size[0])/2)
 
     explore_logo_x = int(explore_middle_x-(exploreLogoColoured.size[0])/2)
-    favourite_logo_x = int(favourite_middle_x-(favouriteLogoColoured.size[0])/2)
+    collection_logo_x = int(collection_middle_x-(collectionLogoColoured.size[0])/2)
     history_logo_x = int(history_middle_x-(historyLogoColoured.size[0])/2)
     apps_logo_x = int(apps_middle_x-(appsLogoColoured.size[0])/2)
 
     image.paste(exploreLogoColoured,(explore_logo_x,top_row_icon_y),exploreLogoColoured)
-    image.paste(favouriteLogoColoured,(favourite_logo_x,top_row_icon_y),favouriteLogoColoured)
+    image.paste(collectionLogoColoured,(collection_logo_x,top_row_icon_y),collectionLogoColoured)
     image.paste(historyLogoColoured,(history_logo_x,top_row_icon_y),historyLogoColoured)
     image.paste(appsLogoColoured,(apps_logo_x,top_row_icon_y),appsLogoColoured)
 
@@ -1492,7 +1494,7 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
     if workingIndex == 0:
         current_x_midpoint = explore_middle_x
     elif workingIndex == 1:
-        current_x_midpoint = favourite_middle_x
+        current_x_midpoint = collection_middle_x
     elif workingIndex == 2:
         current_x_midpoint = history_middle_x
     elif workingIndex == 3:
@@ -1539,12 +1541,12 @@ def generatePilImageAltHorizontal(progress_bar,workingIndex, bg_hex, selected_fo
         draw.text((text_x, text_y), textString, font=font, fill=f"#{textColour}")
     
     if config.alternate_menu_names_var:
-        textString = bidi_get_display(menuNameMap.get("favourites", "Favourites"))
+        textString = bidi_get_display(menuNameMap.get("collections", "Collections"))
     else:
-        textString = "Favourites"
+        textString = "Collections"
     text_bbox = font.getbbox(textString)
     text_width = (text_bbox[2] - text_bbox[0])
-    bubble_centre_x =  favourite_middle_x
+    bubble_centre_x =  collection_middle_x
     textColour = selected_font_hex if workingIndex == 1 else deselected_font_hex
     text_x = bubble_centre_x - (text_width / 2)
     if workingIndex == 1 :
@@ -2093,7 +2095,7 @@ menus2405 = [["muxapps",[["Archive Manager","archive"],
                      ["System Details","system"],
                      ["Supporters","credit"]]],
          ["muxlaunch",[["Content Explorer","explore"],
-                     ["Favourites","favourite"],
+                     ["Collections","collection"],
                      ["History","history"],
                      ["Applications","apps"],
                      ["Information","info"],
@@ -2122,7 +2124,7 @@ menus2405_1 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["System Details","system"],
                      ["Supporters","credit"]]],
          ["muxlaunch",[["Content Explorer","explore"],
-                     ["Favourites","favourite"],
+                     ["Collections","collection"],
                      ["History","history"],
                      ["Applications","apps"],
                      ["Information","info"],
@@ -2153,7 +2155,7 @@ menus2405_2 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["System Details","system"],
                      ["Supporters","credit"]]],
          ["muxlaunch",[["Content Explorer","explore"],
-                     ["Favourites","favourite"],
+                     ["Collections","collection"],
                      ["History","history"],
                      ["Applications","apps"],
                      ["Information","info"],
@@ -2184,7 +2186,7 @@ menus2405_3 = [["muxapp",[["Archive Manager","Archive Manager"],
                      ["System Details","system"],
                      ["Supporters","credit"]]],
          ["muxlaunch",[["Content Explorer","explore"],
-                     ["Favourites","favourite"],
+                     ["Collections","collection"],
                      ["History","history"],
                      ["Applications","apps"],
                      ["Information","info"],
@@ -2240,9 +2242,9 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
     try:
         progress_bar['value'] = 0
         if config.main_menu_style_var == "Alt-Horizontal" or config.main_menu_style_var == "Horizontal":
-            progress_bar['maximum'] = 28*len(resolutions)
+            progress_bar['maximum'] = 44*len(resolutions)
         elif config.main_menu_style_var == "Vertical":
-            progress_bar['maximum'] = 20*len(resolutions)
+            progress_bar['maximum'] = 36*len(resolutions)
         else:
             raise ValueError("Something went wrong with your Main Menu Style")
 
@@ -2297,27 +2299,24 @@ def generate_theme(progress_bar, loading_window, threadNumber, config: Config,ba
                 theme_dir = os.path.join(script_dir, "Generated Theme")
             else:
                 theme_dir = config.theme_directory_path
-            shutil.make_archive(os.path.join(theme_dir, "MinUIfied AM System Icons"),"zip", os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
+            shutil.make_archive(os.path.join(theme_dir, "MinUIfied AM System Icons"), "zip", os.path.join(internal_files_dir, f".TempBuildSystemIconsAMFile{threadNumber}"))
+            if os.path.exists(os.path.join(theme_dir, "MinUIfied AM System Icons.muxzip")):
+                os.remove(os.path.join(theme_dir, "MinUIfied AM System Icons.muxzip"))
+            os.rename(os.path.join(theme_dir, "MinUIfied AM System Icons.zip"), os.path.join(theme_dir, "MinUIfied AM System Icons.muxzip"))
             delete_folder(os.path.join(internal_files_dir,f".TempBuildSystemIconsAMFile{threadNumber}"))
-        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "font"),
-                    os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "font"))
-        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "glyph"),
-                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "glyph"))
-        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "image"),
-                    os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "image"))
-        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "scheme"),
-                        os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "scheme"))
-        shutil.move(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}", "preview.png"),
-                    os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "preview.png"))
-        if os.path.exists(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}")):
-                os.rmdir(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", f"{assumed_res[0]}x{assumed_res[1]}"))
 
         if config.theme_directory_path == "":
             theme_dir = os.path.join(script_dir, "Generated Theme")
         else:
             theme_dir = config.theme_directory_path
 
+        with open(os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}", "version.txt"), "w") as version_file:
+            version_file.write(TargetMuOSVersion)
+
         shutil.make_archive(os.path.join(theme_dir, themeName),"zip", os.path.join(internal_files_dir, f".TempBuildTheme{threadNumber}"))
+        if os.path.exists(os.path.join(theme_dir, f"{themeName}.muxthm")):
+            os.remove(os.path.join(theme_dir, f"{themeName}.muxthm"))
+        os.rename(os.path.join(theme_dir, f"{themeName}.zip"), os.path.join(theme_dir, f"{themeName}.muxthm"))
 
         if config.developer_preview_var:
             preview_dir = os.path.join(theme_dir)
@@ -2447,7 +2446,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     footerHeight = int(config.deviceScreenHeightVar)-(individualItemHeight*int(config.itemsPerScreenVar))-int(config.contentPaddingTopVar)
 
     
-    templateSchemeFile = os.path.join(internal_files_dir,"Template Scheme","template.txt")
+    templateSchemeFile = os.path.join(internal_files_dir,"Template Scheme","template.ini")
 
     stringsToReplace = []
 
@@ -2652,8 +2651,8 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
 
         replacementStringMap["muxplore"]["{content_width}"] = int(config.deviceScreenWidthVar)-int(config.maxBoxArtWidth)-(int(config.textPaddingVar)-int(config.bubblePaddingVar))
 
-        # muxfavourite - same as muxplore
-        replacementStringMap["muxfavourite"] = replacementStringMap["muxplore"].copy()
+        # muxcollect - same as muxplore
+        replacementStringMap["muxcollect"] = replacementStringMap["muxplore"].copy()
 
     # muxhistory - make this more like a game switcher
     if config.enable_game_switcher_var and not "Generating new game switcher":
@@ -2803,10 +2802,10 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         replacementStringMap["muxlaunch"]["{grid_cell_focus_text_alpha}"] = 255
         
     for fileName in replacementStringMap.keys():
-        shutil.copy2(templateSchemeFile,os.path.join(newSchemeDir,f"{fileName}.txt"))
+        shutil.copy2(templateSchemeFile,os.path.join(newSchemeDir,f"{fileName}.ini"))
         for stringToBeReplaced in replacementStringMap["default"].keys():
             replacement = replacementStringMap[fileName].get(stringToBeReplaced,replacementStringMap["default"][stringToBeReplaced])
-            replace_in_file(os.path.join(newSchemeDir,f"{fileName}.txt"), stringToBeReplaced, str(replacement))
+            replace_in_file(os.path.join(newSchemeDir,f"{fileName}.ini"), stringToBeReplaced, str(replacement))
 
 
     os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall"), exist_ok=True)
@@ -2934,205 +2933,69 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
     progress_bar['value'] +=1
 
     #TODO If implimented it would be great to only set these once as a default.png type thing, and then make it work in every menu
+
+    notImplimented = ["muxnetwork", "muxassign", "muxstorage", "muxtester"] # Maybe Collections
+
+    page_button_map = {"muxapp":        [["B", "BACK"],["A", "LAUNCH"]], # Applications
+                       "muxarchive":    [["B", "BACK"],["A", "EXTRACT"]], # Archive Manager
+                       "muxcollect":    [["MENU", "INFO"],["Y", "NEW"], ["X", "REMOVE"], ["B", "BACK"], ["A", "OPEN"]], # Collections
+                       "muxconfig":     [["B", "BACK"],["A", "SELECT"]], # Configurations
+                       "muxconnect":    [["B", "BACK"],["A", "SELECT"]], # Connectivitiy
+                       "muxcustom":     [["B", "BACK"],["A", "SELECT"]], # Customisation
+                       "muxgov":        [["Y", "RECURSIVE"],["X", "DIRECTORY"],["A", "INDIVIDUAL"],["B", "BACK"]], # Governor
+                       "muxhdmi":       [["B", "SAVE"]], # HDMI SETTINGS
+                       "muxhistory":    [["MENU", "INFO"],["Y", "COLLECT"], ["X", "REMOVE"], ["B", "BACK"], ["A", "OPEN"]], # History
+                       "muxinfo":       [["B", "BACK"],["A", "SELECT"]], # Information
+                       "muxlanguage":   [["B", "BACK"],["A", "SELECT"]], # Language
+                       "muxnetprofile": [["Y", "REMOVE"],["X", "SAVE"],["B", "BACK"]], # Network Profile
+                       "muxnetscan":    [["X", "RESCAN"], ["B", "BACK"],["A", "USE"]], # Network Scan
+                       "muxoption":     [["B", "BACK"],["A", "SELECT"]], # Content Options
+                       "muxpass":       [["B", "BACK"],["A", "SELECT"]], # TODO This is the password screen CHECK THIS IS CORRECT
+                       "muxpicker":     [["Y", "SAVE"], ["B", "BACK"],["A", "SELECT"]], # Theme, Retroarch, and Catalogue Picker
+                       "muxplore":      [["MENU","INFO"],["Y", "COLLECT"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]], # Explore
+                       "muxpower":      [["B", "SAVE"]], # Power Settings
+                       "muxrtc":        [["B", "SAVE"]], # Date and Time
+                       "muxsearch":     [["X", "CLEAR"],["B", "BACK"],["A", "SELECT"]], # Search Content
+                       "muxshot":       [["X", "REMOVE"],["B", "BACK"],["A", "SELECT"]], # Screenshot
+                       "muxsnapshot":   [["THIS", "SNAPSHOT"]], # Unknown
+                       "muxspace":      [["B", "BACK"]], # Storage Space
+                       "muxsysinfo":    [["B", "BACK"]], # System Details
+                       "muxtask":       [["B", "BACK"],["A", "LAUNCH"]], # Task Toolkit
+                       "muxtimezone":   [["B", "BACK"],["A", "SELECT"]], # Timezone
+                       "muxtweakadv":   [["B", "SAVE"]], # Advanced Settings
+                       "muxtweakgen":   [["B", "SAVE"]], # General Settings
+                       "muxvisual":     [["B", "SAVE"]], # Interface Options
+                       "muxwebserv":    [["B", "SAVE"]]} # Web Services
+    if config.main_menu_style_var == "Vertical":
+        page_button_map["muxlaunch"] = [["A", "SELECT"]]
     
-    visualbuttonoverlay_B_BACK_A_SELECT = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+    # allScreens = "Helper Scripts\MenuItemsGenerator\screen_items_output.txt"
+
+    # page_button_map = {}
+    # with open(allScreens, 'r') as f:
+    #     lines = f.readlines()
     
+    # current_screen = None
+    # for line in lines:
+    #     # Remove any whitespace or newline characters
+    #     line = line.strip()
+    #     # Check for a screen line. The expected format is "Screen: <screen_name>"
+    #     if line.startswith("Screen:"):
+    #         # Get the screen name (everything after "Screen:")
+    #         current_screen = line.split("Screen:")[1].strip()
+    #         # Immediately add the entry with the uppercase version of the screen name
+    #         page_button_map[current_screen] = [["THIS", current_screen.upper()]]
+                       
+    imageCache = {}
 
-    if config.version_var == "muOS 2410.1 Banana":
-        muxconfig_items = ["general", "theme", "network", "service", "clock", "language"]
-    else:
-        muxconfig_items = ["general", "custom", "network", "service", "clock", "language", "storage"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxconfig"), exist_ok=True)
-    for item in muxconfig_items:
-        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxconfig",f"{item}.png"), format='PNG')
-
-    if config.version_var == "muOS 2410.1 Banana":
-        muxcustom_items = []
-    else:
-        muxcustom_items = ["theme", "catalogue", "config"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxcustom"), exist_ok=True)
-    for item in muxcustom_items:
-        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxcustom",f"{item}.png"), format='PNG')
-
-    if config.version_var == "muOS 2410.1 Banana":
-        muxinfo_items = ["tracker", "tester", "system", "credit"]
-    else:
-        muxinfo_items = ["tracker", "tester", "system", "credit"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxinfo"), exist_ok=True)
-    for item in muxinfo_items:
-        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxinfo",f"{item}.png"), format='PNG')
-
-    if config.version_var == "muOS 2410.1 Banana":
-        muxoption_items = ["core", "governor"]
-    else:
-        muxoption_items = ["search", "core", "governor"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxoption"), exist_ok=True)
-    for item in muxoption_items:
-        visualbuttonoverlay_B_BACK_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxoption",f"{item}.png"), format='PNG')
-    progress_bar['value'] +=1
-
-
-    
-    visualbuttonoverlay_A_SELECT = generateMuOSBackgroundOverlay([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-
-    if config.version_var == "muOS 2410.1 Banana":
-        muxlaunch_items = ["explore", "favourite", "history", "apps", "info", "config", "reboot", "shutdown"]
-    else:
-        muxlaunch_items = ["explore", "favourite", "history", "apps", "info", "config", "reboot", "shutdown"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch"), exist_ok=True)
-    for item in muxlaunch_items:
-        visualbuttonoverlay_A_SELECT.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxlaunch",f"{item}.png"), format='PNG')
-    progress_bar['value'] +=1
-
-    visualbuttonoverlay_B_BACK = generateMuOSBackgroundOverlay([["B", "BACK"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    visualbuttonoverlay_B_SAVE = generateMuOSBackgroundOverlay([["B", "SAVE"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-
-    if config.version_var == "muOS 2410.1 Banana":
-        muxtweakgen_items = ["hidden", "bgm", "sound", "startup", "colour", "brightness", "hdmi", "power", "interface", "advanced"]
-    else:
-        muxtweakgen_items = ["hidden", "bgm", "sound", "startup", "colour", "brightness", "hdmi", "power", "interface", "advanced"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakgen"), exist_ok=True)
-    for item in muxtweakgen_items:
-        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakgen",f"{item}.png"), format='PNG')
-
-    if config.version_var == "muOS 2410.1 Banana":
-        muxhdmi_items = []
-    else:
-        muxhdmi_items = ["enable", "resolution", "space", "depth", "range", "scan", "audio"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxhdmi"), exist_ok=True)
-    for item in muxhdmi_items:
-        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxhdmi",f"{item}.png"), format='PNG')
-
-    if config.version_var == "muOS 2410.1 Banana":
-        muxpower_items = ["shutdown", "battery", "idle_display", "idle_sleep"]
-    else:
-        muxpower_items = ["shutdown", "battery", "idle_display", "idle_sleep"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxpower"), exist_ok=True)
-    for item in muxpower_items:
-        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxpower",f"{item}.png"), format='PNG')
-
-    if config.version_var == "muOS 2410.1 Banana":
-        muxvisual_items = ["battery", "network", "bluetooth", "clock", "boxart", "boxartalign", "name", "dash", "friendlyfolder", "thetitleformat", "titleincluderootdrive", "folderitemcount", "counterfolder", "counterfile", "backgroundanimation"]
-    else:
-        muxvisual_items = ["battery", "network", "bluetooth", "clock", "boxart", "boxartalign", "name", "dash", "friendlyfolder", "thetitleformat", "titleincluderootdrive", "folderitemcount", "folderempty", "counterfolder", "counterfile", "backgroundanimation", "launchsplash", "blackfade"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxvisual"), exist_ok=True)
-    for item in muxvisual_items:
-        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxvisual",f"{item}.png"), format='PNG')
-    
-    if config.version_var == "muOS 2410.1 Banana":
-        muxtweakadv_items = ["accelerate", "swap", "thermal", "font", "volume", "brightness", "offset", "lock", "led", "theme", "retrowait", "usbfunction", "state", "verbose", "rumble", "hdmi", "storage"]
-    else:
-        muxtweakadv_items = ["accelerate", "swap", "thermal", "font", "volume", "brightness", "offset", "lock", "led", "theme", "retrowait", "usbfunction", "state", "verbose", "rumble", "userinit", "dpadswap", "overdrive", "swapfile", "cardmode"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv"), exist_ok=True)
-    for item in muxtweakadv_items:
-        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxtweakadv",f"{item}.png"), format='PNG')
-
-    if config.version_var == "muOS 2410.1 Banana":
-        muxwebserv_items = ["shell", "browser", "terminal", "sync", "resilio", "ntp"]
-    else:
-        muxwebserv_items = ["sshd", "sftpgo", "ttyd", "syncthing", "rslsync", "ntp", "tailscaled"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv"), exist_ok=True)
-    for item in muxwebserv_items:
-        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxwebserv",f"{item}.png"), format='PNG')
-    
-    if config.version_var == "muOS 2410.1 Banana":
-        muxrtc_items = ["year", "month", "day", "hour", "minute", "notation", "timezone"]
-    else:
-        muxrtc_items = ["year", "month", "day", "hour", "minute", "notation", "timezone"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxrtc"), exist_ok=True)
-    for item in muxrtc_items:
-        visualbuttonoverlay_B_SAVE.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxrtc",f"{item}.png"), format='PNG')
-    
-    if config.version_var == "muOS 2410.1 Banana":
-        muxsysinfo_items = ["version", "device", "kernel", "uptime", "cpu", "speed", "governor", "memory", "temp", "service", "capacity", "voltage"]
-    else:
-        muxsysinfo_items = ["version", "device", "kernel", "uptime", "cpu", "speed", "governor", "memory", "temp", "service", "capacity", "voltage"]
-    os.makedirs(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxsysinfo"), exist_ok=True)
-    for item in muxsysinfo_items:
-        visualbuttonoverlay_B_BACK.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","static","muxsysinfo",f"{item}.png"), format='PNG')
-    progress_bar['value'] +=1
-    
-    #TODO REMOVE THIS AS IT DOESNT ALLOW BACKGROUND REPLACEMENT (When Alternative is avaliable)
-    #TODO wifi would be cool to have footers for once its possible
-
-    bg_rgb = hex_to_rgb(bg_hex)
-    background = Image.new("RGBA", (int(config.deviceScreenWidthVar) * render_factor, int(config.deviceScreenHeightVar) * render_factor), bg_rgb)
-    if background_image != None:
-        background.paste(background_image.resize((int(config.deviceScreenWidthVar) * render_factor, int(config.deviceScreenHeightVar) * render_factor)), (0,0))
-    background = background.resize((int(config.deviceScreenWidthVar),int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    
-
-    visualbuttonoverlay_muxapp = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "LAUNCH"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxapp)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxapp.png"), format='PNG')
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtask.png"), format='PNG')
-    progress_bar['value'] +=1
-
-    visualbuttonoverlay_muxplore = generateMuOSBackgroundOverlay([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REFRESH"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxplore)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxplore.png"), format='PNG')
-    progress_bar['value'] +=1
-
-    visualbuttonoverlay_muxfavourite = generateMuOSBackgroundOverlay([["MENU", "INFO"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxfavourite)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxfavourite.png"), format='PNG')
-    progress_bar['value'] +=1
-
-    #GameSwitcher
-    if config.enable_game_switcher_var:
-        if not "generating new game switcher":
-            gameSwitcherOverlay = generateGameSwitcherOverlay(config,render_factor,gameNameForPreview="Goodboy Galaxy").resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-        else:
-            gameSwitcherOverlay = generateHeaderBubbles(config,render_factor,config.bgHexVar,bubble_alpha=0.866).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-        altered_background = Image.alpha_composite(background, gameSwitcherOverlay)
-        gameSwitcherOverlay.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxhistory.png"), format='PNG')
+    for page in page_button_map.keys():
+        buttonsString = "".join(["".join([f"{button[0]}:{button[1]},"]) for button in page_button_map[page]])
+        visualbuttonoverlay = imageCache.get(buttonsString, None)
+        if visualbuttonoverlay is None:
+            imageCache[buttonsString] = generateMuOSBackgroundOverlay(page_button_map[page],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
+            visualbuttonoverlay = imageCache[buttonsString]
+        visualbuttonoverlay.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall",f"{page}.png"), format='PNG')
         progress_bar['value'] +=1
-    else:
-        visualbuttonoverlay_muxhistory = generateMuOSBackgroundOverlay([["MENU", "INFO"],["Y", "FAVOURITE"],["X", "REMOVE"],["B", "BACK"],["A", "OPEN"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-        altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxhistory)
-        altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxhistory.png"), format='PNG')
-        progress_bar['value'] +=1
-
-    visualbuttonoverlay_muxtimezone = generateMuOSBackgroundOverlay([["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxtimezone)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxtimezone.png"), format='PNG')
-    progress_bar['value'] +=1
-
-    visualbuttonoverlay_muxpicker = generateMuOSBackgroundOverlay([["Y","SAVE"],["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxpicker)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxpicker.png"), format='PNG')
-    progress_bar['value'] +=1
-
-    visualbuttonoverlay_muxlanguage = generateMuOSBackgroundOverlay([["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxlanguage)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxlanguage.png"), format='PNG')
-    progress_bar['value'] +=1
-
-    visualbuttonoverlay_muxarchive = generateMuOSBackgroundOverlay([["B", "BACK"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxarchive)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxarchive.png"), format='PNG')
-    progress_bar['value'] +=1
-
-    visualbuttonoverlay_muxnetprofile = generateMuOSBackgroundOverlay([["Y", "REMOVE"],["X", "SAVE"],["B", "BACK"],["A", "LOAD"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetprofile)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxnetprofile.png"), format='PNG')
-    progress_bar['value'] +=1
-
-    visualbuttonoverlay_muxnetscan = generateMuOSBackgroundOverlay([["X", "RESCAN"],["B", "BACK"],["A", "USE"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxnetscan)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxnetscan.png"), format='PNG')
-    progress_bar['value'] +=1
-
-    visualbuttonoverlay_muxgov = generateMuOSBackgroundOverlay([["Y", "RECURSIVE"],["X", "DIRECTORY"],["A", "INDIVIDUAL"],["B", "BACK"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxgov)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxgov.png"), format='PNG')
-    progress_bar['value'] +=1
-
-    visualbuttonoverlay_muxsearch = generateMuOSBackgroundOverlay([["X", "CLEAR"],["B", "BACK"],["A", "SELECT"]],selected_font_path,config.footerBubbleHexVar,render_factor,config,lhsButtons=[["POWER","SLEEP"]]).resize((int(config.deviceScreenWidthVar), int(config.deviceScreenHeightVar)), Image.LANCZOS)
-    altered_background = Image.alpha_composite(background, visualbuttonoverlay_muxsearch)
-    altered_background.save(os.path.join(internal_files_dir,f".TempBuildTheme{threadNumber}","image","wall","muxsearch.png"), format='PNG')
-    progress_bar['value'] +=1
-
 
     
     if False: ## Testing converting font in generator
@@ -3163,7 +3026,7 @@ def FillTempThemeFolder(progress_bar, threadNumber, config:Config):
         raise ValueError("You Haven't Selected a muOS Version")
     
     workingMenus = [["muxlaunch",[["Content Explorer","explore"],
-                                    ["Favourites","favourite"],
+                                    ["Collections","collection"],
                                     ["History","history"],
                                     ["Applications","apps"],
                                     ["Information","info"],
@@ -4062,7 +3925,7 @@ def on_change(*args):
 
         # This function will run whenever any traced variable changes
     
-        previewItemList = [['Content Explorer', 'Menu', 'explore'], ['Favourites', 'Menu', 'favourite'], ['History', 'Menu', 'history'], ['Applications', 'Menu', 'apps'], ['Information', 'Menu', 'info'], ['Configuration', 'Menu', 'config'], ['Reboot Device', 'Menu', 'reboot'], ['Shutdown Device', 'Menu', 'shutdown']]
+        previewItemList = [['Content Explorer', 'Menu', 'explore'], ['Collections', 'Menu', 'collection'], ['History', 'Menu', 'history'], ['Applications', 'Menu', 'apps'], ['Information', 'Menu', 'info'], ['Configuration', 'Menu', 'config'], ['Reboot Device', 'Menu', 'reboot'], ['Shutdown Device', 'Menu', 'shutdown']]
         
         if global_config.main_menu_style_var == "Horizontal":
             image1 = generatePilImageHorizontal(fakeprogressbar,
